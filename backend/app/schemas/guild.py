@@ -9,6 +9,15 @@ class ChannelRead(BaseModel):
     position: int
 
 
+class ChannelCreate(BaseModel):
+    name: str = Field(
+        min_length=1,
+        max_length=100,
+        pattern=r"^[a-zA-Z0-9가-힣][a-zA-Z0-9가-힣_-]*$",
+    )
+    type: int = Field(default=0, ge=0, le=1)
+
+
 class MemberRead(BaseModel):
     id: int
     username: str
@@ -32,4 +41,3 @@ class GuildRead(BaseModel):
     channels: list[ChannelRead]
     members: list[MemberRead]
     messages: list[MessageRead]
-

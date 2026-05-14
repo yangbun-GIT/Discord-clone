@@ -8,10 +8,19 @@ export async function apiGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export async function apiPost<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
+export async function apiPost<TResponse, TPayload>(
+  path: string,
+  payload: TPayload,
+  token?: string | null,
+): Promise<TResponse> {
+  const headers = new Headers({ 'Content-Type': 'application/json' })
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
@@ -19,4 +28,3 @@ export async function apiPost<TResponse, TPayload>(path: string, payload: TPaylo
   }
   return response.json() as Promise<TResponse>
 }
-

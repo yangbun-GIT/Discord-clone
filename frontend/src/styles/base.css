@@ -110,6 +110,13 @@ input:focus-visible {
   gap: 6px;
 }
 
+.channel-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .channel-group p,
 .member-list p {
   margin: 0 0 4px;
@@ -118,6 +125,55 @@ input:focus-visible {
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.channel-group-heading button {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.channel-group-heading button:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.channel-create-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: 6px;
+  align-items: center;
+}
+
+.channel-create-form input {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 9px;
+  font-size: 0.9rem;
+}
+
+.channel-create-form button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  color: #111827;
+  background: #5eead4;
+}
+
+.channel-create-form button:disabled {
+  cursor: not-allowed;
+  color: #94a3b8;
+  background: rgb(255 255 255 / 9%);
 }
 
 .channel-button {

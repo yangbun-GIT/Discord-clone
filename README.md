@@ -64,7 +64,11 @@ Docker exposes the same local URLs:
 
 Copy `.env.example` to `.env` and fill values as external services become available.
 Local development works without `DATABASE_URL` or `REDIS_URL`; the first stage uses
-demo data while preserving the async connection-pool boundaries required by the SRS.
+an in-memory demo store while preserving the async connection-pool boundaries required
+by the SRS.
+
+Messages and channels created in local/demo mode are kept in the running backend
+process. They reset when the backend process or container restarts.
 
 ## Verification
 

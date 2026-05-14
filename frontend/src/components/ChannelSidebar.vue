@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Hash, Radio } from 'lucide-vue-next'
+import { Hash, Plus, Radio } from 'lucide-vue-next'
+import { ref } from 'vue'
 
 import type { Guild } from '../types'
 
@@ -8,9 +9,25 @@ defineProps<{
   activeChannelId: number | null
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   select: [channelId: number]
+  createChannel: [name: string]
 }>()
+
+const creatingTextChannel = ref(false)
+const channelDraft = ref('')
+
+function openChannelForm() {
+  creatingTextChannel.value = true
+}
+
+function submitChannel() {
+  const name = channelDraft.value.trim()
+  if (!name) return
+  channelDraft.value = ''
+  creatingTextChannel.value = false
+  emit('createChannel', name)
+}
 </script>
 
 <template>
@@ -20,7 +37,23 @@ defineEmits<{
     </div>
 
     <div class="channel-group">
-      <p>Text Channels</p>
+      <div class="channel-group-heading">
+        <p>Text Channels</p>
+        <button type="button" title="Create text channel" @click="openChannelForm">
+          <Plus :size="15" aria-hidden="true" />
+        </button>
+      </div>
+      <form v-if="creatingTextChannel" class="channel-create-form" @submit.prevent="submitChannel">
+        <input
+          v-model="channelDraft"
+          aria-label="Channel name"
+          maxlength="100"
+          placeholder="new-channel"
+        />
+        <button type="submit" title="Create channel" :disabled="!channelDraft.trim()">
+          <Plus :size="15" aria-hidden="true" />
+        </button>
+      </form>
       <button
         v-for="channel in guild.channels.filter((item) => item.type === 0)"
         :key="channel.id"
@@ -50,4 +83,3 @@ defineEmits<{
     </div>
   </aside>
 </template>
-

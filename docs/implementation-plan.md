@@ -28,6 +28,9 @@
 
 ## Stage 2: Persistence and Auth
 
+- Status: in progress.
+- Bridge completed: protected message creation and channel creation APIs are wired to
+  the frontend through the process-local demo store.
 - Add asyncpg repositories and migrations for users, guilds, channels, roles, members,
   and messages.
 - Implement registration, login, JWT-protected REST APIs, and guild membership queries.

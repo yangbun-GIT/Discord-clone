@@ -16,7 +16,10 @@ class Settings(BaseSettings):
     database_url: str | None = Field(default=None, validation_alias="DATABASE_URL")
     redis_url: str | None = Field(default=None, validation_alias="REDIS_URL")
 
-    jwt_secret: str = Field(default="change-this-local-secret", validation_alias="JWT_SECRET")
+    jwt_secret: str = Field(
+        default="change-this-local-secret-32-bytes-min",
+        validation_alias="JWT_SECRET",
+    )
     jwt_algorithm: str = "HS256"
     access_token_minutes: int = 60 * 24
     gateway_heartbeat_interval_ms: int = 30_000

@@ -38,10 +38,11 @@ onMounted(async () => {
 
     <ChannelSidebar
       v-if="activeGuild"
-      :guild="activeGuild"
-      :active-channel-id="guilds.activeChannelId"
-      @select="guilds.selectChannel"
-    />
+        :guild="activeGuild"
+        :active-channel-id="guilds.activeChannelId"
+        @select="guilds.selectChannel"
+        @create-channel="guilds.createChannel(session.token, $event)"
+      />
 
     <section class="workspace">
       <header class="topbar">
@@ -62,6 +63,7 @@ onMounted(async () => {
           :channel="activeChannel"
           :messages="activeMessages"
           :current-user="session.user"
+          @send="guilds.sendMessage(session.token, $event)"
         />
         <MemberList v-if="activeGuild" :members="activeGuild.members" />
       </div>

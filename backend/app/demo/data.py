@@ -2,7 +2,7 @@ from app.domain.permissions import Permission, merge_permissions
 from app.schemas.guild import ChannelRead, GuildRead, MemberRead, MessageRead
 
 
-def demo_guilds() -> list[GuildRead]:
+def create_initial_guilds() -> list[GuildRead]:
     permissions = merge_permissions(
         [
             Permission.READ_MESSAGES,

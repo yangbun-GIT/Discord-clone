@@ -12,10 +12,12 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Current Milestone
 
-Stage 1, fullstack foundation, is complete and pushed to GitHub.
+Stage 2 has started. Stage 1 and the Docker development baseline are complete and
+pushed to GitHub.
 
 The app currently boots without Neon PostgreSQL or Upstash Redis credentials. It uses
-demo data while preserving the async infrastructure boundaries required by the SRS.
+a process-local demo store while preserving the async infrastructure boundaries
+required by the SRS.
 
 ## Repository Layout
 
@@ -55,6 +57,9 @@ demo data while preserving the async infrastructure boundaries required by the S
 - `backend/app/core/security.py`
   - Password hashing helpers using bcrypt.
   - JWT creation and decoding using PyJWT.
+- `backend/app/api/dependencies.py`
+  - Bearer-token dependency for protected REST routes.
+  - Decodes JWTs and returns the current user payload.
 - `backend/app/core/rate_limit.py`
   - In-memory token bucket middleware for local Stage 1 protection.
   - Intended to be replaced or backed by Redis during realtime/distributed stages.
@@ -97,15 +102,25 @@ demo data while preserving the async infrastructure boundaries required by the S
   - `/api/dev/session` creates a local development JWT and user payload.
   - Only intended for local/dev/test environments.
 - `backend/app/api/routes/guilds.py`
-  - `/api/guilds/me` returns demo guild data for the Stage 1 frontend shell.
+  - `/api/guilds/me` returns demo guild data for the frontend shell.
+  - `POST /api/guilds/{guild_id}/channels` creates text or voice channels in the
+    process-local demo store.
+- `backend/app/api/routes/channels.py`
+  - `POST /api/channels/{channel_id}/messages` creates sanitized messages in the
+    process-local demo store.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
 - `backend/app/demo/data.py`
-  - Local guild/channel/member/message data used before persistence is wired.
+  - Initial guild/channel/member/message seed data used before persistence is wired.
+- `backend/app/demo/store.py`
+  - Process-local mutable demo store.
+  - Creates channels and messages with Snowflake IDs.
+  - This is the temporary boundary that should be replaced by PostgreSQL repositories.
 - `backend/app/schemas/`
   - Pydantic API schemas for auth, guilds, and messages.
 - `backend/tests/`
-  - Unit tests for permissions, Snowflake IDs, and message schema sanitization.
+  - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
+    API routes, and message schema sanitization.
 
 ## Frontend Map
 
@@ -123,6 +138,7 @@ demo data while preserving the async infrastructure boundaries required by the S
   - Starts local dev session, loads guild data, then connects the gateway.
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
+  - POST calls accept an optional bearer token.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
   - Calls `/api/dev/session` and stores JWT plus current user.
@@ -132,6 +148,7 @@ demo data while preserving the async infrastructure boundaries required by the S
   - Loads `/api/guilds/me`.
   - Tracks active guild, active channel, active messages, voice channel, and voice
     connection UI state.
+  - Calls the protected channel creation and message creation APIs.
   - Uses `document.startViewTransition()` when available for channel switching.
 - `frontend/src/composables/useGateway.ts`
   - Browser WebSocket gateway client.
@@ -141,8 +158,10 @@ demo data while preserving the async infrastructure boundaries required by the S
   - Server icon rail and create-server icon button placeholder.
 - `frontend/src/components/ChannelSidebar.vue`
   - Text and voice channel lists.
+  - Provides an inline text-channel creation form.
 - `frontend/src/components/ChatView.vue`
-  - Message list and composer UI placeholder.
+  - Message list and composer UI.
+  - Emits submitted message content to the guild store.
 - `frontend/src/components/MemberList.vue`
   - Member presence list.
 - `frontend/src/components/VoicePanel.vue`
@@ -170,6 +189,17 @@ demo data while preserving the async infrastructure boundaries required by the S
   - `App.vue` calls `guilds.loadGuilds()`.
   - `guilds.ts` GETs `/api/guilds/me`.
   - `App.vue` calls `useGateway().connect(token)`.
+- Message send flow:
+  - `ChatView.vue` emits submitted content.
+  - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
+  - Backend validates JWT, sanitizes content, appends to `demo_store`, and returns the
+    created message.
+  - `guilds.ts` immutably appends the returned message to the active guild state.
+- Channel creation flow:
+  - `ChannelSidebar.vue` opens an inline channel-name form from the plus icon.
+  - `guilds.ts` POSTs to `/api/guilds/{guild_id}/channels` with bearer token.
+  - Backend validates JWT, appends to `demo_store`, and returns the created channel.
+  - `guilds.ts` immutably appends the returned channel and selects it.
 - Gateway flow:
   - Server accepts `/gateway`.
   - Server sends Hello: `{ op: 10, d: { heartbeat_interval } }`.
@@ -222,7 +252,9 @@ npm run docker:down
 
 - The SRS says Pydantic v3, but the current PyPI line is Pydantic v2. The backend
   pins Pydantic v2 and isolates schema code for a future upgrade.
-- The Stage 1 app intentionally uses demo data instead of persistence.
+- The app currently uses a process-local demo store instead of database persistence.
+  Created messages/channels survive page reloads while the backend process is alive,
+  but are reset when the backend container/process restarts.
 - `node_modules/`, `.venv/`, `dist/`, `*.egg-info/`, and `*.tsbuildinfo` are ignored
   and must not be committed.
 - Real secrets belong in `.env`, not in Git.
@@ -242,6 +274,13 @@ Stage 2 should wire persistence and authentication:
 - Replace `/api/guilds/me` demo data with database-backed membership queries.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
 - Add tests for auth, repositories, and route permissions.
+
+Completed Stage 2 bridge work:
+
+- Added bearer-token protected message creation API.
+- Added bearer-token protected channel creation API.
+- Connected frontend message composer to the backend.
+- Connected frontend text-channel creation form to the backend.
 
 After each stage or meaningful feature:
 

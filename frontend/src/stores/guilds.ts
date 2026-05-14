@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
-import { apiGet } from '../services/api'
-import type { Guild } from '../types'
+import { apiGet, apiPost } from '../services/api'
+import type { Channel, Guild, Message } from '../types'
 
 export const useGuildStore = defineStore('guilds', () => {
   const guilds = shallowRef<Guild[]>([])
@@ -46,6 +46,35 @@ export const useGuildStore = defineStore('guilds', () => {
     voiceConnected.value = !voiceConnected.value
   }
 
+  async function createChannel(token: string | null, name: string, type: 0 | 1 = 0) {
+    if (!activeGuild.value) return
+    const trimmedName = name.trim()
+    if (!trimmedName) return
+    const channel = await apiPost<Channel, { name: string; type: 0 | 1 }>(
+      `/api/guilds/${activeGuild.value.id}/channels`,
+      { name: trimmedName, type },
+      token,
+    )
+    guilds.value = guilds.value.map((guild) => {
+      if (guild.id !== channel.guild_id) return guild
+      return { ...guild, channels: [...guild.channels, channel] }
+    })
+    selectChannel(channel.id)
+  }
+
+  async function sendMessage(token: string | null, content: string) {
+    if (!activeChannel.value || activeChannel.value.type !== 0) return
+    const message = await apiPost<Message, { channel_id: number; content: string }>(
+      `/api/channels/${activeChannel.value.id}/messages`,
+      { channel_id: activeChannel.value.id, content },
+      token,
+    )
+    guilds.value = guilds.value.map((guild) => {
+      if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
+      return { ...guild, messages: [...guild.messages, message] }
+    })
+  }
+
   return {
     guilds,
     activeGuildId,
@@ -59,5 +88,7 @@ export const useGuildStore = defineStore('guilds', () => {
     selectGuild,
     selectChannel,
     toggleVoice,
+    createChannel,
+    sendMessage,
   }
 })

@@ -11,6 +11,17 @@ defineProps<{
 }>()
 
 const draft = ref('')
+
+const emit = defineEmits<{
+  send: [content: string]
+}>()
+
+function submitMessage() {
+  const content = draft.value.trim()
+  if (!content) return
+  emit('send', content)
+  draft.value = ''
+}
 </script>
 
 <template>
@@ -30,7 +41,7 @@ const draft = ref('')
       </article>
     </div>
 
-    <form class="composer" @submit.prevent="draft = ''">
+    <form class="composer" @submit.prevent="submitMessage">
       <input
         v-model="draft"
         :aria-label="`Message ${channel?.name ?? 'channel'}`"
@@ -43,4 +54,3 @@ const draft = ref('')
     </form>
   </section>
 </template>
-
