@@ -17,6 +17,15 @@
 - Stage progress changes must update this file.
 - Completed stages should be committed and pushed to `origin/main`.
 
+## Stage 1.5: Docker Development Baseline
+
+- Status: completed.
+- Add backend and frontend Dockerfiles with development and runtime targets.
+- Add Compose stack for local backend/frontend orchestration.
+- Keep Docker optional so native `.venv` and `npm` workflows remain available.
+- Configure Vite proxy target through `VITE_BACKEND_PROXY_TARGET` for container
+  networking.
+
 ## Stage 2: Persistence and Auth
 
 - Add asyncpg repositories and migrations for users, guilds, channels, roles, members,
@@ -39,6 +48,7 @@
 
 ## Stage 5: Deployment
 
-- Add Dockerfiles, Gunicorn/Uvicorn worker config, and environment documentation.
+- Dockerfile baseline is complete; add production Gunicorn/Uvicorn worker config and
+  deployment hardening.
 - Prepare Oracle Cloud / GCP VM deployment notes.
 - Add production CORS, rate-limit, logging, and health-check guidance.

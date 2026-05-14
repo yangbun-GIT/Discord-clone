@@ -5,6 +5,9 @@
   "scripts": {
     "dev:backend": "cd backend && ..\\.venv\\Scripts\\python -m uvicorn app.main:app --reload --port 8000",
     "dev:frontend": "npm --prefix frontend run dev",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
     "lint:backend": "cd backend && ..\\.venv\\Scripts\\python -m ruff check app tests",
     "lint:frontend": "npm --prefix frontend run lint",
     "test:backend": "cd backend && ..\\.venv\\Scripts\\python -m pytest"

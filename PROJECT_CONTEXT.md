@@ -23,6 +23,11 @@ demo data while preserving the async infrastructure boundaries required by the S
   - Root script entrypoint.
   - Runs backend tests/lint through `.venv`.
   - Runs frontend dev/lint/build through `frontend/package.json`.
+  - Runs Docker Compose through `docker:up`, `docker:down`, and `docker:logs`.
+- `compose.yaml`
+  - Docker Compose development stack for backend and frontend.
+  - Uses external Neon/Upstash URLs from environment variables when provided.
+  - Boots in demo mode when those URLs are empty.
 - `backend/`
   - FastAPI ASGI backend.
   - Python package is configured by `backend/pyproject.toml`.
@@ -34,6 +39,9 @@ demo data while preserving the async infrastructure boundaries required by the S
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
+- `.dockerignore`, `backend/.dockerignore`, `frontend/.dockerignore`
+  - Prevent local virtualenvs, dependencies, build output, secrets, and cache files
+    from entering Docker build contexts.
 
 ## Backend Map
 
@@ -84,6 +92,7 @@ demo data while preserving the async infrastructure boundaries required by the S
   - Connects only when `REDIS_URL` is configured.
 - `backend/app/api/routes/health.py`
   - `/api/health` reports service status and whether DB/Redis are configured/connected.
+  - Empty `DATABASE_URL` and `REDIS_URL` values are reported as not configured.
 - `backend/app/api/routes/dev.py`
   - `/api/dev/session` creates a local development JWT and user payload.
   - Only intended for local/dev/test environments.
@@ -102,8 +111,10 @@ demo data while preserving the async infrastructure boundaries required by the S
 
 - `frontend/vite.config.ts`
   - Vite Vue config.
-  - Proxies `/api` to `http://127.0.0.1:8000`.
-  - Proxies `/gateway` WebSocket traffic to `ws://127.0.0.1:8000`.
+  - Proxies `/api` to `VITE_BACKEND_PROXY_TARGET`, defaulting to
+    `http://127.0.0.1:8000`.
+  - Proxies `/gateway` WebSocket traffic to the same target with `ws` protocol.
+  - Compose sets `VITE_BACKEND_PROXY_TARGET=http://backend:8000`.
 - `frontend/src/main.ts`
   - Creates Vue app, Pinia, and Vue Router.
 - `frontend/src/App.vue`
@@ -140,6 +151,16 @@ demo data while preserving the async infrastructure boundaries required by the S
   - App layout, accessible focus styles, responsive behavior, and View Transitions rule.
 - `frontend/src/types.ts`
   - Shared frontend types matching the current backend demo API shape.
+- `backend/Dockerfile`
+  - `dev` target installs backend dev dependencies and runs Uvicorn with reload.
+  - `runtime` target installs production dependencies and runs Uvicorn without reload.
+- `frontend/Dockerfile`
+  - `dev` target runs Vite on `0.0.0.0`.
+  - `build` target produces the static bundle.
+  - `runtime` target serves the bundle through Nginx.
+- `frontend/nginx.conf`
+  - Production static server config.
+  - Proxies `/api/` and `/gateway` to `backend:8000` for containerized deployments.
 
 ## Current Integrations
 
@@ -160,6 +181,11 @@ demo data while preserving the async infrastructure boundaries required by the S
   - `DATABASE_URL` will point to Neon PostgreSQL.
   - `REDIS_URL` will point to Upstash Redis.
   - Both are optional in the current local shell.
+- Docker development flow:
+  - `npm run docker:up` builds and starts `backend` plus `frontend`.
+  - Frontend container proxies API/WebSocket traffic to `backend:8000` inside the
+    Compose network.
+  - Host browser still uses `http://127.0.0.1:5173`.
 
 ## Verification Commands
 
@@ -170,6 +196,7 @@ npm run test:backend
 npm run lint:backend
 npm run lint:frontend
 npm --prefix frontend run build
+docker compose exec -T backend pytest
 ```
 
 Local servers:
@@ -184,6 +211,13 @@ Expected local URLs:
 - Frontend: `http://127.0.0.1:5173`
 - Backend health: `http://127.0.0.1:8000/api/health`
 
+Docker servers:
+
+```powershell
+npm run docker:up
+npm run docker:down
+```
+
 ## Known Decisions And Constraints
 
 - The SRS says Pydantic v3, but the current PyPI line is Pydantic v2. The backend
@@ -193,6 +227,9 @@ Expected local URLs:
   and must not be committed.
 - Real secrets belong in `.env`, not in Git.
 - UI should remain the actual app surface, not a landing page or feature explainer.
+- Docker is additive, not a replacement for native local development. Use native
+  scripts for quick iteration and Docker when environment reproducibility matters.
+- Docker Desktop must be running before `npm run docker:up`.
 
 ## Next Work
 
@@ -212,4 +249,3 @@ After each stage or meaningful feature:
 - Update `docs/implementation-plan.md` stage status.
 - Run relevant verification commands.
 - Commit and push to `origin/main` unless the user asks otherwise.
-

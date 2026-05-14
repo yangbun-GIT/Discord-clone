@@ -14,12 +14,11 @@ async def health_check() -> dict[str, object]:
         "status": "ok",
         "environment": settings.environment,
         "database": {
-            "configured": settings.database_url is not None,
+            "configured": bool(settings.database_url),
             "connected": database.is_connected,
         },
         "redis": {
-            "configured": settings.redis_url is not None,
+            "configured": bool(settings.redis_url),
             "connected": redis_bus.is_connected,
         },
     }
-
