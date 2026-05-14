@@ -1,0 +1,75 @@
+import { computed, onBeforeUnmount, ref } from 'vue'
+
+type GatewayStatus = 'idle' | 'connecting' | 'connected' | 'disconnected'
+
+type GatewayEvent = {
+  op: number
+  d?: Record<string, unknown> | null
+  s?: number | null
+  t?: string | null
+}
+
+const socket = ref<WebSocket | null>(null)
+const status = ref<GatewayStatus>('idle')
+const heartbeatTimer = ref<number | null>(null)
+
+function clearHeartbeat() {
+  if (heartbeatTimer.value !== null) {
+    window.clearInterval(heartbeatTimer.value)
+    heartbeatTimer.value = null
+  }
+}
+
+function send(payload: GatewayEvent) {
+  if (socket.value?.readyState === WebSocket.OPEN) {
+    socket.value.send(JSON.stringify(payload))
+  }
+}
+
+export function useGateway() {
+  function connect(token: string) {
+    if (socket.value && socket.value.readyState <= WebSocket.OPEN) {
+      return
+    }
+
+    status.value = 'connecting'
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    socket.value = new WebSocket(`${protocol}://${window.location.host}/gateway`)
+
+    socket.value.addEventListener('message', (event) => {
+      const payload = JSON.parse(event.data) as GatewayEvent
+      if (payload.op === 10) {
+        const interval = Number(payload.d?.heartbeat_interval ?? 30000)
+        send({ op: 2, d: { token, os: navigator.platform, library: 'vue' } })
+        clearHeartbeat()
+        heartbeatTimer.value = window.setInterval(() => send({ op: 1 }), interval)
+      }
+      if (payload.t === 'READY') {
+        status.value = 'connected'
+      }
+    })
+
+    socket.value.addEventListener('close', () => {
+      clearHeartbeat()
+      status.value = 'disconnected'
+      socket.value = null
+    })
+  }
+
+  onBeforeUnmount(() => {
+    clearHeartbeat()
+    socket.value?.close()
+  })
+
+  return {
+    status,
+    statusLabel: computed(() => {
+      if (status.value === 'connected') return 'Gateway online'
+      if (status.value === 'connecting') return 'Connecting'
+      if (status.value === 'disconnected') return 'Gateway offline'
+      return 'Gateway idle'
+    }),
+    connect,
+  }
+}
+

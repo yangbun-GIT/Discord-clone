@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+.venv/
+venv/
 
 # Build outputs
 dist/
@@ -21,6 +23,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+*.tsbuildinfo
+
 # OS and editor files
 .DS_Store
 Thumbs.db
@@ -31,4 +41,3 @@ Thumbs.db
 .cache/
 .turbo/
 .parcel-cache/
-
