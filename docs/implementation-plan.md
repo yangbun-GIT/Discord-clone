@@ -2,12 +2,20 @@
 
 ## Stage 1: Foundation
 
+- Status: completed.
 - Create a FastAPI backend that boots without external infrastructure.
 - Add async database and Redis boundaries for Neon and Upstash integration.
 - Implement Snowflake ID generation, permission bitfields, JWT helpers, rate limiting,
   gateway opcodes, and WebSocket connection management.
 - Create a Vue 3 + Vite frontend app shell that resembles the Discord workspace flow.
 - Add local development scripts, environment examples, and tests.
+
+## Documentation Maintenance
+
+- Future work must start by reading `PROJECT_CONTEXT.md`, this plan, and `AGENTS.md`.
+- Meaningful implementation changes must update `PROJECT_CONTEXT.md`.
+- Stage progress changes must update this file.
+- Completed stages should be committed and pushed to `origin/main`.
 
 ## Stage 2: Persistence and Auth
 
@@ -34,4 +42,3 @@
 - Add Dockerfiles, Gunicorn/Uvicorn worker config, and environment documentation.
 - Prepare Oracle Cloud / GCP VM deployment notes.
 - Add production CORS, rate-limit, logging, and health-check guidance.
-

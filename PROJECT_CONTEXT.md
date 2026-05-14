@@ -1,0 +1,215 @@
+# Project Context
+
+This file is the first recovery point for future Codex/Cursor work. Read it before
+editing code, then update it whenever a meaningful implementation change lands.
+
+## Required Reading Order
+
+1. `AGENTS.md` for engineering rules and documentation maintenance rules.
+2. `PROJECT_CONTEXT.md` for the current implementation map and integration points.
+3. `docs/implementation-plan.md` for the staged roadmap.
+4. `README.md` for setup and verification commands.
+
+## Current Milestone
+
+Stage 1, fullstack foundation, is complete and pushed to GitHub.
+
+The app currently boots without Neon PostgreSQL or Upstash Redis credentials. It uses
+demo data while preserving the async infrastructure boundaries required by the SRS.
+
+## Repository Layout
+
+- `package.json`
+  - Root script entrypoint.
+  - Runs backend tests/lint through `.venv`.
+  - Runs frontend dev/lint/build through `frontend/package.json`.
+- `backend/`
+  - FastAPI ASGI backend.
+  - Python package is configured by `backend/pyproject.toml`.
+- `frontend/`
+  - Vue 3 + Vite client.
+  - TypeScript, Pinia, Vue Router, Oxlint, and lucide icons are configured here.
+- `docs/`
+  - Long-lived project planning documents.
+- `.env.example`
+  - Non-secret environment variable template.
+  - Real `.env` files must stay untracked.
+
+## Backend Map
+
+- `backend/app/main.py`
+  - Defines `create_app()`.
+  - Registers CORS, local token-bucket rate limiting, REST routes, and WebSocket routes.
+  - Lifespan startup connects optional database and Redis pools.
+- `backend/app/core/config.py`
+  - Pydantic settings.
+  - Reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `CORS_ORIGINS`, and runtime settings.
+- `backend/app/core/security.py`
+  - Password hashing helpers using bcrypt.
+  - JWT creation and decoding using PyJWT.
+- `backend/app/core/rate_limit.py`
+  - In-memory token bucket middleware for local Stage 1 protection.
+  - Intended to be replaced or backed by Redis during realtime/distributed stages.
+- `backend/app/core/sanitize.py`
+  - Sanitizes message payloads by removing script blocks, inline event handlers, and
+    `javascript:` URLs, then escaping HTML.
+- `backend/app/db/pool.py`
+  - Optional asyncpg connection pool wrapper.
+  - No pool is created when `DATABASE_URL` is empty, so local demo mode can boot.
+- `backend/app/db/schema.sql`
+  - Initial PostgreSQL schema for users, guilds, channels, messages, roles, guild
+    members, and member roles.
+- `backend/app/domain/snowflake.py`
+  - JavaScript-safe Snowflake ID generator.
+  - Uses a custom 2026 epoch and 53-bit-safe layout.
+- `backend/app/domain/permissions.py`
+  - Discord-style bitfield permissions.
+  - `merge_permissions()` ORs permission values.
+  - `has_permission()` treats `ADMINISTRATOR` as all permissions.
+- `backend/app/gateway/opcodes.py`
+  - Gateway opcode enum: Dispatch, Heartbeat, Identify, Voice State, Guild Members,
+    Hello, and Heartbeat ACK.
+- `backend/app/gateway/events.py`
+  - Pydantic gateway event and identify payload schemas.
+- `backend/app/gateway/manager.py`
+  - In-memory WebSocket connection registry.
+  - Tracks user identity, sequence, heartbeat timestamp, and subscribed channel IDs.
+  - Contains zombie-connection reaping helper.
+- `backend/app/gateway/router.py`
+  - `/gateway` WebSocket endpoint.
+  - Sends Hello, accepts Identify, validates JWT, sends Ready, handles Heartbeat ACK,
+    Request Guild Members, and Update Voice State placeholders.
+- `backend/app/realtime/redis_bus.py`
+  - Optional Redis asyncio client wrapper.
+  - Connects only when `REDIS_URL` is configured.
+- `backend/app/api/routes/health.py`
+  - `/api/health` reports service status and whether DB/Redis are configured/connected.
+- `backend/app/api/routes/dev.py`
+  - `/api/dev/session` creates a local development JWT and user payload.
+  - Only intended for local/dev/test environments.
+- `backend/app/api/routes/guilds.py`
+  - `/api/guilds/me` returns demo guild data for the Stage 1 frontend shell.
+- `backend/app/api/routes/meta.py`
+  - `/api/meta/permissions` exposes permission names and integer values.
+- `backend/app/demo/data.py`
+  - Local guild/channel/member/message data used before persistence is wired.
+- `backend/app/schemas/`
+  - Pydantic API schemas for auth, guilds, and messages.
+- `backend/tests/`
+  - Unit tests for permissions, Snowflake IDs, and message schema sanitization.
+
+## Frontend Map
+
+- `frontend/vite.config.ts`
+  - Vite Vue config.
+  - Proxies `/api` to `http://127.0.0.1:8000`.
+  - Proxies `/gateway` WebSocket traffic to `ws://127.0.0.1:8000`.
+- `frontend/src/main.ts`
+  - Creates Vue app, Pinia, and Vue Router.
+- `frontend/src/App.vue`
+  - Main Discord-like workspace screen.
+  - Composes server rail, channel sidebar, chat view, member list, and voice panel.
+  - Starts local dev session, loads guild data, then connects the gateway.
+- `frontend/src/services/api.ts`
+  - Small fetch wrapper for GET and POST calls.
+- `frontend/src/stores/session.ts`
+  - Pinia session store.
+  - Calls `/api/dev/session` and stores JWT plus current user.
+- `frontend/src/stores/guilds.ts`
+  - Pinia guild store.
+  - Uses `shallowRef` for guild data as required by the SRS performance guidance.
+  - Loads `/api/guilds/me`.
+  - Tracks active guild, active channel, active messages, voice channel, and voice
+    connection UI state.
+  - Uses `document.startViewTransition()` when available for channel switching.
+- `frontend/src/composables/useGateway.ts`
+  - Browser WebSocket gateway client.
+  - On Hello opcode 10, sends Identify opcode 2 and starts heartbeat opcode 1.
+  - Shows connected state after Ready dispatch.
+- `frontend/src/components/ServerRail.vue`
+  - Server icon rail and create-server icon button placeholder.
+- `frontend/src/components/ChannelSidebar.vue`
+  - Text and voice channel lists.
+- `frontend/src/components/ChatView.vue`
+  - Message list and composer UI placeholder.
+- `frontend/src/components/MemberList.vue`
+  - Member presence list.
+- `frontend/src/components/VoicePanel.vue`
+  - Voice connection toggle UI placeholder.
+- `frontend/src/styles/base.css`
+  - App layout, accessible focus styles, responsive behavior, and View Transitions rule.
+- `frontend/src/types.ts`
+  - Shared frontend types matching the current backend demo API shape.
+
+## Current Integrations
+
+- Frontend startup flow:
+  - `App.vue` calls `session.ensureDevSession()`.
+  - `session.ts` POSTs to `/api/dev/session`.
+  - `App.vue` calls `guilds.loadGuilds()`.
+  - `guilds.ts` GETs `/api/guilds/me`.
+  - `App.vue` calls `useGateway().connect(token)`.
+- Gateway flow:
+  - Server accepts `/gateway`.
+  - Server sends Hello: `{ op: 10, d: { heartbeat_interval } }`.
+  - Client sends Identify: `{ op: 2, d: { token, os, library } }`.
+  - Server validates JWT and sends Ready dispatch: `{ op: 0, t: "READY" }`.
+  - Client sends Heartbeat: `{ op: 1 }`.
+  - Server replies Heartbeat ACK: `{ op: 11 }`.
+- External services:
+  - `DATABASE_URL` will point to Neon PostgreSQL.
+  - `REDIS_URL` will point to Upstash Redis.
+  - Both are optional in the current local shell.
+
+## Verification Commands
+
+Run these from the repository root unless noted otherwise:
+
+```powershell
+npm run test:backend
+npm run lint:backend
+npm run lint:frontend
+npm --prefix frontend run build
+```
+
+Local servers:
+
+```powershell
+npm run dev:backend
+npm run dev:frontend
+```
+
+Expected local URLs:
+
+- Frontend: `http://127.0.0.1:5173`
+- Backend health: `http://127.0.0.1:8000/api/health`
+
+## Known Decisions And Constraints
+
+- The SRS says Pydantic v3, but the current PyPI line is Pydantic v2. The backend
+  pins Pydantic v2 and isolates schema code for a future upgrade.
+- The Stage 1 app intentionally uses demo data instead of persistence.
+- `node_modules/`, `.venv/`, `dist/`, `*.egg-info/`, and `*.tsbuildinfo` are ignored
+  and must not be committed.
+- Real secrets belong in `.env`, not in Git.
+- UI should remain the actual app surface, not a landing page or feature explainer.
+
+## Next Work
+
+Stage 2 should wire persistence and authentication:
+
+- Add a migration workflow around `backend/app/db/schema.sql`.
+- Add repositories for users, guilds, channels, roles, members, and messages.
+- Implement registration and login APIs using bcrypt and JWT.
+- Add auth dependencies for protected REST routes.
+- Replace `/api/guilds/me` demo data with database-backed membership queries.
+- Update Pinia stores to handle loading, empty, and error states from real APIs.
+- Add tests for auth, repositories, and route permissions.
+
+After each stage or meaningful feature:
+
+- Update this file's implementation map and integration notes.
+- Update `docs/implementation-plan.md` stage status.
+- Run relevant verification commands.
+- Commit and push to `origin/main` unless the user asks otherwise.
+
