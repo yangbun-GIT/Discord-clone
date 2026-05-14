@@ -1,4 +1,20 @@
 services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: discord
+      POSTGRES_PASSWORD: discord
+      POSTGRES_DB: discord_clone
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U discord -d discord_clone"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -7,7 +23,7 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-local}
       JWT_SECRET: ${JWT_SECRET:-change-this-local-secret-32-bytes-min}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
-      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://discord:discord@postgres:5432/discord_clone}
       REDIS_URL: ${REDIS_URL:-}
     ports:
       - "8000:8000"
@@ -24,6 +40,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -42,3 +61,4 @@ services:
 
 volumes:
   frontend_node_modules:
+  postgres_data:

@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
-from app.demo.store import demo_store
 from app.schemas.auth import UserPublic
 from app.schemas.guild import MessageRead
 from app.schemas.message import MessageCreate
+from app.services.guild_service import create_message
 
 router = APIRouter()
 
@@ -28,10 +28,9 @@ async def create_channel_message(
         )
 
     try:
-        return demo_store.create_message(
+        return await create_message(
             channel_id=channel_id,
-            author_id=current_user.id,
-            author_name=current_user.username,
+            author=current_user,
             content=payload.content,
         )
     except KeyError as exc:

@@ -12,12 +12,15 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Current Milestone
 
-Stage 2 has started. Stage 1 and the Docker development baseline are complete and
-pushed to GitHub.
+Stage 2 is in progress. Stage 1, the Docker development baseline, and the first
+PostgreSQL persistence bridge are complete and pushed to GitHub.
 
-The app currently boots without Neon PostgreSQL or Upstash Redis credentials. It uses
-a process-local demo store while preserving the async infrastructure boundaries
-required by the SRS.
+The app boots in two local modes:
+
+- Docker Compose mode provisions local PostgreSQL and persists created text channels
+  and messages in the `postgres_data` Docker volume.
+- Native mode without `DATABASE_URL` still falls back to the process-local demo store
+  while preserving async infrastructure boundaries required by the SRS.
 
 ## Repository Layout
 
@@ -27,9 +30,11 @@ required by the SRS.
   - Runs frontend dev/lint/build through `frontend/package.json`.
   - Runs Docker Compose through `docker:up`, `docker:down`, and `docker:logs`.
 - `compose.yaml`
-  - Docker Compose development stack for backend and frontend.
-  - Uses external Neon/Upstash URLs from environment variables when provided.
-  - Boots in demo mode when those URLs are empty.
+  - Docker Compose development stack for PostgreSQL, backend, and frontend.
+  - Uses external `DATABASE_URL` when provided; otherwise supplies a local PostgreSQL
+    URL pointing at the `postgres` service.
+  - Uses external `REDIS_URL` when provided; Redis remains optional and empty by
+    default.
 - `backend/`
   - FastAPI ASGI backend.
   - Python package is configured by `backend/pyproject.toml`.
@@ -69,9 +74,13 @@ required by the SRS.
 - `backend/app/db/pool.py`
   - Optional asyncpg connection pool wrapper.
   - No pool is created when `DATABASE_URL` is empty, so local demo mode can boot.
+  - Runs `backend/app/db/schema.sql` through `migrate()` when a database pool exists.
 - `backend/app/db/schema.sql`
   - Initial PostgreSQL schema for users, guilds, channels, messages, roles, guild
     members, and member roles.
+- `backend/app/db/seed.py`
+  - Seeds the initial SRS demo guild, channels, members, and messages into PostgreSQL.
+  - Uses idempotent inserts and skips guilds that already exist.
 - `backend/app/domain/snowflake.py`
   - JavaScript-safe Snowflake ID generator.
   - Uses a custom 2026 epoch and 53-bit-safe layout.
@@ -102,12 +111,13 @@ required by the SRS.
   - `/api/dev/session` creates a local development JWT and user payload.
   - Only intended for local/dev/test environments.
 - `backend/app/api/routes/guilds.py`
-  - `/api/guilds/me` returns demo guild data for the frontend shell.
-  - `POST /api/guilds/{guild_id}/channels` creates text or voice channels in the
-    process-local demo store.
+  - `/api/guilds/me` returns PostgreSQL-backed guild data when connected, otherwise
+    demo guild data for the frontend shell.
+  - `POST /api/guilds/{guild_id}/channels` creates text or voice channels through
+    the guild service.
 - `backend/app/api/routes/channels.py`
-  - `POST /api/channels/{channel_id}/messages` creates sanitized messages in the
-    process-local demo store.
+  - `POST /api/channels/{channel_id}/messages` creates sanitized messages through
+    the guild service.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
 - `backend/app/demo/data.py`
@@ -115,7 +125,15 @@ required by the SRS.
 - `backend/app/demo/store.py`
   - Process-local mutable demo store.
   - Creates channels and messages with Snowflake IDs.
-  - This is the temporary boundary that should be replaced by PostgreSQL repositories.
+  - Still used only when no database pool is configured.
+- `backend/app/repositories/guilds.py`
+  - PostgreSQL repository for guild membership reads, channel creation, and message
+    creation.
+  - Converts asyncpg rows into `GuildRead`, `ChannelRead`, `MemberRead`, and
+    `MessageRead` schemas.
+- `backend/app/services/guild_service.py`
+  - Runtime switch between PostgreSQL repositories and the process-local demo store.
+  - Keeps route handlers independent from the current persistence mode.
 - `backend/app/schemas/`
   - Pydantic API schemas for auth, guilds, and messages.
 - `backend/tests/`
@@ -192,13 +210,15 @@ required by the SRS.
 - Message send flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
-  - Backend validates JWT, sanitizes content, appends to `demo_store`, and returns the
+  - Backend validates JWT, sanitizes content, persists through PostgreSQL when
+    connected or appends to `demo_store` in native fallback mode, then returns the
     created message.
   - `guilds.ts` immutably appends the returned message to the active guild state.
 - Channel creation flow:
   - `ChannelSidebar.vue` opens an inline channel-name form from the plus icon.
   - `guilds.ts` POSTs to `/api/guilds/{guild_id}/channels` with bearer token.
-  - Backend validates JWT, appends to `demo_store`, and returns the created channel.
+  - Backend validates JWT, persists through PostgreSQL when connected or appends to
+    `demo_store` in native fallback mode, then returns the created channel.
   - `guilds.ts` immutably appends the returned channel and selects it.
 - Gateway flow:
   - Server accepts `/gateway`.
@@ -209,13 +229,17 @@ required by the SRS.
   - Server replies Heartbeat ACK: `{ op: 11 }`.
 - External services:
   - `DATABASE_URL` will point to Neon PostgreSQL.
+  - Docker Compose sets `DATABASE_URL` to local PostgreSQL by default.
   - `REDIS_URL` will point to Upstash Redis.
-  - Both are optional in the current local shell.
+  - Native local shell can leave both empty and use the demo-store fallback.
 - Docker development flow:
-  - `npm run docker:up` builds and starts `backend` plus `frontend`.
+  - `npm run docker:up` builds and starts `postgres`, `backend`, and `frontend`.
+  - Backend startup connects PostgreSQL, runs `schema.sql`, then seeds demo data.
   - Frontend container proxies API/WebSocket traffic to `backend:8000` inside the
     Compose network.
   - Host browser still uses `http://127.0.0.1:5173`.
+  - `npm run docker:down` stops containers while preserving `postgres_data`.
+  - Use `docker compose down -v` only when resetting local PostgreSQL data is intended.
 
 ## Verification Commands
 
@@ -252,9 +276,12 @@ npm run docker:down
 
 - The SRS says Pydantic v3, but the current PyPI line is Pydantic v2. The backend
   pins Pydantic v2 and isolates schema code for a future upgrade.
-- The app currently uses a process-local demo store instead of database persistence.
-  Created messages/channels survive page reloads while the backend process is alive,
-  but are reset when the backend container/process restarts.
+- In Docker Compose mode, text channels and messages persist across backend restarts
+  through local PostgreSQL. In native mode without `DATABASE_URL`, created
+  messages/channels survive page reloads while the backend process is alive but reset
+  when that process restarts.
+- Channel creation currently accepts ASCII slug names only, matching Discord-style
+  channel names and avoiding inconsistent Unicode slug handling.
 - `node_modules/`, `.venv/`, `dist/`, `*.egg-info/`, and `*.tsbuildinfo` are ignored
   and must not be committed.
 - Real secrets belong in `.env`, not in Git.
@@ -265,13 +292,14 @@ npm run docker:down
 
 ## Next Work
 
-Stage 2 should wire persistence and authentication:
+Stage 2 should continue wiring persistence and authentication:
 
-- Add a migration workflow around `backend/app/db/schema.sql`.
-- Add repositories for users, guilds, channels, roles, members, and messages.
+- Add explicit migration versioning around `backend/app/db/schema.sql`.
+- Expand repositories for users, roles, member roles, and permission checks.
 - Implement registration and login APIs using bcrypt and JWT.
 - Add auth dependencies for protected REST routes.
-- Replace `/api/guilds/me` demo data with database-backed membership queries.
+- Make `/api/guilds/me` use the authenticated user instead of the current dev user
+  fallback in PostgreSQL mode.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
 - Add tests for auth, repositories, and route permissions.
 
@@ -281,6 +309,10 @@ Completed Stage 2 bridge work:
 - Added bearer-token protected channel creation API.
 - Connected frontend message composer to the backend.
 - Connected frontend text-channel creation form to the backend.
+- Added Docker PostgreSQL service with persistent `postgres_data` volume.
+- Added startup schema migration and idempotent seed data loading.
+- Added a guild service/repository layer that uses PostgreSQL when connected and
+  falls back to `demo_store` otherwise.
 
 After each stage or meaningful feature:
 

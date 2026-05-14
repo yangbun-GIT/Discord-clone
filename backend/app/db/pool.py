@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 import asyncpg
@@ -42,6 +44,17 @@ class Database:
         async with self._pool.acquire() as connection:
             return await connection.execute(query, *args)
 
+    async def execute_script(self, query: str) -> None:
+        if self._pool is None:
+            raise RuntimeError("database pool is not configured")
+        async with self._pool.acquire() as connection:
+            await connection.execute(query)
+
+    async def migrate(self) -> None:
+        schema_path = Path(__file__).with_name("schema.sql")
+        schema = await asyncio.to_thread(schema_path.read_text, encoding="utf-8")
+        await self.execute_script(schema)
+
     async def transaction(self) -> Any:
         if self._pool is None:
             raise RuntimeError("database pool is not configured")
@@ -50,4 +63,3 @@ class Database:
 
 
 database = Database()
-

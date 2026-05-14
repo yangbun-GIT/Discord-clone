@@ -8,6 +8,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.rate_limit import RateLimitMiddleware
 from app.db.pool import database
+from app.db.seed import seed_database
 from app.gateway.router import gateway_router
 from app.realtime.redis_bus import redis_bus
 
@@ -16,6 +17,9 @@ from app.realtime.redis_bus import redis_bus
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     await database.connect(settings.database_url)
+    if database.is_connected:
+        await database.migrate()
+        await seed_database()
     await redis_bus.connect(settings.redis_url)
     yield
     await redis_bus.disconnect()

@@ -31,10 +31,17 @@
 - Status: in progress.
 - Bridge completed: protected message creation and channel creation APIs are wired to
   the frontend through the process-local demo store.
-- Add asyncpg repositories and migrations for users, guilds, channels, roles, members,
-  and messages.
+- Persistence bridge completed: Docker Compose provisions local PostgreSQL, backend
+  startup runs the initial schema, and demo guild data is seeded idempotently.
+- Guild membership reads, channel creation, and message creation now use an asyncpg
+  repository when a database is connected, with demo-store fallback for native local
+  runs without `DATABASE_URL`.
+- Next persistence work: add explicit migration versioning and expand repositories
+  for users, roles, member roles, and permission checks.
 - Implement registration, login, JWT-protected REST APIs, and guild membership queries.
-- Replace frontend demo data with API-backed state.
+- Replace the remaining dev-user fallback in `/api/guilds/me` with authenticated
+  membership queries.
+- Add API/store error and empty states.
 
 ## Stage 3: Realtime Messaging
 

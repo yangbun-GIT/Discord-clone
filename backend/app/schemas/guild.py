@@ -13,7 +13,7 @@ class ChannelCreate(BaseModel):
     name: str = Field(
         min_length=1,
         max_length=100,
-        pattern=r"^[a-zA-Z0-9가-힣][a-zA-Z0-9가-힣_-]*$",
+        pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
     )
     type: int = Field(default=0, ge=0, le=1)
 
