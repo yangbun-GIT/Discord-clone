@@ -100,6 +100,11 @@
 - ICE server config is exposed by `/api/meta/voice` from `WEBRTC_ICE_SERVERS_JSON`.
 - VAD scaffold completed: local microphone frequency sampling feeds a speaking flag
   in the voice panel.
+- Call quality controls completed: microphone mute toggles local audio tracks and the
+  voice panel shows an input-level meter.
+- Screen sharing completed: frontend captures display video with `getDisplayMedia`,
+  adds/removes screen video senders on active peers, renegotiates offers, and renders
+  remote screen-share video tiles with connection state.
 - Remaining manual QA: configure a real TURN provider such as Open Relay or Metered
   Video and verify two browsers across deployed/NAT networks.
 

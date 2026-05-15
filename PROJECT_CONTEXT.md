@@ -285,8 +285,9 @@ The app boots in two local modes:
     app store.
   - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
 - `frontend/src/composables/useVoiceRtc.ts`
-  - Owns browser microphone capture, `RTCPeerConnection` lifecycle, local VAD
-    sampling, offer/answer/ICE handling, remote stream tracking, and cleanup.
+  - Owns browser microphone capture, screen capture, `RTCPeerConnection` lifecycle,
+    local VAD/input-level sampling, mute state, offer/answer/ICE handling, remote
+    stream tracking, screen-share renegotiation, and cleanup.
 - `frontend/src/components/ServerRail.vue`
   - Server icon rail and create-server icon button placeholder.
 - `frontend/src/components/ChannelSidebar.vue`
@@ -305,9 +306,12 @@ The app boots in two local modes:
   - Exposes member refresh and non-owner member removal controls.
 - `frontend/src/components/VoicePanel.vue`
   - Voice connection toggle UI.
-  - Shows voice participant count and whether gateway signaling is ready.
+  - Shows voice participant count, gateway signaling readiness, local speaking state,
+    microphone input level, mute control, and screen-share control.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Binds remote `MediaStream` instances to hidden autoplay audio elements.
+- `frontend/src/components/VoiceVideoSink.vue`
+  - Binds remote screen-share video streams to floating video preview tiles.
 - `frontend/src/styles/base.css`
   - App layout, accessible focus styles, responsive behavior, and View Transitions rule.
 - `frontend/src/types.ts`
@@ -420,8 +424,12 @@ The app boots in two local modes:
     offers from the lower user ID to avoid glare, applies answers and ICE candidates,
     renders remote audio through `VoiceAudioSink`, and tears down tracks/connections on
     disconnect.
-  - Local VAD currently samples microphone frequency data and exposes a speaking flag
-    in `VoicePanel`; it is scaffolding for richer voice activity UX.
+  - Mute toggles local audio track enabled state without leaving the voice channel.
+  - Screen sharing uses `getDisplayMedia()`, adds/removes a video sender on each
+    active peer connection, renegotiates offers, and renders remote screen streams
+    through `VoiceVideoSink`.
+  - Local VAD samples microphone frequency data and exposes both a speaking flag and
+    input-level meter in `VoicePanel`.
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
@@ -515,6 +523,7 @@ npm run docker:down
 Next implementation stage:
 
 - Run multi-browser manual voice QA with a real TURN provider configured.
+- Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
 
 Completed Stage 2 bridge work:
@@ -565,6 +574,9 @@ Completed Stage 2 bridge work:
 - Added browser WebRTC voice implementation: ICE config API, microphone capture,
   peer-connection lifecycle, offer/answer/ICE handling, remote audio sinks, cleanup,
   and local VAD scaffold.
+- Added call quality and screen-share expansion: microphone mute, input-level meter,
+  screen capture, peer renegotiation for screen video tracks, remote screen preview,
+  and connection-state display on screen-share tiles.
 - Added deployment notes and switched backend runtime Docker image to Gunicorn with
   Uvicorn workers.
 

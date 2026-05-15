@@ -10,6 +10,7 @@ import MemberList from './components/MemberList.vue'
 import ServerRail from './components/ServerRail.vue'
 import VoiceAudioSink from './components/VoiceAudioSink.vue'
 import VoicePanel from './components/VoicePanel.vue'
+import VoiceVideoSink from './components/VoiceVideoSink.vue'
 import { useGateway } from './composables/useGateway'
 import { useVoiceRtc } from './composables/useVoiceRtc'
 import { useGuildStore } from './stores/guilds'
@@ -31,6 +32,9 @@ const voiceRtc = useVoiceRtc()
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
 const activeMessages = computed(() => guilds.activeMessages)
+const remoteScreenStreams = computed(() =>
+  voiceRtc.remoteStreams.value.filter((remote) => remote.sharingScreen),
+)
 const workspaceTitle = computed(() => {
   if (!activeGuild.value) return 'No servers'
   return activeChannel.value?.name ?? 'loading'
@@ -224,6 +228,17 @@ async function handleToggleVoice() {
     channel_id: nextConnected ? guilds.voiceChannel.id : null,
     self_mute: false,
     self_deaf: false,
+  })
+}
+
+function handleToggleMute() {
+  voiceRtc.toggleMute()
+}
+
+function handleToggleScreenShare() {
+  workspaceError.value = null
+  void voiceRtc.toggleScreenShare().catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Screen sharing failed'
   })
 }
 
@@ -454,9 +469,23 @@ async function handleCreateInvite() {
       :participants="guilds.activeVoiceStates"
       :signaling-ready="gatewayStatus === 'connected'"
       :local-speaking="voiceRtc.localSpeaking.value"
+      :input-level="voiceRtc.inputLevel.value"
+      :muted="voiceRtc.isMuted.value"
+      :screen-sharing="voiceRtc.isScreenSharing.value"
       :error="voiceRtc.error.value"
       @toggle="handleToggleVoice"
+      @toggle-mute="handleToggleMute"
+      @toggle-screen="handleToggleScreenShare"
     />
+    <div v-if="remoteScreenStreams.length" class="screen-share-stage" aria-label="Screen shares">
+      <VoiceVideoSink
+        v-for="remote in remoteScreenStreams"
+        :key="remote.userId"
+        :stream="remote.stream"
+        :label="remote.username ? `${remote.username}'s screen` : `User ${remote.userId}'s screen`"
+        :state="remote.connectionState"
+      />
+    </div>
     <div class="voice-audio-sinks" aria-hidden="true">
       <VoiceAudioSink
         v-for="remote in voiceRtc.remoteStreams.value"

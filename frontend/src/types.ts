@@ -92,4 +92,6 @@ export type RemoteVoiceStream = {
   username: string | null
   stream: MediaStream
   speaking: boolean
+  sharingScreen: boolean
+  connectionState: RTCPeerConnectionState
 }

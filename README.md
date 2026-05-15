@@ -93,6 +93,9 @@ process and reset when that process restarts.
 WebRTC voice uses `WEBRTC_ICE_SERVERS_JSON` from the backend environment. The default
 STUN server is enough for local development; deployed voice should use a TURN provider
 such as Open Relay or Metered Video.
+Voice controls support microphone mute, input-level feedback, and screen sharing.
+Screen sharing uses the browser display-capture permission prompt and works only while
+connected to a voice channel.
 
 Deployment notes are maintained in `docs/deployment.md`.
 

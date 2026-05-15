@@ -22,12 +22,17 @@ type PeerEntry = {
   connection: RTCPeerConnection
   username: string | null
   stream: MediaStream
+  screenSender: RTCRtpSender | null
 }
 
 const localStream = shallowRef<MediaStream | null>(null)
+const screenStream = shallowRef<MediaStream | null>(null)
 const remoteStreams = shallowRef<RemoteVoiceStream[]>([])
 const isCapturing = ref(false)
+const isMuted = ref(false)
+const isScreenSharing = ref(false)
 const localSpeaking = ref(false)
+const inputLevel = ref(0)
 const error = ref<string | null>(null)
 const peers = new Map<number, PeerEntry>()
 let activeOptions: ConnectOptions | null = null
@@ -47,6 +52,10 @@ function replaceRemoteStream(userId: number, patch: Partial<RemoteVoiceStream>) 
   remoteStreams.value = remoteStreams.value.map((remote) =>
     remote.userId === userId ? { ...remote, ...patch } : remote,
   )
+}
+
+function screenTrackIsActive(stream: MediaStream) {
+  return stream.getVideoTracks().some((track) => track.readyState === 'live')
 }
 
 function removeRemoteStream(userId: number) {
@@ -73,6 +82,7 @@ function startVadLoop() {
     if (!localAnalyser) return
     localAnalyser.getByteFrequencyData(data)
     const average = data.reduce((total, value) => total + value, 0) / data.length
+    inputLevel.value = Math.round(Math.min(100, (average / 90) * 100))
     localSpeaking.value = average > 18
   }, 180)
 }
@@ -83,6 +93,7 @@ function stopVadLoop() {
     vadTimer = null
   }
   localSpeaking.value = false
+  inputLevel.value = 0
   localAnalyser = null
 }
 
@@ -98,6 +109,11 @@ function ensurePeer(userId: number, username: string | null) {
   localStream.value.getTracks().forEach((track) => {
     connection.addTrack(track, localStream.value as MediaStream)
   })
+  const screenTrack = screenStream.value?.getVideoTracks()[0]
+  let screenSender: RTCRtpSender | null = null
+  if (screenTrack && screenTrack.readyState === 'live') {
+    screenSender = connection.addTrack(screenTrack, screenStream.value as MediaStream)
+  }
 
   connection.addEventListener('icecandidate', (event) => {
     if (!event.candidate || !activeOptions) return
@@ -111,19 +127,31 @@ function ensurePeer(userId: number, username: string | null) {
   connection.addEventListener('track', (event) => {
     stream.addTrack(event.track)
     const current = remoteStreams.value.find((remote) => remote.userId === userId)
+    const sharingScreen = screenTrackIsActive(stream)
     if (current) {
-      replaceRemoteStream(userId, { stream })
+      replaceRemoteStream(userId, { stream, sharingScreen })
       return
     }
-    remoteStreams.value = [...remoteStreams.value, { userId, username, stream, speaking: false }]
+    remoteStreams.value = [
+      ...remoteStreams.value,
+      {
+        userId,
+        username,
+        stream,
+        speaking: false,
+        sharingScreen,
+        connectionState: connection.connectionState,
+      },
+    ]
   })
   connection.addEventListener('connectionstatechange', () => {
+    replaceRemoteStream(userId, { connectionState: connection.connectionState })
     if (['closed', 'disconnected', 'failed'].includes(connection.connectionState)) {
       removeRemoteStream(userId)
     }
   })
 
-  const entry = { connection, username, stream }
+  const entry = { connection, username, stream, screenSender }
   peers.set(userId, entry)
   return entry
 }
@@ -140,6 +168,24 @@ async function createOfferFor(userId: number, username: string | null) {
     type: 'offer',
     description: { type: offer.type, sdp: offer.sdp ?? '' },
   })
+}
+
+async function renegotiatePeer(userId: number, peer: PeerEntry) {
+  if (!activeOptions || peer.connection.signalingState !== 'stable') return
+  const offer = await peer.connection.createOffer()
+  await peer.connection.setLocalDescription(offer)
+  activeOptions.sendSignal({
+    channel_id: activeOptions.channelId,
+    target_user_id: userId,
+    type: 'offer',
+    description: { type: offer.type, sdp: offer.sdp ?? '' },
+  })
+}
+
+async function renegotiateAllPeers() {
+  await Promise.all(
+    [...peers.entries()].map(([userId, peer]) => renegotiatePeer(userId, peer)),
+  )
 }
 
 function participantPeers(participants: VoiceState[], currentUserId: number) {
@@ -168,6 +214,7 @@ export function useVoiceRtc() {
         startVadLoop()
       }
       isCapturing.value = true
+      setMuted(isMuted.value)
       await syncParticipants(options.participants)
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : 'Voice capture failed'
@@ -183,11 +230,83 @@ export function useVoiceRtc() {
     })
     peers.clear()
     localStream.value?.getTracks().forEach((track) => track.stop())
+    screenStream.value?.getTracks().forEach((track) => track.stop())
     localStream.value = null
+    screenStream.value = null
     remoteStreams.value = []
     isCapturing.value = false
+    isMuted.value = false
+    isScreenSharing.value = false
     activeOptions = null
     stopVadLoop()
+    void audioContext?.close()
+    audioContext = null
+  }
+
+  function setMuted(muted: boolean) {
+    isMuted.value = muted
+    localStream.value?.getAudioTracks().forEach((track) => {
+      track.enabled = !muted
+    })
+  }
+
+  function toggleMute() {
+    setMuted(!isMuted.value)
+  }
+
+  async function startScreenShare() {
+    if (!activeOptions || !localStream.value) {
+      throw new Error('voice is not connected')
+    }
+    error.value = null
+    try {
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          frameRate: { ideal: 15, max: 30 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      })
+      screenStream.value = displayStream
+      isScreenSharing.value = true
+      const [track] = displayStream.getVideoTracks()
+      track.addEventListener('ended', () => {
+        void stopScreenShare()
+      })
+      for (const peer of peers.values()) {
+        if (peer.screenSender) {
+          await peer.screenSender.replaceTrack(track)
+        } else {
+          peer.screenSender = peer.connection.addTrack(track, displayStream)
+        }
+      }
+      await renegotiateAllPeers()
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : 'Screen sharing failed'
+      throw cause
+    }
+  }
+
+  async function stopScreenShare() {
+    const previousStream = screenStream.value
+    screenStream.value = null
+    isScreenSharing.value = false
+    previousStream?.getTracks().forEach((track) => track.stop())
+    for (const peer of peers.values()) {
+      if (!peer.screenSender) continue
+      peer.connection.removeTrack(peer.screenSender)
+      peer.screenSender = null
+    }
+    await renegotiateAllPeers()
+  }
+
+  async function toggleScreenShare() {
+    if (isScreenSharing.value) {
+      await stopScreenShare()
+      return
+    }
+    await startScreenShare()
   }
 
   async function syncParticipants(participants: VoiceState[]) {
@@ -238,12 +357,18 @@ export function useVoiceRtc() {
 
   return {
     localStream,
+    screenStream,
     remoteStreams,
     isCapturing,
+    isMuted,
+    isScreenSharing,
     localSpeaking,
+    inputLevel,
     error,
     connect,
     disconnect,
+    toggleMute,
+    toggleScreenShare,
     syncParticipants,
     handleSignal,
   }
