@@ -11,6 +11,21 @@ type GatewayEvent = {
 
 type GatewayDispatchHandler = (event: string, data: Record<string, unknown>) => void
 
+type VoiceStatePayload = {
+  guild_id: number
+  channel_id: number | null
+  self_mute?: boolean
+  self_deaf?: boolean
+}
+
+type VoiceSignalPayload = {
+  channel_id: number
+  target_user_id: number
+  type: 'offer' | 'answer' | 'ice'
+  description?: Record<string, unknown> | null
+  candidate?: Record<string, unknown> | null
+}
+
 const socket = ref<WebSocket | null>(null)
 const status = ref<GatewayStatus>('idle')
 const heartbeatTimer = ref<number | null>(null)
@@ -71,6 +86,14 @@ export function useGateway() {
     dispatchHandler.value = null
   }
 
+  function updateVoiceState(payload: VoiceStatePayload) {
+    send({ op: 4, d: payload })
+  }
+
+  function sendVoiceSignal(payload: VoiceSignalPayload) {
+    send({ op: 5, d: payload })
+  }
+
   onBeforeUnmount(() => {
     disconnect()
   })
@@ -85,5 +108,7 @@ export function useGateway() {
     }),
     connect,
     disconnect,
+    updateVoiceState,
+    sendVoiceSignal,
   }
 }

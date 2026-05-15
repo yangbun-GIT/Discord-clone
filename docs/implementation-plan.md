@@ -85,9 +85,18 @@
 
 ## Stage 4: Voice Signaling
 
+- Status: in progress.
 - Add WebRTC signaling events for offers, answers, ICE candidates, and voice state.
+- First slice completed: gateway opcode 4 now broadcasts validated
+  `VOICE_STATE_UPDATE` events to voice-channel subscribers.
+- First slice completed: gateway opcode 5 now routes `offer`, `answer`, and `ice`
+  payloads to the target user when both peers are in the same voice channel.
+- First slice completed: frontend VoicePanel sends voice state updates, shows gateway
+  signaling readiness, and tracks voice presence/signaling state in Pinia.
 - Add Open Relay / Metered Video ICE server configuration.
 - Add frontend voice channel join controls and VAD scaffolding.
+- Remaining voice work: add browser media capture, RTCPeerConnection lifecycle, remote
+  audio rendering, ICE server environment config, and VAD scaffolding.
 
 ## Stage 5: Deployment
 

@@ -18,6 +18,7 @@ class ClientConnection:
     last_heartbeat_at: float = field(default_factory=time.monotonic)
     guild_ids: set[int] = field(default_factory=set)
     channel_ids: set[int] = field(default_factory=set)
+    voice_channel_id: int | None = None
 
     async def send(
         self,
@@ -94,6 +95,54 @@ class GatewayConnectionManager:
 
         for connection in stale:
             self.disconnect(connection)
+
+    async def broadcast_voice_state(
+        self,
+        *,
+        previous_channel_id: int | None,
+        channel_id: int | None,
+        data: dict[str, object],
+    ) -> None:
+        target_channel_ids = {
+            item
+            for item in (previous_channel_id, channel_id)
+            if item is not None
+        }
+        for target_channel_id in target_channel_ids:
+            await self.broadcast_channel(target_channel_id, "VOICE_STATE_UPDATE", data)
+
+    async def send_voice_signal(
+        self,
+        *,
+        channel_id: int,
+        target_user_id: int,
+        data: dict[str, object],
+    ) -> int:
+        sent = 0
+        stale: list[ClientConnection] = []
+        for connection in self._connections:
+            if connection.user_id != target_user_id:
+                continue
+            if connection.voice_channel_id != channel_id:
+                continue
+            try:
+                await connection.send(op=Opcode.DISPATCH, data=data, event="VOICE_SIGNAL")
+                sent += 1
+            except RuntimeError:
+                stale.append(connection)
+
+        for connection in stale:
+            self.disconnect(connection)
+        return sent
+
+    def update_voice_channel(
+        self,
+        connection: ClientConnection,
+        channel_id: int | None,
+    ) -> int | None:
+        previous_channel_id = connection.voice_channel_id
+        connection.voice_channel_id = channel_id
+        return previous_channel_id
 
     def add_channel_to_guild_subscribers(self, guild_id: int, channel_id: int) -> None:
         for connection in self._connections:

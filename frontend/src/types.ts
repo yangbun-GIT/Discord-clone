@@ -57,3 +57,22 @@ export type Invite = {
   guild_id: number
   created_by: number
 }
+
+export type VoiceState = {
+  guild_id: number
+  channel_id: number | null
+  user_id: number
+  username: string | null
+  self_mute: boolean
+  self_deaf: boolean
+}
+
+export type VoiceSignal = {
+  channel_id: number
+  from_user_id: number
+  from_username: string | null
+  target_user_id: number
+  type: 'offer' | 'answer' | 'ice'
+  description?: Record<string, unknown> | null
+  candidate?: Record<string, unknown> | null
+}

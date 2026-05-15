@@ -458,6 +458,85 @@ def test_role_create_fans_out_guild_update() -> None:
     assert any(role["name"] == "Live Role" for role in event["d"]["roles"])
 
 
+def test_voice_state_update_fans_out_to_channel_subscribers() -> None:
+    with TestClient(app) as client:
+        with (
+            client.websocket_connect("/gateway") as sender,
+            client.websocket_connect("/gateway") as receiver,
+        ):
+            sender.receive_json()
+            sender.send_json({"op": 2, "d": {"token": auth_token()}})
+            sender.receive_json()
+            receiver.receive_json()
+            receiver.send_json(
+                {
+                    "op": 2,
+                    "d": {"token": auth_token(user_id=43, username="codex")},
+                }
+            )
+            receiver.receive_json()
+
+            sender.send_json(
+                {
+                    "op": 4,
+                    "d": {"guild_id": 1001, "channel_id": 2003, "self_mute": False},
+                }
+            )
+            sender_event = sender.receive_json()
+            receiver_event = receiver.receive_json()
+
+    assert sender_event["t"] == "VOICE_STATE_UPDATE"
+    assert sender_event["d"]["channel_id"] == 2003
+    assert sender_event["d"]["user_id"] == 42
+    assert receiver_event == sender_event
+
+
+def test_voice_signal_routes_to_target_voice_peer() -> None:
+    with TestClient(app) as client:
+        with (
+            client.websocket_connect("/gateway") as sender,
+            client.websocket_connect("/gateway") as receiver,
+        ):
+            sender.receive_json()
+            sender.send_json({"op": 2, "d": {"token": auth_token()}})
+            sender.receive_json()
+            receiver.receive_json()
+            receiver.send_json(
+                {
+                    "op": 2,
+                    "d": {"token": auth_token(user_id=43, username="codex")},
+                }
+            )
+            receiver.receive_json()
+
+            sender.send_json({"op": 4, "d": {"guild_id": 1001, "channel_id": 2003}})
+            sender.receive_json()
+            receiver.receive_json()
+            receiver.send_json({"op": 4, "d": {"guild_id": 1001, "channel_id": 2003}})
+            sender.receive_json()
+            receiver.receive_json()
+
+            sender.send_json(
+                {
+                    "op": 5,
+                    "d": {
+                        "channel_id": 2003,
+                        "target_user_id": 43,
+                        "type": "offer",
+                        "description": {"type": "offer", "sdp": "fake-sdp"},
+                    },
+                }
+            )
+            signal_event = receiver.receive_json()
+
+    assert signal_event["t"] == "VOICE_SIGNAL"
+    assert signal_event["d"]["channel_id"] == 2003
+    assert signal_event["d"]["from_user_id"] == 42
+    assert signal_event["d"]["target_user_id"] == 43
+    assert signal_event["d"]["type"] == "offer"
+    assert signal_event["d"]["description"] == {"type": "offer", "sdp": "fake-sdp"}
+
+
 def test_create_message_requires_guild_membership() -> None:
     client = TestClient(app)
 

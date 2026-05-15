@@ -17,6 +17,7 @@ const guilds = useGuildStore()
 const {
   connect: connectGateway,
   disconnect: disconnectGateway,
+  updateVoiceState,
   status: gatewayStatus,
   statusLabel,
 } = useGateway()
@@ -172,6 +173,18 @@ function handleRemoveMember(memberId: number) {
   workspaceError.value = null
   void guilds.removeMember(session.token, memberId).catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : 'Member removal failed'
+  })
+}
+
+function handleToggleVoice() {
+  if (!activeGuild.value || !guilds.voiceChannel) return
+  const nextConnected = !guilds.voiceConnected
+  guilds.setVoiceConnected(nextConnected)
+  updateVoiceState({
+    guild_id: activeGuild.value.id,
+    channel_id: nextConnected ? guilds.voiceChannel.id : null,
+    self_mute: false,
+    self_deaf: false,
   })
 }
 
@@ -379,7 +392,9 @@ async function handleCreateInvite() {
     <VoicePanel
       :channel="guilds.voiceChannel"
       :connected="guilds.voiceConnected"
-      @toggle="guilds.toggleVoice"
+      :participants="guilds.activeVoiceStates"
+      :signaling-ready="gatewayStatus === 'connected'"
+      @toggle="handleToggleVoice"
     />
   </main>
 </template>

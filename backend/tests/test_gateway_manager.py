@@ -115,3 +115,27 @@ async def test_sync_guild_subscribers_removes_departed_members() -> None:
     assert 2001 in kept.channel_ids
     assert 1001 not in removed.guild_ids
     assert 2001 not in removed.channel_ids
+
+
+async def test_send_voice_signal_targets_voice_channel_member_only() -> None:
+    manager = GatewayConnectionManager()
+    target_websocket = FakeWebSocket()
+    other_websocket = FakeWebSocket()
+    target = await manager.connect(target_websocket)  # type: ignore[arg-type]
+    other = await manager.connect(other_websocket)  # type: ignore[arg-type]
+    target.user_id = 43
+    target.voice_channel_id = 2003
+    other.user_id = 43
+    other.voice_channel_id = 9001
+
+    sent = await manager.send_voice_signal(
+        channel_id=2003,
+        target_user_id=43,
+        data={"type": "offer"},
+    )
+
+    assert sent == 1
+    assert target_websocket.sent == [
+        {"op": int(Opcode.DISPATCH), "d": {"type": "offer"}, "s": 1, "t": "VOICE_SIGNAL"}
+    ]
+    assert other_websocket.sent == []

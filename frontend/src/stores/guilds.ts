@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
 import { apiDelete, apiGet, apiPatch, apiPost } from '../services/api'
-import type { Channel, Guild, Invite, Message, MessageDelete } from '../types'
+import type { Channel, Guild, Invite, Message, MessageDelete, VoiceSignal, VoiceState } from '../types'
 
 const ADMINISTRATOR_PERMISSION = 1 << 3
 const MANAGE_MESSAGES_PERMISSION = 1 << 13
@@ -12,6 +12,8 @@ export const useGuildStore = defineStore('guilds', () => {
   const activeGuildId = ref<number | null>(null)
   const activeChannelId = ref<number | null>(null)
   const voiceConnected = ref(false)
+  const voiceStates = shallowRef<VoiceState[]>([])
+  const lastVoiceSignal = ref<VoiceSignal | null>(null)
   const isLoading = ref(false)
   const isMutating = ref(false)
   const error = ref<string | null>(null)
@@ -25,6 +27,10 @@ export const useGuildStore = defineStore('guilds', () => {
     return activeGuild.value?.messages.filter((message) => message.channel_id === activeChannel.value?.id) ?? []
   })
   const voiceChannel = computed(() => activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null)
+  const activeVoiceStates = computed(() => {
+    if (!voiceChannel.value) return []
+    return voiceStates.value.filter((state) => state.channel_id === voiceChannel.value?.id)
+  })
   const canManageRoles = computed(() => Boolean((activeGuild.value?.permissions ?? 0) & ADMINISTRATOR_PERMISSION))
   const canManageMessages = computed(() => {
     const permissions = activeGuild.value?.permissions ?? 0
@@ -139,6 +145,8 @@ export const useGuildStore = defineStore('guilds', () => {
     activeGuildId.value = null
     activeChannelId.value = null
     voiceConnected.value = false
+    voiceStates.value = []
+    lastVoiceSignal.value = null
     isLoading.value = false
     isMutating.value = false
     error.value = null
@@ -162,6 +170,10 @@ export const useGuildStore = defineStore('guilds', () => {
 
   function toggleVoice() {
     voiceConnected.value = !voiceConnected.value
+  }
+
+  function setVoiceConnected(connected: boolean) {
+    voiceConnected.value = connected
   }
 
   async function createChannel(token: string | null, name: string, type: 0 | 1 = 0) {
@@ -308,6 +320,16 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  function syncVoiceState(voiceState: VoiceState) {
+    voiceStates.value = [
+      ...voiceStates.value.filter(
+        (state) =>
+          !(state.guild_id === voiceState.guild_id && state.user_id === voiceState.user_id),
+      ),
+      ...(voiceState.channel_id === null ? [] : [voiceState]),
+    ]
+  }
+
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
     if (event === 'MESSAGE_CREATE') {
       const message = data as Message
@@ -357,6 +379,33 @@ export const useGuildStore = defineStore('guilds', () => {
         return
       }
       appendChannel(channel)
+      return
+    }
+    if (event === 'VOICE_STATE_UPDATE') {
+      const voiceState = data as VoiceState
+      if (
+        typeof voiceState.guild_id !== 'number'
+        || (voiceState.channel_id !== null && typeof voiceState.channel_id !== 'number')
+        || typeof voiceState.user_id !== 'number'
+        || typeof voiceState.self_mute !== 'boolean'
+        || typeof voiceState.self_deaf !== 'boolean'
+      ) {
+        return
+      }
+      syncVoiceState(voiceState)
+      return
+    }
+    if (event === 'VOICE_SIGNAL') {
+      const signal = data as VoiceSignal
+      if (
+        typeof signal.channel_id !== 'number'
+        || typeof signal.from_user_id !== 'number'
+        || typeof signal.target_user_id !== 'number'
+        || !['offer', 'answer', 'ice'].includes(signal.type)
+      ) {
+        return
+      }
+      lastVoiceSignal.value = signal
       return
     }
     if (event === 'GUILD_UPDATE') {
@@ -440,9 +489,12 @@ export const useGuildStore = defineStore('guilds', () => {
     activeChannel,
     activeMessages,
     voiceChannel,
+    activeVoiceStates,
     canManageRoles,
     canManageMessages,
     voiceConnected,
+    voiceStates,
+    lastVoiceSignal,
     isLoading,
     isMutating,
     error,
@@ -455,6 +507,7 @@ export const useGuildStore = defineStore('guilds', () => {
     selectGuild,
     selectChannel,
     toggleVoice,
+    setVoiceConnected,
     createChannel,
     createRole,
     assignRole,

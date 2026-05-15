@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Mic, PhoneOff, Radio } from 'lucide-vue-next'
 
-import type { Channel } from '../types'
+import type { Channel, VoiceState } from '../types'
 
 defineProps<{
   channel: Channel | null
   connected: boolean
+  participants: VoiceState[]
+  signalingReady: boolean
 }>()
 
 defineEmits<{
@@ -22,10 +24,13 @@ defineEmits<{
         <small>{{ connected ? 'Connected' : 'Disconnected' }}</small>
       </div>
     </div>
+    <div class="voice-presence" aria-live="polite">
+      <span>{{ participants.length }} online</span>
+      <small>{{ signalingReady ? 'Signaling ready' : 'Gateway required' }}</small>
+    </div>
     <button type="button" :title="connected ? 'Disconnect voice' : 'Connect voice'" @click="$emit('toggle')">
       <PhoneOff v-if="connected" :size="18" aria-hidden="true" />
       <Mic v-else :size="18" aria-hidden="true" />
     </button>
   </section>
 </template>
-

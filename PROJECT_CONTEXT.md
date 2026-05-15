@@ -12,10 +12,10 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Current Milestone
 
-Stage 3's main text-realtime scope is complete. Stage 1, the Docker development
-baseline, Stage 2's main persistence/auth/member-management bridge, and focused
-PostgreSQL repository coverage for current guild/message mutations are complete and
-pushed to GitHub.
+Stage 4 is in progress. Stage 1, the Docker development baseline, Stage 2's main
+persistence/auth/member-management bridge, Stage 3's main text-realtime scope, and
+focused PostgreSQL repository coverage for current guild/message mutations are
+complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -102,9 +102,9 @@ The app boots in two local modes:
   - `has_permission()` treats `ADMINISTRATOR` as all permissions.
 - `backend/app/gateway/opcodes.py`
   - Gateway opcode enum: Dispatch, Heartbeat, Identify, Voice State, Guild Members,
-    Hello, and Heartbeat ACK.
+    Voice Signal, Hello, and Heartbeat ACK.
 - `backend/app/gateway/events.py`
-  - Pydantic gateway event and identify payload schemas.
+  - Pydantic gateway event, identify, voice state, and voice signal payload schemas.
 - `backend/app/gateway/manager.py`
   - In-memory WebSocket connection registry.
   - Tracks user identity, sequence, heartbeat timestamp, subscribed guild IDs, and
@@ -113,6 +113,8 @@ The app boots in two local modes:
   - Broadcasts Discord-style dispatch payloads to connections subscribed to a channel.
   - Broadcasts guild-scoped dispatch payloads and keeps guild/channel subscriptions in
     sync when channel or guild membership snapshots change.
+  - Tracks the active voice channel for each identified connection and can route
+    `VOICE_SIGNAL` payloads to a target user in the same voice channel.
 - `backend/app/gateway/reaper.py`
   - Background loop that periodically calls `gateway_manager.reap_zombies()` using
     the configured heartbeat interval.
@@ -122,6 +124,11 @@ The app boots in two local modes:
     Request Guild Members, and Update Voice State placeholders.
   - On Identify, loads the authenticated user's guilds and subscribes the connection
     to every channel in those guilds.
+  - `UPDATE_VOICE_STATE` validates guild/channel subscriptions, updates the
+    connection's active voice channel, and dispatches `VOICE_STATE_UPDATE` to voice
+    channel subscribers.
+  - `VOICE_SIGNAL` validates the sender is connected to the voice channel and routes
+    offer/answer/ICE payloads to the target user.
 - `backend/app/realtime/redis_bus.py`
   - Optional Redis asyncio client wrapper.
   - Connects only when `REDIS_URL` is configured.
@@ -253,6 +260,7 @@ The app boots in two local modes:
     operations.
   - Tracks active guild, active channel, active messages, voice channel, and voice
     connection UI state.
+  - Tracks voice states and the latest voice signal dispatch received from the gateway.
   - Calls the protected guild creation API and selects the new guild's first channel.
   - Calls invite creation and invite join APIs.
   - Calls role creation, role assignment, and role removal APIs.
@@ -272,6 +280,7 @@ The app boots in two local modes:
   - Shows connected state after Ready dispatch.
   - Accepts a dispatch callback and forwards non-READY gateway dispatch events to the
     app store.
+  - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
 - `frontend/src/components/ServerRail.vue`
   - Server icon rail and create-server icon button placeholder.
 - `frontend/src/components/ChannelSidebar.vue`
@@ -289,7 +298,8 @@ The app boots in two local modes:
     assignment, and removal.
   - Exposes member refresh and non-owner member removal controls.
 - `frontend/src/components/VoicePanel.vue`
-  - Voice connection toggle UI placeholder.
+  - Voice connection toggle UI.
+  - Shows voice participant count and whether gateway signaling is ready.
 - `frontend/src/styles/base.css`
   - App layout, accessible focus styles, responsive behavior, and View Transitions rule.
 - `frontend/src/types.ts`
@@ -383,6 +393,17 @@ The app boots in two local modes:
   - Server replies Heartbeat ACK: `{ op: 11 }`.
   - The lifespan reaper closes connections that miss two heartbeat windows with code
     `4000` and removes them from the in-memory connection registry.
+- Voice signaling flow:
+  - `VoicePanel.vue` toggles local voice connection state through `App.vue`.
+  - `App.vue` calls `useGateway().updateVoiceState()` with opcode 4, the active guild,
+    and the first voice channel.
+  - Backend validates the identified connection is subscribed to the guild/channel and
+    broadcasts `VOICE_STATE_UPDATE` to voice-channel subscribers.
+  - Gateway opcode 5 accepts `offer`, `answer`, or `ice` voice signal payloads and
+    routes them to the target user only when the sender and target are in the same
+    voice channel.
+  - `guilds.ts` stores voice presence state and the latest received signal for the
+    future WebRTC peer-connection layer.
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
@@ -475,7 +496,8 @@ npm run docker:down
 
 Next implementation stage:
 
-- Start Stage 4 voice signaling.
+- Continue Stage 4 voice implementation with actual browser WebRTC peer connections,
+  media capture, and ICE server configuration.
 
 Completed Stage 2 bridge work:
 
@@ -519,6 +541,9 @@ Completed Stage 2 bridge work:
 - Added focused PostgreSQL repository tests for guild creation/reads, channel
   creation permission, invite creation/join, role creation/assignment/removal, and
   member removal using an isolated fake async database.
+- Added Stage 4 voice signaling scaffolding: gateway opcode 5, voice state broadcast,
+  targeted offer/answer/ICE relay, frontend gateway send helpers, voice presence
+  state, and VoicePanel signaling status.
 
 After each stage or meaningful feature:
 

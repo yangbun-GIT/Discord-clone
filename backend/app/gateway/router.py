@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from app.core.config import get_settings
 from app.core.security import decode_access_token
-from app.gateway.events import GatewayEvent, IdentifyPayload
+from app.gateway.events import GatewayEvent, IdentifyPayload, VoiceSignalPayload, VoiceStatePayload
 from app.gateway.manager import gateway_manager
 from app.gateway.opcodes import Opcode
 from app.schemas.auth import UserPublic
@@ -85,10 +85,61 @@ async def gateway(websocket: WebSocket) -> None:
                 continue
 
             if event.op == Opcode.UPDATE_VOICE_STATE:
-                await connection.send(
-                    op=Opcode.DISPATCH,
-                    event="VOICE_STATE_UPDATE",
-                    data=event.d or {},
+                if not connection.identified or connection.user_id is None:
+                    await websocket.close(code=4003, reason="identify required")
+                    return
+
+                voice_state = VoiceStatePayload.model_validate(event.d or {})
+                if voice_state.guild_id not in connection.guild_ids:
+                    await websocket.close(code=4003, reason="not subscribed to guild")
+                    return
+                if (
+                    voice_state.channel_id is not None
+                    and voice_state.channel_id not in connection.channel_ids
+                ):
+                    await websocket.close(code=4003, reason="not subscribed to channel")
+                    return
+
+                previous_channel_id = gateway_manager.update_voice_channel(
+                    connection,
+                    voice_state.channel_id,
+                )
+                await gateway_manager.broadcast_voice_state(
+                    previous_channel_id=previous_channel_id,
+                    channel_id=voice_state.channel_id,
+                    data={
+                        "guild_id": voice_state.guild_id,
+                        "channel_id": voice_state.channel_id,
+                        "user_id": connection.user_id,
+                        "username": connection.username,
+                        "self_mute": voice_state.self_mute,
+                        "self_deaf": voice_state.self_deaf,
+                    },
+                )
+                continue
+
+            if event.op == Opcode.VOICE_SIGNAL:
+                if not connection.identified or connection.user_id is None:
+                    await websocket.close(code=4003, reason="identify required")
+                    return
+
+                voice_signal = VoiceSignalPayload.model_validate(event.d or {})
+                if connection.voice_channel_id != voice_signal.channel_id:
+                    await websocket.close(code=4003, reason="not connected to voice channel")
+                    return
+
+                await gateway_manager.send_voice_signal(
+                    channel_id=voice_signal.channel_id,
+                    target_user_id=voice_signal.target_user_id,
+                    data={
+                        "channel_id": voice_signal.channel_id,
+                        "from_user_id": connection.user_id,
+                        "from_username": connection.username,
+                        "target_user_id": voice_signal.target_user_id,
+                        "type": voice_signal.type,
+                        "description": voice_signal.description,
+                        "candidate": voice_signal.candidate,
+                    },
                 )
                 continue
 
