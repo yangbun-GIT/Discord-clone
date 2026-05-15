@@ -48,6 +48,8 @@ def test_voice_meta_returns_ice_servers() -> None:
 
     assert response.status_code == 200
     assert response.json()["ice_servers"][0]["urls"] == "stun:stun.l.google.com:19302"
+    assert response.json()["ice_server_count"] == 1
+    assert response.json()["turn_configured"] is False
 
 
 def test_register_requires_database() -> None:

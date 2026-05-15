@@ -85,7 +85,8 @@
 
 ## Stage 4: Voice Signaling
 
-- Status: implementation completed; multi-browser TURN-backed manual QA remains.
+- Status: implementation and local QA support completed; external TURN-backed
+  multi-network manual QA remains.
 - Add WebRTC signaling events for offers, answers, ICE candidates, and voice state.
 - First slice completed: gateway opcode 4 now broadcasts validated
   `VOICE_STATE_UPDATE` events to voice-channel subscribers.
@@ -105,14 +106,22 @@
 - Screen sharing completed: frontend captures display video with `getDisplayMedia`,
   adds/removes screen video senders on active peers, renegotiates offers, and renders
   remote screen-share video tiles with connection state.
-- Remaining manual QA: configure a real TURN provider such as Open Relay or Metered
-  Video and verify two browsers across deployed/NAT networks.
+- Quality diagnostics completed: frontend samples `RTCPeerConnection.getStats()` and
+  displays connected peer count, RTT, inbound audio jitter, packet loss, outbound
+  audio bitrate, and outbound screen-share bitrate in the voice panel.
+- TURN readiness completed: `/api/meta/voice` returns ICE server count plus
+  `turn_configured`, and the frontend displays whether the current setup is TURN
+  ready or STUN only.
+- Voice QA documentation completed in `docs/voice-qa.md`.
+- Remaining external manual QA: configure a real TURN provider such as Open Relay or
+  Metered Video and verify two browsers across deployed/NAT networks.
 
 ## Stage 5: Deployment
 
-- Status: implementation notes completed; actual VM rollout remains external.
+- Status: implementation notes and verification checklist completed; actual VM rollout
+  remains external.
 - Dockerfile baseline is complete.
 - Backend runtime image now starts Gunicorn with Uvicorn workers.
 - `docs/deployment.md` documents Oracle Cloud / GCP VM deployment flow, production
   environment variables, HTTPS/WebSocket requirements, CORS, logging, health checks,
-  Redis, and WebRTC TURN guidance.
+  Redis, WebRTC TURN guidance, and voice verification using browser WebRTC stats.

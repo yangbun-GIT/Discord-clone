@@ -96,8 +96,11 @@ such as Open Relay or Metered Video.
 Voice controls support microphone mute, input-level feedback, and screen sharing.
 Screen sharing uses the browser display-capture permission prompt and works only while
 connected to a voice channel.
+The backend voice metadata also reports whether TURN is configured, and the voice
+panel shows peer count, RTT, jitter, packet loss, and outbound bitrate while connected.
 
-Deployment notes are maintained in `docs/deployment.md`.
+Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
+in `docs/voice-qa.md`.
 
 ## Verification
 

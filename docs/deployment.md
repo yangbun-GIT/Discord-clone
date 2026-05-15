@@ -36,6 +36,10 @@ Use a TURN provider such as Open Relay or Metered Video before testing voice acr
 NATs or deployed networks. STUN-only is acceptable for local development but is not a
 reliable production voice path.
 
+`GET /api/meta/voice` exposes `ice_server_count` and `turn_configured` so the frontend
+and deployment checks can confirm whether a TURN server is active without inspecting
+host secrets.
+
 ## VM Checklist
 
 1. Provision a small Oracle Cloud or GCP VM.
@@ -47,10 +51,14 @@ reliable production voice path.
 5. Run the frontend and backend runtime images.
 6. Verify:
    - `GET /api/health` returns `status: ok`.
+   - `GET /api/meta/voice` returns `turn_configured: true`.
    - `/gateway` upgrades to WebSocket.
    - Two authenticated browser sessions can exchange text messages.
    - Two authenticated browser sessions can join the same voice channel and exchange
      WebRTC offer/answer/ICE signals.
+   - The voice panel reports connected peers plus RTT, jitter, packet loss, and
+     outbound bitrate from browser WebRTC stats.
+   - Screen sharing renders a remote screen tile and shows connection state.
 
 ## Hardening
 
@@ -59,3 +67,8 @@ reliable production voice path.
 - Keep Redis configured when running more than one backend instance.
 - Monitor backend stdout/stderr logs from Gunicorn and the reverse proxy access logs.
 - Rotate `JWT_SECRET` only with a planned user logout window.
+
+## Voice QA
+
+Follow `docs/voice-qa.md` for the two-browser local smoke test, TURN/NAT test, and
+deployment verification checklist.

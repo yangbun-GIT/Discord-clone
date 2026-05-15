@@ -41,7 +41,27 @@ class Settings(BaseSettings):
         parsed = json.loads(self.webrtc_ice_servers_json)
         if not isinstance(parsed, list):
             raise ValueError("WEBRTC_ICE_SERVERS_JSON must be a JSON array")
-        return [item for item in parsed if isinstance(item, dict)]
+        return [item for item in parsed if self._is_valid_ice_server(item)]
+
+    @property
+    def webrtc_turn_configured(self) -> bool:
+        for server in self.webrtc_ice_servers:
+            urls = server["urls"]
+            url_values = urls if isinstance(urls, list) else [urls]
+            if any(url.startswith(("turn:", "turns:")) for url in url_values):
+                return True
+        return False
+
+    @staticmethod
+    def _is_valid_ice_server(item: object) -> bool:
+        if not isinstance(item, dict):
+            return False
+        urls = item.get("urls")
+        if isinstance(urls, str):
+            return bool(urls.strip())
+        if isinstance(urls, list):
+            return any(isinstance(url, str) and url.strip() for url in urls)
+        return False
 
 
 @lru_cache

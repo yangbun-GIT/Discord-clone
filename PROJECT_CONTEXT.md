@@ -65,6 +65,8 @@ The app boots in two local modes:
   - Pydantic settings.
   - Reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `CORS_ORIGINS`,
     `WEBRTC_ICE_SERVERS_JSON`, and runtime settings.
+  - Validates ICE server entries by requiring non-empty `urls` and exposes TURN
+    detection for voice deployment checks.
 - `backend/app/core/security.py`
   - Password hashing helpers using bcrypt.
   - JWT creation and decoding using PyJWT.
@@ -190,7 +192,7 @@ The app boots in two local modes:
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
   - `/api/meta/voice` exposes WebRTC ICE server config from
-    `WEBRTC_ICE_SERVERS_JSON`.
+    `WEBRTC_ICE_SERVERS_JSON`, plus ICE server count and whether TURN is configured.
 - `backend/app/demo/data.py`
   - Initial guild/channel/member/message seed data used before persistence is wired.
 - `backend/app/demo/store.py`
@@ -286,8 +288,9 @@ The app boots in two local modes:
   - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
 - `frontend/src/composables/useVoiceRtc.ts`
   - Owns browser microphone capture, screen capture, `RTCPeerConnection` lifecycle,
-    local VAD/input-level sampling, mute state, offer/answer/ICE handling, remote
-    stream tracking, screen-share renegotiation, and cleanup.
+  local VAD/input-level sampling, mute state, offer/answer/ICE handling, remote
+    stream tracking, screen-share renegotiation, WebRTC `getStats()` quality
+    sampling, and cleanup.
 - `frontend/src/components/ServerRail.vue`
   - Server icon rail and create-server icon button placeholder.
 - `frontend/src/components/ChannelSidebar.vue`
@@ -307,7 +310,8 @@ The app boots in two local modes:
 - `frontend/src/components/VoicePanel.vue`
   - Voice connection toggle UI.
   - Shows voice participant count, gateway signaling readiness, local speaking state,
-    microphone input level, mute control, and screen-share control.
+    microphone input level, mute control, screen-share control, TURN/STUN status, and
+    WebRTC quality diagnostics.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Binds remote `MediaStream` instances to hidden autoplay audio elements.
 - `frontend/src/components/VoiceVideoSink.vue`
@@ -318,7 +322,10 @@ The app boots in two local modes:
   - Shared frontend types matching the current backend demo API shape.
 - `docs/deployment.md`
   - VM/runtime deployment checklist, production environment variables, HTTPS/gateway
-    notes, ICE/TURN guidance, and hardening notes.
+    notes, ICE/TURN guidance, voice verification, and hardening notes.
+- `docs/voice-qa.md`
+  - Two-browser local smoke test, TURN/NAT test, and deployment verification checklist
+    for voice, screen sharing, and browser WebRTC stats.
 - `backend/Dockerfile`
   - `dev` target installs backend dev dependencies and runs Uvicorn with reload.
   - `runtime` target installs production dependencies and runs Gunicorn with Uvicorn
@@ -414,6 +421,8 @@ The app boots in two local modes:
   - `App.vue` loads ICE config from `/api/meta/voice`, starts microphone capture
     through `useVoiceRtc()`, then calls `useGateway().updateVoiceState()` with opcode
     4, the active guild, and the first voice channel.
+  - `/api/meta/voice` also returns `turn_configured`, which the voice panel displays
+    as `TURN ready` or `STUN only`.
   - Backend validates the identified connection is subscribed to the guild/channel and
     broadcasts `VOICE_STATE_UPDATE` to voice-channel subscribers.
   - Gateway opcode 5 accepts `offer`, `answer`, or `ice` voice signal payloads and
@@ -430,6 +439,9 @@ The app boots in two local modes:
     through `VoiceVideoSink`.
   - Local VAD samples microphone frequency data and exposes both a speaking flag and
     input-level meter in `VoicePanel`.
+  - While connected, `useVoiceRtc()` samples `RTCPeerConnection.getStats()` every two
+    seconds and the voice panel displays connected peers, RTT, inbound audio jitter,
+    inbound packet loss, outbound audio bitrate, and outbound screen-share bitrate.
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
@@ -577,6 +589,12 @@ Completed Stage 2 bridge work:
 - Added call quality and screen-share expansion: microphone mute, input-level meter,
   screen capture, peer renegotiation for screen video tracks, remote screen preview,
   and connection-state display on screen-share tiles.
+- Added WebRTC quality diagnostics and TURN readiness reporting: `/api/meta/voice`
+  now exposes ICE server count and TURN status, the frontend samples browser stats,
+  and the voice panel shows peer count, RTT, jitter, packet loss, and outbound
+  bitrate while connected.
+- Added `docs/voice-qa.md` plus deployment checklist updates for local two-browser
+  smoke testing, TURN/NAT testing, and HTTPS deployment verification.
 - Added deployment notes and switched backend runtime Docker image to Gunicorn with
   Uvicorn workers.
 

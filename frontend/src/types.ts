@@ -85,6 +85,18 @@ export type VoiceIceServer = {
 
 export type VoiceConfig = {
   ice_servers: VoiceIceServer[]
+  ice_server_count: number
+  turn_configured: boolean
+}
+
+export type VoiceQualityStats = {
+  peerCount: number
+  connectedPeerCount: number
+  averageRoundTripTimeMs: number | null
+  inboundAudioPacketsLost: number
+  inboundAudioJitterMs: number | null
+  outboundAudioBitrateKbps: number | null
+  outboundScreenBitrateKbps: number | null
 }
 
 export type RemoteVoiceStream = {

@@ -1,6 +1,12 @@
 import { onBeforeUnmount, ref, shallowRef } from 'vue'
 
-import type { RemoteVoiceStream, VoiceIceServer, VoiceSignal, VoiceState } from '../types'
+import type {
+  RemoteVoiceStream,
+  VoiceIceServer,
+  VoiceQualityStats,
+  VoiceSignal,
+  VoiceState,
+} from '../types'
 
 type SendVoiceSignal = (payload: {
   channel_id: number
@@ -34,11 +40,26 @@ const isScreenSharing = ref(false)
 const localSpeaking = ref(false)
 const inputLevel = ref(0)
 const error = ref<string | null>(null)
+const qualityStats = ref<VoiceQualityStats>(createEmptyQualityStats())
 const peers = new Map<number, PeerEntry>()
 let activeOptions: ConnectOptions | null = null
 let vadTimer: number | null = null
+let statsTimer: number | null = null
 let localAnalyser: AnalyserNode | null = null
 let audioContext: AudioContext | null = null
+const previousOutboundBytes = new Map<string, { bytes: number; timestamp: number }>()
+
+function createEmptyQualityStats(): VoiceQualityStats {
+  return {
+    peerCount: 0,
+    connectedPeerCount: 0,
+    averageRoundTripTimeMs: null,
+    inboundAudioPacketsLost: 0,
+    inboundAudioJitterMs: null,
+    outboundAudioBitrateKbps: null,
+    outboundScreenBitrateKbps: null,
+  }
+}
 
 function toDescription(description: Record<string, unknown>) {
   return new RTCSessionDescription(description as unknown as RTCSessionDescriptionInit)
@@ -95,6 +116,111 @@ function stopVadLoop() {
   localSpeaking.value = false
   inputLevel.value = 0
   localAnalyser = null
+}
+
+function numericStat(report: RTCStats, key: string) {
+  const value = (report as unknown as Record<string, unknown>)[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function stringStat(report: RTCStats, key: string) {
+  const value = (report as unknown as Record<string, unknown>)[key]
+  return typeof value === 'string' ? value : null
+}
+
+function mediaKind(report: RTCStats) {
+  return stringStat(report, 'kind') ?? stringStat(report, 'mediaType')
+}
+
+function updateBitrateSamples(
+  userId: number,
+  report: RTCStats,
+  audioBitrates: number[],
+  screenBitrates: number[],
+) {
+  const bytesSent = numericStat(report, 'bytesSent')
+  const kind = mediaKind(report)
+  if (bytesSent === null || !kind) return
+
+  const key = `${userId}:${report.id}`
+  const previous = previousOutboundBytes.get(key)
+  previousOutboundBytes.set(key, { bytes: bytesSent, timestamp: report.timestamp })
+  if (!previous || report.timestamp <= previous.timestamp) return
+
+  const bitrateKbps = ((bytesSent - previous.bytes) * 8) / (report.timestamp - previous.timestamp)
+  if (!Number.isFinite(bitrateKbps) || bitrateKbps < 0) return
+  if (kind === 'audio') {
+    audioBitrates.push(bitrateKbps)
+    return
+  }
+  if (kind === 'video') {
+    screenBitrates.push(bitrateKbps)
+  }
+}
+
+function average(values: number[]) {
+  if (!values.length) return null
+  return values.reduce((total, value) => total + value, 0) / values.length
+}
+
+async function collectQualityStats() {
+  const nextStats = createEmptyQualityStats()
+  nextStats.peerCount = peers.size
+  nextStats.connectedPeerCount = [...peers.values()].filter(
+    (peer) => peer.connection.connectionState === 'connected',
+  ).length
+
+  const roundTripSamples: number[] = []
+  const jitterSamples: number[] = []
+  const audioBitrates: number[] = []
+  const screenBitrates: number[] = []
+
+  for (const [userId, peer] of peers) {
+    const report = await peer.connection.getStats()
+    report.forEach((entry) => {
+      if (entry.type === 'candidate-pair' && numericStat(entry, 'currentRoundTripTime') !== null) {
+        roundTripSamples.push((numericStat(entry, 'currentRoundTripTime') as number) * 1000)
+      }
+      if (entry.type === 'remote-inbound-rtp' && numericStat(entry, 'roundTripTime') !== null) {
+        roundTripSamples.push((numericStat(entry, 'roundTripTime') as number) * 1000)
+      }
+      if (entry.type === 'inbound-rtp' && mediaKind(entry) === 'audio') {
+        nextStats.inboundAudioPacketsLost += numericStat(entry, 'packetsLost') ?? 0
+        const jitter = numericStat(entry, 'jitter')
+        if (jitter !== null) {
+          jitterSamples.push(jitter * 1000)
+        }
+      }
+      if (entry.type === 'outbound-rtp') {
+        updateBitrateSamples(userId, entry, audioBitrates, screenBitrates)
+      }
+    })
+  }
+
+  nextStats.averageRoundTripTimeMs = average(roundTripSamples)
+  nextStats.inboundAudioJitterMs = average(jitterSamples)
+  nextStats.outboundAudioBitrateKbps = average(audioBitrates)
+  nextStats.outboundScreenBitrateKbps = average(screenBitrates)
+  qualityStats.value = nextStats
+}
+
+function startStatsLoop() {
+  if (statsTimer !== null) return
+  statsTimer = window.setInterval(() => {
+    void collectQualityStats().catch(() => {
+      qualityStats.value = createEmptyQualityStats()
+    })
+  }, 2000)
+  void collectQualityStats()
+}
+
+function stopStatsLoop() {
+  if (statsTimer !== null) {
+    window.clearInterval(statsTimer)
+    statsTimer = null
+  }
+  previousOutboundBytes.clear()
+  qualityStats.value = createEmptyQualityStats()
 }
 
 function ensurePeer(userId: number, username: string | null) {
@@ -215,6 +341,7 @@ export function useVoiceRtc() {
       }
       isCapturing.value = true
       setMuted(isMuted.value)
+      startStatsLoop()
       await syncParticipants(options.participants)
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : 'Voice capture failed'
@@ -239,6 +366,7 @@ export function useVoiceRtc() {
     isScreenSharing.value = false
     activeOptions = null
     stopVadLoop()
+    stopStatsLoop()
     void audioContext?.close()
     audioContext = null
   }
@@ -365,6 +493,7 @@ export function useVoiceRtc() {
     localSpeaking,
     inputLevel,
     error,
+    qualityStats,
     connect,
     disconnect,
     toggleMute,

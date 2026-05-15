@@ -14,4 +14,9 @@ async def list_permissions() -> dict[str, int]:
 @router.get("/voice")
 async def get_voice_config() -> dict[str, object]:
     settings = get_settings()
-    return {"ice_servers": settings.webrtc_ice_servers}
+    ice_servers = settings.webrtc_ice_servers
+    return {
+        "ice_servers": ice_servers,
+        "ice_server_count": len(ice_servers),
+        "turn_configured": settings.webrtc_turn_configured,
+    }

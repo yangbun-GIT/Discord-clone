@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Mic, MicOff, PhoneOff, Radio, ScreenShare, ScreenShareOff } from 'lucide-vue-next'
 
-import type { Channel, VoiceState } from '../types'
+import type { Channel, VoiceQualityStats, VoiceState } from '../types'
 
-defineProps<{
+const props = defineProps<{
   channel: Channel | null
   connected: boolean
   participants: VoiceState[]
@@ -12,6 +13,8 @@ defineProps<{
   inputLevel: number
   muted: boolean
   screenSharing: boolean
+  qualityStats: VoiceQualityStats
+  turnConfigured: boolean
   error: string | null
 }>()
 
@@ -20,6 +23,19 @@ defineEmits<{
   toggleMute: []
   toggleScreen: []
 }>()
+
+const qualityLabel = computed(() => {
+  const stats = props.qualityStats
+  const rtt = stats.averageRoundTripTimeMs === null ? '--' : `${Math.round(stats.averageRoundTripTimeMs)}ms`
+  const jitter = stats.inboundAudioJitterMs === null ? '--' : `${Math.round(stats.inboundAudioJitterMs)}ms`
+  const audio = stats.outboundAudioBitrateKbps === null
+    ? '--'
+    : `${Math.round(stats.outboundAudioBitrateKbps)}kbps`
+  const screen = stats.outboundScreenBitrateKbps === null
+    ? '--'
+    : `${Math.round(stats.outboundScreenBitrateKbps)}kbps`
+  return `Peers ${stats.connectedPeerCount}/${stats.peerCount} · RTT ${rtt} · Jitter ${jitter} · Loss ${stats.inboundAudioPacketsLost} · Audio ${audio} · Screen ${screen}`
+})
 </script>
 
 <template>
@@ -35,7 +51,10 @@ defineEmits<{
       <span>{{ participants.length }} online</span>
       <small v-if="error">{{ error }}</small>
       <small v-else-if="localSpeaking">Speaking</small>
-      <small v-else>{{ signalingReady ? 'Signaling ready' : 'Gateway required' }}</small>
+      <small v-else>
+        {{ signalingReady ? `Signaling ready · ${turnConfigured ? 'TURN ready' : 'STUN only'}` : 'Gateway required' }}
+      </small>
+      <small v-if="connected" class="voice-quality">{{ qualityLabel }}</small>
       <meter min="0" max="100" :value="inputLevel" aria-label="Microphone input level" />
     </div>
     <div class="voice-actions">

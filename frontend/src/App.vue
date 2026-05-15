@@ -52,6 +52,7 @@ const guildName = ref('')
 const joinCode = ref('')
 const inviteCode = ref<string | null>(null)
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
+const voiceTurnConfigured = ref(false)
 
 async function openWorkspace() {
   if (!session.token) return
@@ -63,6 +64,7 @@ async function openWorkspace() {
 async function loadVoiceConfig() {
   const config = await apiGet<VoiceConfig>('/api/meta/voice')
   voiceIceServers.value = config.ice_servers
+  voiceTurnConfigured.value = config.turn_configured
 }
 
 onMounted(async () => {
@@ -472,6 +474,8 @@ async function handleCreateInvite() {
       :input-level="voiceRtc.inputLevel.value"
       :muted="voiceRtc.isMuted.value"
       :screen-sharing="voiceRtc.isScreenSharing.value"
+      :quality-stats="voiceRtc.qualityStats.value"
+      :turn-configured="voiceTurnConfigured"
       :error="voiceRtc.error.value"
       @toggle="handleToggleVoice"
       @toggle-mute="handleToggleMute"

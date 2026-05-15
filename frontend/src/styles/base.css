@@ -890,6 +890,13 @@ select:focus-visible {
   color: #9ca3af;
 }
 
+.voice-quality {
+  max-width: min(52vw, 520px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .voice-presence meter {
   width: 98px;
   height: 7px;
