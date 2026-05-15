@@ -28,6 +28,37 @@ def test_list_my_guilds_requires_auth() -> None:
     assert response.status_code == 401
 
 
+def test_auth_me_returns_current_user() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/auth/me", headers=auth_headers())
+
+    assert response.status_code == 200
+    assert response.json()["username"] == "yangbun"
+
+
+def test_register_requires_database() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/auth/register",
+        json={"username": "new-user", "password": "password123"},
+    )
+
+    assert response.status_code == 503
+
+
+def test_login_requires_database() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/auth/login",
+        json={"username": "yangbun", "password": "password123"},
+    )
+
+    assert response.status_code == 503
+
+
 def test_list_my_guilds_returns_authenticated_user_memberships() -> None:
     client = TestClient(app)
 

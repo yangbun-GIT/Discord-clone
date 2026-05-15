@@ -65,6 +65,12 @@ The app boots in two local modes:
 - `backend/app/api/dependencies.py`
   - Bearer-token dependency for protected REST routes.
   - Decodes JWTs and returns the current user payload.
+- `backend/app/api/routes/auth.py`
+  - `POST /api/auth/register` creates a database-backed user with bcrypt password
+    hashing and returns a JWT.
+  - `POST /api/auth/login` verifies username/password credentials and returns a JWT.
+  - `GET /api/auth/me` returns the current bearer-token user payload.
+  - Registration/login return `503` when no database pool is configured.
 - `backend/app/core/rate_limit.py`
   - In-memory token bucket middleware for local Stage 1 protection.
   - Intended to be replaced or backed by Redis during realtime/distributed stages.
@@ -142,9 +148,14 @@ The app boots in two local modes:
     permissions.
   - Requires `MANAGE_CHANNELS` for channel creation and `SEND_MESSAGES` for message
     creation.
+- `backend/app/repositories/users.py`
+  - PostgreSQL repository for creating users and fetching password hashes by username.
 - `backend/app/services/guild_service.py`
   - Runtime switch between PostgreSQL repositories and the process-local demo store.
   - Keeps route handlers independent from the current persistence mode.
+- `backend/app/services/auth_service.py`
+  - Coordinates registration/login with async repository calls and runs bcrypt
+    hashing/verification off the event loop.
 - `backend/app/schemas/`
   - Pydantic API schemas for auth, guilds, and messages.
 - `backend/tests/`
@@ -218,6 +229,12 @@ The app boots in two local modes:
   - `App.vue` calls `guilds.loadGuilds(session.token)`.
   - `guilds.ts` GETs `/api/guilds/me` with the dev session bearer token.
   - `App.vue` calls `useGateway().connect(token)`.
+- Auth API flow:
+  - Clients POST `{ username, password }` to `/api/auth/register` or
+    `/api/auth/login`.
+  - Backend validates auth schema payloads, uses PostgreSQL users, bcrypt password
+    hashes, and returns the same JWT response shape as the dev session endpoint.
+  - `GET /api/auth/me` validates bearer tokens through `get_current_user`.
 - Message send flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
@@ -307,9 +324,9 @@ npm run docker:down
 Stage 2 should continue wiring persistence and authentication:
 
 - Add explicit migration versioning around `backend/app/db/schema.sql`.
-- Expand repositories for users, roles, and member roles management.
-- Implement registration and login APIs using bcrypt and JWT.
-- Add auth dependencies for protected REST routes.
+- Expand repositories for roles and member roles management.
+- Add frontend login/register screens and replace the automatic dev session for
+  non-dev flows.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
 - Add tests for auth, repositories, and route permissions.
 
@@ -326,6 +343,7 @@ Completed Stage 2 bridge work:
 - Made `/api/guilds/me` bearer-token protected and connected the frontend guild load
   to the dev session token.
 - Added guild membership and permission checks to channel/message mutation routes.
+- Added database-backed `/api/auth/register`, `/api/auth/login`, and `/api/auth/me`.
 
 After each stage or meaningful feature:
 

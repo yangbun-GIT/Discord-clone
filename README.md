@@ -64,6 +64,12 @@ Docker exposes the same local URLs:
 - Frontend: `http://127.0.0.1:5173`
 - Backend health: `http://127.0.0.1:8000/api/health`
 
+Useful backend auth endpoints:
+
+- `POST http://127.0.0.1:8000/api/auth/register`
+- `POST http://127.0.0.1:8000/api/auth/login`
+- `GET http://127.0.0.1:8000/api/auth/me`
+
 ## Environment
 
 Copy `.env.example` to `.env` and fill values as external services become available.

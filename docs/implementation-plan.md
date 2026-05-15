@@ -40,9 +40,12 @@
   dev session token.
 - Channel/message mutation routes now check guild membership and permission bitfields
   before writing.
+- Database-backed `/api/auth/register`, `/api/auth/login`, and `/api/auth/me` are
+  implemented with bcrypt password hashing and JWT responses.
 - Next persistence work: add explicit migration versioning and expand repositories
-  for users, roles, and member-role management.
-- Implement registration, login, JWT-protected REST APIs, and guild membership queries.
+  for roles and member-role management.
+- Add frontend login/register screens and replace the automatic dev session for
+  non-dev flows.
 - Add API/store error and empty states.
 
 ## Stage 3: Realtime Messaging
