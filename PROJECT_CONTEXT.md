@@ -12,9 +12,10 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Current Milestone
 
-Stage 3 is in progress. Stage 1, the Docker development baseline, Stage 2's main
-persistence/auth/member-management bridge, and the main realtime text-message CRUD
-slice are complete and pushed to GitHub.
+Stage 3's main text-realtime scope is complete. Stage 1, the Docker development
+baseline, Stage 2's main persistence/auth/member-management bridge, and focused
+PostgreSQL repository coverage for current guild/message mutations are complete and
+pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -215,7 +216,8 @@ The app boots in two local modes:
 - `backend/tests/`
   - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
     API routes, gateway connection management, message schema sanitization, and
-    focused guild repository message mutation behavior.
+    focused guild repository mutation behavior for guild creation/reads, channel
+    creation, invites, roles, member removal, and message update/delete.
 
 ## Frontend Map
 
@@ -471,10 +473,9 @@ npm run docker:down
 
 ## Next Work
 
-Stage 3 should continue realtime messaging:
+Next implementation stage:
 
-- Add focused repository tests for PostgreSQL-backed guild/role/member mutations.
-- Start Stage 4 voice signaling once repository coverage is strengthened.
+- Start Stage 4 voice signaling.
 
 Completed Stage 2 bridge work:
 
@@ -515,6 +516,9 @@ Completed Stage 2 bridge work:
   row edit/delete controls.
 - Added focused PostgreSQL repository tests for message update/delete permission and
   write behavior using an isolated fake async database.
+- Added focused PostgreSQL repository tests for guild creation/reads, channel
+  creation permission, invite creation/join, role creation/assignment/removal, and
+  member removal using an isolated fake async database.
 
 After each stage or meaningful feature:
 

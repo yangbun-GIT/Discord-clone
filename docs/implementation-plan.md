@@ -28,7 +28,7 @@
 
 ## Stage 2: Persistence and Auth
 
-- Status: main feature bridge completed; focused repository coverage remains.
+- Status: completed for the current SRS scope.
 - Bridge completed: protected message creation and channel creation APIs are wired to
   the frontend through the process-local demo store.
 - Persistence bridge completed: Docker Compose provisions local PostgreSQL, backend
@@ -56,12 +56,13 @@
   administrator-only controls.
 - Single-guild refresh and administrator-only non-owner member removal are implemented
   across the backend, demo store, Pinia state, and member list UI.
-- Remaining persistence work: add focused repository tests for PostgreSQL-backed
-  guild/role/member mutations.
+- Focused repository tests now cover PostgreSQL-backed guild creation/reads, channel
+  creation permission, invite creation/join, role creation/assignment/removal, member
+  removal, and message update/delete behavior through an isolated fake async database.
 
 ## Stage 3: Realtime Messaging
 
-- Status: in progress.
+- Status: main text-realtime scope completed.
 - Persist messages through the REST/gateway boundary.
 - First slice completed: persisted REST message creation now publishes
   `MESSAGE_CREATE` to Redis Pub/Sub when configured, or directly to the local gateway
@@ -80,8 +81,7 @@
   dispatch `MESSAGE_UPDATE`/`MESSAGE_DELETE`, and update the frontend chat state.
 - Focused repository tests now cover PostgreSQL-backed message update/delete
   permission and write behavior through an isolated fake async database.
-- Remaining realtime support work: add focused repository tests for PostgreSQL-backed
-  guild/role/member mutations.
+- Focused repository tests now cover PostgreSQL-backed guild/role/member mutations.
 
 ## Stage 4: Voice Signaling
 
