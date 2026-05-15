@@ -286,6 +286,7 @@ def test_gateway_identify_subscribes_user_channels() -> None:
             ready = websocket.receive_json()
 
     assert ready["t"] == "READY"
+    assert 1001 in ready["d"]["session"]["subscribed_guild_ids"]
     assert 2001 in ready["d"]["session"]["subscribed_channel_ids"]
 
 
@@ -306,6 +307,44 @@ def test_message_create_fans_out_to_gateway_subscribers() -> None:
     assert response.status_code == 201
     assert event["t"] == "MESSAGE_CREATE"
     assert event["d"]["content"] == "gateway hello"
+
+
+def test_channel_create_fans_out_to_gateway_subscribers() -> None:
+    with TestClient(app) as client:
+        with client.websocket_connect("/gateway") as websocket:
+            websocket.receive_json()
+            websocket.send_json({"op": 2, "d": {"token": auth_token()}})
+            websocket.receive_json()
+
+            response = client.post(
+                "/api/guilds/1001/channels",
+                json={"name": "live-channel", "type": 0},
+                headers=auth_headers(),
+            )
+            event = websocket.receive_json()
+
+    assert response.status_code == 201
+    assert event["t"] == "CHANNEL_CREATE"
+    assert event["d"]["name"] == "live-channel"
+
+
+def test_role_create_fans_out_guild_update() -> None:
+    with TestClient(app) as client:
+        with client.websocket_connect("/gateway") as websocket:
+            websocket.receive_json()
+            websocket.send_json({"op": 2, "d": {"token": auth_token()}})
+            websocket.receive_json()
+
+            response = client.post(
+                "/api/guilds/1001/roles",
+                json={"name": "Live Role", "permissions": 0},
+                headers=auth_headers(),
+            )
+            event = websocket.receive_json()
+
+    assert response.status_code == 201
+    assert event["t"] == "GUILD_UPDATE"
+    assert any(role["name"] == "Live Role" for role in event["d"]["roles"])
 
 
 def test_create_message_requires_guild_membership() -> None:

@@ -80,3 +80,38 @@ async def test_broadcast_channel_dispatches_to_subscribers() -> None:
         {"op": int(Opcode.DISPATCH), "d": {"id": 1}, "s": 1, "t": "MESSAGE_CREATE"}
     ]
 
+
+async def test_add_channel_to_guild_subscribers_updates_channel_subscriptions() -> None:
+    manager = GatewayConnectionManager()
+    websocket = FakeWebSocket()
+    connection = await manager.connect(websocket)  # type: ignore[arg-type]
+    connection.guild_ids.add(1001)
+
+    manager.add_channel_to_guild_subscribers(1001, 9001)
+
+    assert 9001 in connection.channel_ids
+
+
+async def test_sync_guild_subscribers_removes_departed_members() -> None:
+    manager = GatewayConnectionManager()
+    kept_websocket = FakeWebSocket()
+    removed_websocket = FakeWebSocket()
+    kept = await manager.connect(kept_websocket)  # type: ignore[arg-type]
+    removed = await manager.connect(removed_websocket)  # type: ignore[arg-type]
+    kept.user_id = 42
+    removed.user_id = 43
+    kept.guild_ids.add(1001)
+    removed.guild_ids.add(1001)
+    kept.channel_ids.update({2001, 2002})
+    removed.channel_ids.update({2001, 2002})
+
+    manager.sync_guild_subscribers(
+        1001,
+        member_ids={42},
+        channel_ids={2001, 2002},
+    )
+
+    assert 1001 in kept.guild_ids
+    assert 2001 in kept.channel_ids
+    assert 1001 not in removed.guild_ids
+    assert 2001 not in removed.channel_ids

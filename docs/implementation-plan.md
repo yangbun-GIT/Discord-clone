@@ -71,8 +71,11 @@
   messages by ID.
 - Heartbeat zombie-connection reaping now runs from lifespan startup and is covered by
   gateway manager tests.
-- Next realtime work: broaden channel/member/role event dispatches and add message
-  update/delete events.
+- Channel creation now dispatches `CHANNEL_CREATE` and updates gateway channel
+  subscriptions for guild subscribers.
+- Invite join, role mutations, and member removal now dispatch `GUILD_UPDATE`, sync
+  server-side gateway subscriptions, and replace frontend guild snapshots.
+- Next realtime work: add message update/delete APIs and realtime events.
 
 ## Stage 4: Voice Signaling
 

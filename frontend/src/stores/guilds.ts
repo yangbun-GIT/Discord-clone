@@ -171,10 +171,7 @@ export const useGuildStore = defineStore('guilds', () => {
         { name: trimmedName, type },
         token,
       )
-      guilds.value = guilds.value.map((guild) => {
-        if (guild.id !== channel.guild_id) return guild
-        return { ...guild, channels: [...guild.channels, channel] }
-      })
+      appendChannel(channel)
       selectChannel(channel.id)
     } catch (cause) {
       setError(cause, 'Failed to create channel')
@@ -268,19 +265,64 @@ export const useGuildStore = defineStore('guilds', () => {
     })
   }
 
+  function appendChannel(channel: Channel) {
+    guilds.value = guilds.value.map((guild) => {
+      if (guild.id !== channel.guild_id) return guild
+      if (guild.channels.some((existingChannel) => existingChannel.id === channel.id)) return guild
+      return { ...guild, channels: [...guild.channels, channel] }
+    })
+  }
+
+  function syncGuildUpdate(guild: Guild) {
+    appendOrReplaceGuild(guild)
+    if (activeGuildId.value !== guild.id) return
+    if (!guild.channels.some((channel) => channel.id === activeChannelId.value)) {
+      activeChannelId.value = guild.channels[0]?.id ?? null
+    }
+  }
+
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
-    if (event !== 'MESSAGE_CREATE') return
-    const message = data as Message
-    if (
-      typeof message.id !== 'number'
-      || typeof message.channel_id !== 'number'
-      || typeof message.author_id !== 'number'
-      || typeof message.author_name !== 'string'
-      || typeof message.content !== 'string'
-    ) {
+    if (event === 'MESSAGE_CREATE') {
+      const message = data as Message
+      if (
+        typeof message.id !== 'number'
+        || typeof message.channel_id !== 'number'
+        || typeof message.author_id !== 'number'
+        || typeof message.author_name !== 'string'
+        || typeof message.content !== 'string'
+      ) {
+        return
+      }
+      appendMessage(message)
       return
     }
-    appendMessage(message)
+    if (event === 'CHANNEL_CREATE') {
+      const channel = data as Channel
+      if (
+        typeof channel.id !== 'number'
+        || typeof channel.guild_id !== 'number'
+        || typeof channel.name !== 'string'
+        || typeof channel.type !== 'number'
+        || typeof channel.position !== 'number'
+      ) {
+        return
+      }
+      appendChannel(channel)
+      return
+    }
+    if (event === 'GUILD_UPDATE') {
+      const guild = data as Guild
+      if (
+        typeof guild.id !== 'number'
+        || typeof guild.name !== 'string'
+        || !Array.isArray(guild.channels)
+        || !Array.isArray(guild.members)
+        || !Array.isArray(guild.messages)
+      ) {
+        return
+      }
+      syncGuildUpdate(guild)
+    }
   }
 
   async function sendMessage(token: string | null, content: string) {

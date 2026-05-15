@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
+from app.realtime.publisher import publish_channel_create, publish_guild_update
 from app.schemas.auth import UserPublic
 from app.schemas.guild import (
     ChannelCreate,
@@ -68,7 +69,9 @@ async def join_guild_invite(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> GuildRead:
     try:
-        return await join_invite(code, current_user)
+        guild = await join_invite(code, current_user)
+        await publish_guild_update(guild)
+        return guild
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -110,7 +113,9 @@ async def create_guild_role(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> GuildRead:
     try:
-        return await create_role(guild_id, payload, current_user)
+        guild = await create_role(guild_id, payload, current_user)
+        await publish_guild_update(guild)
+        return guild
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -135,7 +140,9 @@ async def assign_guild_member_role(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> GuildRead:
     try:
-        return await assign_member_role(guild_id, member_id, payload, current_user)
+        guild = await assign_member_role(guild_id, member_id, payload, current_user)
+        await publish_guild_update(guild)
+        return guild
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -160,7 +167,9 @@ async def remove_guild_member_role(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> GuildRead:
     try:
-        return await remove_member_role(guild_id, member_id, role_id, current_user)
+        guild = await remove_member_role(guild_id, member_id, role_id, current_user)
+        await publish_guild_update(guild)
+        return guild
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -184,7 +193,9 @@ async def remove_guild_member(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> GuildRead:
     try:
-        return await remove_member(guild_id, member_id, current_user)
+        guild = await remove_member(guild_id, member_id, current_user)
+        await publish_guild_update(guild)
+        return guild
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -213,7 +224,9 @@ async def create_guild_channel(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> ChannelRead:
     try:
-        return await create_channel(guild_id, payload, current_user)
+        channel = await create_channel(guild_id, payload, current_user)
+        await publish_channel_create(channel)
+        return channel
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

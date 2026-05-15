@@ -106,9 +106,12 @@ The app boots in two local modes:
   - Pydantic gateway event and identify payload schemas.
 - `backend/app/gateway/manager.py`
   - In-memory WebSocket connection registry.
-  - Tracks user identity, sequence, heartbeat timestamp, and subscribed channel IDs.
+  - Tracks user identity, sequence, heartbeat timestamp, subscribed guild IDs, and
+    subscribed channel IDs.
   - Contains zombie-connection reaping helper.
   - Broadcasts Discord-style dispatch payloads to connections subscribed to a channel.
+  - Broadcasts guild-scoped dispatch payloads and keeps guild/channel subscriptions in
+    sync when channel or guild membership snapshots change.
 - `backend/app/gateway/reaper.py`
   - Background loop that periodically calls `gateway_manager.reap_zombies()` using
     the configured heartbeat interval.
@@ -124,11 +127,16 @@ The app boots in two local modes:
 - `backend/app/realtime/events.py`
   - Defines the Redis gateway-event channel name and `RealtimeGatewayEvent` schema.
 - `backend/app/realtime/publisher.py`
-  - Publishes `MESSAGE_CREATE` payloads to Redis when configured.
+  - Publishes `MESSAGE_CREATE`, `CHANNEL_CREATE`, and `GUILD_UPDATE` payloads to Redis
+    when configured.
   - Falls back to local `gateway_manager.broadcast_channel()` when Redis is absent.
+  - Updates local gateway subscriptions for channel creation and guild membership
+    changes before fallback broadcasts.
 - `backend/app/realtime/subscriber.py`
   - Consumes Redis gateway-event Pub/Sub messages and fans them out to local WebSocket
     subscribers.
+  - Updates local gateway subscriptions for channel creation and guild membership
+    changes before broadcasting Redis-sourced events.
 - `backend/app/api/routes/health.py`
   - `/api/health` reports service status and whether DB/Redis are configured/connected.
   - Empty `DATABASE_URL` and `REDIS_URL` values are reported as not configured.
@@ -157,6 +165,8 @@ The app boots in two local modes:
     the guild service.
   - Channel creation returns `403` when the authenticated user lacks
     `MANAGE_CHANNELS`.
+  - Channel creation publishes `CHANNEL_CREATE`; invite join, role mutations, and
+    member removal publish `GUILD_UPDATE`.
 - `backend/app/api/routes/channels.py`
   - `POST /api/channels/{channel_id}/messages` creates sanitized messages through
     the guild service.
@@ -241,6 +251,9 @@ The app boots in two local modes:
   - Calls the protected channel creation and message creation APIs.
   - Applies gateway `MESSAGE_CREATE` dispatches with message ID deduplication so REST
     echoes and WebSocket events do not double-insert messages.
+  - Applies gateway `CHANNEL_CREATE` dispatches with channel ID deduplication.
+  - Applies gateway `GUILD_UPDATE` dispatches by replacing the local guild snapshot
+    and preserving a valid active channel.
   - Uses `document.startViewTransition()` when available for channel switching.
 - `frontend/src/composables/useGateway.ts`
   - Browser WebSocket gateway client.
@@ -342,8 +355,8 @@ The app boots in two local modes:
   - Server accepts `/gateway`.
   - Server sends Hello: `{ op: 10, d: { heartbeat_interval } }`.
   - Client sends Identify: `{ op: 2, d: { token, os, library } }`.
-  - Server validates JWT, subscribes the connection to the authenticated user's
-    channel IDs, and sends Ready dispatch: `{ op: 0, t: "READY" }`.
+  - Server validates JWT, subscribes the connection to the authenticated user's guild
+    and channel IDs, and sends Ready dispatch: `{ op: 0, t: "READY" }`.
   - Client sends Heartbeat: `{ op: 1 }`.
   - Server replies Heartbeat ACK: `{ op: 11 }`.
   - The lifespan reaper closes connections that miss two heartbeat windows with code
@@ -358,6 +371,16 @@ The app boots in two local modes:
     development still receives live message events.
   - `useGateway()` forwards gateway dispatches into `guilds.handleGatewayDispatch()`,
     which appends unseen messages by ID.
+- Realtime guild state flow:
+  - Channel creation publishes `CHANNEL_CREATE` to guild subscribers and updates their
+    server-side channel subscriptions so future messages in the new channel can fan
+    out without reconnecting.
+  - Invite join, role creation/assignment/removal, and member removal publish
+    `GUILD_UPDATE`.
+  - `GUILD_UPDATE` syncs local gateway guild/channel subscriptions from the incoming
+    member and channel snapshot, then broadcasts the refreshed guild payload.
+  - The frontend applies `CHANNEL_CREATE` by appending unseen channels and applies
+    `GUILD_UPDATE` by replacing the guild snapshot.
 - External services:
   - `DATABASE_URL` will point to Neon PostgreSQL.
   - Docker Compose sets `DATABASE_URL` to local PostgreSQL by default.
@@ -425,8 +448,7 @@ npm run docker:down
 
 Stage 3 should continue realtime messaging:
 
-- Broaden realtime events for channel creation, role/member changes, and message
-  updates/deletes.
+- Add message update/delete APIs and realtime events.
 - Add focused repository tests for PostgreSQL-backed guild mutations.
 
 Completed Stage 2 bridge work:
@@ -460,6 +482,9 @@ Completed Stage 2 bridge work:
   with message deduplication.
 - Added a gateway zombie-connection reaper background task and tests for heartbeat
   timeout cleanup plus channel broadcast behavior.
+- Added `CHANNEL_CREATE` and `GUILD_UPDATE` realtime dispatch for channel creation,
+  invite joins, role mutations, and member removal, including server-side subscription
+  synchronization and frontend state application.
 
 After each stage or meaningful feature:
 

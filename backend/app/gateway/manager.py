@@ -16,6 +16,7 @@ class ClientConnection:
     identified: bool = False
     sequence: int = 0
     last_heartbeat_at: float = field(default_factory=time.monotonic)
+    guild_ids: set[int] = field(default_factory=set)
     channel_ids: set[int] = field(default_factory=set)
 
     async def send(
@@ -55,11 +56,13 @@ class GatewayConnectionManager:
         *,
         user_id: int,
         username: str | None,
+        guild_ids: set[int] | None = None,
         channel_ids: set[int] | None = None,
     ) -> None:
         connection.user_id = user_id
         connection.username = username
         connection.identified = True
+        connection.guild_ids = guild_ids or set()
         connection.channel_ids = channel_ids or set()
         connection.last_heartbeat_at = time.monotonic()
 
@@ -78,6 +81,40 @@ class GatewayConnectionManager:
 
         for connection in stale:
             self.disconnect(connection)
+
+    async def broadcast_guild(self, guild_id: int, event: str, data: dict[str, object]) -> None:
+        stale: list[ClientConnection] = []
+        for connection in self._connections:
+            if guild_id not in connection.guild_ids:
+                continue
+            try:
+                await connection.send(op=Opcode.DISPATCH, data=data, event=event)
+            except RuntimeError:
+                stale.append(connection)
+
+        for connection in stale:
+            self.disconnect(connection)
+
+    def add_channel_to_guild_subscribers(self, guild_id: int, channel_id: int) -> None:
+        for connection in self._connections:
+            if guild_id in connection.guild_ids:
+                connection.channel_ids.add(channel_id)
+
+    def sync_guild_subscribers(
+        self,
+        guild_id: int,
+        *,
+        member_ids: set[int],
+        channel_ids: set[int],
+    ) -> None:
+        for connection in self._connections:
+            if connection.user_id in member_ids:
+                connection.guild_ids.add(guild_id)
+                connection.channel_ids.update(channel_ids)
+                continue
+            if guild_id in connection.guild_ids:
+                connection.guild_ids.discard(guild_id)
+                connection.channel_ids.difference_update(channel_ids)
 
     async def reap_zombies(self, *, heartbeat_interval_ms: int) -> int:
         now = time.monotonic()

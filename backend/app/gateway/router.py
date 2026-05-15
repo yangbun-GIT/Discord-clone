@@ -46,6 +46,7 @@ async def gateway(websocket: WebSocket) -> None:
                     status=1,
                 )
                 guilds = await list_guilds_for_user(user)
+                subscribed_guild_ids = {guild.id for guild in guilds}
                 subscribed_channel_ids = {
                     channel.id
                     for guild in guilds
@@ -55,6 +56,7 @@ async def gateway(websocket: WebSocket) -> None:
                     connection,
                     user_id=user.id,
                     username=user.username,
+                    guild_ids=subscribed_guild_ids,
                     channel_ids=subscribed_channel_ids,
                 )
                 await connection.send(
@@ -67,6 +69,7 @@ async def gateway(websocket: WebSocket) -> None:
                         },
                         "session": {
                             "gateway_connections": gateway_manager.size,
+                            "subscribed_guild_ids": sorted(subscribed_guild_ids),
                             "subscribed_channel_ids": sorted(subscribed_channel_ids),
                         },
                     },
