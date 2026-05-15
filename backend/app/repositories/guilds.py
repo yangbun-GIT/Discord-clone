@@ -17,6 +17,7 @@ from app.schemas.guild import (
     RoleCreate,
     RoleRead,
 )
+from app.schemas.message import MessageDeleteRead
 
 id_generator = SnowflakeGenerator(worker_id=2)
 BASE_MEMBER_PERMISSIONS = merge_permissions(
@@ -431,6 +432,55 @@ class GuildRepository:
         )
         return message
 
+    async def update_message(
+        self,
+        *,
+        channel_id: int,
+        message_id: int,
+        actor: UserPublic,
+        content: str,
+    ) -> MessageRead:
+        row = await self._get_message_row(channel_id, message_id)
+        await self._require_message_author_or_manager(row, actor)
+
+        await database.execute(
+            """
+            UPDATE messages
+            SET content = $1
+            WHERE id = $2 AND channel_id = $3
+            """,
+            content,
+            message_id,
+            channel_id,
+        )
+        return MessageRead(
+            id=int(row["id"]),
+            channel_id=int(row["channel_id"]),
+            author_id=int(row["author_id"]),
+            author_name=str(row["author_name"]),
+            content=content,
+        )
+
+    async def delete_message(
+        self,
+        *,
+        channel_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> MessageDeleteRead:
+        row = await self._get_message_row(channel_id, message_id)
+        await self._require_message_author_or_manager(row, actor)
+
+        await database.execute(
+            """
+            DELETE FROM messages
+            WHERE id = $1 AND channel_id = $2
+            """,
+            message_id,
+            channel_id,
+        )
+        return MessageDeleteRead(id=message_id, channel_id=channel_id)
+
     async def _list_channels(self, guild_id: int) -> list[ChannelRead]:
         rows = await database.fetch(
             """
@@ -551,6 +601,44 @@ class GuildRepository:
             )
             for row in rows
         ]
+
+    async def _get_message_row(self, channel_id: int, message_id: int) -> Any:
+        row = await database.fetchrow(
+            """
+            SELECT
+                m.id,
+                m.channel_id,
+                m.author_id,
+                u.username AS author_name,
+                c.guild_id,
+                c.type,
+                g.owner_id
+            FROM messages m
+            JOIN channels c ON c.id = m.channel_id
+            JOIN guilds g ON g.id = c.guild_id
+            JOIN users u ON u.id = m.author_id
+            WHERE m.id = $1 AND m.channel_id = $2
+            """,
+            message_id,
+            channel_id,
+        )
+        if row is None:
+            raise KeyError(message_id)
+        if int(row["type"]) != 0:
+            raise ValueError("messages can only be managed in text channels")
+        return row
+
+    async def _require_message_author_or_manager(self, row: Any, actor: UserPublic) -> None:
+        permissions = await self._permissions_for_member(
+            int(row["guild_id"]),
+            actor.id,
+            int(row["owner_id"]),
+        )
+        if actor.id == int(row["author_id"]):
+            return
+        if has_permission(permissions, Permission.MANAGE_MESSAGES):
+            return
+        raise PermissionError("message author or manage messages permission required")
 
     async def _permissions_for_member(
         self,

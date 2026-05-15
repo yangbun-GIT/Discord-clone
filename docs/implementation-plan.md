@@ -75,7 +75,11 @@
   subscriptions for guild subscribers.
 - Invite join, role mutations, and member removal now dispatch `GUILD_UPDATE`, sync
   server-side gateway subscriptions, and replace frontend guild snapshots.
-- Next realtime work: add message update/delete APIs and realtime events.
+- Message update/delete APIs now validate sanitized content and author or
+  `MANAGE_MESSAGES` permission, persist through PostgreSQL or demo-store fallback,
+  dispatch `MESSAGE_UPDATE`/`MESSAGE_DELETE`, and update the frontend chat state.
+- Remaining realtime support work: add focused repository tests for PostgreSQL-backed
+  guild and message mutations.
 
 ## Stage 4: Voice Signaling
 

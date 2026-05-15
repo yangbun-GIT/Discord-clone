@@ -276,6 +276,79 @@ def test_create_message_returns_created_payload() -> None:
     assert response.json()["author_name"] == "yangbun"
 
 
+def test_update_message_returns_updated_payload() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/channels/2001/messages",
+        json={"channel_id": 2001, "content": "before edit"},
+        headers=auth_headers(),
+    )
+    message_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/api/channels/2001/messages/{message_id}",
+        json={"content": "after edit"},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["id"] == message_id
+    assert response.json()["content"] == "after edit"
+
+
+def test_update_message_requires_author_or_manager() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/channels/2001/messages",
+        json={"channel_id": 2001, "content": "owned by yangbun"},
+        headers=auth_headers(),
+    )
+    message_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/api/channels/2001/messages/{message_id}",
+        json={"content": "blocked edit"},
+        headers=auth_headers(user_id=43, username="codex"),
+    )
+
+    assert response.status_code == 403
+
+
+def test_delete_message_returns_deleted_payload() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/channels/2001/messages",
+        json={"channel_id": 2001, "content": "delete me"},
+        headers=auth_headers(),
+    )
+    message_id = create_response.json()["id"]
+
+    response = client.delete(
+        f"/api/channels/2001/messages/{message_id}",
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"id": message_id, "channel_id": 2001}
+
+
+def test_delete_message_requires_author_or_manager() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/channels/2001/messages",
+        json={"channel_id": 2001, "content": "owned by yangbun"},
+        headers=auth_headers(),
+    )
+    message_id = create_response.json()["id"]
+
+    response = client.delete(
+        f"/api/channels/2001/messages/{message_id}",
+        headers=auth_headers(user_id=43, username="codex"),
+    )
+
+    assert response.status_code == 403
+
+
 def test_gateway_identify_subscribes_user_channels() -> None:
     with TestClient(app) as client:
         with client.websocket_connect("/gateway") as websocket:
@@ -307,6 +380,44 @@ def test_message_create_fans_out_to_gateway_subscribers() -> None:
     assert response.status_code == 201
     assert event["t"] == "MESSAGE_CREATE"
     assert event["d"]["content"] == "gateway hello"
+
+
+def test_message_update_and_delete_fan_out_to_gateway_subscribers() -> None:
+    with TestClient(app) as client:
+        with client.websocket_connect("/gateway") as websocket:
+            websocket.receive_json()
+            websocket.send_json({"op": 2, "d": {"token": auth_token()}})
+            websocket.receive_json()
+
+            create_response = client.post(
+                "/api/channels/2001/messages",
+                json={"channel_id": 2001, "content": "gateway mutable"},
+                headers=auth_headers(),
+            )
+            created_event = websocket.receive_json()
+            message_id = create_response.json()["id"]
+
+            update_response = client.patch(
+                f"/api/channels/2001/messages/{message_id}",
+                json={"content": "gateway edited"},
+                headers=auth_headers(),
+            )
+            updated_event = websocket.receive_json()
+
+            delete_response = client.delete(
+                f"/api/channels/2001/messages/{message_id}",
+                headers=auth_headers(),
+            )
+            deleted_event = websocket.receive_json()
+
+    assert create_response.status_code == 201
+    assert created_event["t"] == "MESSAGE_CREATE"
+    assert update_response.status_code == 200
+    assert updated_event["t"] == "MESSAGE_UPDATE"
+    assert updated_event["d"]["content"] == "gateway edited"
+    assert delete_response.status_code == 200
+    assert deleted_event["t"] == "MESSAGE_DELETE"
+    assert deleted_event["d"] == {"id": message_id, "channel_id": 2001}
 
 
 def test_channel_create_fans_out_to_gateway_subscribers() -> None:

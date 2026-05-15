@@ -12,6 +12,7 @@ from app.schemas.guild import (
     MessageRead,
     RoleCreate,
 )
+from app.schemas.message import MessageDeleteRead
 
 
 async def list_guilds_for_user(user: UserPublic | None = None) -> list[GuildRead]:
@@ -110,4 +111,45 @@ async def create_message(
         author_id=author.id,
         author_name=author.username,
         content=content,
+    )
+
+
+async def update_message(
+    *,
+    channel_id: int,
+    message_id: int,
+    actor: UserPublic,
+    content: str,
+) -> MessageRead:
+    if database.is_connected:
+        return await guild_repository.update_message(
+            channel_id=channel_id,
+            message_id=message_id,
+            actor=actor,
+            content=content,
+        )
+    return demo_store.update_message(
+        channel_id=channel_id,
+        message_id=message_id,
+        actor=actor,
+        content=content,
+    )
+
+
+async def delete_message(
+    *,
+    channel_id: int,
+    message_id: int,
+    actor: UserPublic,
+) -> MessageDeleteRead:
+    if database.is_connected:
+        return await guild_repository.delete_message(
+            channel_id=channel_id,
+            message_id=message_id,
+            actor=actor,
+        )
+    return demo_store.delete_message(
+        channel_id=channel_id,
+        message_id=message_id,
+        actor=actor,
     )

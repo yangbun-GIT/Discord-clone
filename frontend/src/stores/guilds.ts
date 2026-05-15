@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
-import { apiDelete, apiGet, apiPost } from '../services/api'
-import type { Channel, Guild, Invite, Message } from '../types'
+import { apiDelete, apiGet, apiPatch, apiPost } from '../services/api'
+import type { Channel, Guild, Invite, Message, MessageDelete } from '../types'
 
 const ADMINISTRATOR_PERMISSION = 1 << 3
+const MANAGE_MESSAGES_PERMISSION = 1 << 13
 
 export const useGuildStore = defineStore('guilds', () => {
   const guilds = shallowRef<Guild[]>([])
@@ -25,6 +26,10 @@ export const useGuildStore = defineStore('guilds', () => {
   })
   const voiceChannel = computed(() => activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null)
   const canManageRoles = computed(() => Boolean((activeGuild.value?.permissions ?? 0) & ADMINISTRATOR_PERMISSION))
+  const canManageMessages = computed(() => {
+    const permissions = activeGuild.value?.permissions ?? 0
+    return Boolean((permissions & ADMINISTRATOR_PERMISSION) || (permissions & MANAGE_MESSAGES_PERMISSION))
+  })
 
   function setError(cause: unknown, fallback: string) {
     error.value = cause instanceof Error ? cause.message : fallback
@@ -265,6 +270,28 @@ export const useGuildStore = defineStore('guilds', () => {
     })
   }
 
+  function updateMessage(message: Message) {
+    guilds.value = guilds.value.map((guild) => {
+      if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
+      return {
+        ...guild,
+        messages: guild.messages.map((existingMessage) =>
+          existingMessage.id === message.id ? message : existingMessage,
+        ),
+      }
+    })
+  }
+
+  function deleteStoredMessage(message: MessageDelete) {
+    guilds.value = guilds.value.map((guild) => {
+      if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
+      return {
+        ...guild,
+        messages: guild.messages.filter((existingMessage) => existingMessage.id !== message.id),
+      }
+    })
+  }
+
   function appendChannel(channel: Channel) {
     guilds.value = guilds.value.map((guild) => {
       if (guild.id !== channel.guild_id) return guild
@@ -294,6 +321,28 @@ export const useGuildStore = defineStore('guilds', () => {
         return
       }
       appendMessage(message)
+      return
+    }
+    if (event === 'MESSAGE_UPDATE') {
+      const message = data as Message
+      if (
+        typeof message.id !== 'number'
+        || typeof message.channel_id !== 'number'
+        || typeof message.author_id !== 'number'
+        || typeof message.author_name !== 'string'
+        || typeof message.content !== 'string'
+      ) {
+        return
+      }
+      updateMessage(message)
+      return
+    }
+    if (event === 'MESSAGE_DELETE') {
+      const message = data as MessageDelete
+      if (typeof message.id !== 'number' || typeof message.channel_id !== 'number') {
+        return
+      }
+      deleteStoredMessage(message)
       return
     }
     if (event === 'CHANNEL_CREATE') {
@@ -344,6 +393,45 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  async function editMessage(token: string | null, messageId: number, content: string) {
+    if (!activeChannel.value || activeChannel.value.type !== 0) return
+    const trimmedContent = content.trim()
+    if (!trimmedContent) return
+    isMutating.value = true
+    error.value = null
+    try {
+      const message = await apiPatch<Message, { content: string }>(
+        `/api/channels/${activeChannel.value.id}/messages/${messageId}`,
+        { content: trimmedContent },
+        token,
+      )
+      updateMessage(message)
+    } catch (cause) {
+      setError(cause, 'Failed to edit message')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function deleteMessage(token: string | null, messageId: number) {
+    if (!activeChannel.value || activeChannel.value.type !== 0) return
+    isMutating.value = true
+    error.value = null
+    try {
+      const message = await apiDelete<MessageDelete>(
+        `/api/channels/${activeChannel.value.id}/messages/${messageId}`,
+        token,
+      )
+      deleteStoredMessage(message)
+    } catch (cause) {
+      setError(cause, 'Failed to delete message')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
   return {
     guilds,
     activeGuildId,
@@ -353,6 +441,7 @@ export const useGuildStore = defineStore('guilds', () => {
     activeMessages,
     voiceChannel,
     canManageRoles,
+    canManageMessages,
     voiceConnected,
     isLoading,
     isMutating,
@@ -373,5 +462,7 @@ export const useGuildStore = defineStore('guilds', () => {
     removeMember,
     handleGatewayDispatch,
     sendMessage,
+    editMessage,
+    deleteMessage,
   }
 })

@@ -126,6 +126,20 @@ function handleSendMessage(content: string) {
   })
 }
 
+function handleEditMessage(messageId: number, content: string) {
+  workspaceError.value = null
+  void guilds.editMessage(session.token, messageId, content).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Message edit failed'
+  })
+}
+
+function handleDeleteMessage(messageId: number) {
+  workspaceError.value = null
+  void guilds.deleteMessage(session.token, messageId).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Message deletion failed'
+  })
+}
+
 function handleCreateRole(name: string, permissions: number) {
   workspaceError.value = null
   void guilds.createRole(session.token, name, permissions).catch((error) => {
@@ -280,7 +294,10 @@ async function handleCreateInvite() {
           :channel="activeChannel"
           :messages="activeMessages"
           :current-user="session.user"
+          :can-manage-messages="guilds.canManageMessages"
           @send="handleSendMessage"
+          @edit="handleEditMessage"
+          @delete="handleDeleteMessage"
         />
         <MemberList
           v-if="activeGuild"

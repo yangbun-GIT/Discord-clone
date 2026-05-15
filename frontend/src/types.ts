@@ -28,6 +28,11 @@ export type Message = {
   content: string
 }
 
+export type MessageDelete = {
+  id: number
+  channel_id: number
+}
+
 export type Role = {
   id: number
   guild_id: number

@@ -20,6 +20,7 @@ from app.schemas.guild import (
     RoleCreate,
     RoleRead,
 )
+from app.schemas.message import MessageDeleteRead
 
 
 class DemoStore:
@@ -226,6 +227,39 @@ class DemoStore:
             guild.messages.append(message)
             return deepcopy(message)
 
+    def update_message(
+        self,
+        *,
+        channel_id: int,
+        message_id: int,
+        actor: UserPublic,
+        content: str,
+    ) -> MessageRead:
+        with self._lock:
+            guild = self._find_guild_by_channel(channel_id)
+            message = self._find_message(guild, channel_id, message_id)
+            self._require_message_author_or_owner(guild, message, actor)
+            message.content = content
+            return deepcopy(message)
+
+    def delete_message(
+        self,
+        *,
+        channel_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> MessageDeleteRead:
+        with self._lock:
+            guild = self._find_guild_by_channel(channel_id)
+            message = self._find_message(guild, channel_id, message_id)
+            self._require_message_author_or_owner(guild, message, actor)
+            guild.messages = [
+                existing_message
+                for existing_message in guild.messages
+                if existing_message.id != message_id
+            ]
+            return MessageDeleteRead(id=message_id, channel_id=channel_id)
+
     def _find_guild(self, guild_id: int) -> GuildRead:
         for guild in self._guilds:
             if guild.id == guild_id:
@@ -250,9 +284,30 @@ class DemoStore:
                 return role
         raise KeyError(role_id)
 
+    def _find_message(
+        self,
+        guild: GuildRead,
+        channel_id: int,
+        message_id: int,
+    ) -> MessageRead:
+        for message in guild.messages:
+            if message.id == message_id and message.channel_id == channel_id:
+                return message
+        raise KeyError(message_id)
+
     def _require_owner(self, guild: GuildRead, actor: UserPublic) -> None:
         if actor.id != guild.owner_id:
             raise PermissionError("administrator permission required")
+
+    def _require_message_author_or_owner(
+        self,
+        guild: GuildRead,
+        message: MessageRead,
+        actor: UserPublic,
+    ) -> None:
+        if actor.id == message.author_id or actor.id == guild.owner_id:
+            return
+        raise PermissionError("message author or manage messages permission required")
 
     def _member_role_label(self, guild: GuildRead, member: MemberRead) -> str:
         if member.id == guild.owner_id:

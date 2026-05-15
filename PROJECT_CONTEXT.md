@@ -13,7 +13,7 @@ editing code, then update it whenever a meaningful implementation change lands.
 ## Current Milestone
 
 Stage 3 is in progress. Stage 1, the Docker development baseline, Stage 2's main
-persistence/auth/member-management bridge, and the first realtime messaging fan-out
+persistence/auth/member-management bridge, and the main realtime text-message CRUD
 slice are complete and pushed to GitHub.
 
 The app boots in two local modes:
@@ -127,8 +127,8 @@ The app boots in two local modes:
 - `backend/app/realtime/events.py`
   - Defines the Redis gateway-event channel name and `RealtimeGatewayEvent` schema.
 - `backend/app/realtime/publisher.py`
-  - Publishes `MESSAGE_CREATE`, `CHANNEL_CREATE`, and `GUILD_UPDATE` payloads to Redis
-    when configured.
+  - Publishes `MESSAGE_CREATE`, `MESSAGE_UPDATE`, `MESSAGE_DELETE`, `CHANNEL_CREATE`,
+    and `GUILD_UPDATE` payloads to Redis when configured.
   - Falls back to local `gateway_manager.broadcast_channel()` when Redis is absent.
   - Updates local gateway subscriptions for channel creation and guild membership
     changes before fallback broadcasts.
@@ -170,10 +170,14 @@ The app boots in two local modes:
 - `backend/app/api/routes/channels.py`
   - `POST /api/channels/{channel_id}/messages` creates sanitized messages through
     the guild service.
+  - `PATCH /api/channels/{channel_id}/messages/{message_id}` edits sanitized message
+    content for the message author or users with `MANAGE_MESSAGES`.
+  - `DELETE /api/channels/{channel_id}/messages/{message_id}` deletes messages for
+    the message author or users with `MANAGE_MESSAGES`.
   - Message creation returns `403` when the authenticated user is not a guild member
     or lacks `SEND_MESSAGES`.
-  - After persistence succeeds, publishes `MESSAGE_CREATE` through the realtime
-    publisher.
+  - After persistence succeeds, publishes `MESSAGE_CREATE`, `MESSAGE_UPDATE`, or
+    `MESSAGE_DELETE` through the realtime publisher.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
 - `backend/app/demo/data.py`
@@ -182,19 +186,21 @@ The app boots in two local modes:
   - Process-local mutable demo store.
   - Creates guilds, invite codes, roles, member-role assignments, channels, and
     messages with Snowflake IDs.
+  - Updates and deletes messages for the message author or guild owner.
   - Still used only when no database pool is configured.
   - Filters guild reads by member and enforces owner-only channel creation plus
     owner-only role/member management plus member-only message creation.
 - `backend/app/repositories/guilds.py`
   - PostgreSQL repository for guild creation, invite creation/join, role creation,
     member-role assignment/removal, member removal, guild membership reads, channel
-    creation, and message creation.
+    creation, message creation, message update, and message deletion.
   - Converts asyncpg rows into `GuildRead`, `ChannelRead`, `MemberRead`, and
     `RoleRead`/`MessageRead` schemas.
   - Computes effective permissions from ownership, base member permissions, and role
     permissions.
   - Requires `MANAGE_CHANNELS` for channel creation and `SEND_MESSAGES` for message
     creation.
+  - Requires message author ownership or `MANAGE_MESSAGES` for message update/delete.
   - Requires `ADMINISTRATOR` for role creation and member-role mutations.
 - `backend/app/repositories/users.py`
   - PostgreSQL repository for creating users and fetching password hashes by username.
@@ -230,7 +236,7 @@ The app boots in two local modes:
   - Emits auth actions to `App.vue`; it does not own token storage.
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
-  - GET, POST, and DELETE calls accept an optional bearer token.
+  - GET, POST, PATCH, and DELETE calls accept an optional bearer token.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
   - Calls `/api/auth/login`, `/api/auth/register`, `/api/auth/me`, and
@@ -248,9 +254,11 @@ The app boots in two local modes:
   - Calls invite creation and invite join APIs.
   - Calls role creation, role assignment, and role removal APIs.
   - Calls single-guild refresh and member removal APIs.
-  - Calls the protected channel creation and message creation APIs.
+  - Calls the protected channel creation and message creation/update/delete APIs.
   - Applies gateway `MESSAGE_CREATE` dispatches with message ID deduplication so REST
     echoes and WebSocket events do not double-insert messages.
+  - Applies gateway `MESSAGE_UPDATE` and `MESSAGE_DELETE` dispatches to update or
+    remove local message state.
   - Applies gateway `CHANNEL_CREATE` dispatches with channel ID deduplication.
   - Applies gateway `GUILD_UPDATE` dispatches by replacing the local guild snapshot
     and preserving a valid active channel.
@@ -268,7 +276,10 @@ The app boots in two local modes:
   - Provides an inline text-channel creation form.
 - `frontend/src/components/ChatView.vue`
   - Message list and composer UI.
-  - Emits submitted message content to the guild store.
+  - Emits submitted message content, message edits, and message deletions to the guild
+    store.
+  - Shows edit controls for the current user's own messages and delete controls for
+    own messages or `MANAGE_MESSAGES`.
 - `frontend/src/components/MemberList.vue`
   - Member presence list.
   - Shows role labels and exposes administrator-only controls for role creation,
@@ -337,13 +348,21 @@ The app boots in two local modes:
   - Backend validates JWTs, checks administrator permissions for removal, rejects owner
     and self-removal, deletes the membership from PostgreSQL or the demo store, and
     returns the refreshed `GuildRead`.
-- Message send flow:
+- Message mutation flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
   - Backend validates JWT, sanitizes content, checks guild membership and
     `SEND_MESSAGES`, persists through PostgreSQL when connected or appends to
     `demo_store` in native fallback mode, then returns the created message.
   - `guilds.ts` immutably appends the returned message to the active guild state.
+  - `ChatView.vue` also emits edits and deletes for eligible message rows.
+  - `guilds.ts` PATCHes or DELETEs
+    `/api/channels/{channel_id}/messages/{message_id}` with bearer token.
+  - Backend sanitizes edited content, checks the actor is the message author or has
+    `MANAGE_MESSAGES`, updates/deletes through PostgreSQL or `demo_store`, and returns
+    either the updated message or `{ id, channel_id }`.
+  - `guilds.ts` updates or removes the local message after the REST response and also
+    accepts matching realtime echoes.
 - Channel creation flow:
   - `ChannelSidebar.vue` opens an inline channel-name form from the plus icon.
   - `guilds.ts` POSTs to `/api/guilds/{guild_id}/channels` with bearer token.
@@ -364,13 +383,18 @@ The app boots in two local modes:
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
+  - `PATCH /api/channels/{channel_id}/messages/{message_id}` persists sanitized
+    content first and `publish_message_update()` emits `MESSAGE_UPDATE`.
+  - `DELETE /api/channels/{channel_id}/messages/{message_id}` deletes first and
+    `publish_message_delete()` emits `MESSAGE_DELETE`.
   - With Redis configured, the payload is published to
     `discord_clone:gateway_events`, consumed by the lifespan subscriber, and broadcast
     to local WebSocket connections subscribed to the channel.
   - Without Redis, the publisher directly uses the local gateway manager so native
     development still receives live message events.
   - `useGateway()` forwards gateway dispatches into `guilds.handleGatewayDispatch()`,
-    which appends unseen messages by ID.
+    which appends unseen messages by ID, replaces edited messages, and removes
+    deleted messages.
 - Realtime guild state flow:
   - Channel creation publishes `CHANNEL_CREATE` to guild subscribers and updates their
     server-side channel subscriptions so future messages in the new channel can fan
@@ -448,8 +472,8 @@ npm run docker:down
 
 Stage 3 should continue realtime messaging:
 
-- Add message update/delete APIs and realtime events.
 - Add focused repository tests for PostgreSQL-backed guild mutations.
+- Start Stage 4 voice signaling once repository coverage is strengthened.
 
 Completed Stage 2 bridge work:
 
@@ -485,6 +509,9 @@ Completed Stage 2 bridge work:
 - Added `CHANNEL_CREATE` and `GUILD_UPDATE` realtime dispatch for channel creation,
   invite joins, role mutations, and member removal, including server-side subscription
   synchronization and frontend state application.
+- Added message update/delete REST APIs, demo-store and PostgreSQL repository support,
+  `MESSAGE_UPDATE`/`MESSAGE_DELETE` realtime dispatch, Pinia state handling, and chat
+  row edit/delete controls.
 
 After each stage or meaningful feature:
 

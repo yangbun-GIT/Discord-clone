@@ -46,6 +46,27 @@ export async function apiPost<TResponse, TPayload>(
   return response.json() as Promise<TResponse>
 }
 
+export async function apiPatch<TResponse, TPayload>(
+  path: string,
+  payload: TPayload,
+  token?: string | null,
+): Promise<TResponse> {
+  const headers = new Headers({ 'Content-Type': 'application/json' })
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) {
+    throw await readError(response, 'PATCH', path)
+  }
+  return response.json() as Promise<TResponse>
+}
+
 export async function apiDelete<TResponse>(path: string, token?: string | null): Promise<TResponse> {
   const headers = new Headers()
   if (token) {

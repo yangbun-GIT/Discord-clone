@@ -2,12 +2,31 @@ from app.gateway.manager import gateway_manager
 from app.realtime.events import GATEWAY_EVENTS_CHANNEL, RealtimeGatewayEvent
 from app.realtime.redis_bus import redis_bus
 from app.schemas.guild import ChannelRead, GuildRead, MessageRead
+from app.schemas.message import MessageDeleteRead
 
 
 async def publish_message_create(message: MessageRead) -> None:
     event = RealtimeGatewayEvent(
         channel_id=message.channel_id,
         event="MESSAGE_CREATE",
+        data=message.model_dump(),
+    )
+    await _publish_or_broadcast(event)
+
+
+async def publish_message_update(message: MessageRead) -> None:
+    event = RealtimeGatewayEvent(
+        channel_id=message.channel_id,
+        event="MESSAGE_UPDATE",
+        data=message.model_dump(),
+    )
+    await _publish_or_broadcast(event)
+
+
+async def publish_message_delete(message: MessageDeleteRead) -> None:
+    event = RealtimeGatewayEvent(
+        channel_id=message.channel_id,
+        event="MESSAGE_DELETE",
         data=message.model_dump(),
     )
     await _publish_or_broadcast(event)
