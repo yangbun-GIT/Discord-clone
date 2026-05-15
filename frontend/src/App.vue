@@ -44,7 +44,7 @@ const inviteCode = ref<string | null>(null)
 async function openWorkspace() {
   if (!session.token) return
   await guilds.loadGuilds(session.token)
-  connectGateway(session.token)
+  connectGateway(session.token, { onDispatch: guilds.handleGatewayDispatch })
 }
 
 onMounted(async () => {

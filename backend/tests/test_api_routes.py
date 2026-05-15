@@ -9,6 +9,10 @@ def auth_headers(user_id: int = 42, username: str = "yangbun") -> dict[str, str]
     return {"Authorization": f"Bearer {token}"}
 
 
+def auth_token(user_id: int = 42, username: str = "yangbun") -> str:
+    return create_access_token(subject=str(user_id), claims={"username": username})
+
+
 def test_create_message_requires_auth() -> None:
     client = TestClient(app)
 
@@ -270,6 +274,38 @@ def test_create_message_returns_created_payload() -> None:
     assert response.status_code == 201
     assert response.json()["content"] == "hello"
     assert response.json()["author_name"] == "yangbun"
+
+
+def test_gateway_identify_subscribes_user_channels() -> None:
+    with TestClient(app) as client:
+        with client.websocket_connect("/gateway") as websocket:
+            hello = websocket.receive_json()
+            assert hello["op"] == 10
+
+            websocket.send_json({"op": 2, "d": {"token": auth_token()}})
+            ready = websocket.receive_json()
+
+    assert ready["t"] == "READY"
+    assert 2001 in ready["d"]["session"]["subscribed_channel_ids"]
+
+
+def test_message_create_fans_out_to_gateway_subscribers() -> None:
+    with TestClient(app) as client:
+        with client.websocket_connect("/gateway") as websocket:
+            websocket.receive_json()
+            websocket.send_json({"op": 2, "d": {"token": auth_token()}})
+            websocket.receive_json()
+
+            response = client.post(
+                "/api/channels/2001/messages",
+                json={"channel_id": 2001, "content": "gateway hello"},
+                headers=auth_headers(),
+            )
+            event = websocket.receive_json()
+
+    assert response.status_code == 201
+    assert event["t"] == "MESSAGE_CREATE"
+    assert event["d"]["content"] == "gateway hello"
 
 
 def test_create_message_requires_guild_membership() -> None:

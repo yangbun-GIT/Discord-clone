@@ -9,9 +9,12 @@ type GatewayEvent = {
   t?: string | null
 }
 
+type GatewayDispatchHandler = (event: string, data: Record<string, unknown>) => void
+
 const socket = ref<WebSocket | null>(null)
 const status = ref<GatewayStatus>('idle')
 const heartbeatTimer = ref<number | null>(null)
+const dispatchHandler = ref<GatewayDispatchHandler | null>(null)
 
 function clearHeartbeat() {
   if (heartbeatTimer.value !== null) {
@@ -27,7 +30,8 @@ function send(payload: GatewayEvent) {
 }
 
 export function useGateway() {
-  function connect(token: string) {
+  function connect(token: string, options: { onDispatch?: GatewayDispatchHandler } = {}) {
+    dispatchHandler.value = options.onDispatch ?? null
     if (socket.value && socket.value.readyState <= WebSocket.OPEN) {
       return
     }
@@ -47,6 +51,9 @@ export function useGateway() {
       if (payload.t === 'READY') {
         status.value = 'connected'
       }
+      if (payload.op === 0 && payload.t && payload.t !== 'READY' && payload.d) {
+        dispatchHandler.value?.(payload.t, payload.d)
+      }
     })
 
     socket.value.addEventListener('close', () => {
@@ -61,6 +68,7 @@ export function useGateway() {
     socket.value?.close()
     socket.value = null
     status.value = 'idle'
+    dispatchHandler.value = null
   }
 
   onBeforeUnmount(() => {

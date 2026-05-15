@@ -55,10 +55,12 @@ class GatewayConnectionManager:
         *,
         user_id: int,
         username: str | None,
+        channel_ids: set[int] | None = None,
     ) -> None:
         connection.user_id = user_id
         connection.username = username
         connection.identified = True
+        connection.channel_ids = channel_ids or set()
         connection.last_heartbeat_at = time.monotonic()
 
     def mark_heartbeat(self, connection: ClientConnection) -> None:

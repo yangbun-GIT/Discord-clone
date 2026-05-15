@@ -7,6 +7,8 @@ from app.core.security import decode_access_token
 from app.gateway.events import GatewayEvent, IdentifyPayload
 from app.gateway.manager import gateway_manager
 from app.gateway.opcodes import Opcode
+from app.schemas.auth import UserPublic
+from app.services.guild_service import list_guilds_for_user
 
 gateway_router = APIRouter()
 
@@ -38,10 +40,22 @@ async def gateway(websocket: WebSocket) -> None:
                     await websocket.close(code=4001, reason="invalid token")
                     return
 
+                user = UserPublic(
+                    id=int(token_payload["sub"]),
+                    username=str(token_payload.get("username", "unknown")),
+                    status=1,
+                )
+                guilds = await list_guilds_for_user(user)
+                subscribed_channel_ids = {
+                    channel.id
+                    for guild in guilds
+                    for channel in guild.channels
+                }
                 gateway_manager.mark_identified(
                     connection,
-                    user_id=int(token_payload["sub"]),
-                    username=token_payload.get("username"),
+                    user_id=user.id,
+                    username=user.username,
+                    channel_ids=subscribed_channel_ids,
                 )
                 await connection.send(
                     op=Opcode.DISPATCH,
@@ -51,7 +65,10 @@ async def gateway(websocket: WebSocket) -> None:
                             "id": connection.user_id,
                             "username": connection.username,
                         },
-                        "session": {"gateway_connections": gateway_manager.size},
+                        "session": {
+                            "gateway_connections": gateway_manager.size,
+                            "subscribed_channel_ids": sorted(subscribed_channel_ids),
+                        },
                     },
                 )
                 continue
@@ -77,4 +94,3 @@ async def gateway(websocket: WebSocket) -> None:
 
     except (WebSocketDisconnect, ValidationError):
         gateway_manager.disconnect(connection)
-

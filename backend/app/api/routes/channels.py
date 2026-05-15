@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
+from app.realtime.publisher import publish_message_create
 from app.schemas.auth import UserPublic
 from app.schemas.guild import MessageRead
 from app.schemas.message import MessageCreate
@@ -28,11 +29,13 @@ async def create_channel_message(
         )
 
     try:
-        return await create_message(
+        message = await create_message(
             channel_id=channel_id,
             author=current_user,
             content=payload.content,
         )
+        await publish_message_create(message)
+        return message
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

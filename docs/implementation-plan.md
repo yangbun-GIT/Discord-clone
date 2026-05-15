@@ -28,7 +28,7 @@
 
 ## Stage 2: Persistence and Auth
 
-- Status: in progress.
+- Status: main feature bridge completed; focused repository coverage remains.
 - Bridge completed: protected message creation and channel creation APIs are wired to
   the frontend through the process-local demo store.
 - Persistence bridge completed: Docker Compose provisions local PostgreSQL, backend
@@ -56,14 +56,21 @@
   administrator-only controls.
 - Single-guild refresh and administrator-only non-owner member removal are implemented
   across the backend, demo store, Pinia state, and member list UI.
-- Next persistence work: add focused repository tests for PostgreSQL-backed guild
+- Remaining persistence work: add focused repository tests for PostgreSQL-backed guild
   mutations.
 
 ## Stage 3: Realtime Messaging
 
+- Status: in progress.
 - Persist messages through the REST/gateway boundary.
-- Publish channel events through Redis Pub/Sub.
-- Fan out Redis events to local WebSocket connections.
+- First slice completed: persisted REST message creation now publishes
+  `MESSAGE_CREATE` to Redis Pub/Sub when configured, or directly to the local gateway
+  manager in native fallback mode.
+- First slice completed: gateway Identify subscribes the connection to the
+  authenticated user's channels, and frontend gateway dispatches append unseen
+  messages by ID.
+- Next realtime work: broaden channel/member/role event dispatches and add message
+  update/delete events.
 - Add heartbeat zombie-connection reaping tests.
 
 ## Stage 4: Voice Signaling

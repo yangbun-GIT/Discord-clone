@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -11,17 +13,25 @@ from app.db.pool import database
 from app.db.seed import seed_database
 from app.gateway.router import gateway_router
 from app.realtime.redis_bus import redis_bus
+from app.realtime.subscriber import consume_gateway_events
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
+    gateway_events_task: asyncio.Task[None] | None = None
     await database.connect(settings.database_url)
     if database.is_connected:
         await database.migrate()
         await seed_database()
     await redis_bus.connect(settings.redis_url)
+    if redis_bus.is_connected:
+        gateway_events_task = asyncio.create_task(consume_gateway_events())
     yield
+    if gateway_events_task is not None:
+        gateway_events_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await gateway_events_task
     await redis_bus.disconnect()
     await database.disconnect()
 

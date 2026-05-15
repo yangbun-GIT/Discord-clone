@@ -260,6 +260,29 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  function appendMessage(message: Message) {
+    guilds.value = guilds.value.map((guild) => {
+      if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
+      if (guild.messages.some((existingMessage) => existingMessage.id === message.id)) return guild
+      return { ...guild, messages: [...guild.messages, message] }
+    })
+  }
+
+  function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
+    if (event !== 'MESSAGE_CREATE') return
+    const message = data as Message
+    if (
+      typeof message.id !== 'number'
+      || typeof message.channel_id !== 'number'
+      || typeof message.author_id !== 'number'
+      || typeof message.author_name !== 'string'
+      || typeof message.content !== 'string'
+    ) {
+      return
+    }
+    appendMessage(message)
+  }
+
   async function sendMessage(token: string | null, content: string) {
     if (!activeChannel.value || activeChannel.value.type !== 0) return
     isMutating.value = true
@@ -270,10 +293,7 @@ export const useGuildStore = defineStore('guilds', () => {
         { channel_id: activeChannel.value.id, content },
         token,
       )
-      guilds.value = guilds.value.map((guild) => {
-        if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
-        return { ...guild, messages: [...guild.messages, message] }
-      })
+      appendMessage(message)
     } catch (cause) {
       setError(cause, 'Failed to send message')
       throw cause
@@ -309,6 +329,7 @@ export const useGuildStore = defineStore('guilds', () => {
     assignRole,
     removeRole,
     removeMember,
+    handleGatewayDispatch,
     sendMessage,
   }
 })

@@ -12,8 +12,9 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Current Milestone
 
-Stage 2 is in progress. Stage 1, the Docker development baseline, and the first
-PostgreSQL persistence bridge are complete and pushed to GitHub.
+Stage 3 is in progress. Stage 1, the Docker development baseline, Stage 2's main
+persistence/auth/member-management bridge, and the first realtime messaging fan-out
+slice are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -56,6 +57,8 @@ The app boots in two local modes:
   - Defines `create_app()`.
   - Registers CORS, local token-bucket rate limiting, REST routes, and WebSocket routes.
   - Lifespan startup connects optional database and Redis pools.
+  - Starts the Redis gateway-event subscriber task when Redis is configured and
+    cancels it during shutdown.
 - `backend/app/core/config.py`
   - Pydantic settings.
   - Reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `CORS_ORIGINS`, and runtime settings.
@@ -104,13 +107,24 @@ The app boots in two local modes:
   - In-memory WebSocket connection registry.
   - Tracks user identity, sequence, heartbeat timestamp, and subscribed channel IDs.
   - Contains zombie-connection reaping helper.
+  - Broadcasts Discord-style dispatch payloads to connections subscribed to a channel.
 - `backend/app/gateway/router.py`
   - `/gateway` WebSocket endpoint.
   - Sends Hello, accepts Identify, validates JWT, sends Ready, handles Heartbeat ACK,
     Request Guild Members, and Update Voice State placeholders.
+  - On Identify, loads the authenticated user's guilds and subscribes the connection
+    to every channel in those guilds.
 - `backend/app/realtime/redis_bus.py`
   - Optional Redis asyncio client wrapper.
   - Connects only when `REDIS_URL` is configured.
+- `backend/app/realtime/events.py`
+  - Defines the Redis gateway-event channel name and `RealtimeGatewayEvent` schema.
+- `backend/app/realtime/publisher.py`
+  - Publishes `MESSAGE_CREATE` payloads to Redis when configured.
+  - Falls back to local `gateway_manager.broadcast_channel()` when Redis is absent.
+- `backend/app/realtime/subscriber.py`
+  - Consumes Redis gateway-event Pub/Sub messages and fans them out to local WebSocket
+    subscribers.
 - `backend/app/api/routes/health.py`
   - `/api/health` reports service status and whether DB/Redis are configured/connected.
   - Empty `DATABASE_URL` and `REDIS_URL` values are reported as not configured.
@@ -144,6 +158,8 @@ The app boots in two local modes:
     the guild service.
   - Message creation returns `403` when the authenticated user is not a guild member
     or lacks `SEND_MESSAGES`.
+  - After persistence succeeds, publishes `MESSAGE_CREATE` through the realtime
+    publisher.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
 - `backend/app/demo/data.py`
@@ -219,11 +235,15 @@ The app boots in two local modes:
   - Calls role creation, role assignment, and role removal APIs.
   - Calls single-guild refresh and member removal APIs.
   - Calls the protected channel creation and message creation APIs.
+  - Applies gateway `MESSAGE_CREATE` dispatches with message ID deduplication so REST
+    echoes and WebSocket events do not double-insert messages.
   - Uses `document.startViewTransition()` when available for channel switching.
 - `frontend/src/composables/useGateway.ts`
   - Browser WebSocket gateway client.
   - On Hello opcode 10, sends Identify opcode 2 and starts heartbeat opcode 1.
   - Shows connected state after Ready dispatch.
+  - Accepts a dispatch callback and forwards non-READY gateway dispatch events to the
+    app store.
 - `frontend/src/components/ServerRail.vue`
   - Server icon rail and create-server icon button placeholder.
 - `frontend/src/components/ChannelSidebar.vue`
@@ -318,9 +338,20 @@ The app boots in two local modes:
   - Server accepts `/gateway`.
   - Server sends Hello: `{ op: 10, d: { heartbeat_interval } }`.
   - Client sends Identify: `{ op: 2, d: { token, os, library } }`.
-  - Server validates JWT and sends Ready dispatch: `{ op: 0, t: "READY" }`.
+  - Server validates JWT, subscribes the connection to the authenticated user's
+    channel IDs, and sends Ready dispatch: `{ op: 0, t: "READY" }`.
   - Client sends Heartbeat: `{ op: 1 }`.
   - Server replies Heartbeat ACK: `{ op: 11 }`.
+- Realtime message flow:
+  - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
+  - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
+  - With Redis configured, the payload is published to
+    `discord_clone:gateway_events`, consumed by the lifespan subscriber, and broadcast
+    to local WebSocket connections subscribed to the channel.
+  - Without Redis, the publisher directly uses the local gateway manager so native
+    development still receives live message events.
+  - `useGateway()` forwards gateway dispatches into `guilds.handleGatewayDispatch()`,
+    which appends unseen messages by ID.
 - External services:
   - `DATABASE_URL` will point to Neon PostgreSQL.
   - Docker Compose sets `DATABASE_URL` to local PostgreSQL by default.
@@ -386,10 +417,12 @@ npm run docker:down
 
 ## Next Work
 
-Stage 2 should continue wiring persistence and authentication:
+Stage 3 should continue realtime messaging:
 
+- Broaden realtime events for channel creation, role/member changes, and message
+  updates/deletes.
+- Add heartbeat zombie-connection reaping tests.
 - Add focused repository tests for PostgreSQL-backed guild mutations.
-- Begin Stage 3 realtime messaging fan-out through Redis Pub/Sub.
 
 Completed Stage 2 bridge work:
 
@@ -416,6 +449,10 @@ Completed Stage 2 bridge work:
   Pinia state, and the member list UI.
 - Added single-guild refresh and administrator-only non-owner member removal across
   backend, demo store, Pinia state, and the member list UI.
+- Added `MESSAGE_CREATE` realtime fan-out through Redis Pub/Sub when configured and a
+  local gateway-manager fallback for native development.
+- Added gateway channel subscriptions during Identify and frontend dispatch handling
+  with message deduplication.
 
 After each stage or meaningful feature:
 
