@@ -59,6 +59,7 @@ The app boots in two local modes:
   - Lifespan startup connects optional database and Redis pools.
   - Starts the Redis gateway-event subscriber task when Redis is configured and
     cancels it during shutdown.
+  - Starts the gateway zombie-connection reaper task and cancels it during shutdown.
 - `backend/app/core/config.py`
   - Pydantic settings.
   - Reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `CORS_ORIGINS`, and runtime settings.
@@ -108,6 +109,9 @@ The app boots in two local modes:
   - Tracks user identity, sequence, heartbeat timestamp, and subscribed channel IDs.
   - Contains zombie-connection reaping helper.
   - Broadcasts Discord-style dispatch payloads to connections subscribed to a channel.
+- `backend/app/gateway/reaper.py`
+  - Background loop that periodically calls `gateway_manager.reap_zombies()` using
+    the configured heartbeat interval.
 - `backend/app/gateway/router.py`
   - `/gateway` WebSocket endpoint.
   - Sends Hello, accepts Identify, validates JWT, sends Ready, handles Heartbeat ACK,
@@ -194,7 +198,7 @@ The app boots in two local modes:
   - Pydantic API schemas for auth, guilds, and messages.
 - `backend/tests/`
   - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
-    API routes, and message schema sanitization.
+    API routes, gateway connection management, and message schema sanitization.
 
 ## Frontend Map
 
@@ -342,6 +346,8 @@ The app boots in two local modes:
     channel IDs, and sends Ready dispatch: `{ op: 0, t: "READY" }`.
   - Client sends Heartbeat: `{ op: 1 }`.
   - Server replies Heartbeat ACK: `{ op: 11 }`.
+  - The lifespan reaper closes connections that miss two heartbeat windows with code
+    `4000` and removes them from the in-memory connection registry.
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
@@ -421,7 +427,6 @@ Stage 3 should continue realtime messaging:
 
 - Broaden realtime events for channel creation, role/member changes, and message
   updates/deletes.
-- Add heartbeat zombie-connection reaping tests.
 - Add focused repository tests for PostgreSQL-backed guild mutations.
 
 Completed Stage 2 bridge work:
@@ -453,6 +458,8 @@ Completed Stage 2 bridge work:
   local gateway-manager fallback for native development.
 - Added gateway channel subscriptions during Identify and frontend dispatch handling
   with message deduplication.
+- Added a gateway zombie-connection reaper background task and tests for heartbeat
+  timeout cleanup plus channel broadcast behavior.
 
 After each stage or meaningful feature:
 

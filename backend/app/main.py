@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.core.rate_limit import RateLimitMiddleware
 from app.db.pool import database
 from app.db.seed import seed_database
+from app.gateway.reaper import reap_gateway_zombies_forever
 from app.gateway.router import gateway_router
 from app.realtime.redis_bus import redis_bus
 from app.realtime.subscriber import consume_gateway_events
@@ -20,6 +21,7 @@ from app.realtime.subscriber import consume_gateway_events
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     gateway_events_task: asyncio.Task[None] | None = None
+    gateway_reaper_task: asyncio.Task[None] | None = None
     await database.connect(settings.database_url)
     if database.is_connected:
         await database.migrate()
@@ -27,7 +29,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await redis_bus.connect(settings.redis_url)
     if redis_bus.is_connected:
         gateway_events_task = asyncio.create_task(consume_gateway_events())
+    gateway_reaper_task = asyncio.create_task(
+        reap_gateway_zombies_forever(
+            heartbeat_interval_ms=settings.gateway_heartbeat_interval_ms,
+        )
+    )
     yield
+    if gateway_reaper_task is not None:
+        gateway_reaper_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await gateway_reaper_task
     if gateway_events_task is not None:
         gateway_events_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):

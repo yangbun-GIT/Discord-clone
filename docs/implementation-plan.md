@@ -69,9 +69,10 @@
 - First slice completed: gateway Identify subscribes the connection to the
   authenticated user's channels, and frontend gateway dispatches append unseen
   messages by ID.
+- Heartbeat zombie-connection reaping now runs from lifespan startup and is covered by
+  gateway manager tests.
 - Next realtime work: broaden channel/member/role event dispatches and add message
   update/delete events.
-- Add heartbeat zombie-connection reaping tests.
 
 ## Stage 4: Voice Signaling
 
