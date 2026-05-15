@@ -21,7 +21,7 @@ const activeMessages = computed(() => guilds.activeMessages)
 
 onMounted(async () => {
   await session.ensureDevSession()
-  await guilds.loadGuilds()
+  await guilds.loadGuilds(session.token)
   if (session.token) {
     connectGateway(session.token)
   }
@@ -38,11 +38,11 @@ onMounted(async () => {
 
     <ChannelSidebar
       v-if="activeGuild"
-        :guild="activeGuild"
-        :active-channel-id="guilds.activeChannelId"
-        @select="guilds.selectChannel"
-        @create-channel="guilds.createChannel(session.token, $event)"
-      />
+      :guild="activeGuild"
+      :active-channel-id="guilds.activeChannelId"
+      @select="guilds.selectChannel"
+      @create-channel="guilds.createChannel(session.token, $event)"
+    />
 
     <section class="workspace">
       <header class="topbar">

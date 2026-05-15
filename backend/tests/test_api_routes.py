@@ -20,6 +20,23 @@ def test_create_message_requires_auth() -> None:
     assert response.status_code == 401
 
 
+def test_list_my_guilds_requires_auth() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/guilds/me")
+
+    assert response.status_code == 401
+
+
+def test_list_my_guilds_returns_authenticated_user_memberships() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/guilds/me", headers=auth_headers())
+
+    assert response.status_code == 200
+    assert response.json()[0]["name"] == "SRS Lab"
+
+
 def test_create_message_returns_created_payload() -> None:
     client = TestClient(app)
 

@@ -11,8 +11,10 @@ router = APIRouter()
 
 
 @router.get("/me", response_model=list[GuildRead])
-async def list_my_guilds() -> list[GuildRead]:
-    return await list_guilds_for_user()
+async def list_my_guilds(
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> list[GuildRead]:
+    return await list_guilds_for_user(current_user)
 
 
 @router.post(

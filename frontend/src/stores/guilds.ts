@@ -20,8 +20,8 @@ export const useGuildStore = defineStore('guilds', () => {
   })
   const voiceChannel = computed(() => activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null)
 
-  async function loadGuilds() {
-    guilds.value = await apiGet<Guild[]>('/api/guilds/me')
+  async function loadGuilds(token: string | null) {
+    guilds.value = await apiGet<Guild[]>('/api/guilds/me', token)
     activeGuildId.value = guilds.value[0]?.id ?? null
     activeChannelId.value = guilds.value[0]?.channels[0]?.id ?? null
   }

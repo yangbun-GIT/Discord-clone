@@ -111,8 +111,9 @@ The app boots in two local modes:
   - `/api/dev/session` creates a local development JWT and user payload.
   - Only intended for local/dev/test environments.
 - `backend/app/api/routes/guilds.py`
-  - `/api/guilds/me` returns PostgreSQL-backed guild data when connected, otherwise
-    demo guild data for the frontend shell.
+  - `/api/guilds/me` requires a bearer token and returns the authenticated user's
+    PostgreSQL-backed guild memberships when connected, otherwise demo guild data for
+    the frontend shell.
   - `POST /api/guilds/{guild_id}/channels` creates text or voice channels through
     the guild service.
 - `backend/app/api/routes/channels.py`
@@ -156,7 +157,7 @@ The app boots in two local modes:
   - Starts local dev session, loads guild data, then connects the gateway.
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
-  - POST calls accept an optional bearer token.
+  - GET and POST calls accept an optional bearer token.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
   - Calls `/api/dev/session` and stores JWT plus current user.
@@ -204,8 +205,8 @@ The app boots in two local modes:
 - Frontend startup flow:
   - `App.vue` calls `session.ensureDevSession()`.
   - `session.ts` POSTs to `/api/dev/session`.
-  - `App.vue` calls `guilds.loadGuilds()`.
-  - `guilds.ts` GETs `/api/guilds/me`.
+  - `App.vue` calls `guilds.loadGuilds(session.token)`.
+  - `guilds.ts` GETs `/api/guilds/me` with the dev session bearer token.
   - `App.vue` calls `useGateway().connect(token)`.
 - Message send flow:
   - `ChatView.vue` emits submitted content.
@@ -298,8 +299,7 @@ Stage 2 should continue wiring persistence and authentication:
 - Expand repositories for users, roles, member roles, and permission checks.
 - Implement registration and login APIs using bcrypt and JWT.
 - Add auth dependencies for protected REST routes.
-- Make `/api/guilds/me` use the authenticated user instead of the current dev user
-  fallback in PostgreSQL mode.
+- Add guild membership and permission checks to channel/message mutation routes.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
 - Add tests for auth, repositories, and route permissions.
 
@@ -313,6 +313,8 @@ Completed Stage 2 bridge work:
 - Added startup schema migration and idempotent seed data loading.
 - Added a guild service/repository layer that uses PostgreSQL when connected and
   falls back to `demo_store` otherwise.
+- Made `/api/guilds/me` bearer-token protected and connected the frontend guild load
+  to the dev session token.
 
 After each stage or meaningful feature:
 

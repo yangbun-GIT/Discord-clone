@@ -36,11 +36,12 @@
 - Guild membership reads, channel creation, and message creation now use an asyncpg
   repository when a database is connected, with demo-store fallback for native local
   runs without `DATABASE_URL`.
+- `/api/guilds/me` is bearer-token protected, and the frontend guild load uses the
+  dev session token.
 - Next persistence work: add explicit migration versioning and expand repositories
   for users, roles, member roles, and permission checks.
 - Implement registration, login, JWT-protected REST APIs, and guild membership queries.
-- Replace the remaining dev-user fallback in `/api/guilds/me` with authenticated
-  membership queries.
+- Add guild membership and permission checks to protected mutation routes.
 - Add API/store error and empty states.
 
 ## Stage 3: Realtime Messaging
