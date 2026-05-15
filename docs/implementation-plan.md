@@ -38,10 +38,11 @@
   runs without `DATABASE_URL`.
 - `/api/guilds/me` is bearer-token protected, and the frontend guild load uses the
   dev session token.
+- Channel/message mutation routes now check guild membership and permission bitfields
+  before writing.
 - Next persistence work: add explicit migration versioning and expand repositories
-  for users, roles, member roles, and permission checks.
+  for users, roles, and member-role management.
 - Implement registration, login, JWT-protected REST APIs, and guild membership queries.
-- Add guild membership and permission checks to protected mutation routes.
 - Add API/store error and empty states.
 
 ## Stage 3: Realtime Messaging

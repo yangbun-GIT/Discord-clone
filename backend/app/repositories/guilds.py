@@ -1,9 +1,18 @@
 from app.db.pool import database
+from app.domain.permissions import ALL_PERMISSIONS, Permission, has_permission, merge_permissions
 from app.domain.snowflake import SnowflakeGenerator
 from app.schemas.auth import UserPublic
 from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead, MemberRead, MessageRead
 
 id_generator = SnowflakeGenerator(worker_id=2)
+BASE_MEMBER_PERMISSIONS = merge_permissions(
+    [
+        Permission.READ_MESSAGES,
+        Permission.SEND_MESSAGES,
+        Permission.CONNECT,
+        Permission.SPEAK,
+    ]
+)
 
 
 class GuildRepository:
@@ -25,12 +34,17 @@ class GuildRepository:
             channels = await self._list_channels(guild_id)
             members = await self._list_members(guild_id, int(guild_row["owner_id"]))
             messages = await self._list_messages(guild_id)
+            permissions = await self._permissions_for_member(
+                guild_id,
+                user_id,
+                int(guild_row["owner_id"]),
+            )
             guilds.append(
                 GuildRead(
                     id=guild_id,
                     name=str(guild_row["name"]),
                     owner_id=int(guild_row["owner_id"]),
-                    permissions=0,
+                    permissions=permissions,
                     channels=channels,
                     members=members,
                     messages=messages,
@@ -38,10 +52,25 @@ class GuildRepository:
             )
         return guilds
 
-    async def create_channel(self, guild_id: int, payload: ChannelCreate) -> ChannelRead:
-        guild_exists = await database.fetchrow("SELECT id FROM guilds WHERE id = $1", guild_id)
-        if guild_exists is None:
+    async def create_channel(
+        self,
+        guild_id: int,
+        payload: ChannelCreate,
+        actor: UserPublic,
+    ) -> ChannelRead:
+        guild_row = await database.fetchrow(
+            "SELECT id, owner_id FROM guilds WHERE id = $1",
+            guild_id,
+        )
+        if guild_row is None:
             raise KeyError(guild_id)
+        permissions = await self._permissions_for_member(
+            guild_id,
+            actor.id,
+            int(guild_row["owner_id"]),
+        )
+        if not has_permission(permissions, Permission.MANAGE_CHANNELS):
+            raise PermissionError("manage channels permission required")
 
         position_row = await database.fetchrow(
             """
@@ -79,12 +108,26 @@ class GuildRepository:
         author: UserPublic,
         content: str,
     ) -> MessageRead:
-        channel_exists = await database.fetchrow(
-            "SELECT id FROM channels WHERE id = $1",
+        channel_row = await database.fetchrow(
+            """
+            SELECT c.id, c.guild_id, c.type, g.owner_id
+            FROM channels c
+            JOIN guilds g ON g.id = c.guild_id
+            WHERE c.id = $1
+            """,
             channel_id,
         )
-        if channel_exists is None:
+        if channel_row is None:
             raise KeyError(channel_id)
+        if int(channel_row["type"]) != 0:
+            raise ValueError("messages can only be created in text channels")
+        permissions = await self._permissions_for_member(
+            int(channel_row["guild_id"]),
+            author.id,
+            int(channel_row["owner_id"]),
+        )
+        if not has_permission(permissions, Permission.SEND_MESSAGES):
+            raise PermissionError("send messages permission required")
 
         await database.execute(
             """
@@ -184,6 +227,39 @@ class GuildRepository:
             )
             for row in rows
         ]
+
+    async def _permissions_for_member(
+        self,
+        guild_id: int,
+        user_id: int,
+        owner_id: int,
+    ) -> int:
+        membership = await database.fetchrow(
+            """
+            SELECT 1
+            FROM guild_members
+            WHERE guild_id = $1 AND user_id = $2
+            """,
+            guild_id,
+            user_id,
+        )
+        if membership is None:
+            return 0
+        if user_id == owner_id:
+            return ALL_PERMISSIONS
+
+        role_rows = await database.fetch(
+            """
+            SELECT r.permissions
+            FROM roles r
+            JOIN member_roles mr ON mr.role_id = r.id
+            WHERE mr.guild_id = $1 AND mr.user_id = $2
+            """,
+            guild_id,
+            user_id,
+        )
+        role_permissions = [int(row["permissions"]) for row in role_rows]
+        return merge_permissions([BASE_MEMBER_PERMISSIONS, *role_permissions])
 
 
 guild_repository = GuildRepository()

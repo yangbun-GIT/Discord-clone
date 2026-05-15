@@ -25,12 +25,17 @@ async def list_my_guilds(
 async def create_guild_channel(
     guild_id: int,
     payload: ChannelCreate,
-    _current_user: Annotated[UserPublic, Depends(get_current_user)],
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> ChannelRead:
     try:
-        return await create_channel(guild_id, payload)
+        return await create_channel(guild_id, payload, current_user)
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="guild not found",
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="manage channels permission required",
         ) from exc

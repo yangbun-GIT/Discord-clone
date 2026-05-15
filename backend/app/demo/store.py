@@ -5,6 +5,7 @@ from threading import Lock
 
 from app.demo.data import create_initial_guilds
 from app.domain.snowflake import SnowflakeGenerator
+from app.schemas.auth import UserPublic
 from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead, MessageRead
 
 
@@ -16,13 +17,27 @@ class DemoStore:
         self._id_generator = SnowflakeGenerator(worker_id=1)
         self._guilds = create_initial_guilds()
 
-    def list_guilds(self) -> list[GuildRead]:
+    def list_guilds(self, user_id: int | None = None) -> list[GuildRead]:
         with self._lock:
-            return deepcopy(self._guilds)
+            guilds = self._guilds
+            if user_id is not None:
+                guilds = [
+                    guild
+                    for guild in self._guilds
+                    if any(member.id == user_id for member in guild.members)
+                ]
+            return deepcopy(guilds)
 
-    def create_channel(self, guild_id: int, payload: ChannelCreate) -> ChannelRead:
+    def create_channel(
+        self,
+        guild_id: int,
+        payload: ChannelCreate,
+        actor: UserPublic | None = None,
+    ) -> ChannelRead:
         with self._lock:
             guild = self._find_guild(guild_id)
+            if actor is not None and actor.id != guild.owner_id:
+                raise PermissionError("manage channels permission required")
             position = max((channel.position for channel in guild.channels), default=-1) + 1
             channel = ChannelRead(
                 id=self._id_generator.generate(),
@@ -44,6 +59,8 @@ class DemoStore:
     ) -> MessageRead:
         with self._lock:
             guild = self._find_guild_by_channel(channel_id)
+            if not any(member.id == author_id for member in guild.members):
+                raise PermissionError("guild membership required")
             message = MessageRead(
                 id=self._id_generator.generate(),
                 channel_id=channel_id,
@@ -68,4 +85,3 @@ class DemoStore:
 
 
 demo_store = DemoStore()
-

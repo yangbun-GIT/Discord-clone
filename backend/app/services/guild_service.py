@@ -7,18 +7,20 @@ from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead, MessageRead
 
 async def list_guilds_for_user(user: UserPublic | None = None) -> list[GuildRead]:
     if database.is_connected:
-        user_id = user.id if user else 42
-        return await guild_repository.list_for_user(user_id)
-    return demo_store.list_guilds()
+        if user is None:
+            return []
+        return await guild_repository.list_for_user(user.id)
+    return demo_store.list_guilds(user.id if user else None)
 
 
 async def create_channel(
     guild_id: int,
     payload: ChannelCreate,
+    actor: UserPublic,
 ) -> ChannelRead:
     if database.is_connected:
-        return await guild_repository.create_channel(guild_id, payload)
-    return demo_store.create_channel(guild_id, payload)
+        return await guild_repository.create_channel(guild_id, payload, actor)
+    return demo_store.create_channel(guild_id, payload, actor)
 
 
 async def create_message(

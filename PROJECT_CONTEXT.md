@@ -116,9 +116,13 @@ The app boots in two local modes:
     the frontend shell.
   - `POST /api/guilds/{guild_id}/channels` creates text or voice channels through
     the guild service.
+  - Channel creation returns `403` when the authenticated user lacks
+    `MANAGE_CHANNELS`.
 - `backend/app/api/routes/channels.py`
   - `POST /api/channels/{channel_id}/messages` creates sanitized messages through
     the guild service.
+  - Message creation returns `403` when the authenticated user is not a guild member
+    or lacks `SEND_MESSAGES`.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
 - `backend/app/demo/data.py`
@@ -127,11 +131,17 @@ The app boots in two local modes:
   - Process-local mutable demo store.
   - Creates channels and messages with Snowflake IDs.
   - Still used only when no database pool is configured.
+  - Filters guild reads by member and enforces owner-only channel creation plus
+    member-only message creation.
 - `backend/app/repositories/guilds.py`
   - PostgreSQL repository for guild membership reads, channel creation, and message
     creation.
   - Converts asyncpg rows into `GuildRead`, `ChannelRead`, `MemberRead`, and
     `MessageRead` schemas.
+  - Computes effective permissions from ownership, base member permissions, and role
+    permissions.
+  - Requires `MANAGE_CHANNELS` for channel creation and `SEND_MESSAGES` for message
+    creation.
 - `backend/app/services/guild_service.py`
   - Runtime switch between PostgreSQL repositories and the process-local demo store.
   - Keeps route handlers independent from the current persistence mode.
@@ -211,15 +221,16 @@ The app boots in two local modes:
 - Message send flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
-  - Backend validates JWT, sanitizes content, persists through PostgreSQL when
-    connected or appends to `demo_store` in native fallback mode, then returns the
-    created message.
+  - Backend validates JWT, sanitizes content, checks guild membership and
+    `SEND_MESSAGES`, persists through PostgreSQL when connected or appends to
+    `demo_store` in native fallback mode, then returns the created message.
   - `guilds.ts` immutably appends the returned message to the active guild state.
 - Channel creation flow:
   - `ChannelSidebar.vue` opens an inline channel-name form from the plus icon.
   - `guilds.ts` POSTs to `/api/guilds/{guild_id}/channels` with bearer token.
-  - Backend validates JWT, persists through PostgreSQL when connected or appends to
-    `demo_store` in native fallback mode, then returns the created channel.
+  - Backend validates JWT, checks `MANAGE_CHANNELS`, persists through PostgreSQL when
+    connected or appends to `demo_store` in native fallback mode, then returns the
+    created channel.
   - `guilds.ts` immutably appends the returned channel and selects it.
 - Gateway flow:
   - Server accepts `/gateway`.
@@ -296,10 +307,9 @@ npm run docker:down
 Stage 2 should continue wiring persistence and authentication:
 
 - Add explicit migration versioning around `backend/app/db/schema.sql`.
-- Expand repositories for users, roles, member roles, and permission checks.
+- Expand repositories for users, roles, and member roles management.
 - Implement registration and login APIs using bcrypt and JWT.
 - Add auth dependencies for protected REST routes.
-- Add guild membership and permission checks to channel/message mutation routes.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
 - Add tests for auth, repositories, and route permissions.
 
@@ -315,6 +325,7 @@ Completed Stage 2 bridge work:
   falls back to `demo_store` otherwise.
 - Made `/api/guilds/me` bearer-token protected and connected the frontend guild load
   to the dev session token.
+- Added guild membership and permission checks to channel/message mutation routes.
 
 After each stage or meaningful feature:
 

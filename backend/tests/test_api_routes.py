@@ -4,8 +4,8 @@ from app.core.security import create_access_token
 from app.main import app
 
 
-def auth_headers() -> dict[str, str]:
-    token = create_access_token(subject="42", claims={"username": "yangbun"})
+def auth_headers(user_id: int = 42, username: str = "yangbun") -> dict[str, str]:
+    token = create_access_token(subject=str(user_id), claims={"username": username})
     return {"Authorization": f"Bearer {token}"}
 
 
@@ -37,6 +37,15 @@ def test_list_my_guilds_returns_authenticated_user_memberships() -> None:
     assert response.json()[0]["name"] == "SRS Lab"
 
 
+def test_list_my_guilds_filters_non_members() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/guilds/me", headers=auth_headers(user_id=999, username="outsider"))
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_create_message_returns_created_payload() -> None:
     client = TestClient(app)
 
@@ -51,6 +60,18 @@ def test_create_message_returns_created_payload() -> None:
     assert response.json()["author_name"] == "yangbun"
 
 
+def test_create_message_requires_guild_membership() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/channels/2001/messages",
+        json={"channel_id": 2001, "content": "hello"},
+        headers=auth_headers(user_id=999, username="outsider"),
+    )
+
+    assert response.status_code == 403
+
+
 def test_create_channel_returns_created_payload() -> None:
     client = TestClient(app)
 
@@ -62,3 +83,15 @@ def test_create_channel_returns_created_payload() -> None:
 
     assert response.status_code == 201
     assert response.json()["name"] == "qa-room"
+
+
+def test_create_channel_requires_manage_channels_permission() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/guilds/1001/channels",
+        json={"name": "blocked-room", "type": 0},
+        headers=auth_headers(user_id=43, username="codex"),
+    )
+
+    assert response.status_code == 403

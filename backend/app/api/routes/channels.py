@@ -38,3 +38,13 @@ async def create_channel_message(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="channel not found",
         ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="send messages permission required",
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
