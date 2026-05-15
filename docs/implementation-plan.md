@@ -44,11 +44,12 @@
   implemented with bcrypt password hashing and JWT responses.
 - The frontend now shows login/register UI when logged out, restores saved sessions,
   supports logout, and keeps Demo user as an explicit local-development action.
+- Authenticated guild creation is implemented with default `general` and `voice-room`
+  channels, including frontend create-server UI.
 - Next persistence work: add explicit migration versioning and expand repositories
   for roles and member-role management.
 - Add API/store error and empty states.
-- Add guild creation or invite/member management so newly registered users can enter
-  a usable workspace without the demo session.
+- Add invite/member management so users can join each other's guilds.
 
 ## Stage 3: Realtime Messaging
 

@@ -10,6 +10,7 @@ defineProps<{
 
 defineEmits<{
   select: [guildId: number]
+  create: []
 }>()
 </script>
 
@@ -26,9 +27,8 @@ defineEmits<{
     >
       {{ guild.name.slice(0, 2).toUpperCase() }}
     </button>
-    <button class="server-button add" type="button" title="Create server">
+    <button class="server-button add" type="button" title="Create server" @click="$emit('create')">
       <Plus :size="22" aria-hidden="true" />
     </button>
   </nav>
 </template>
-

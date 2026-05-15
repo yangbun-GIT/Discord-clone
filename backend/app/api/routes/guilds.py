@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
 from app.schemas.auth import UserPublic
-from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead
-from app.services.guild_service import create_channel, list_guilds_for_user
+from app.schemas.guild import ChannelCreate, ChannelRead, GuildCreate, GuildRead
+from app.services.guild_service import create_channel, create_guild, list_guilds_for_user
 
 router = APIRouter()
 
@@ -15,6 +15,14 @@ async def list_my_guilds(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> list[GuildRead]:
     return await list_guilds_for_user(current_user)
+
+
+@router.post("", response_model=GuildRead, status_code=status.HTTP_201_CREATED)
+async def create_user_guild(
+    payload: GuildCreate,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> GuildRead:
+    return await create_guild(payload, current_user)
 
 
 @router.post(

@@ -2,7 +2,7 @@ from app.db.pool import database
 from app.demo.store import demo_store
 from app.repositories.guilds import guild_repository
 from app.schemas.auth import UserPublic
-from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead, MessageRead
+from app.schemas.guild import ChannelCreate, ChannelRead, GuildCreate, GuildRead, MessageRead
 
 
 async def list_guilds_for_user(user: UserPublic | None = None) -> list[GuildRead]:
@@ -11,6 +11,12 @@ async def list_guilds_for_user(user: UserPublic | None = None) -> list[GuildRead
             return []
         return await guild_repository.list_for_user(user.id)
     return demo_store.list_guilds(user.id if user else None)
+
+
+async def create_guild(payload: GuildCreate, owner: UserPublic) -> GuildRead:
+    if database.is_connected:
+        return await guild_repository.create_guild(payload, owner)
+    return demo_store.create_guild(payload, owner)
 
 
 async def create_channel(

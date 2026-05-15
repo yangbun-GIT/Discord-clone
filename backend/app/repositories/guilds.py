@@ -2,7 +2,14 @@ from app.db.pool import database
 from app.domain.permissions import ALL_PERMISSIONS, Permission, has_permission, merge_permissions
 from app.domain.snowflake import SnowflakeGenerator
 from app.schemas.auth import UserPublic
-from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead, MemberRead, MessageRead
+from app.schemas.guild import (
+    ChannelCreate,
+    ChannelRead,
+    GuildCreate,
+    GuildRead,
+    MemberRead,
+    MessageRead,
+)
 
 id_generator = SnowflakeGenerator(worker_id=2)
 BASE_MEMBER_PERMISSIONS = merge_permissions(
@@ -51,6 +58,86 @@ class GuildRepository:
                 )
             )
         return guilds
+
+    async def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
+        guild_id = id_generator.generate()
+        text_channel = ChannelRead(
+            id=id_generator.generate(),
+            guild_id=guild_id,
+            name="general",
+            type=0,
+            position=0,
+        )
+        voice_channel = ChannelRead(
+            id=id_generator.generate(),
+            guild_id=guild_id,
+            name="voice-room",
+            type=1,
+            position=1,
+        )
+
+        await database.execute(
+            """
+            INSERT INTO users (id, username, password_hash, status)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (id) DO UPDATE
+            SET username = EXCLUDED.username,
+                status = EXCLUDED.status
+            """,
+            owner.id,
+            owner.username,
+            "dev-session",
+            owner.status,
+        )
+        await database.execute(
+            """
+            INSERT INTO guilds (id, name, owner_id)
+            VALUES ($1, $2, $3)
+            """,
+            guild_id,
+            payload.name,
+            owner.id,
+        )
+        await database.execute(
+            """
+            INSERT INTO guild_members (guild_id, user_id)
+            VALUES ($1, $2)
+            """,
+            guild_id,
+            owner.id,
+        )
+        await database.execute(
+            """
+            INSERT INTO channels (id, guild_id, name, type, position)
+            VALUES ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)
+            """,
+            text_channel.id,
+            text_channel.guild_id,
+            text_channel.name,
+            text_channel.type,
+            text_channel.position,
+            voice_channel.id,
+            voice_channel.guild_id,
+            voice_channel.name,
+            voice_channel.type,
+            voice_channel.position,
+        )
+        return GuildRead(
+            id=guild_id,
+            name=payload.name,
+            owner_id=owner.id,
+            permissions=ALL_PERMISSIONS,
+            channels=[text_channel, voice_channel],
+            members=[
+                MemberRead(
+                    id=owner.id,
+                    username=owner.username,
+                    status=owner.status,
+                    role="Owner",
+                )
+            ],
+            messages=[],
+        )
 
     async def create_channel(
         self,

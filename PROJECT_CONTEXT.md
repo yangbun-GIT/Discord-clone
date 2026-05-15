@@ -120,6 +120,8 @@ The app boots in two local modes:
   - `/api/guilds/me` requires a bearer token and returns the authenticated user's
     PostgreSQL-backed guild memberships when connected, otherwise demo guild data for
     the frontend shell.
+  - `POST /api/guilds` creates a guild owned by the authenticated user with default
+    `general` text and `voice-room` voice channels.
   - `POST /api/guilds/{guild_id}/channels` creates text or voice channels through
     the guild service.
   - Channel creation returns `403` when the authenticated user lacks
@@ -135,13 +137,13 @@ The app boots in two local modes:
   - Initial guild/channel/member/message seed data used before persistence is wired.
 - `backend/app/demo/store.py`
   - Process-local mutable demo store.
-  - Creates channels and messages with Snowflake IDs.
+  - Creates guilds, channels, and messages with Snowflake IDs.
   - Still used only when no database pool is configured.
   - Filters guild reads by member and enforces owner-only channel creation plus
     member-only message creation.
 - `backend/app/repositories/guilds.py`
-  - PostgreSQL repository for guild membership reads, channel creation, and message
-    creation.
+  - PostgreSQL repository for guild creation, guild membership reads, channel creation,
+    and message creation.
   - Converts asyncpg rows into `GuildRead`, `ChannelRead`, `MemberRead`, and
     `MessageRead` schemas.
   - Computes effective permissions from ownership, base member permissions, and role
@@ -194,6 +196,7 @@ The app boots in two local modes:
   - Loads `/api/guilds/me`.
   - Tracks active guild, active channel, active messages, voice channel, and voice
     connection UI state.
+  - Calls the protected guild creation API and selects the new guild's first channel.
   - Calls the protected channel creation and message creation APIs.
   - Uses `document.startViewTransition()` when available for channel switching.
 - `frontend/src/composables/useGateway.ts`
@@ -244,6 +247,13 @@ The app boots in two local modes:
   - Backend validates auth schema payloads, uses PostgreSQL users, bcrypt password
     hashes, and returns the same JWT response shape as the dev session endpoint.
   - `GET /api/auth/me` validates bearer tokens through `get_current_user`.
+- Guild creation flow:
+  - `ServerRail.vue` and the empty workspace call `App.vue`'s create-server handler.
+  - `App.vue` opens a focused server-name dialog.
+  - `guilds.ts` POSTs to `/api/guilds` with the current bearer token.
+  - Backend creates the guild, owner membership, `general`, and `voice-room`, then
+    returns a complete `GuildRead`.
+  - `guilds.ts` appends the guild, selects it, and selects its first channel.
 - Message send flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
@@ -335,8 +345,7 @@ Stage 2 should continue wiring persistence and authentication:
 - Add explicit migration versioning around `backend/app/db/schema.sql`.
 - Expand repositories for roles and member roles management.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
-- Add guild creation or invite/member management so newly registered users can enter
-  a usable workspace without the demo session.
+- Add invite/member management so users can join each other's guilds.
 - Add tests for auth, repositories, and route permissions.
 
 Completed Stage 2 bridge work:
@@ -355,6 +364,8 @@ Completed Stage 2 bridge work:
 - Added database-backed `/api/auth/register`, `/api/auth/login`, and `/api/auth/me`.
 - Added frontend login/register UI, saved-session restore, logout, and explicit Demo
   user entry.
+- Added authenticated guild creation with default text/voice channels and frontend
+  create-server UI.
 
 After each stage or meaningful feature:
 

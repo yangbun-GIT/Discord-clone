@@ -77,6 +77,23 @@ def test_list_my_guilds_filters_non_members() -> None:
     assert response.json() == []
 
 
+def test_create_guild_returns_owned_workspace() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/guilds",
+        json={"name": "Project Room"},
+        headers=auth_headers(user_id=777, username="builder"),
+    )
+
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["name"] == "Project Room"
+    assert payload["owner_id"] == 777
+    assert payload["members"][0]["role"] == "Owner"
+    assert [channel["name"] for channel in payload["channels"]] == ["general", "voice-room"]
+
+
 def test_create_message_returns_created_payload() -> None:
     client = TestClient(app)
 

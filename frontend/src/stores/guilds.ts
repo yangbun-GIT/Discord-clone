@@ -26,6 +26,15 @@ export const useGuildStore = defineStore('guilds', () => {
     activeChannelId.value = guilds.value[0]?.channels[0]?.id ?? null
   }
 
+  async function createGuild(token: string | null, name: string) {
+    const trimmedName = name.trim()
+    if (!trimmedName) return
+    const guild = await apiPost<Guild, { name: string }>('/api/guilds', { name: trimmedName }, token)
+    guilds.value = [...guilds.value, guild]
+    activeGuildId.value = guild.id
+    activeChannelId.value = guild.channels[0]?.id ?? null
+  }
+
   function resetGuilds() {
     guilds.value = []
     activeGuildId.value = null
@@ -92,6 +101,7 @@ export const useGuildStore = defineStore('guilds', () => {
     voiceChannel,
     voiceConnected,
     loadGuilds,
+    createGuild,
     resetGuilds,
     selectGuild,
     selectChannel,

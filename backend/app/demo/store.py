@@ -4,9 +4,17 @@ from copy import deepcopy
 from threading import Lock
 
 from app.demo.data import create_initial_guilds
+from app.domain.permissions import ALL_PERMISSIONS
 from app.domain.snowflake import SnowflakeGenerator
 from app.schemas.auth import UserPublic
-from app.schemas.guild import ChannelCreate, ChannelRead, GuildRead, MessageRead
+from app.schemas.guild import (
+    ChannelCreate,
+    ChannelRead,
+    GuildCreate,
+    GuildRead,
+    MemberRead,
+    MessageRead,
+)
 
 
 class DemoStore:
@@ -27,6 +35,42 @@ class DemoStore:
                     if any(member.id == user_id for member in guild.members)
                 ]
             return deepcopy(guilds)
+
+    def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
+        with self._lock:
+            guild_id = self._id_generator.generate()
+            text_channel = ChannelRead(
+                id=self._id_generator.generate(),
+                guild_id=guild_id,
+                name="general",
+                type=0,
+                position=0,
+            )
+            voice_channel = ChannelRead(
+                id=self._id_generator.generate(),
+                guild_id=guild_id,
+                name="voice-room",
+                type=1,
+                position=1,
+            )
+            guild = GuildRead(
+                id=guild_id,
+                name=payload.name,
+                owner_id=owner.id,
+                permissions=ALL_PERMISSIONS,
+                channels=[text_channel, voice_channel],
+                members=[
+                    MemberRead(
+                        id=owner.id,
+                        username=owner.username,
+                        status=owner.status,
+                        role="Owner",
+                    )
+                ],
+                messages=[],
+            )
+            self._guilds.append(guild)
+            return deepcopy(guild)
 
     def create_channel(
         self,

@@ -73,6 +73,9 @@ Useful backend auth endpoints:
 - `POST http://127.0.0.1:8000/api/auth/login`
 - `GET http://127.0.0.1:8000/api/auth/me`
 
+Authenticated users can create a server from the `Create server` button. New servers
+start with `general` and `voice-room` channels.
+
 ## Environment
 
 Copy `.env.example` to `.env` and fill values as external services become available.

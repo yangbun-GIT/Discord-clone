@@ -18,6 +18,10 @@ class ChannelCreate(BaseModel):
     type: int = Field(default=0, ge=0, le=1)
 
 
+class GuildCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+
+
 class MemberRead(BaseModel):
     id: int
     username: str

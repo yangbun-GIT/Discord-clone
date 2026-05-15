@@ -30,7 +30,11 @@ const workspaceTitle = computed(() => {
 })
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
+const workspaceError = ref<string | null>(null)
 const isAuthenticating = ref(false)
+const isCreatingGuild = ref(false)
+const showCreateGuild = ref(false)
+const guildName = ref('')
 
 async function openWorkspace() {
   if (!session.token) return
@@ -74,8 +78,33 @@ function handleDemo() {
 function handleLogout() {
   disconnectGateway()
   authError.value = null
+  workspaceError.value = null
   session.logout()
   guilds.resetGuilds()
+}
+
+function openCreateGuild() {
+  workspaceError.value = null
+  showCreateGuild.value = true
+}
+
+function closeCreateGuild() {
+  showCreateGuild.value = false
+  guildName.value = ''
+}
+
+async function handleCreateGuild() {
+  if (!guildName.value.trim()) return
+  workspaceError.value = null
+  isCreatingGuild.value = true
+  try {
+    await guilds.createGuild(session.token, guildName.value)
+    closeCreateGuild()
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : 'Server creation failed'
+  } finally {
+    isCreatingGuild.value = false
+  }
 }
 </script>
 
@@ -96,6 +125,7 @@ function handleLogout() {
       :guilds="guilds.guilds"
       :active-guild-id="guilds.activeGuildId"
       @select="guilds.selectGuild"
+      @create="openCreateGuild"
     />
 
     <ChannelSidebar
@@ -123,7 +153,9 @@ function handleLogout() {
         </button>
       </header>
 
-      <div v-if="authError" class="app-error" role="alert">{{ authError }}</div>
+      <div v-if="authError || workspaceError" class="app-error" role="alert">
+        {{ authError ?? workspaceError }}
+      </div>
 
       <div v-if="activeGuild" class="content-grid">
         <ChatView
@@ -137,7 +169,31 @@ function handleLogout() {
 
       <section v-else class="empty-workspace" aria-label="No servers">
         <div>No servers</div>
+        <button type="button" @click="openCreateGuild">Create server</button>
       </section>
+    </section>
+
+    <section v-if="showCreateGuild" class="modal-layer" aria-label="Create server">
+      <form class="server-create-dialog" @submit.prevent="handleCreateGuild">
+        <div class="auth-mark">DC</div>
+        <label>
+          <span>Server name</span>
+          <input
+            v-model="guildName"
+            autocomplete="off"
+            maxlength="100"
+            minlength="2"
+            required
+            autofocus
+          />
+        </label>
+        <div class="dialog-actions">
+          <button type="button" @click="closeCreateGuild">Cancel</button>
+          <button type="submit" :disabled="guildName.trim().length < 2 || isCreatingGuild">
+            Create
+          </button>
+        </div>
+      </form>
     </section>
 
     <VoicePanel
