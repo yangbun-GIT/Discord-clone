@@ -214,7 +214,8 @@ The app boots in two local modes:
   - Pydantic API schemas for auth, guilds, and messages.
 - `backend/tests/`
   - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
-    API routes, gateway connection management, and message schema sanitization.
+    API routes, gateway connection management, message schema sanitization, and
+    focused guild repository message mutation behavior.
 
 ## Frontend Map
 
@@ -472,7 +473,7 @@ npm run docker:down
 
 Stage 3 should continue realtime messaging:
 
-- Add focused repository tests for PostgreSQL-backed guild mutations.
+- Add focused repository tests for PostgreSQL-backed guild/role/member mutations.
 - Start Stage 4 voice signaling once repository coverage is strengthened.
 
 Completed Stage 2 bridge work:
@@ -512,6 +513,8 @@ Completed Stage 2 bridge work:
 - Added message update/delete REST APIs, demo-store and PostgreSQL repository support,
   `MESSAGE_UPDATE`/`MESSAGE_DELETE` realtime dispatch, Pinia state handling, and chat
   row edit/delete controls.
+- Added focused PostgreSQL repository tests for message update/delete permission and
+  write behavior using an isolated fake async database.
 
 After each stage or meaningful feature:
 

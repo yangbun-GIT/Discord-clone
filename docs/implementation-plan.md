@@ -56,8 +56,8 @@
   administrator-only controls.
 - Single-guild refresh and administrator-only non-owner member removal are implemented
   across the backend, demo store, Pinia state, and member list UI.
-- Remaining persistence work: add focused repository tests for PostgreSQL-backed guild
-  mutations.
+- Remaining persistence work: add focused repository tests for PostgreSQL-backed
+  guild/role/member mutations.
 
 ## Stage 3: Realtime Messaging
 
@@ -78,8 +78,10 @@
 - Message update/delete APIs now validate sanitized content and author or
   `MANAGE_MESSAGES` permission, persist through PostgreSQL or demo-store fallback,
   dispatch `MESSAGE_UPDATE`/`MESSAGE_DELETE`, and update the frontend chat state.
+- Focused repository tests now cover PostgreSQL-backed message update/delete
+  permission and write behavior through an isolated fake async database.
 - Remaining realtime support work: add focused repository tests for PostgreSQL-backed
-  guild and message mutations.
+  guild/role/member mutations.
 
 ## Stage 4: Voice Signaling
 
