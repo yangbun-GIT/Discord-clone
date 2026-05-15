@@ -198,6 +198,8 @@ The app boots in two local modes:
   - Pinia guild store.
   - Uses `shallowRef` for guild data as required by the SRS performance guidance.
   - Loads `/api/guilds/me`.
+  - Tracks loading, mutation, and API error state for guild/channel/message/invite
+    operations.
   - Tracks active guild, active channel, active messages, voice channel, and voice
     connection UI state.
   - Calls the protected guild creation API and selects the new guild's first channel.
@@ -355,7 +357,6 @@ Stage 2 should continue wiring persistence and authentication:
 
 - Add explicit migration versioning around `backend/app/db/schema.sql`.
 - Expand repositories for roles and member roles management.
-- Update Pinia stores to handle loading, empty, and error states from real APIs.
 - Add richer member management such as member list refresh, removal, and role
   assignment.
 - Add tests for auth, repositories, and route permissions.
@@ -379,6 +380,7 @@ Completed Stage 2 bridge work:
 - Added authenticated guild creation with default text/voice channels and frontend
   create-server UI.
 - Added invite code creation/join APIs and frontend invite dialogs.
+- Added Pinia loading/mutation/error state handling for guild operations.
 
 After each stage or meaningful feature:
 

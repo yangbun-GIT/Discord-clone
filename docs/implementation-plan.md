@@ -48,9 +48,10 @@
   channels, including frontend create-server UI.
 - Invite code creation and invite join flows are implemented across backend and
   frontend so users can join each other's guilds.
+- Guild Pinia state now tracks loading, mutation, and API error state for real API
+  calls.
 - Next persistence work: add explicit migration versioning and expand repositories
   for roles and member-role management.
-- Add API/store error and empty states.
 - Add richer member management such as member list refresh, removal, and role
   assignment.
 

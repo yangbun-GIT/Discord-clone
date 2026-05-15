@@ -59,8 +59,8 @@ async function runAuth(action: () => Promise<void>) {
   authError.value = null
   isAuthenticating.value = true
   try {
-    await action()
-    await openWorkspace()
+      await action()
+      await openWorkspace()
   } catch (error) {
     authError.value = error instanceof Error ? error.message : 'Authentication failed'
   } finally {
@@ -110,6 +110,20 @@ async function handleCreateGuild() {
   } finally {
     isCreatingGuild.value = false
   }
+}
+
+function handleCreateChannel(name: string) {
+  workspaceError.value = null
+  void guilds.createChannel(session.token, name).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Channel creation failed'
+  })
+}
+
+function handleSendMessage(content: string) {
+  workspaceError.value = null
+  void guilds.sendMessage(session.token, content).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Message send failed'
+  })
 }
 
 function openJoinGuild() {
@@ -181,7 +195,7 @@ async function handleCreateInvite() {
       :guild="activeGuild"
       :active-channel-id="guilds.activeChannelId"
       @select="guilds.selectChannel"
-      @create-channel="guilds.createChannel(session.token, $event)"
+      @create-channel="handleCreateChannel"
     />
 
     <section class="workspace">
@@ -220,16 +234,18 @@ async function handleCreateInvite() {
         </div>
       </header>
 
-      <div v-if="authError || workspaceError" class="app-error" role="alert">
-        {{ authError ?? workspaceError }}
+      <div v-if="authError || workspaceError || guilds.error" class="app-error" role="alert">
+        {{ authError ?? workspaceError ?? guilds.error }}
       </div>
 
-      <div v-if="activeGuild" class="content-grid">
+      <div v-if="guilds.isLoading" class="workspace-loading" role="status">Loading servers</div>
+
+      <div v-else-if="activeGuild" class="content-grid">
         <ChatView
           :channel="activeChannel"
           :messages="activeMessages"
           :current-user="session.user"
-          @send="guilds.sendMessage(session.token, $event)"
+          @send="handleSendMessage"
         />
         <MemberList v-if="activeGuild" :members="activeGuild.members" />
       </div>
@@ -259,7 +275,7 @@ async function handleCreateInvite() {
         </label>
         <div class="dialog-actions">
           <button type="button" @click="closeCreateGuild">Cancel</button>
-          <button type="submit" :disabled="guildName.trim().length < 2 || isCreatingGuild">
+          <button type="submit" :disabled="guildName.trim().length < 2 || isCreatingGuild || guilds.isMutating">
             Create
           </button>
         </div>
@@ -275,7 +291,7 @@ async function handleCreateInvite() {
         </label>
         <div class="dialog-actions">
           <button type="button" @click="closeJoinGuild">Cancel</button>
-          <button type="submit" :disabled="!joinCode.trim() || isInviteWorking">
+          <button type="submit" :disabled="!joinCode.trim() || isInviteWorking || guilds.isMutating">
             Join
           </button>
         </div>
