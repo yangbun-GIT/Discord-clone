@@ -81,6 +81,7 @@ The app boots in two local modes:
   - Optional asyncpg connection pool wrapper.
   - No pool is created when `DATABASE_URL` is empty, so local demo mode can boot.
   - Runs `backend/app/db/schema.sql` through `migrate()` when a database pool exists.
+  - Tracks the applied schema version in `schema_migrations`.
 - `backend/app/db/schema.sql`
   - Initial PostgreSQL schema for users, guilds, channels, messages, roles, guild
     members, invites, and member roles.
@@ -355,7 +356,6 @@ npm run docker:down
 
 Stage 2 should continue wiring persistence and authentication:
 
-- Add explicit migration versioning around `backend/app/db/schema.sql`.
 - Expand repositories for roles and member roles management.
 - Add richer member management such as member list refresh, removal, and role
   assignment.
@@ -381,6 +381,7 @@ Completed Stage 2 bridge work:
   create-server UI.
 - Added invite code creation/join APIs and frontend invite dialogs.
 - Added Pinia loading/mutation/error state handling for guild operations.
+- Added `schema_migrations` tracking around startup schema application.
 
 After each stage or meaningful feature:
 

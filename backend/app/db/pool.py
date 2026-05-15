@@ -7,6 +7,8 @@ from typing import Any
 
 import asyncpg
 
+CURRENT_SCHEMA_VERSION = "0001_schema_sql"
+
 
 class Database:
     def __init__(self) -> None:
@@ -51,9 +53,32 @@ class Database:
             await connection.execute(query)
 
     async def migrate(self) -> None:
+        await self.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version TEXT PRIMARY KEY,
+                applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+            """
+        )
+        applied = await self.fetchrow(
+            "SELECT version FROM schema_migrations WHERE version = $1",
+            CURRENT_SCHEMA_VERSION,
+        )
+        if applied is not None:
+            return
+
         schema_path = Path(__file__).with_name("schema.sql")
         schema = await asyncio.to_thread(schema_path.read_text, encoding="utf-8")
         await self.execute_script(schema)
+        await self.execute(
+            """
+            INSERT INTO schema_migrations (version)
+            VALUES ($1)
+            ON CONFLICT (version) DO NOTHING
+            """,
+            CURRENT_SCHEMA_VERSION,
+        )
 
     async def transaction(self) -> Any:
         if self._pool is None:
