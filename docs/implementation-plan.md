@@ -85,7 +85,7 @@
 
 ## Stage 4: Voice Signaling
 
-- Status: in progress.
+- Status: implementation completed; multi-browser TURN-backed manual QA remains.
 - Add WebRTC signaling events for offers, answers, ICE candidates, and voice state.
 - First slice completed: gateway opcode 4 now broadcasts validated
   `VOICE_STATE_UPDATE` events to voice-channel subscribers.
@@ -93,14 +93,21 @@
   payloads to the target user when both peers are in the same voice channel.
 - First slice completed: frontend VoicePanel sends voice state updates, shows gateway
   signaling readiness, and tracks voice presence/signaling state in Pinia.
-- Add Open Relay / Metered Video ICE server configuration.
-- Add frontend voice channel join controls and VAD scaffolding.
-- Remaining voice work: add browser media capture, RTCPeerConnection lifecycle, remote
-  audio rendering, ICE server environment config, and VAD scaffolding.
+- WebRTC implementation completed: frontend obtains microphone audio through
+  `getUserMedia`, creates `RTCPeerConnection` instances per remote voice participant,
+  exchanges offer/answer/ICE through gateway opcode 5, renders remote audio through
+  hidden audio sinks, and cleans up tracks/connections on disconnect.
+- ICE server config is exposed by `/api/meta/voice` from `WEBRTC_ICE_SERVERS_JSON`.
+- VAD scaffold completed: local microphone frequency sampling feeds a speaking flag
+  in the voice panel.
+- Remaining manual QA: configure a real TURN provider such as Open Relay or Metered
+  Video and verify two browsers across deployed/NAT networks.
 
 ## Stage 5: Deployment
 
-- Dockerfile baseline is complete; add production Gunicorn/Uvicorn worker config and
-  deployment hardening.
-- Prepare Oracle Cloud / GCP VM deployment notes.
-- Add production CORS, rate-limit, logging, and health-check guidance.
+- Status: implementation notes completed; actual VM rollout remains external.
+- Dockerfile baseline is complete.
+- Backend runtime image now starts Gunicorn with Uvicorn workers.
+- `docs/deployment.md` documents Oracle Cloud / GCP VM deployment flow, production
+  environment variables, HTTPS/WebSocket requirements, CORS, logging, health checks,
+  Redis, and WebRTC TURN guidance.

@@ -41,6 +41,15 @@ def test_auth_me_returns_current_user() -> None:
     assert response.json()["username"] == "yangbun"
 
 
+def test_voice_meta_returns_ice_servers() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/meta/voice")
+
+    assert response.status_code == 200
+    assert response.json()["ice_servers"][0]["urls"] == "stun:stun.l.google.com:19302"
+
+
 def test_register_requires_database() -> None:
     client = TestClient(app)
 

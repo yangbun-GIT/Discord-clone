@@ -76,3 +76,20 @@ export type VoiceSignal = {
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
 }
+
+export type VoiceIceServer = {
+  urls: string | string[]
+  username?: string
+  credential?: string
+}
+
+export type VoiceConfig = {
+  ice_servers: VoiceIceServer[]
+}
+
+export type RemoteVoiceStream = {
+  userId: number
+  username: string | null
+  stream: MediaStream
+  speaking: boolean
+}

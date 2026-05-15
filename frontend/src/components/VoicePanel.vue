@@ -8,6 +8,8 @@ defineProps<{
   connected: boolean
   participants: VoiceState[]
   signalingReady: boolean
+  localSpeaking: boolean
+  error: string | null
 }>()
 
 defineEmits<{
@@ -26,7 +28,9 @@ defineEmits<{
     </div>
     <div class="voice-presence" aria-live="polite">
       <span>{{ participants.length }} online</span>
-      <small>{{ signalingReady ? 'Signaling ready' : 'Gateway required' }}</small>
+      <small v-if="error">{{ error }}</small>
+      <small v-else-if="localSpeaking">Speaking</small>
+      <small v-else>{{ signalingReady ? 'Signaling ready' : 'Gateway required' }}</small>
     </div>
     <button type="button" :title="connected ? 'Disconnect voice' : 'Connect voice'" @click="$emit('toggle')">
       <PhoneOff v-if="connected" :size="18" aria-hidden="true" />

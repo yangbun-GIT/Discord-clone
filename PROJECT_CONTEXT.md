@@ -12,10 +12,10 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Current Milestone
 
-Stage 4 is in progress. Stage 1, the Docker development baseline, Stage 2's main
-persistence/auth/member-management bridge, Stage 3's main text-realtime scope, and
-focused PostgreSQL repository coverage for current guild/message mutations are
-complete and pushed to GitHub.
+Stage 4's implementation scope is complete. Stage 1, the Docker development baseline,
+Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-realtime
+scope, focused PostgreSQL repository coverage for current guild/message mutations,
+and Stage 5 deployment notes/runtime hardening are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -63,7 +63,8 @@ The app boots in two local modes:
   - Starts the gateway zombie-connection reaper task and cancels it during shutdown.
 - `backend/app/core/config.py`
   - Pydantic settings.
-  - Reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `CORS_ORIGINS`, and runtime settings.
+  - Reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `CORS_ORIGINS`,
+    `WEBRTC_ICE_SERVERS_JSON`, and runtime settings.
 - `backend/app/core/security.py`
   - Password hashing helpers using bcrypt.
   - JWT creation and decoding using PyJWT.
@@ -188,6 +189,8 @@ The app boots in two local modes:
     `MESSAGE_DELETE` through the realtime publisher.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
+  - `/api/meta/voice` exposes WebRTC ICE server config from
+    `WEBRTC_ICE_SERVERS_JSON`.
 - `backend/app/demo/data.py`
   - Initial guild/channel/member/message seed data used before persistence is wired.
 - `backend/app/demo/store.py`
@@ -281,6 +284,9 @@ The app boots in two local modes:
   - Accepts a dispatch callback and forwards non-READY gateway dispatch events to the
     app store.
   - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
+- `frontend/src/composables/useVoiceRtc.ts`
+  - Owns browser microphone capture, `RTCPeerConnection` lifecycle, local VAD
+    sampling, offer/answer/ICE handling, remote stream tracking, and cleanup.
 - `frontend/src/components/ServerRail.vue`
   - Server icon rail and create-server icon button placeholder.
 - `frontend/src/components/ChannelSidebar.vue`
@@ -300,13 +306,19 @@ The app boots in two local modes:
 - `frontend/src/components/VoicePanel.vue`
   - Voice connection toggle UI.
   - Shows voice participant count and whether gateway signaling is ready.
+- `frontend/src/components/VoiceAudioSink.vue`
+  - Binds remote `MediaStream` instances to hidden autoplay audio elements.
 - `frontend/src/styles/base.css`
   - App layout, accessible focus styles, responsive behavior, and View Transitions rule.
 - `frontend/src/types.ts`
   - Shared frontend types matching the current backend demo API shape.
+- `docs/deployment.md`
+  - VM/runtime deployment checklist, production environment variables, HTTPS/gateway
+    notes, ICE/TURN guidance, and hardening notes.
 - `backend/Dockerfile`
   - `dev` target installs backend dev dependencies and runs Uvicorn with reload.
-  - `runtime` target installs production dependencies and runs Uvicorn without reload.
+  - `runtime` target installs production dependencies and runs Gunicorn with Uvicorn
+    workers.
 - `frontend/Dockerfile`
   - `dev` target runs Vite on `0.0.0.0`.
   - `build` target produces the static bundle.
@@ -395,15 +407,21 @@ The app boots in two local modes:
     `4000` and removes them from the in-memory connection registry.
 - Voice signaling flow:
   - `VoicePanel.vue` toggles local voice connection state through `App.vue`.
-  - `App.vue` calls `useGateway().updateVoiceState()` with opcode 4, the active guild,
-    and the first voice channel.
+  - `App.vue` loads ICE config from `/api/meta/voice`, starts microphone capture
+    through `useVoiceRtc()`, then calls `useGateway().updateVoiceState()` with opcode
+    4, the active guild, and the first voice channel.
   - Backend validates the identified connection is subscribed to the guild/channel and
     broadcasts `VOICE_STATE_UPDATE` to voice-channel subscribers.
   - Gateway opcode 5 accepts `offer`, `answer`, or `ice` voice signal payloads and
     routes them to the target user only when the sender and target are in the same
     voice channel.
-  - `guilds.ts` stores voice presence state and the latest received signal for the
-    future WebRTC peer-connection layer.
+  - `guilds.ts` stores voice presence state and the latest received signal.
+  - `useVoiceRtc()` opens one peer connection per remote voice participant, sends
+    offers from the lower user ID to avoid glare, applies answers and ICE candidates,
+    renders remote audio through `VoiceAudioSink`, and tears down tracks/connections on
+    disconnect.
+  - Local VAD currently samples microphone frequency data and exposes a speaking flag
+    in `VoicePanel`; it is scaffolding for richer voice activity UX.
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.
@@ -496,8 +514,8 @@ npm run docker:down
 
 Next implementation stage:
 
-- Continue Stage 4 voice implementation with actual browser WebRTC peer connections,
-  media capture, and ICE server configuration.
+- Run multi-browser manual voice QA with a real TURN provider configured.
+- Continue production deployment execution when target VM/provider is chosen.
 
 Completed Stage 2 bridge work:
 
@@ -544,6 +562,11 @@ Completed Stage 2 bridge work:
 - Added Stage 4 voice signaling scaffolding: gateway opcode 5, voice state broadcast,
   targeted offer/answer/ICE relay, frontend gateway send helpers, voice presence
   state, and VoicePanel signaling status.
+- Added browser WebRTC voice implementation: ICE config API, microphone capture,
+  peer-connection lifecycle, offer/answer/ICE handling, remote audio sinks, cleanup,
+  and local VAD scaffold.
+- Added deployment notes and switched backend runtime Docker image to Gunicorn with
+  Uvicorn workers.
 
 After each stage or meaningful feature:
 

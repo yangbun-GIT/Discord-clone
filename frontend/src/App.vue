@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Hash, Link, LogIn, LogOut, Radio, Wifi, WifiOff } from 'lucide-vue-next'
 
+import { apiGet } from './services/api'
 import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
 import ChatView from './components/ChatView.vue'
 import MemberList from './components/MemberList.vue'
 import ServerRail from './components/ServerRail.vue'
+import VoiceAudioSink from './components/VoiceAudioSink.vue'
 import VoicePanel from './components/VoicePanel.vue'
 import { useGateway } from './composables/useGateway'
+import { useVoiceRtc } from './composables/useVoiceRtc'
 import { useGuildStore } from './stores/guilds'
 import { useSessionStore } from './stores/session'
+import type { VoiceConfig, VoiceIceServer } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
@@ -18,9 +22,11 @@ const {
   connect: connectGateway,
   disconnect: disconnectGateway,
   updateVoiceState,
+  sendVoiceSignal,
   status: gatewayStatus,
   statusLabel,
 } = useGateway()
+const voiceRtc = useVoiceRtc()
 
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
@@ -41,11 +47,18 @@ const showInvite = ref(false)
 const guildName = ref('')
 const joinCode = ref('')
 const inviteCode = ref<string | null>(null)
+const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 
 async function openWorkspace() {
   if (!session.token) return
   await guilds.loadGuilds(session.token)
+  await loadVoiceConfig()
   connectGateway(session.token, { onDispatch: guilds.handleGatewayDispatch })
+}
+
+async function loadVoiceConfig() {
+  const config = await apiGet<VoiceConfig>('/api/meta/voice')
+  voiceIceServers.value = config.ice_servers
 }
 
 onMounted(async () => {
@@ -82,6 +95,7 @@ function handleDemo() {
 }
 
 function handleLogout() {
+  voiceRtc.disconnect()
   disconnectGateway()
   authError.value = null
   workspaceError.value = null
@@ -176,8 +190,33 @@ function handleRemoveMember(memberId: number) {
   })
 }
 
-function handleToggleVoice() {
-  if (!activeGuild.value || !guilds.voiceChannel) return
+async function handleToggleVoice() {
+  if (!activeGuild.value || !guilds.voiceChannel || !session.user) return
+  if (guilds.voiceConnected) {
+    updateVoiceState({
+      guild_id: activeGuild.value.id,
+      channel_id: null,
+      self_mute: false,
+      self_deaf: false,
+    })
+    voiceRtc.disconnect()
+    guilds.setVoiceConnected(false)
+    return
+  }
+
+  try {
+    await voiceRtc.connect({
+      channelId: guilds.voiceChannel.id,
+      currentUserId: session.user.id,
+      participants: guilds.activeVoiceStates,
+      iceServers: voiceIceServers.value,
+      sendSignal: sendVoiceSignal,
+    })
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : 'Voice connection failed'
+    return
+  }
+
   const nextConnected = !guilds.voiceConnected
   guilds.setVoiceConnected(nextConnected)
   updateVoiceState({
@@ -187,6 +226,26 @@ function handleToggleVoice() {
     self_deaf: false,
   })
 }
+
+watch(
+  () => guilds.activeVoiceStates.map((state) => `${state.user_id}:${state.channel_id}`).join('|'),
+  () => {
+    if (!voiceRtc.isCapturing.value || !session.user) return
+    void voiceRtc.syncParticipants(guilds.activeVoiceStates).catch((error) => {
+      workspaceError.value = error instanceof Error ? error.message : 'Voice peer sync failed'
+    })
+  },
+)
+
+watch(
+  () => guilds.lastVoiceSignal,
+  (signal) => {
+    if (!signal) return
+    void voiceRtc.handleSignal(signal).catch((error) => {
+      workspaceError.value = error instanceof Error ? error.message : 'Voice signal failed'
+    })
+  },
+)
 
 function openJoinGuild() {
   workspaceError.value = null
@@ -394,7 +453,16 @@ async function handleCreateInvite() {
       :connected="guilds.voiceConnected"
       :participants="guilds.activeVoiceStates"
       :signaling-ready="gatewayStatus === 'connected'"
+      :local-speaking="voiceRtc.localSpeaking.value"
+      :error="voiceRtc.error.value"
       @toggle="handleToggleVoice"
     />
+    <div class="voice-audio-sinks" aria-hidden="true">
+      <VoiceAudioSink
+        v-for="remote in voiceRtc.remoteStreams.value"
+        :key="remote.userId"
+        :stream="remote.stream"
+      />
+    </div>
   </main>
 </template>

@@ -90,6 +90,12 @@ Messages and channels created in Docker mode persist in the local PostgreSQL vol
 Messages and channels created in native demo mode are kept in the running backend
 process and reset when that process restarts.
 
+WebRTC voice uses `WEBRTC_ICE_SERVERS_JSON` from the backend environment. The default
+STUN server is enough for local development; deployed voice should use a TURN provider
+such as Open Relay or Metered Video.
+
+Deployment notes are maintained in `docs/deployment.md`.
+
 ## Verification
 
 ```powershell
