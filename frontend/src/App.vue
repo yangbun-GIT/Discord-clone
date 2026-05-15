@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { Hash, Radio, Wifi, WifiOff } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { Hash, LogOut, Radio, Wifi, WifiOff } from 'lucide-vue-next'
 
+import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
 import ChatView from './components/ChatView.vue'
 import MemberList from './components/MemberList.vue'
@@ -13,23 +14,84 @@ import { useSessionStore } from './stores/session'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
-const { connect: connectGateway, status: gatewayStatus, statusLabel } = useGateway()
+const {
+  connect: connectGateway,
+  disconnect: disconnectGateway,
+  status: gatewayStatus,
+  statusLabel,
+} = useGateway()
 
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
 const activeMessages = computed(() => guilds.activeMessages)
+const workspaceTitle = computed(() => {
+  if (!activeGuild.value) return 'No servers'
+  return activeChannel.value?.name ?? 'loading'
+})
+const isBooting = ref(true)
+const authError = ref<string | null>(null)
+const isAuthenticating = ref(false)
+
+async function openWorkspace() {
+  if (!session.token) return
+  await guilds.loadGuilds(session.token)
+  connectGateway(session.token)
+}
 
 onMounted(async () => {
-  await session.ensureDevSession()
-  await guilds.loadGuilds(session.token)
+  await session.restoreSession()
   if (session.token) {
-    connectGateway(session.token)
+    await openWorkspace()
   }
+  isBooting.value = false
 })
+
+async function runAuth(action: () => Promise<void>) {
+  authError.value = null
+  isAuthenticating.value = true
+  try {
+    await action()
+    await openWorkspace()
+  } catch (error) {
+    authError.value = error instanceof Error ? error.message : 'Authentication failed'
+  } finally {
+    isAuthenticating.value = false
+  }
+}
+
+function handleLogin(payload: { username: string; password: string }) {
+  void runAuth(() => session.login(payload))
+}
+
+function handleRegister(payload: { username: string; password: string }) {
+  void runAuth(() => session.register(payload))
+}
+
+function handleDemo() {
+  void runAuth(() => session.ensureDevSession())
+}
+
+function handleLogout() {
+  disconnectGateway()
+  authError.value = null
+  session.logout()
+  guilds.resetGuilds()
+}
 </script>
 
 <template>
-  <main class="app-shell" aria-label="Discord clone workspace">
+  <div v-if="isBooting" class="boot-screen" role="status">Loading</div>
+
+  <AuthPanel
+    v-else-if="!session.token"
+    :error="authError"
+    :loading="isAuthenticating"
+    @login="handleLogin"
+    @register="handleRegister"
+    @demo="handleDemo"
+  />
+
+  <main v-else class="app-shell" aria-label="Discord clone workspace">
     <ServerRail
       :guilds="guilds.guilds"
       :active-guild-id="guilds.activeGuildId"
@@ -47,18 +109,23 @@ onMounted(async () => {
     <section class="workspace">
       <header class="topbar">
         <div class="channel-title">
-          <Hash v-if="activeChannel?.type === 0" :size="19" aria-hidden="true" />
-          <Radio v-else :size="19" aria-hidden="true" />
-          <span>{{ activeChannel?.name ?? 'loading' }}</span>
+          <Radio v-if="activeChannel?.type === 1" :size="19" aria-hidden="true" />
+          <Hash v-else :size="19" aria-hidden="true" />
+          <span>{{ workspaceTitle }}</span>
         </div>
         <div class="session-state" :class="gatewayStatus">
           <Wifi v-if="gatewayStatus === 'connected'" :size="17" aria-hidden="true" />
           <WifiOff v-else :size="17" aria-hidden="true" />
           <span>{{ statusLabel }}</span>
         </div>
+        <button class="logout-button" type="button" aria-label="Log out" @click="handleLogout">
+          <LogOut :size="17" aria-hidden="true" />
+        </button>
       </header>
 
-      <div class="content-grid">
+      <div v-if="authError" class="app-error" role="alert">{{ authError }}</div>
+
+      <div v-if="activeGuild" class="content-grid">
         <ChatView
           :channel="activeChannel"
           :messages="activeMessages"
@@ -67,6 +134,10 @@ onMounted(async () => {
         />
         <MemberList v-if="activeGuild" :members="activeGuild.members" />
       </div>
+
+      <section v-else class="empty-workspace" aria-label="No servers">
+        <div>No servers</div>
+      </section>
     </section>
 
     <VoicePanel

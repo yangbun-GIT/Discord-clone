@@ -42,11 +42,13 @@
   before writing.
 - Database-backed `/api/auth/register`, `/api/auth/login`, and `/api/auth/me` are
   implemented with bcrypt password hashing and JWT responses.
+- The frontend now shows login/register UI when logged out, restores saved sessions,
+  supports logout, and keeps Demo user as an explicit local-development action.
 - Next persistence work: add explicit migration versioning and expand repositories
   for roles and member-role management.
-- Add frontend login/register screens and replace the automatic dev session for
-  non-dev flows.
 - Add API/store error and empty states.
+- Add guild creation or invite/member management so newly registered users can enter
+  a usable workspace without the demo session.
 
 ## Stage 3: Realtime Messaging
 

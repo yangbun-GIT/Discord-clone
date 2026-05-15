@@ -26,6 +26,13 @@ export const useGuildStore = defineStore('guilds', () => {
     activeChannelId.value = guilds.value[0]?.channels[0]?.id ?? null
   }
 
+  function resetGuilds() {
+    guilds.value = []
+    activeGuildId.value = null
+    activeChannelId.value = null
+    voiceConnected.value = false
+  }
+
   function selectGuild(guildId: number) {
     activeGuildId.value = guildId
     activeChannelId.value = activeGuild.value?.channels[0]?.id ?? null
@@ -85,6 +92,7 @@ export const useGuildStore = defineStore('guilds', () => {
     voiceChannel,
     voiceConnected,
     loadGuilds,
+    resetGuilds,
     selectGuild,
     selectChannel,
     toggleVoice,

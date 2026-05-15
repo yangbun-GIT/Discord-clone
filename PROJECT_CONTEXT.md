@@ -175,13 +175,19 @@ The app boots in two local modes:
 - `frontend/src/App.vue`
   - Main Discord-like workspace screen.
   - Composes server rail, channel sidebar, chat view, member list, and voice panel.
-  - Starts local dev session, loads guild data, then connects the gateway.
+  - Restores saved sessions, shows auth UI when logged out, loads guild data after
+    authentication, and connects the gateway.
+- `frontend/src/components/AuthPanel.vue`
+  - Login/register form plus an explicit Demo user button for local development.
+  - Emits auth actions to `App.vue`; it does not own token storage.
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
   - GET and POST calls accept an optional bearer token.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
-  - Calls `/api/dev/session` and stores JWT plus current user.
+  - Calls `/api/auth/login`, `/api/auth/register`, `/api/auth/me`, and
+    `/api/dev/session`.
+  - Stores JWT/current user in localStorage and clears them on logout.
 - `frontend/src/stores/guilds.ts`
   - Pinia guild store.
   - Uses `shallowRef` for guild data as required by the SRS performance guidance.
@@ -224,11 +230,14 @@ The app boots in two local modes:
 ## Current Integrations
 
 - Frontend startup flow:
-  - `App.vue` calls `session.ensureDevSession()`.
-  - `session.ts` POSTs to `/api/dev/session`.
-  - `App.vue` calls `guilds.loadGuilds(session.token)`.
-  - `guilds.ts` GETs `/api/guilds/me` with the dev session bearer token.
-  - `App.vue` calls `useGateway().connect(token)`.
+  - `App.vue` calls `session.restoreSession()`.
+  - If no saved token exists, `AuthPanel.vue` is shown.
+  - Login/register POST to `/api/auth/login` or `/api/auth/register`.
+  - Demo user explicitly POSTs to `/api/dev/session`.
+  - After authentication, `App.vue` calls `guilds.loadGuilds(session.token)` and
+    `useGateway().connect(token)`.
+  - Logout closes the gateway, clears Pinia guild state, and removes saved session
+    data from localStorage.
 - Auth API flow:
   - Clients POST `{ username, password }` to `/api/auth/register` or
     `/api/auth/login`.
@@ -325,9 +334,9 @@ Stage 2 should continue wiring persistence and authentication:
 
 - Add explicit migration versioning around `backend/app/db/schema.sql`.
 - Expand repositories for roles and member roles management.
-- Add frontend login/register screens and replace the automatic dev session for
-  non-dev flows.
 - Update Pinia stores to handle loading, empty, and error states from real APIs.
+- Add guild creation or invite/member management so newly registered users can enter
+  a usable workspace without the demo session.
 - Add tests for auth, repositories, and route permissions.
 
 Completed Stage 2 bridge work:
@@ -344,6 +353,8 @@ Completed Stage 2 bridge work:
   to the dev session token.
 - Added guild membership and permission checks to channel/message mutation routes.
 - Added database-backed `/api/auth/register`, `/api/auth/login`, and `/api/auth/me`.
+- Added frontend login/register UI, saved-session restore, logout, and explicit Demo
+  user entry.
 
 After each stage or meaningful feature:
 

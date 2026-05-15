@@ -56,9 +56,15 @@ export function useGateway() {
     })
   }
 
-  onBeforeUnmount(() => {
+  function disconnect() {
     clearHeartbeat()
     socket.value?.close()
+    socket.value = null
+    status.value = 'idle'
+  }
+
+  onBeforeUnmount(() => {
+    disconnect()
   })
 
   return {
@@ -70,6 +76,6 @@ export function useGateway() {
       return 'Gateway idle'
     }),
     connect,
+    disconnect,
   }
 }
-

@@ -38,6 +38,9 @@ npm run dev:frontend
 
 Open `http://127.0.0.1:5173`.
 
+The frontend starts at the login/register screen when no saved session exists. Use
+the Demo user button for the seeded local workspace.
+
 ## Docker Setup
 
 Docker is optional for day-to-day development, but useful for onboarding, reproducible

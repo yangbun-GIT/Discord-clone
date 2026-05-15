@@ -31,10 +31,143 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+}
+
 button:focus-visible,
 input:focus-visible {
   outline: 2px solid #7dd3fc;
   outline-offset: 2px;
+}
+
+.boot-screen,
+.auth-shell {
+  min-height: 100vh;
+  background:
+    linear-gradient(120deg, rgb(28 28 31 / 92%), rgb(22 24 28 / 96%)),
+    radial-gradient(circle at top left, rgb(45 212 191 / 18%), transparent 34%),
+    #151517;
+}
+
+.boot-screen {
+  display: grid;
+  place-items: center;
+  color: #cbd5e1;
+  font-weight: 800;
+}
+
+.auth-shell {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-panel {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  background: rgb(22 24 29 / 88%);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 28%);
+}
+
+.auth-mark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #101827;
+  background: #5eead4;
+  font-weight: 900;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.auth-tabs button,
+.demo-button,
+.logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+}
+
+.auth-tabs button {
+  min-height: 40px;
+  color: #cbd5e1;
+  background: rgb(255 255 255 / 8%);
+}
+
+.auth-tabs button.active {
+  color: #111827;
+  background: #7dd3fc;
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.auth-form span {
+  color: #9ca3af;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 12px;
+}
+
+.auth-form button,
+.demo-button {
+  min-height: 44px;
+}
+
+.auth-form button {
+  border: 0;
+  border-radius: 8px;
+  color: #101827;
+  background: #5eead4;
+  font-weight: 800;
+}
+
+.auth-form button:disabled,
+.demo-button:disabled {
+  color: #94a3b8;
+  background: rgb(255 255 255 / 9%);
+}
+
+.auth-error,
+.app-error {
+  margin: 0;
+  color: #fecaca;
+  font-size: 0.9rem;
+}
+
+.demo-button {
+  color: #dbeafe;
+  background: rgb(96 165 250 / 16%);
 }
 
 .app-shell {
@@ -205,7 +338,7 @@ input:focus-visible {
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
   padding: 0 18px;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
@@ -229,6 +362,7 @@ input:focus-visible {
 }
 
 .session-state {
+  margin-left: auto;
   min-height: 30px;
   padding: 0 10px;
   border-radius: 999px;
@@ -241,10 +375,35 @@ input:focus-visible {
   color: #86efac;
 }
 
+.logout-button {
+  width: 34px;
+  height: 34px;
+  color: #cbd5e1;
+  background: rgb(255 255 255 / 7%);
+}
+
+.logout-button:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 12%);
+}
+
+.app-error {
+  padding: 10px 18px;
+  background: rgb(127 29 29 / 38%);
+}
+
 .content-grid {
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 230px;
+}
+
+.empty-workspace {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  color: #94a3b8;
+  font-weight: 800;
 }
 
 .chat-view {
