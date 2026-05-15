@@ -19,8 +19,10 @@ from app.services.guild_service import (
     create_guild,
     create_invite,
     create_role,
+    get_guild_for_user,
     join_invite,
     list_guilds_for_user,
+    remove_member,
     remove_member_role,
 )
 
@@ -32,6 +34,20 @@ async def list_my_guilds(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> list[GuildRead]:
     return await list_guilds_for_user(current_user)
+
+
+@router.get("/{guild_id}", response_model=GuildRead)
+async def get_guild(
+    guild_id: int,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> GuildRead:
+    try:
+        return await get_guild_for_user(guild_id, current_user)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="guild not found",
+        ) from exc
 
 
 @router.post("", response_model=GuildRead, status_code=status.HTTP_201_CREATED)
@@ -154,6 +170,35 @@ async def remove_guild_member_role(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="administrator permission required",
+        ) from exc
+
+
+@router.delete(
+    "/{guild_id}/members/{member_id}",
+    response_model=GuildRead,
+    status_code=status.HTTP_200_OK,
+)
+async def remove_guild_member(
+    guild_id: int,
+    member_id: int,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> GuildRead:
+    try:
+        return await remove_member(guild_id, member_id, current_user)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="member not found",
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="administrator permission required",
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
         ) from exc
 
 

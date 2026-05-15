@@ -83,6 +83,16 @@ class DemoStore:
             self._guilds.append(guild)
             return deepcopy(guild)
 
+    def get_guild_for_user(self, guild_id: int, user: UserPublic) -> GuildRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            if not any(member.id == user.id for member in guild.members):
+                raise KeyError(guild_id)
+            visible_guild = deepcopy(guild)
+            if user.id == visible_guild.owner_id:
+                visible_guild.permissions = ALL_PERMISSIONS
+            return visible_guild
+
     def create_invite(self, guild_id: int, actor: UserPublic) -> InviteRead:
         with self._lock:
             guild = self._find_guild(guild_id)
@@ -142,6 +152,18 @@ class DemoStore:
                 if assigned_role_id != role_id
             ]
             member.role = self._member_role_label(guild, member)
+            return deepcopy(guild)
+
+    def remove_member(self, guild_id: int, member_id: int, actor: UserPublic) -> GuildRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            self._require_owner(guild, actor)
+            if member_id == guild.owner_id:
+                raise ValueError("owner cannot be removed")
+            if member_id == actor.id:
+                raise ValueError("self-removal is not supported")
+            self._find_member(guild, member_id)
+            guild.members = [member for member in guild.members if member.id != member_id]
             return deepcopy(guild)
 
     def join_invite(self, code: str, user: UserPublic) -> GuildRead:

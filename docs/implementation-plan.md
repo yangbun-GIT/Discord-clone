@@ -54,8 +54,10 @@
 - Role creation and member-role assignment/removal now use the PostgreSQL repository
   when connected, the demo store otherwise, and the frontend member list exposes
   administrator-only controls.
-- Next persistence work: add richer member management such as member list refresh and
-  member removal.
+- Single-guild refresh and administrator-only non-owner member removal are implemented
+  across the backend, demo store, Pinia state, and member list UI.
+- Next persistence work: add focused repository tests for PostgreSQL-backed guild
+  mutations.
 
 ## Stage 3: Realtime Messaging
 

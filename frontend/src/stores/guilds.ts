@@ -34,6 +34,13 @@ export const useGuildStore = defineStore('guilds', () => {
     guilds.value = guilds.value.map((guild) => (guild.id === updatedGuild.id ? updatedGuild : guild))
   }
 
+  function appendOrReplaceGuild(updatedGuild: Guild) {
+    const existing = guilds.value.some((guild) => guild.id === updatedGuild.id)
+    guilds.value = existing
+      ? guilds.value.map((guild) => (guild.id === updatedGuild.id ? updatedGuild : guild))
+      : [...guilds.value, updatedGuild]
+  }
+
   async function loadGuilds(token: string | null) {
     isLoading.value = true
     error.value = null
@@ -43,6 +50,25 @@ export const useGuildStore = defineStore('guilds', () => {
       activeChannelId.value = guilds.value[0]?.channels[0]?.id ?? null
     } catch (cause) {
       setError(cause, 'Failed to load servers')
+      throw cause
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function refreshActiveGuild(token: string | null) {
+    if (!activeGuild.value) return
+    isLoading.value = true
+    error.value = null
+    try {
+      const guild = await apiGet<Guild>(`/api/guilds/${activeGuild.value.id}`, token)
+      appendOrReplaceGuild(guild)
+      activeGuildId.value = guild.id
+      if (!guild.channels.some((channel) => channel.id === activeChannelId.value)) {
+        activeChannelId.value = guild.channels[0]?.id ?? null
+      }
+    } catch (cause) {
+      setError(cause, 'Failed to refresh server')
       throw cause
     } finally {
       isLoading.value = false
@@ -92,10 +118,7 @@ export const useGuildStore = defineStore('guilds', () => {
         {},
         token,
       )
-      const existing = guilds.value.some((item) => item.id === guild.id)
-      guilds.value = existing
-        ? guilds.value.map((item) => (item.id === guild.id ? guild : item))
-        : [...guilds.value, guild]
+      appendOrReplaceGuild(guild)
       activeGuildId.value = guild.id
       activeChannelId.value = guild.channels[0]?.id ?? null
     } catch (cause) {
@@ -219,6 +242,24 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  async function removeMember(token: string | null, memberId: number) {
+    if (!activeGuild.value) return
+    isMutating.value = true
+    error.value = null
+    try {
+      const guild = await apiDelete<Guild>(
+        `/api/guilds/${activeGuild.value.id}/members/${memberId}`,
+        token,
+      )
+      replaceGuild(guild)
+    } catch (cause) {
+      setError(cause, 'Failed to remove member')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
   async function sendMessage(token: string | null, content: string) {
     if (!activeChannel.value || activeChannel.value.type !== 0) return
     isMutating.value = true
@@ -255,6 +296,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating,
     error,
     loadGuilds,
+    refreshActiveGuild,
     createGuild,
     createInvite,
     joinInvite,
@@ -266,6 +308,7 @@ export const useGuildStore = defineStore('guilds', () => {
     createRole,
     assignRole,
     removeRole,
+    removeMember,
     sendMessage,
   }
 })

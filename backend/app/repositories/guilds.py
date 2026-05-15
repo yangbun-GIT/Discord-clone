@@ -59,6 +59,41 @@ class GuildRepository:
             return None
         return await self._read_guild(guild_row, user_id)
 
+    async def remove_member(
+        self,
+        guild_id: int,
+        member_id: int,
+        actor: UserPublic,
+    ) -> GuildRead:
+        guild_row = await self._get_manageable_guild_row(guild_id, actor)
+        owner_id = int(guild_row["owner_id"])
+        if member_id == owner_id:
+            raise ValueError("owner cannot be removed")
+        if member_id == actor.id:
+            raise ValueError("self-removal is not supported")
+
+        member_row = await database.fetchrow(
+            """
+            SELECT 1
+            FROM guild_members
+            WHERE guild_id = $1 AND user_id = $2
+            """,
+            guild_id,
+            member_id,
+        )
+        if member_row is None:
+            raise KeyError(member_id)
+
+        await database.execute(
+            """
+            DELETE FROM guild_members
+            WHERE guild_id = $1 AND user_id = $2
+            """,
+            guild_id,
+            member_id,
+        )
+        return await self._read_guild(guild_row, actor.id)
+
     async def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
         guild_id = id_generator.generate()
         text_channel = ChannelRead(

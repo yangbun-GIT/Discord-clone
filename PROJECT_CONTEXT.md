@@ -121,6 +121,7 @@ The app boots in two local modes:
   - `/api/guilds/me` requires a bearer token and returns the authenticated user's
     PostgreSQL-backed guild memberships when connected, otherwise demo guild data for
     the frontend shell.
+  - `GET /api/guilds/{guild_id}` refreshes a single guild snapshot for current members.
   - `POST /api/guilds` creates a guild owned by the authenticated user with default
     `general` text and `voice-room` voice channels.
   - `POST /api/guilds/{guild_id}/invites` creates an invite code for users with
@@ -132,6 +133,8 @@ The app boots in two local modes:
   - `POST /api/guilds/{guild_id}/members/{member_id}/roles` assigns a role to a member.
   - `DELETE /api/guilds/{guild_id}/members/{member_id}/roles/{role_id}` removes an
     assigned role from a member.
+  - `DELETE /api/guilds/{guild_id}/members/{member_id}` removes a non-owner member
+    from a guild for administrators.
   - `POST /api/guilds/{guild_id}/channels` creates text or voice channels through
     the guild service.
   - Channel creation returns `403` when the authenticated user lacks
@@ -151,11 +154,11 @@ The app boots in two local modes:
     messages with Snowflake IDs.
   - Still used only when no database pool is configured.
   - Filters guild reads by member and enforces owner-only channel creation plus
-    owner-only role management plus member-only message creation.
+    owner-only role/member management plus member-only message creation.
 - `backend/app/repositories/guilds.py`
   - PostgreSQL repository for guild creation, invite creation/join, role creation,
-    member-role assignment/removal, guild membership reads, channel creation, and
-    message creation.
+    member-role assignment/removal, member removal, guild membership reads, channel
+    creation, and message creation.
   - Converts asyncpg rows into `GuildRead`, `ChannelRead`, `MemberRead`, and
     `RoleRead`/`MessageRead` schemas.
   - Computes effective permissions from ownership, base member permissions, and role
@@ -214,6 +217,7 @@ The app boots in two local modes:
   - Calls the protected guild creation API and selects the new guild's first channel.
   - Calls invite creation and invite join APIs.
   - Calls role creation, role assignment, and role removal APIs.
+  - Calls single-guild refresh and member removal APIs.
   - Calls the protected channel creation and message creation APIs.
   - Uses `document.startViewTransition()` when available for channel switching.
 - `frontend/src/composables/useGateway.ts`
@@ -232,6 +236,7 @@ The app boots in two local modes:
   - Member presence list.
   - Shows role labels and exposes administrator-only controls for role creation,
     assignment, and removal.
+  - Exposes member refresh and non-owner member removal controls.
 - `frontend/src/components/VoicePanel.vue`
   - Voice connection toggle UI placeholder.
 - `frontend/src/styles/base.css`
@@ -288,6 +293,13 @@ The app boots in two local modes:
   - Backend validates JWTs, checks administrator permissions, writes to
     `roles/member_roles` in PostgreSQL or the demo store, and returns the refreshed
     `GuildRead` for local state replacement.
+- Member management flow:
+  - `MemberList.vue` emits refresh and remove-member actions.
+  - `guilds.ts` GETs `/api/guilds/{guild_id}` to refresh the active guild and DELETEs
+    `/api/guilds/{guild_id}/members/{member_id}` to remove a non-owner member.
+  - Backend validates JWTs, checks administrator permissions for removal, rejects owner
+    and self-removal, deletes the membership from PostgreSQL or the demo store, and
+    returns the refreshed `GuildRead`.
 - Message send flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
@@ -376,8 +388,8 @@ npm run docker:down
 
 Stage 2 should continue wiring persistence and authentication:
 
-- Add richer member management such as member list refresh and member removal.
-- Add tests for auth, repositories, and route permissions.
+- Add focused repository tests for PostgreSQL-backed guild mutations.
+- Begin Stage 3 realtime messaging fan-out through Redis Pub/Sub.
 
 Completed Stage 2 bridge work:
 
@@ -402,6 +414,8 @@ Completed Stage 2 bridge work:
 - Added `schema_migrations` tracking around startup schema application.
 - Added role creation plus member-role assignment/removal across backend, demo store,
   Pinia state, and the member list UI.
+- Added single-guild refresh and administrator-only non-owner member removal across
+  backend, demo store, Pinia state, and the member list UI.
 
 After each stage or meaningful feature:
 

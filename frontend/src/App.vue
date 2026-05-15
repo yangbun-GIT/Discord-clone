@@ -147,6 +147,20 @@ function handleRemoveRole(memberId: number, roleId: number) {
   })
 }
 
+function handleRefreshMembers() {
+  workspaceError.value = null
+  void guilds.refreshActiveGuild(session.token).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Member refresh failed'
+  })
+}
+
+function handleRemoveMember(memberId: number) {
+  workspaceError.value = null
+  void guilds.removeMember(session.token, memberId).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Member removal failed'
+  })
+}
+
 function openJoinGuild() {
   workspaceError.value = null
   showJoinGuild.value = true
@@ -273,10 +287,14 @@ async function handleCreateInvite() {
           :members="activeGuild.members"
           :roles="activeGuild.roles"
           :can-manage-roles="guilds.canManageRoles"
+          :owner-id="activeGuild.owner_id"
+          :current-user-id="session.user?.id"
           :disabled="guilds.isMutating"
           @create-role="handleCreateRole"
           @assign-role="handleAssignRole"
           @remove-role="handleRemoveRole"
+          @remove-member="handleRemoveMember"
+          @refresh="handleRefreshMembers"
         />
       </div>
 

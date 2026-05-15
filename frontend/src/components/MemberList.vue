@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Circle, Plus, X } from 'lucide-vue-next'
+import { Circle, Plus, RefreshCw, UserMinus, X } from 'lucide-vue-next'
 
 import type { Member, Role } from '../types'
 
@@ -8,6 +8,8 @@ const props = defineProps<{
   members: Member[]
   roles: Role[]
   canManageRoles: boolean
+  ownerId: number
+  currentUserId?: number | null
   disabled?: boolean
 }>()
 
@@ -15,6 +17,8 @@ const emit = defineEmits<{
   createRole: [name: string, permissions: number]
   assignRole: [memberId: number, roleId: number]
   removeRole: [memberId: number, roleId: number]
+  removeMember: [memberId: number]
+  refresh: []
 }>()
 
 const ROLE_PRESETS = [
@@ -45,11 +49,20 @@ function assignFirstRole(member: Member) {
   if (roleId === null) return
   emit('assignRole', member.id, roleId)
 }
+
+function canRemoveMember(member: Member) {
+  return props.canManageRoles && member.id !== props.ownerId && member.id !== props.currentUserId
+}
 </script>
 
 <template>
   <aside class="member-list" aria-label="Members">
-    <p>Members</p>
+    <div class="member-list-heading">
+      <p>Members</p>
+      <button type="button" aria-label="Refresh members" :disabled="disabled" @click="emit('refresh')">
+        <RefreshCw :size="14" aria-hidden="true" />
+      </button>
+    </div>
     <form v-if="canManageRoles" class="role-create-form" @submit.prevent="handleCreateRole">
       <input
         v-model="roleName"
@@ -102,6 +115,27 @@ function assignFirstRole(member: Member) {
           @click="assignFirstRole(member)"
         >
           <Plus :size="13" aria-hidden="true" />
+        </button>
+        <button
+          v-if="canRemoveMember(member)"
+          type="button"
+          class="member-remove-button"
+          :aria-label="`Remove ${member.username}`"
+          :disabled="disabled"
+          @click="emit('removeMember', member.id)"
+        >
+          <UserMinus :size="13" aria-hidden="true" />
+        </button>
+      </div>
+      <div v-else-if="canRemoveMember(member)" class="member-role-controls">
+        <button
+          type="button"
+          class="member-remove-button"
+          :aria-label="`Remove ${member.username}`"
+          :disabled="disabled"
+          @click="emit('removeMember', member.id)"
+        >
+          <UserMinus :size="13" aria-hidden="true" />
         </button>
       </div>
     </div>

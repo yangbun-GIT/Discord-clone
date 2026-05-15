@@ -77,6 +77,27 @@ def test_list_my_guilds_filters_non_members() -> None:
     assert response.json() == []
 
 
+def test_get_guild_returns_current_membership_snapshot() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/guilds/1001", headers=auth_headers())
+
+    assert response.status_code == 200
+    assert response.json()["id"] == 1001
+    assert any(member["username"] == "codex" for member in response.json()["members"])
+
+
+def test_get_guild_requires_membership() -> None:
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/guilds/1001",
+        headers=auth_headers(user_id=999, username="outsider"),
+    )
+
+    assert response.status_code == 404
+
+
 def test_create_guild_returns_owned_workspace() -> None:
     client = TestClient(app)
 
@@ -190,6 +211,47 @@ def test_create_role_requires_administrator_permission() -> None:
     response = client.post(
         "/api/guilds/1001/roles",
         json={"name": "Blocked", "permissions": 0},
+        headers=auth_headers(user_id=43, username="codex"),
+    )
+
+    assert response.status_code == 403
+
+
+def test_remove_member() -> None:
+    client = TestClient(app)
+
+    invite_response = client.post("/api/guilds/1001/invites", headers=auth_headers())
+    code = invite_response.json()["code"]
+    client.post(
+        f"/api/guilds/invites/{code}/join",
+        headers=auth_headers(user_id=890, username="removable"),
+    )
+
+    response = client.delete(
+        "/api/guilds/1001/members/890",
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 200
+    assert all(member["id"] != 890 for member in response.json()["members"])
+
+
+def test_remove_member_rejects_owner() -> None:
+    client = TestClient(app)
+
+    response = client.delete(
+        "/api/guilds/1001/members/42",
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 400
+
+
+def test_remove_member_requires_administrator_permission() -> None:
+    client = TestClient(app)
+
+    response = client.delete(
+        "/api/guilds/1001/members/44",
         headers=auth_headers(user_id=43, username="codex"),
     )
 

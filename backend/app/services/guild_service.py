@@ -22,6 +22,15 @@ async def list_guilds_for_user(user: UserPublic | None = None) -> list[GuildRead
     return demo_store.list_guilds(user.id if user else None)
 
 
+async def get_guild_for_user(guild_id: int, user: UserPublic) -> GuildRead:
+    if database.is_connected:
+        guild = await guild_repository.get_for_user(guild_id, user.id)
+        if guild is None:
+            raise KeyError(guild_id)
+        return guild
+    return demo_store.get_guild_for_user(guild_id, user)
+
+
 async def create_guild(payload: GuildCreate, owner: UserPublic) -> GuildRead:
     if database.is_connected:
         return await guild_repository.create_guild(payload, owner)
@@ -66,6 +75,12 @@ async def remove_member_role(
     if database.is_connected:
         return await guild_repository.remove_member_role(guild_id, member_id, role_id, actor)
     return demo_store.remove_member_role(guild_id, member_id, role_id, actor)
+
+
+async def remove_member(guild_id: int, member_id: int, actor: UserPublic) -> GuildRead:
+    if database.is_connected:
+        return await guild_repository.remove_member(guild_id, member_id, actor)
+    return demo_store.remove_member(guild_id, member_id, actor)
 
 
 async def create_channel(
