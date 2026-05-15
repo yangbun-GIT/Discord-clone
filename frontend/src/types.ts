@@ -17,6 +17,7 @@ export type Member = {
   username: string
   status: number
   role: string
+  role_ids: number[]
 }
 
 export type Message = {
@@ -27,12 +28,21 @@ export type Message = {
   content: string
 }
 
+export type Role = {
+  id: number
+  guild_id: number
+  name: string
+  permissions: number
+  position: number
+}
+
 export type Guild = {
   id: number
   name: string
   owner_id: number
   permissions: number
   channels: Channel[]
+  roles: Role[]
   members: Member[]
   messages: Message[]
 }

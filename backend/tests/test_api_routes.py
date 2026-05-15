@@ -134,6 +134,68 @@ def test_join_invite_rejects_unknown_code() -> None:
     assert response.status_code == 404
 
 
+def test_create_role_and_assign_member_role() -> None:
+    client = TestClient(app)
+
+    role_response = client.post(
+        "/api/guilds/1001/roles",
+        json={"name": "Moderator", "permissions": 16},
+        headers=auth_headers(),
+    )
+
+    assert role_response.status_code == 201
+    role = role_response.json()["roles"][-1]
+    assert role["name"] == "Moderator"
+
+    assign_response = client.post(
+        "/api/guilds/1001/members/43/roles",
+        json={"role_id": role["id"]},
+        headers=auth_headers(),
+    )
+
+    assert assign_response.status_code == 200
+    member = next(item for item in assign_response.json()["members"] if item["id"] == 43)
+    assert role["id"] in member["role_ids"]
+    assert "Moderator" in member["role"]
+
+
+def test_remove_member_role() -> None:
+    client = TestClient(app)
+
+    role_response = client.post(
+        "/api/guilds/1001/roles",
+        json={"name": "Temporary", "permissions": 0},
+        headers=auth_headers(),
+    )
+    role = role_response.json()["roles"][-1]
+    client.post(
+        "/api/guilds/1001/members/43/roles",
+        json={"role_id": role["id"]},
+        headers=auth_headers(),
+    )
+
+    remove_response = client.delete(
+        f"/api/guilds/1001/members/43/roles/{role['id']}",
+        headers=auth_headers(),
+    )
+
+    assert remove_response.status_code == 200
+    member = next(item for item in remove_response.json()["members"] if item["id"] == 43)
+    assert role["id"] not in member["role_ids"]
+
+
+def test_create_role_requires_administrator_permission() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/guilds/1001/roles",
+        json={"name": "Blocked", "permissions": 0},
+        headers=auth_headers(user_id=43, username="codex"),
+    )
+
+    assert response.status_code == 403
+
+
 def test_create_message_returns_created_payload() -> None:
     client = TestClient(app)
 

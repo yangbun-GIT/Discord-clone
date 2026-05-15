@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
-import { apiGet, apiPost } from '../services/api'
+import { apiDelete, apiGet, apiPost } from '../services/api'
 import type { Channel, Guild, Invite, Message } from '../types'
+
+const ADMINISTRATOR_PERMISSION = 1 << 3
 
 export const useGuildStore = defineStore('guilds', () => {
   const guilds = shallowRef<Guild[]>([])
@@ -22,9 +24,14 @@ export const useGuildStore = defineStore('guilds', () => {
     return activeGuild.value?.messages.filter((message) => message.channel_id === activeChannel.value?.id) ?? []
   })
   const voiceChannel = computed(() => activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null)
+  const canManageRoles = computed(() => Boolean((activeGuild.value?.permissions ?? 0) & ADMINISTRATOR_PERMISSION))
 
   function setError(cause: unknown, fallback: string) {
     error.value = cause instanceof Error ? cause.message : fallback
+  }
+
+  function replaceGuild(updatedGuild: Guild) {
+    guilds.value = guilds.value.map((guild) => (guild.id === updatedGuild.id ? updatedGuild : guild))
   }
 
   async function loadGuilds(token: string | null) {
@@ -154,6 +161,64 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  async function createRole(token: string | null, name: string, permissions = 0) {
+    if (!activeGuild.value) return
+    const trimmedName = name.trim()
+    if (!trimmedName) return
+    isMutating.value = true
+    error.value = null
+    try {
+      const guild = await apiPost<Guild, { name: string; permissions: number }>(
+        `/api/guilds/${activeGuild.value.id}/roles`,
+        { name: trimmedName, permissions },
+        token,
+      )
+      replaceGuild(guild)
+    } catch (cause) {
+      setError(cause, 'Failed to create role')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function assignRole(token: string | null, memberId: number, roleId: number) {
+    if (!activeGuild.value) return
+    isMutating.value = true
+    error.value = null
+    try {
+      const guild = await apiPost<Guild, { role_id: number }>(
+        `/api/guilds/${activeGuild.value.id}/members/${memberId}/roles`,
+        { role_id: roleId },
+        token,
+      )
+      replaceGuild(guild)
+    } catch (cause) {
+      setError(cause, 'Failed to assign role')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function removeRole(token: string | null, memberId: number, roleId: number) {
+    if (!activeGuild.value) return
+    isMutating.value = true
+    error.value = null
+    try {
+      const guild = await apiDelete<Guild>(
+        `/api/guilds/${activeGuild.value.id}/members/${memberId}/roles/${roleId}`,
+        token,
+      )
+      replaceGuild(guild)
+    } catch (cause) {
+      setError(cause, 'Failed to remove role')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
   async function sendMessage(token: string | null, content: string) {
     if (!activeChannel.value || activeChannel.value.type !== 0) return
     isMutating.value = true
@@ -184,6 +249,7 @@ export const useGuildStore = defineStore('guilds', () => {
     activeChannel,
     activeMessages,
     voiceChannel,
+    canManageRoles,
     voiceConnected,
     isLoading,
     isMutating,
@@ -197,6 +263,9 @@ export const useGuildStore = defineStore('guilds', () => {
     selectChannel,
     toggleVoice,
     createChannel,
+    createRole,
+    assignRole,
+    removeRole,
     sendMessage,
   }
 })

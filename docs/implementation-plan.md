@@ -51,9 +51,11 @@
 - Guild Pinia state now tracks loading, mutation, and API error state for real API
   calls.
 - Startup schema application now records `schema_migrations`.
-- Next persistence work: expand repositories for roles and member-role management.
-- Add richer member management such as member list refresh, removal, and role
-  assignment.
+- Role creation and member-role assignment/removal now use the PostgreSQL repository
+  when connected, the demo store otherwise, and the frontend member list exposes
+  administrator-only controls.
+- Next persistence work: add richer member management such as member list refresh and
+  member removal.
 
 ## Stage 3: Realtime Messaging
 

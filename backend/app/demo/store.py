@@ -15,7 +15,10 @@ from app.schemas.guild import (
     GuildRead,
     InviteRead,
     MemberRead,
+    MemberRoleUpdate,
     MessageRead,
+    RoleCreate,
+    RoleRead,
 )
 
 
@@ -37,7 +40,12 @@ class DemoStore:
                     for guild in self._guilds
                     if any(member.id == user_id for member in guild.members)
                 ]
-            return deepcopy(guilds)
+            visible_guilds = deepcopy(guilds)
+            if user_id is not None:
+                for guild in visible_guilds:
+                    if user_id == guild.owner_id:
+                        guild.permissions = ALL_PERMISSIONS
+            return visible_guilds
 
     def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
         with self._lock:
@@ -83,6 +91,58 @@ class DemoStore:
             code = secrets.token_urlsafe(8)
             self._invites[code] = guild_id
             return InviteRead(code=code, guild_id=guild_id, created_by=actor.id)
+
+    def create_role(self, guild_id: int, payload: RoleCreate, actor: UserPublic) -> GuildRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            self._require_owner(guild, actor)
+            position = max((role.position for role in guild.roles), default=-1) + 1
+            role = RoleRead(
+                id=self._id_generator.generate(),
+                guild_id=guild_id,
+                name=payload.name,
+                permissions=payload.permissions,
+                position=position,
+            )
+            guild.roles.append(role)
+            return deepcopy(guild)
+
+    def assign_member_role(
+        self,
+        guild_id: int,
+        member_id: int,
+        payload: MemberRoleUpdate,
+        actor: UserPublic,
+    ) -> GuildRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            self._require_owner(guild, actor)
+            member = self._find_member(guild, member_id)
+            role = self._find_role(guild, payload.role_id)
+            if role.id not in member.role_ids:
+                member.role_ids.append(role.id)
+            member.role = self._member_role_label(guild, member)
+            return deepcopy(guild)
+
+    def remove_member_role(
+        self,
+        guild_id: int,
+        member_id: int,
+        role_id: int,
+        actor: UserPublic,
+    ) -> GuildRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            self._require_owner(guild, actor)
+            member = self._find_member(guild, member_id)
+            self._find_role(guild, role_id)
+            member.role_ids = [
+                assigned_role_id
+                for assigned_role_id in member.role_ids
+                if assigned_role_id != role_id
+            ]
+            member.role = self._member_role_label(guild, member)
+            return deepcopy(guild)
 
     def join_invite(self, code: str, user: UserPublic) -> GuildRead:
         with self._lock:
@@ -155,6 +215,34 @@ class DemoStore:
             if any(channel.id == channel_id for channel in guild.channels):
                 return guild
         raise KeyError(channel_id)
+
+    def _find_member(self, guild: GuildRead, member_id: int) -> MemberRead:
+        for member in guild.members:
+            if member.id == member_id:
+                return member
+        raise KeyError(member_id)
+
+    def _find_role(self, guild: GuildRead, role_id: int) -> RoleRead:
+        for role in guild.roles:
+            if role.id == role_id:
+                return role
+        raise KeyError(role_id)
+
+    def _require_owner(self, guild: GuildRead, actor: UserPublic) -> None:
+        if actor.id != guild.owner_id:
+            raise PermissionError("administrator permission required")
+
+    def _member_role_label(self, guild: GuildRead, member: MemberRead) -> str:
+        if member.id == guild.owner_id:
+            return "Owner"
+        assigned_names = [
+            role.name
+            for role in guild.roles
+            if role.id in set(member.role_ids)
+        ]
+        if assigned_names:
+            return ", ".join(assigned_names)
+        return "Member"
 
 
 demo_store = DemoStore()

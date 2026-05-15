@@ -8,7 +8,9 @@ from app.schemas.guild import (
     GuildCreate,
     GuildRead,
     InviteRead,
+    MemberRoleUpdate,
     MessageRead,
+    RoleCreate,
 )
 
 
@@ -36,6 +38,34 @@ async def join_invite(code: str, user: UserPublic) -> GuildRead:
     if database.is_connected:
         return await guild_repository.join_invite(code, user)
     return demo_store.join_invite(code, user)
+
+
+async def create_role(guild_id: int, payload: RoleCreate, actor: UserPublic) -> GuildRead:
+    if database.is_connected:
+        return await guild_repository.create_role(guild_id, payload, actor)
+    return demo_store.create_role(guild_id, payload, actor)
+
+
+async def assign_member_role(
+    guild_id: int,
+    member_id: int,
+    payload: MemberRoleUpdate,
+    actor: UserPublic,
+) -> GuildRead:
+    if database.is_connected:
+        return await guild_repository.assign_member_role(guild_id, member_id, payload, actor)
+    return demo_store.assign_member_role(guild_id, member_id, payload, actor)
+
+
+async def remove_member_role(
+    guild_id: int,
+    member_id: int,
+    role_id: int,
+    actor: UserPublic,
+) -> GuildRead:
+    if database.is_connected:
+        return await guild_repository.remove_member_role(guild_id, member_id, role_id, actor)
+    return demo_store.remove_member_role(guild_id, member_id, role_id, actor)
 
 
 async def create_channel(

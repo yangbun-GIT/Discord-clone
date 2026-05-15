@@ -127,6 +127,11 @@ The app boots in two local modes:
     `CREATE_INSTANT_INVITE`.
   - `POST /api/guilds/invites/{code}/join` adds the authenticated user to the invited
     guild.
+  - `POST /api/guilds/{guild_id}/roles` creates a role for administrators and returns
+    the refreshed guild payload.
+  - `POST /api/guilds/{guild_id}/members/{member_id}/roles` assigns a role to a member.
+  - `DELETE /api/guilds/{guild_id}/members/{member_id}/roles/{role_id}` removes an
+    assigned role from a member.
   - `POST /api/guilds/{guild_id}/channels` creates text or voice channels through
     the guild service.
   - Channel creation returns `403` when the authenticated user lacks
@@ -142,19 +147,22 @@ The app boots in two local modes:
   - Initial guild/channel/member/message seed data used before persistence is wired.
 - `backend/app/demo/store.py`
   - Process-local mutable demo store.
-  - Creates guilds, invite codes, channels, and messages with Snowflake IDs.
+  - Creates guilds, invite codes, roles, member-role assignments, channels, and
+    messages with Snowflake IDs.
   - Still used only when no database pool is configured.
   - Filters guild reads by member and enforces owner-only channel creation plus
-    member-only message creation.
+    owner-only role management plus member-only message creation.
 - `backend/app/repositories/guilds.py`
-  - PostgreSQL repository for guild creation, invite creation/join, guild membership
-    reads, channel creation, and message creation.
+  - PostgreSQL repository for guild creation, invite creation/join, role creation,
+    member-role assignment/removal, guild membership reads, channel creation, and
+    message creation.
   - Converts asyncpg rows into `GuildRead`, `ChannelRead`, `MemberRead`, and
-    `MessageRead` schemas.
+    `RoleRead`/`MessageRead` schemas.
   - Computes effective permissions from ownership, base member permissions, and role
     permissions.
   - Requires `MANAGE_CHANNELS` for channel creation and `SEND_MESSAGES` for message
     creation.
+  - Requires `ADMINISTRATOR` for role creation and member-role mutations.
 - `backend/app/repositories/users.py`
   - PostgreSQL repository for creating users and fetching password hashes by username.
 - `backend/app/services/guild_service.py`
@@ -189,7 +197,7 @@ The app boots in two local modes:
   - Emits auth actions to `App.vue`; it does not own token storage.
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
-  - GET and POST calls accept an optional bearer token.
+  - GET, POST, and DELETE calls accept an optional bearer token.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
   - Calls `/api/auth/login`, `/api/auth/register`, `/api/auth/me`, and
@@ -205,6 +213,7 @@ The app boots in two local modes:
     connection UI state.
   - Calls the protected guild creation API and selects the new guild's first channel.
   - Calls invite creation and invite join APIs.
+  - Calls role creation, role assignment, and role removal APIs.
   - Calls the protected channel creation and message creation APIs.
   - Uses `document.startViewTransition()` when available for channel switching.
 - `frontend/src/composables/useGateway.ts`
@@ -221,6 +230,8 @@ The app boots in two local modes:
   - Emits submitted message content to the guild store.
 - `frontend/src/components/MemberList.vue`
   - Member presence list.
+  - Shows role labels and exposes administrator-only controls for role creation,
+    assignment, and removal.
 - `frontend/src/components/VoicePanel.vue`
   - Voice connection toggle UI placeholder.
 - `frontend/src/styles/base.css`
@@ -268,6 +279,15 @@ The app boots in two local modes:
   - Another authenticated user can submit that code through the join-server dialog.
   - `guilds.ts` POSTs to `/api/guilds/invites/{code}/join`, appends or replaces the
     joined guild in local state, then selects it.
+- Role management flow:
+  - `MemberList.vue` emits role creation, assignment, and removal actions when the
+    active guild grants `ADMINISTRATOR`.
+  - `guilds.ts` POSTs to `/api/guilds/{guild_id}/roles` to create a role, POSTs to
+    `/api/guilds/{guild_id}/members/{member_id}/roles` to assign it, and DELETEs
+    `/api/guilds/{guild_id}/members/{member_id}/roles/{role_id}` to remove it.
+  - Backend validates JWTs, checks administrator permissions, writes to
+    `roles/member_roles` in PostgreSQL or the demo store, and returns the refreshed
+    `GuildRead` for local state replacement.
 - Message send flow:
   - `ChatView.vue` emits submitted content.
   - `guilds.ts` POSTs to `/api/channels/{channel_id}/messages` with bearer token.
@@ -356,9 +376,7 @@ npm run docker:down
 
 Stage 2 should continue wiring persistence and authentication:
 
-- Expand repositories for roles and member roles management.
-- Add richer member management such as member list refresh, removal, and role
-  assignment.
+- Add richer member management such as member list refresh and member removal.
 - Add tests for auth, repositories, and route permissions.
 
 Completed Stage 2 bridge work:
@@ -382,6 +400,8 @@ Completed Stage 2 bridge work:
 - Added invite code creation/join APIs and frontend invite dialogs.
 - Added Pinia loading/mutation/error state handling for guild operations.
 - Added `schema_migrations` tracking around startup schema application.
+- Added role creation plus member-role assignment/removal across backend, demo store,
+  Pinia state, and the member list UI.
 
 After each stage or meaningful feature:
 

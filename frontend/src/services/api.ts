@@ -45,3 +45,19 @@ export async function apiPost<TResponse, TPayload>(
   }
   return response.json() as Promise<TResponse>
 }
+
+export async function apiDelete<TResponse>(path: string, token?: string | null): Promise<TResponse> {
+  const headers = new Headers()
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers,
+  })
+  if (!response.ok) {
+    throw await readError(response, 'DELETE', path)
+  }
+  return response.json() as Promise<TResponse>
+}

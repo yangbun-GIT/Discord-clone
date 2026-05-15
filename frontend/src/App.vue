@@ -126,6 +126,27 @@ function handleSendMessage(content: string) {
   })
 }
 
+function handleCreateRole(name: string, permissions: number) {
+  workspaceError.value = null
+  void guilds.createRole(session.token, name, permissions).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Role creation failed'
+  })
+}
+
+function handleAssignRole(memberId: number, roleId: number) {
+  workspaceError.value = null
+  void guilds.assignRole(session.token, memberId, roleId).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Role assignment failed'
+  })
+}
+
+function handleRemoveRole(memberId: number, roleId: number) {
+  workspaceError.value = null
+  void guilds.removeRole(session.token, memberId, roleId).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Role removal failed'
+  })
+}
+
 function openJoinGuild() {
   workspaceError.value = null
   showJoinGuild.value = true
@@ -247,7 +268,16 @@ async function handleCreateInvite() {
           :current-user="session.user"
           @send="handleSendMessage"
         />
-        <MemberList v-if="activeGuild" :members="activeGuild.members" />
+        <MemberList
+          v-if="activeGuild"
+          :members="activeGuild.members"
+          :roles="activeGuild.roles"
+          :can-manage-roles="guilds.canManageRoles"
+          :disabled="guilds.isMutating"
+          @create-role="handleCreateRole"
+          @assign-role="handleAssignRole"
+          @remove-role="handleRemoveRole"
+        />
       </div>
 
       <section v-else class="empty-workspace" aria-label="No servers">
