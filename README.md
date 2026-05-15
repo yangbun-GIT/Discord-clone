@@ -76,6 +76,9 @@ Useful backend auth endpoints:
 Authenticated users can create a server from the `Create server` button. New servers
 start with `general` and `voice-room` channels.
 
+Server owners can create invite codes from the top bar. Other authenticated users can
+join with those codes from `Join server`.
+
 ## Environment
 
 Copy `.env.example` to `.env` and fill values as external services become available.

@@ -93,7 +93,7 @@ input:focus-visible {
 
 .auth-tabs button,
 .demo-button,
-.logout-button {
+.topbar-icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -378,16 +378,26 @@ input:focus-visible {
   color: #86efac;
 }
 
-.logout-button {
+.topbar-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.topbar-icon-button {
   width: 34px;
   height: 34px;
   color: #cbd5e1;
   background: rgb(255 255 255 / 7%);
 }
 
-.logout-button:hover {
+.topbar-icon-button:hover {
   color: #ffffff;
   background: rgb(255 255 255 / 12%);
+}
+
+.topbar-icon-button:disabled {
+  color: #64748b;
+  background: rgb(255 255 255 / 5%);
 }
 
 .app-error {
@@ -409,6 +419,13 @@ input:focus-visible {
   min-height: 0;
   color: #94a3b8;
   font-weight: 800;
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
 .empty-workspace button {
@@ -448,6 +465,10 @@ input:focus-visible {
   gap: 10px;
 }
 
+.dialog-actions.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .dialog-actions button {
   min-height: 40px;
   border: 0;
@@ -465,6 +486,27 @@ input:focus-visible {
 .dialog-actions button:disabled {
   color: #94a3b8;
   background: rgb(255 255 255 / 9%);
+}
+
+.invite-output {
+  display: grid;
+  gap: 8px;
+}
+
+.invite-output span {
+  color: #9ca3af;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.invite-output strong {
+  display: block;
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 8%);
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
 .chat-view {

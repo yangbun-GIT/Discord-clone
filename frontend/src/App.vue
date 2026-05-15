@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { Hash, LogOut, Radio, Wifi, WifiOff } from 'lucide-vue-next'
+import { Hash, Link, LogIn, LogOut, Radio, Wifi, WifiOff } from 'lucide-vue-next'
 
 import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
@@ -33,8 +33,13 @@ const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
+const isInviteWorking = ref(false)
 const showCreateGuild = ref(false)
+const showJoinGuild = ref(false)
+const showInvite = ref(false)
 const guildName = ref('')
+const joinCode = ref('')
+const inviteCode = ref<string | null>(null)
 
 async function openWorkspace() {
   if (!session.token) return
@@ -106,6 +111,49 @@ async function handleCreateGuild() {
     isCreatingGuild.value = false
   }
 }
+
+function openJoinGuild() {
+  workspaceError.value = null
+  showJoinGuild.value = true
+}
+
+function closeJoinGuild() {
+  showJoinGuild.value = false
+  joinCode.value = ''
+}
+
+async function handleJoinGuild() {
+  if (!joinCode.value.trim()) return
+  workspaceError.value = null
+  isInviteWorking.value = true
+  try {
+    await guilds.joinInvite(session.token, joinCode.value)
+    closeJoinGuild()
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : 'Invite join failed'
+  } finally {
+    isInviteWorking.value = false
+  }
+}
+
+function closeInvite() {
+  showInvite.value = false
+  inviteCode.value = null
+}
+
+async function handleCreateInvite() {
+  workspaceError.value = null
+  isInviteWorking.value = true
+  try {
+    const invite = await guilds.createInvite(session.token)
+    inviteCode.value = invite?.code ?? null
+    showInvite.value = true
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : 'Invite creation failed'
+  } finally {
+    isInviteWorking.value = false
+  }
+}
 </script>
 
 <template>
@@ -148,9 +196,28 @@ async function handleCreateGuild() {
           <WifiOff v-else :size="17" aria-hidden="true" />
           <span>{{ statusLabel }}</span>
         </div>
-        <button class="logout-button" type="button" aria-label="Log out" @click="handleLogout">
-          <LogOut :size="17" aria-hidden="true" />
-        </button>
+        <div class="topbar-actions">
+          <button
+            class="topbar-icon-button"
+            type="button"
+            aria-label="Create invite"
+            :disabled="!activeGuild || isInviteWorking"
+            @click="handleCreateInvite"
+          >
+            <Link :size="17" aria-hidden="true" />
+          </button>
+          <button
+            class="topbar-icon-button"
+            type="button"
+            aria-label="Join server"
+            @click="openJoinGuild"
+          >
+            <LogIn :size="17" aria-hidden="true" />
+          </button>
+          <button class="topbar-icon-button" type="button" aria-label="Log out" @click="handleLogout">
+            <LogOut :size="17" aria-hidden="true" />
+          </button>
+        </div>
       </header>
 
       <div v-if="authError || workspaceError" class="app-error" role="alert">
@@ -169,7 +236,10 @@ async function handleCreateGuild() {
 
       <section v-else class="empty-workspace" aria-label="No servers">
         <div>No servers</div>
-        <button type="button" @click="openCreateGuild">Create server</button>
+        <div class="empty-actions">
+          <button type="button" @click="openCreateGuild">Create server</button>
+          <button type="button" @click="openJoinGuild">Join server</button>
+        </div>
       </section>
     </section>
 
@@ -194,6 +264,35 @@ async function handleCreateGuild() {
           </button>
         </div>
       </form>
+    </section>
+
+    <section v-if="showJoinGuild" class="modal-layer" aria-label="Join server">
+      <form class="server-create-dialog" @submit.prevent="handleJoinGuild">
+        <div class="auth-mark">DC</div>
+        <label>
+          <span>Invite code</span>
+          <input v-model="joinCode" autocomplete="off" required autofocus />
+        </label>
+        <div class="dialog-actions">
+          <button type="button" @click="closeJoinGuild">Cancel</button>
+          <button type="submit" :disabled="!joinCode.trim() || isInviteWorking">
+            Join
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section v-if="showInvite" class="modal-layer" aria-label="Server invite">
+      <div class="server-create-dialog">
+        <div class="auth-mark">DC</div>
+        <div class="invite-output">
+          <span>Invite code</span>
+          <strong>{{ inviteCode }}</strong>
+        </div>
+        <div class="dialog-actions single">
+          <button type="button" @click="closeInvite">Done</button>
+        </div>
+      </div>
     </section>
 
     <VoicePanel

@@ -1,3 +1,6 @@
+import secrets
+from typing import Any
+
 from app.db.pool import database
 from app.domain.permissions import ALL_PERMISSIONS, Permission, has_permission, merge_permissions
 from app.domain.snowflake import SnowflakeGenerator
@@ -7,6 +10,7 @@ from app.schemas.guild import (
     ChannelRead,
     GuildCreate,
     GuildRead,
+    InviteRead,
     MemberRead,
     MessageRead,
 )
@@ -35,29 +39,22 @@ class GuildRepository:
             user_id,
         )
 
-        guilds: list[GuildRead] = []
-        for guild_row in guild_rows:
-            guild_id = int(guild_row["id"])
-            channels = await self._list_channels(guild_id)
-            members = await self._list_members(guild_id, int(guild_row["owner_id"]))
-            messages = await self._list_messages(guild_id)
-            permissions = await self._permissions_for_member(
-                guild_id,
-                user_id,
-                int(guild_row["owner_id"]),
-            )
-            guilds.append(
-                GuildRead(
-                    id=guild_id,
-                    name=str(guild_row["name"]),
-                    owner_id=int(guild_row["owner_id"]),
-                    permissions=permissions,
-                    channels=channels,
-                    members=members,
-                    messages=messages,
-                )
-            )
-        return guilds
+        return [await self._read_guild(guild_row, user_id) for guild_row in guild_rows]
+
+    async def get_for_user(self, guild_id: int, user_id: int) -> GuildRead | None:
+        guild_row = await database.fetchrow(
+            """
+            SELECT g.id, g.name, g.owner_id
+            FROM guilds g
+            JOIN guild_members gm ON gm.guild_id = g.id
+            WHERE g.id = $1 AND gm.user_id = $2
+            """,
+            guild_id,
+            user_id,
+        )
+        if guild_row is None:
+            return None
+        return await self._read_guild(guild_row, user_id)
 
     async def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
         guild_id = id_generator.generate()
@@ -138,6 +135,77 @@ class GuildRepository:
             ],
             messages=[],
         )
+
+    async def create_invite(self, guild_id: int, actor: UserPublic) -> InviteRead:
+        guild_row = await database.fetchrow(
+            "SELECT id, owner_id FROM guilds WHERE id = $1",
+            guild_id,
+        )
+        if guild_row is None:
+            raise KeyError(guild_id)
+
+        permissions = await self._permissions_for_member(
+            guild_id,
+            actor.id,
+            int(guild_row["owner_id"]),
+        )
+        if not has_permission(permissions, Permission.CREATE_INSTANT_INVITE):
+            raise PermissionError("create invite permission required")
+
+        for _ in range(5):
+            code = secrets.token_urlsafe(8)
+            result = await database.execute(
+                """
+                INSERT INTO invites (code, guild_id, creator_id)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (code) DO NOTHING
+                """,
+                code,
+                guild_id,
+                actor.id,
+            )
+            if result == "INSERT 0 1":
+                return InviteRead(code=code, guild_id=guild_id, created_by=actor.id)
+        raise RuntimeError("could not create unique invite code")
+
+    async def join_invite(self, code: str, user: UserPublic) -> GuildRead:
+        invite_row = await database.fetchrow(
+            """
+            SELECT guild_id
+            FROM invites
+            WHERE code = $1
+            """,
+            code,
+        )
+        if invite_row is None:
+            raise KeyError(code)
+
+        await database.execute(
+            """
+            INSERT INTO users (id, username, password_hash, status)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (id) DO UPDATE
+            SET username = EXCLUDED.username,
+                status = EXCLUDED.status
+            """,
+            user.id,
+            user.username,
+            "dev-session",
+            user.status,
+        )
+        await database.execute(
+            """
+            INSERT INTO guild_members (guild_id, user_id)
+            VALUES ($1, $2)
+            ON CONFLICT (guild_id, user_id) DO NOTHING
+            """,
+            int(invite_row["guild_id"]),
+            user.id,
+        )
+        guild = await self.get_for_user(int(invite_row["guild_id"]), user.id)
+        if guild is None:
+            raise KeyError(code)
+        return guild
 
     async def create_channel(
         self,
@@ -269,6 +337,19 @@ class GuildRepository:
             )
             for row in rows
         ]
+
+    async def _read_guild(self, guild_row: Any, user_id: int) -> GuildRead:
+        guild_id = int(guild_row["id"])
+        owner_id = int(guild_row["owner_id"])
+        return GuildRead(
+            id=guild_id,
+            name=str(guild_row["name"]),
+            owner_id=owner_id,
+            permissions=await self._permissions_for_member(guild_id, user_id, owner_id),
+            channels=await self._list_channels(guild_id),
+            members=await self._list_members(guild_id, owner_id),
+            messages=await self._list_messages(guild_id),
+        )
 
     async def _list_members(self, guild_id: int, owner_id: int) -> list[MemberRead]:
         rows = await database.fetch(

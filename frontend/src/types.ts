@@ -37,3 +37,8 @@ export type Guild = {
   messages: Message[]
 }
 
+export type Invite = {
+  code: string
+  guild_id: number
+  created_by: number
+}

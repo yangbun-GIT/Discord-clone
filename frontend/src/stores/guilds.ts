@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
 import { apiGet, apiPost } from '../services/api'
-import type { Channel, Guild, Message } from '../types'
+import type { Channel, Guild, Invite, Message } from '../types'
 
 export const useGuildStore = defineStore('guilds', () => {
   const guilds = shallowRef<Guild[]>([])
@@ -31,6 +31,27 @@ export const useGuildStore = defineStore('guilds', () => {
     if (!trimmedName) return
     const guild = await apiPost<Guild, { name: string }>('/api/guilds', { name: trimmedName }, token)
     guilds.value = [...guilds.value, guild]
+    activeGuildId.value = guild.id
+    activeChannelId.value = guild.channels[0]?.id ?? null
+  }
+
+  async function createInvite(token: string | null) {
+    if (!activeGuild.value) return null
+    return apiPost<Invite, Record<string, never>>(`/api/guilds/${activeGuild.value.id}/invites`, {}, token)
+  }
+
+  async function joinInvite(token: string | null, code: string) {
+    const trimmedCode = code.trim()
+    if (!trimmedCode) return
+    const guild = await apiPost<Guild, Record<string, never>>(
+      `/api/guilds/invites/${encodeURIComponent(trimmedCode)}/join`,
+      {},
+      token,
+    )
+    const existing = guilds.value.some((item) => item.id === guild.id)
+    guilds.value = existing
+      ? guilds.value.map((item) => (item.id === guild.id ? guild : item))
+      : [...guilds.value, guild]
     activeGuildId.value = guild.id
     activeChannelId.value = guild.channels[0]?.id ?? null
   }
@@ -102,6 +123,8 @@ export const useGuildStore = defineStore('guilds', () => {
     voiceConnected,
     loadGuilds,
     createGuild,
+    createInvite,
+    joinInvite,
     resetGuilds,
     selectGuild,
     selectChannel,

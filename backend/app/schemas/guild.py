@@ -22,6 +22,12 @@ class GuildCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
 
 
+class InviteRead(BaseModel):
+    code: str
+    guild_id: int
+    created_by: int
+
+
 class MemberRead(BaseModel):
     id: int
     username: str

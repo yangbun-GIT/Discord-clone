@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from copy import deepcopy
 from threading import Lock
 
@@ -12,6 +13,7 @@ from app.schemas.guild import (
     ChannelRead,
     GuildCreate,
     GuildRead,
+    InviteRead,
     MemberRead,
     MessageRead,
 )
@@ -24,6 +26,7 @@ class DemoStore:
         self._lock = Lock()
         self._id_generator = SnowflakeGenerator(worker_id=1)
         self._guilds = create_initial_guilds()
+        self._invites: dict[str, int] = {}
 
     def list_guilds(self, user_id: int | None = None) -> list[GuildRead]:
         with self._lock:
@@ -70,6 +73,32 @@ class DemoStore:
                 messages=[],
             )
             self._guilds.append(guild)
+            return deepcopy(guild)
+
+    def create_invite(self, guild_id: int, actor: UserPublic) -> InviteRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            if actor.id != guild.owner_id:
+                raise PermissionError("create invite permission required")
+            code = secrets.token_urlsafe(8)
+            self._invites[code] = guild_id
+            return InviteRead(code=code, guild_id=guild_id, created_by=actor.id)
+
+    def join_invite(self, code: str, user: UserPublic) -> GuildRead:
+        with self._lock:
+            guild_id = self._invites.get(code)
+            if guild_id is None:
+                raise KeyError(code)
+            guild = self._find_guild(guild_id)
+            if not any(member.id == user.id for member in guild.members):
+                guild.members.append(
+                    MemberRead(
+                        id=user.id,
+                        username=user.username,
+                        status=user.status,
+                        role="Member",
+                    )
+                )
             return deepcopy(guild)
 
     def create_channel(

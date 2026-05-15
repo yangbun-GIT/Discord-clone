@@ -48,6 +48,15 @@ CREATE TABLE IF NOT EXISTS guild_members (
     PRIMARY KEY (guild_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS invites (
+    code VARCHAR(32) PRIMARY KEY,
+    guild_id BIGINT NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
+    creator_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_invites_guild_id ON invites(guild_id);
+
 CREATE TABLE IF NOT EXISTS member_roles (
     guild_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
@@ -55,4 +64,3 @@ CREATE TABLE IF NOT EXISTS member_roles (
     PRIMARY KEY (guild_id, user_id, role_id),
     FOREIGN KEY (guild_id, user_id) REFERENCES guild_members(guild_id, user_id) ON DELETE CASCADE
 );
-

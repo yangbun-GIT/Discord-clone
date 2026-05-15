@@ -94,6 +94,46 @@ def test_create_guild_returns_owned_workspace() -> None:
     assert [channel["name"] for channel in payload["channels"]] == ["general", "voice-room"]
 
 
+def test_create_invite_and_join_guild() -> None:
+    client = TestClient(app)
+
+    invite_response = client.post("/api/guilds/1001/invites", headers=auth_headers())
+
+    assert invite_response.status_code == 201
+    code = invite_response.json()["code"]
+
+    join_response = client.post(
+        f"/api/guilds/invites/{code}/join",
+        headers=auth_headers(user_id=888, username="joiner"),
+    )
+
+    assert join_response.status_code == 201
+    assert join_response.json()["id"] == 1001
+    assert any(member["username"] == "joiner" for member in join_response.json()["members"])
+
+
+def test_create_invite_requires_permission() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/guilds/1001/invites",
+        headers=auth_headers(user_id=43, username="codex"),
+    )
+
+    assert response.status_code == 403
+
+
+def test_join_invite_rejects_unknown_code() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/guilds/invites/missing-code/join",
+        headers=auth_headers(user_id=889, username="missing"),
+    )
+
+    assert response.status_code == 404
+
+
 def test_create_message_returns_created_payload() -> None:
     client = TestClient(app)
 

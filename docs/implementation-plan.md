@@ -46,10 +46,13 @@
   supports logout, and keeps Demo user as an explicit local-development action.
 - Authenticated guild creation is implemented with default `general` and `voice-room`
   channels, including frontend create-server UI.
+- Invite code creation and invite join flows are implemented across backend and
+  frontend so users can join each other's guilds.
 - Next persistence work: add explicit migration versioning and expand repositories
   for roles and member-role management.
 - Add API/store error and empty states.
-- Add invite/member management so users can join each other's guilds.
+- Add richer member management such as member list refresh, removal, and role
+  assignment.
 
 ## Stage 3: Realtime Messaging
 
