@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
+from app.realtime.publisher import publish_dm_create, publish_dm_message_create
 from app.schemas.auth import UserPublic
 from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageRead, DmRead
 from app.services.dm_service import create_dm, create_dm_message, list_dms
@@ -23,7 +24,9 @@ async def create_direct_message(
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> DmRead:
     try:
-        return await create_dm(payload, current_user)
+        dm = await create_dm(payload, current_user)
+        await publish_dm_create(dm)
+        return dm
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -58,7 +61,9 @@ async def create_direct_message_message(
         )
 
     try:
-        return await create_dm_message(dm_id=dm_id, payload=payload, author=current_user)
+        message = await create_dm_message(dm_id=dm_id, payload=payload, author=current_user)
+        await publish_dm_message_create(message)
+        return message
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

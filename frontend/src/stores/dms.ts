@@ -92,6 +92,37 @@ export const useDmStore = defineStore('dms', () => {
     })
   }
 
+  function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
+    if (event === 'DM_CREATE') {
+      const dm = data as DirectMessage
+      if (
+        typeof dm.id !== 'number'
+        || !Array.isArray(dm.recipient_ids)
+        || !Array.isArray(dm.participants)
+        || typeof dm.display_name !== 'string'
+        || !Array.isArray(dm.messages)
+      ) {
+        return
+      }
+      upsertDm(dm)
+      return
+    }
+
+    if (event === 'DM_MESSAGE_CREATE') {
+      const message = data as DmMessage
+      if (
+        typeof message.id !== 'number'
+        || typeof message.dm_id !== 'number'
+        || typeof message.author_id !== 'number'
+        || typeof message.author_name !== 'string'
+        || typeof message.content !== 'string'
+      ) {
+        return
+      }
+      appendMessage(message.dm_id, message)
+    }
+  }
+
   async function createDm(token: string | null, recipientIds: number[]) {
     const uniqueRecipientIds = [...new Set(recipientIds)].filter((recipientId) => recipientId > 0)
     if (!uniqueRecipientIds.length) return null
@@ -150,6 +181,7 @@ export const useDmStore = defineStore('dms', () => {
     getDm,
     createDm,
     sendDmMessage,
+    handleGatewayDispatch,
     resetDms,
   }
 })

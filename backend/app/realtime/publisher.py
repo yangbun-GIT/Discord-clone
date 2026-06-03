@@ -1,6 +1,7 @@
 from app.gateway.manager import gateway_manager
 from app.realtime.events import GATEWAY_EVENTS_CHANNEL, RealtimeGatewayEvent
 from app.realtime.redis_bus import redis_bus
+from app.schemas.dm import DmMessageRead, DmRead
 from app.schemas.guild import ChannelRead, GuildRead, MessageRead
 from app.schemas.message import MessageDeleteRead
 
@@ -50,6 +51,24 @@ async def publish_guild_update(guild: GuildRead) -> None:
     await _publish_or_broadcast(event)
 
 
+async def publish_dm_create(dm: DmRead) -> None:
+    event = RealtimeGatewayEvent(
+        dm_id=dm.id,
+        event="DM_CREATE",
+        data=dm.model_dump(),
+    )
+    await _publish_or_broadcast(event)
+
+
+async def publish_dm_message_create(message: DmMessageRead) -> None:
+    event = RealtimeGatewayEvent(
+        dm_id=message.dm_id,
+        event="DM_MESSAGE_CREATE",
+        data=message.model_dump(),
+    )
+    await _publish_or_broadcast(event)
+
+
 async def _publish_or_broadcast(event: RealtimeGatewayEvent) -> None:
     if redis_bus.is_connected:
         await redis_bus.publish_json(GATEWAY_EVENTS_CHANNEL, event.model_dump_json())
@@ -60,9 +79,22 @@ async def _publish_or_broadcast(event: RealtimeGatewayEvent) -> None:
         await gateway_manager.broadcast_channel(event.channel_id, event.event, event.data)
     elif event.guild_id is not None:
         await gateway_manager.broadcast_guild(event.guild_id, event.event, event.data)
+    elif event.dm_id is not None:
+        await gateway_manager.broadcast_dm(event.dm_id, event.event, event.data)
 
 
 def _sync_local_subscriptions(event: RealtimeGatewayEvent) -> None:
+    if event.event == "DM_CREATE" and event.dm_id is not None:
+        participants = event.data.get("participants")
+        if isinstance(participants, list):
+            member_ids = {
+                participant.get("id")
+                for participant in participants
+                if isinstance(participant, dict) and isinstance(participant.get("id"), int)
+            }
+            gateway_manager.add_dm_to_user_subscribers(event.dm_id, member_ids)
+        return
+
     if event.event == "CHANNEL_CREATE" and event.guild_id is not None:
         channel_id = event.data.get("id")
         if isinstance(channel_id, int):

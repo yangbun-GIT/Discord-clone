@@ -8,6 +8,7 @@ from app.gateway.events import GatewayEvent, IdentifyPayload, VoiceSignalPayload
 from app.gateway.manager import gateway_manager
 from app.gateway.opcodes import Opcode
 from app.schemas.auth import UserPublic
+from app.services.dm_service import list_dms
 from app.services.guild_service import list_guilds_for_user
 
 gateway_router = APIRouter()
@@ -46,18 +47,21 @@ async def gateway(websocket: WebSocket) -> None:
                     status=1,
                 )
                 guilds = await list_guilds_for_user(user)
+                dms = await list_dms(user)
                 subscribed_guild_ids = {guild.id for guild in guilds}
                 subscribed_channel_ids = {
                     channel.id
                     for guild in guilds
                     for channel in guild.channels
                 }
+                subscribed_dm_ids = {dm.id for dm in dms}
                 gateway_manager.mark_identified(
                     connection,
                     user_id=user.id,
                     username=user.username,
                     guild_ids=subscribed_guild_ids,
                     channel_ids=subscribed_channel_ids,
+                    dm_ids=subscribed_dm_ids,
                 )
                 await connection.send(
                     op=Opcode.DISPATCH,
@@ -71,6 +75,7 @@ async def gateway(websocket: WebSocket) -> None:
                             "gateway_connections": gateway_manager.size,
                             "subscribed_guild_ids": sorted(subscribed_guild_ids),
                             "subscribed_channel_ids": sorted(subscribed_channel_ids),
+                            "subscribed_dm_ids": sorted(subscribed_dm_ids),
                         },
                     },
                 )

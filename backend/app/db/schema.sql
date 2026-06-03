@@ -64,3 +64,47 @@ CREATE TABLE IF NOT EXISTS member_roles (
     PRIMARY KEY (guild_id, user_id, role_id),
     FOREIGN KEY (guild_id, user_id) REFERENCES guild_members(guild_id, user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS dm_profiles (
+    user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    handle VARCHAR(80) NOT NULL,
+    presence_status VARCHAR(16) NOT NULL DEFAULT 'offline',
+    activity VARCHAR(120)
+);
+
+CREATE TABLE IF NOT EXISTS relationships (
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    related_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    relationship VARCHAR(32) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, related_user_id),
+    CHECK (user_id <> related_user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_relationships_related_user_id ON relationships(related_user_id);
+
+CREATE TABLE IF NOT EXISTS direct_message_channels (
+    id BIGINT PRIMARY KEY,
+    is_group BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS direct_message_members (
+    dm_id BIGINT NOT NULL REFERENCES direct_message_channels(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    unread_count INTEGER NOT NULL DEFAULT 0 CHECK (unread_count >= 0),
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (dm_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_direct_message_members_user_id ON direct_message_members(user_id);
+
+CREATE TABLE IF NOT EXISTS direct_messages (
+    id BIGINT PRIMARY KEY,
+    dm_id BIGINT NOT NULL REFERENCES direct_message_channels(id) ON DELETE CASCADE,
+    author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL CHECK (char_length(content) <= 2000),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_direct_messages_dm_id_id ON direct_messages(dm_id, id DESC);

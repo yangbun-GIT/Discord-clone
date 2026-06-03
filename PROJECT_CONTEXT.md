@@ -25,12 +25,12 @@ app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
 demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
 sidebar/header controls, Stage 7.6 composer/message actions, and Stage 7.7 voice
 channel UX, Stage 7.8 user settings shell, and Stage 7.9 server add/discovery flows
-are complete and pushed to GitHub.
+plus Stage 7.10 DM persistence/realtime expansion are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
-- Docker Compose mode provisions local PostgreSQL and persists created text channels
-  and messages in the `postgres_data` Docker volume.
+- Docker Compose mode provisions local PostgreSQL and persists created text channels,
+  direct messages, relationships, and messages in the `postgres_data` Docker volume.
 - Native mode without `DATABASE_URL` still falls back to the process-local demo store
   while preserving async infrastructure boundaries required by the SRS.
 
@@ -129,9 +129,12 @@ The app boots in two local modes:
 - `backend/app/db/schema.sql`
   - Initial PostgreSQL schema for users, guilds, channels, messages, roles, guild
     members, invites, and member roles.
+  - Stage 7.10 adds DM profiles, relationships, direct message channels, direct
+    message members with unread counts, and direct messages.
 - `backend/app/db/seed.py`
   - Seeds the initial SRS demo guild, channels, members, and messages into PostgreSQL.
-  - Uses idempotent inserts and skips guilds that already exist.
+  - Seeds safe demo relationship and direct message data into PostgreSQL.
+  - Uses idempotent inserts and skips guilds/DM rows that already exist.
 - `backend/app/domain/snowflake.py`
   - JavaScript-safe Snowflake ID generator.
   - Uses a custom 2026 epoch and 53-bit-safe layout.
@@ -154,6 +157,8 @@ The app boots in two local modes:
     sync when channel or guild membership snapshots change.
   - Tracks the active voice channel for each identified connection and can route
     `VOICE_SIGNAL` payloads to a target user in the same voice channel.
+  - Tracks subscribed DM IDs and broadcasts `DM_CREATE`/`DM_MESSAGE_CREATE`
+    dispatches to DM subscribers.
 - `backend/app/gateway/reaper.py`
   - Background loop that periodically calls `gateway_manager.reap_zombies()` using
     the configured heartbeat interval.
@@ -161,8 +166,8 @@ The app boots in two local modes:
   - `/gateway` WebSocket endpoint.
   - Sends Hello, accepts Identify, validates JWT, sends Ready, handles Heartbeat ACK,
     Request Guild Members, and Update Voice State placeholders.
-  - On Identify, loads the authenticated user's guilds and subscribes the connection
-    to every channel in those guilds.
+  - On Identify, loads the authenticated user's guilds/DMs and subscribes the
+    connection to every guild channel plus visible DM thread.
   - `UPDATE_VOICE_STATE` validates guild/channel subscriptions, updates the
     connection's active voice channel, and dispatches `VOICE_STATE_UPDATE` to voice
     channel subscribers.
@@ -175,15 +180,20 @@ The app boots in two local modes:
   - Defines the Redis gateway-event channel name and `RealtimeGatewayEvent` schema.
 - `backend/app/realtime/publisher.py`
   - Publishes `MESSAGE_CREATE`, `MESSAGE_UPDATE`, `MESSAGE_DELETE`, `CHANNEL_CREATE`,
-    and `GUILD_UPDATE` payloads to Redis when configured.
+    `GUILD_UPDATE`, `DM_CREATE`, and `DM_MESSAGE_CREATE` payloads to Redis when
+    configured.
   - Falls back to local `gateway_manager.broadcast_channel()` when Redis is absent.
   - Updates local gateway subscriptions for channel creation and guild membership
     changes before fallback broadcasts.
+  - Updates local DM subscriptions from `DM_CREATE` participants before broadcasting
+    new DM events.
 - `backend/app/realtime/subscriber.py`
   - Consumes Redis gateway-event Pub/Sub messages and fans them out to local WebSocket
     subscribers.
   - Updates local gateway subscriptions for channel creation and guild membership
     changes before broadcasting Redis-sourced events.
+  - Updates local DM subscriptions for Redis-sourced `DM_CREATE` events and broadcasts
+    DM events by `dm_id`.
 - `backend/app/api/routes/health.py`
   - `/api/health` reports service status and whether DB/Redis are configured/connected.
   - Empty `DATABASE_URL` and `REDIS_URL` values are reported as not configured.
@@ -277,6 +287,12 @@ The app boots in two local modes:
     creation.
   - Requires message author ownership or `MANAGE_MESSAGES` for message update/delete.
   - Requires `ADMINISTRATOR` for role creation and member-role mutations.
+- `backend/app/repositories/dms.py`
+  - PostgreSQL repository for relationship reads, DM membership reads, DM creation,
+    DM message creation, membership checks, unread count updates, and `DmRead`
+    assembly.
+  - Uses JavaScript-safe Snowflake IDs and keeps DM participants scoped to current
+    DM membership.
 - `backend/app/repositories/users.py`
   - PostgreSQL repository for creating users and fetching password hashes by username.
 - `backend/app/services/guild_service.py`
@@ -284,8 +300,8 @@ The app boots in two local modes:
   - Keeps route handlers independent from the current persistence mode.
 - `backend/app/services/dm_service.py`
   - Async service boundary for Stage 7.3 DM APIs.
-  - Delegates to `demo_store` for relationships, DM list/create, and DM message
-    creation until Stage 7.10 introduces repository-backed persistence.
+  - Uses `dm_repository` when PostgreSQL is connected and `demo_store` otherwise for
+    relationships, DM list/create, and DM message creation.
 - `backend/app/services/auth_service.py`
   - Coordinates registration/login with async repository calls and runs bcrypt
     hashing/verification off the event loop.
@@ -382,6 +398,8 @@ The app boots in two local modes:
   - Loads authenticated relationship and DM data, creates or opens DM threads from a
     friend row, sends sanitized DM messages through the backend, appends returned
     messages immutably, and resets on logout.
+  - Applies `DM_CREATE` and `DM_MESSAGE_CREATE` gateway dispatches with idempotent
+    upsert/append behavior.
 - `frontend/src/stores/navigation.ts`
   - Pinia app destination store for the Discord-like shell.
   - Tracks `friends`, `dm`, `server_channel`, `voice_channel`, and `settings`
@@ -631,6 +649,16 @@ The app boots in two local modes:
   - `useGateway()` forwards gateway dispatches into `guilds.handleGatewayDispatch()`,
     which appends unseen messages by ID, replaces edited messages, and removes
     deleted messages.
+- Realtime DM flow:
+  - Gateway Identify loads the authenticated user's DM threads and subscribes the
+    connection to their DM IDs.
+  - `POST /api/dms` persists or returns a DM thread, publishes `DM_CREATE`, and
+    gateway managers add the new DM ID to connected participant subscriptions before
+    broadcasting.
+  - `POST /api/dms/{dm_id}/messages` persists sanitized DM messages and publishes
+    `DM_MESSAGE_CREATE` to DM subscribers.
+  - `frontend/src/App.vue` forwards gateway dispatches to both the guild and DM
+    Pinia stores, and `frontend/src/stores/dms.ts` applies DM events idempotently.
 - Realtime guild state flow:
   - Channel creation publishes `CHANNEL_CREATE` to guild subscribers and updates their
     server-side channel subscriptions so future messages in the new channel can fan
@@ -648,7 +676,8 @@ The app boots in two local modes:
   - Native local shell can leave both empty and use the demo-store fallback.
 - Docker development flow:
   - `npm run docker:up` builds and starts `postgres`, `backend`, and `frontend`.
-  - Backend startup connects PostgreSQL, runs `schema.sql`, then seeds demo data.
+  - Backend startup connects PostgreSQL, runs `schema.sql`, then seeds guild and DM
+    demo data.
   - Frontend container proxies API/WebSocket traffic to `backend:8000` inside the
     Compose network.
   - Host browser still uses `http://127.0.0.1:5173`.
@@ -717,8 +746,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.10 Persistence And Realtime Expansion: PostgreSQL relationship/DM persistence,
-  demo fallback equivalence, and realtime DM message dispatch.
+  7.11 Responsive And Accessibility QA: keyboard/focus checks, mobile layout polish,
+  stable dimensions, and desktop/mobile screenshots where tooling is available.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -784,6 +813,17 @@ Discord app inspection observation:
     cards plus search and can start server creation from a discovery card.
   - `frontend/src/App.vue` still routes actual mutations through existing
     `guilds.createGuild()` and `guilds.joinInvite()` API wrappers.
+- Stage 7.10 completed DM persistence and realtime expansion:
+  - `backend/app/db/schema.sql` and `backend/app/db/seed.py` define and seed
+    PostgreSQL-backed DM profiles, relationships, DM channels, DM members, and DM
+    messages.
+  - `backend/app/repositories/dms.py` and `backend/app/services/dm_service.py` now
+    provide the PostgreSQL/demo fallback switch for relationship and DM APIs.
+  - `backend/app/gateway/manager.py`, `backend/app/gateway/router.py`,
+    `backend/app/realtime/publisher.py`, and `backend/app/realtime/subscriber.py`
+    support DM subscriptions plus `DM_CREATE`/`DM_MESSAGE_CREATE` dispatch.
+  - `frontend/src/stores/dms.ts` applies DM gateway events and `frontend/src/App.vue`
+    forwards gateway dispatches to both guild and DM stores.
 
 Store planning observation:
 

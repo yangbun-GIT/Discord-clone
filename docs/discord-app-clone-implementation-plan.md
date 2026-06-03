@@ -286,6 +286,8 @@ Verification:
 
 ## Stage 7.10: Persistence And Realtime Expansion
 
+Status: completed.
+
 Goal: persist new DM/friend state with PostgreSQL while preserving demo fallback.
 
 Tasks:

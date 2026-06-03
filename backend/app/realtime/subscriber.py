@@ -20,6 +20,8 @@ async def dispatch_realtime_event(event: RealtimeGatewayEvent) -> None:
         await gateway_manager.broadcast_channel(event.channel_id, event.event, event.data)
     elif event.guild_id is not None:
         await gateway_manager.broadcast_guild(event.guild_id, event.event, event.data)
+    elif event.dm_id is not None:
+        await gateway_manager.broadcast_dm(event.dm_id, event.event, event.data)
 
 
 async def consume_gateway_events(
@@ -56,6 +58,17 @@ def _decode_pubsub_message(message: dict[str, Any]) -> RealtimeGatewayEvent | No
 
 
 def _sync_local_subscriptions(event: RealtimeGatewayEvent) -> None:
+    if event.event == "DM_CREATE" and event.dm_id is not None:
+        participants = event.data.get("participants")
+        if isinstance(participants, list):
+            member_ids = {
+                participant.get("id")
+                for participant in participants
+                if isinstance(participant, dict) and isinstance(participant.get("id"), int)
+            }
+            gateway_manager.add_dm_to_user_subscribers(event.dm_id, member_ids)
+        return
+
     if event.event == "CHANNEL_CREATE" and event.guild_id is not None:
         channel_id = event.data.get("id")
         if isinstance(channel_id, int):

@@ -18,6 +18,7 @@ class ClientConnection:
     last_heartbeat_at: float = field(default_factory=time.monotonic)
     guild_ids: set[int] = field(default_factory=set)
     channel_ids: set[int] = field(default_factory=set)
+    dm_ids: set[int] = field(default_factory=set)
     voice_channel_id: int | None = None
 
     async def send(
@@ -59,12 +60,14 @@ class GatewayConnectionManager:
         username: str | None,
         guild_ids: set[int] | None = None,
         channel_ids: set[int] | None = None,
+        dm_ids: set[int] | None = None,
     ) -> None:
         connection.user_id = user_id
         connection.username = username
         connection.identified = True
         connection.guild_ids = guild_ids or set()
         connection.channel_ids = channel_ids or set()
+        connection.dm_ids = dm_ids or set()
         connection.last_heartbeat_at = time.monotonic()
 
     def mark_heartbeat(self, connection: ClientConnection) -> None:
@@ -95,6 +98,24 @@ class GatewayConnectionManager:
 
         for connection in stale:
             self.disconnect(connection)
+
+    async def broadcast_dm(self, dm_id: int, event: str, data: dict[str, object]) -> None:
+        stale: list[ClientConnection] = []
+        for connection in self._connections:
+            if dm_id not in connection.dm_ids:
+                continue
+            try:
+                await connection.send(op=Opcode.DISPATCH, data=data, event=event)
+            except RuntimeError:
+                stale.append(connection)
+
+        for connection in stale:
+            self.disconnect(connection)
+
+    def add_dm_to_user_subscribers(self, dm_id: int, member_ids: set[int]) -> None:
+        for connection in self._connections:
+            if connection.user_id in member_ids:
+                connection.dm_ids.add(dm_id)
 
     async def broadcast_voice_state(
         self,

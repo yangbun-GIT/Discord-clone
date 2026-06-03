@@ -167,7 +167,8 @@
 - Status: implementation started; app destination model, `@me` private sidebar,
   Friends home, first-class demo-backed Direct Messages, server rail parity, server
   sidebar/header controls, composer/message actions, voice channel UX, and user
-  settings shell, and server add/discovery flows are complete.
+  settings shell, server add/discovery flows, and DM persistence/realtime expansion
+  are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -231,3 +232,14 @@
   - `frontend/src/components/ServerDiscoveryDialog.vue` provides local demo public
     server cards and search without external network dependency.
   - Existing backend guild create and invite join APIs remain the mutation boundary.
+- Completed Stage 7.10 Persistence And Realtime Expansion:
+  - `backend/app/db/schema.sql` and `backend/app/db/seed.py` now include
+    PostgreSQL-backed DM profiles, relationships, DM channels, DM members, and DM
+    messages.
+  - `backend/app/repositories/dms.py` provides PostgreSQL relationship/DM reads, DM
+    creation, DM message creation, membership checks, and unread count updates while
+    `backend/app/services/dm_service.py` preserves the demo fallback switch.
+  - Gateway/realtime publishing now supports `DM_CREATE` and `DM_MESSAGE_CREATE`
+    dispatches to DM subscribers.
+  - `frontend/src/stores/dms.ts` applies DM gateway dispatches alongside the existing
+    REST send/create paths.

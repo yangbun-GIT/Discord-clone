@@ -90,9 +90,10 @@ Native local development works without `DATABASE_URL` or `REDIS_URL`; it uses an
 in-memory demo store while preserving the async connection-pool boundaries required
 by the SRS. Docker Compose supplies its own local PostgreSQL URL automatically.
 
-Messages and channels created in Docker mode persist in the local PostgreSQL volume.
-Messages and channels created in native demo mode are kept in the running backend
-process and reset when that process restarts.
+Messages, channels, relationships, and direct messages created in Docker mode persist
+in the local PostgreSQL volume. Messages, channels, and direct messages created in
+native demo mode are kept in the running backend process and reset when that process
+restarts.
 
 WebRTC voice uses `WEBRTC_ICE_SERVERS_JSON` from the backend environment. The default
 STUN server is enough for local development; deployed voice should use a TURN provider

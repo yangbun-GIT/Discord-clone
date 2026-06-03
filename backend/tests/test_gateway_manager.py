@@ -92,6 +92,34 @@ async def test_add_channel_to_guild_subscribers_updates_channel_subscriptions() 
     assert 9001 in connection.channel_ids
 
 
+async def test_broadcast_dm_dispatches_to_dm_subscribers() -> None:
+    manager = GatewayConnectionManager()
+    target_websocket = FakeWebSocket()
+    other_websocket = FakeWebSocket()
+    target = await manager.connect(target_websocket)  # type: ignore[arg-type]
+    other = await manager.connect(other_websocket)  # type: ignore[arg-type]
+    target.dm_ids.add(801)
+    other.dm_ids.add(802)
+
+    await manager.broadcast_dm(801, "DM_MESSAGE_CREATE", {"id": 9901})
+
+    assert target_websocket.sent == [
+        {"op": int(Opcode.DISPATCH), "d": {"id": 9901}, "s": 1, "t": "DM_MESSAGE_CREATE"}
+    ]
+    assert other_websocket.sent == []
+
+
+async def test_add_dm_to_user_subscribers_updates_dm_subscriptions() -> None:
+    manager = GatewayConnectionManager()
+    websocket = FakeWebSocket()
+    connection = await manager.connect(websocket)  # type: ignore[arg-type]
+    connection.user_id = 42
+
+    manager.add_dm_to_user_subscribers(901, {42, 701})
+
+    assert 901 in connection.dm_ids
+
+
 async def test_sync_guild_subscribers_removes_departed_members() -> None:
     manager = GatewayConnectionManager()
     kept_websocket = FakeWebSocket()

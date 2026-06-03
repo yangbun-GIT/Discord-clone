@@ -122,7 +122,12 @@ async function openWorkspace() {
     loadVoiceConfig(),
   ])
   navigation.openFriends()
-  connectGateway(session.token, { onDispatch: guilds.handleGatewayDispatch })
+  connectGateway(session.token, {
+    onDispatch: (event, data) => {
+      guilds.handleGatewayDispatch(event, data)
+      dms.handleGatewayDispatch(event, data)
+    },
+  })
 }
 
 async function loadVoiceConfig() {
