@@ -2,6 +2,7 @@
 import { Send } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 
+import { useI18n } from '../i18n'
 import type { DirectMessage, User } from '../types'
 
 const props = defineProps<{
@@ -11,6 +12,7 @@ const props = defineProps<{
 }>()
 
 const draft = ref('')
+const { t } = useI18n()
 
 const emit = defineEmits<{
   send: [content: string]
@@ -32,21 +34,21 @@ watch(
 </script>
 
 <template>
-  <section class="chat-view" aria-label="Direct messages">
+  <section class="chat-view" :aria-label="t('dm.aria.directMessages')">
     <div class="message-list">
-      <section v-if="dm" class="dm-chat-intro" aria-label="Conversation">
+      <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
         <div class="dm-placeholder-avatar" :class="dm.status">
           {{ dm.display_name.slice(0, 1).toUpperCase() }}
         </div>
         <h2>{{ dm.display_name }}</h2>
-        <p v-if="dm.is_group">{{ dm.member_count }} members in this demo group conversation.</p>
-        <p v-else>{{ dm.activity ?? `This is the beginning of your direct message history.` }}</p>
+        <p v-if="dm.is_group">{{ t('dm.groupDescription', { count: dm.member_count }) }}</p>
+        <p v-else>{{ dm.activity ?? t('dm.beginning') }}</p>
       </section>
 
-      <section v-else class="dm-chat-intro" aria-label="No direct message selected">
+      <section v-else class="dm-chat-intro" :aria-label="t('dm.aria.noSelection')">
         <div class="dm-placeholder-avatar">D</div>
-        <h2>Direct Message</h2>
-        <p>Select a conversation from the private sidebar.</p>
+        <h2>{{ t('app.status.directMessage') }}</h2>
+        <p>{{ t('dm.selectConversation') }}</p>
       </section>
 
       <article v-for="message in dm?.messages ?? []" :key="message.id" class="message-row">
@@ -57,7 +59,7 @@ watch(
           <div class="message-meta">
             <strong>{{ message.author_name }}</strong>
             <span>#{{ message.id }}</span>
-            <span v-if="currentUser?.id === message.author_id">You</span>
+            <span v-if="currentUser?.id === message.author_id">{{ t('channel.you') }}</span>
           </div>
           <p>{{ message.content }}</p>
         </div>
@@ -67,12 +69,12 @@ watch(
     <form class="composer dm-composer" @submit.prevent="submitMessage">
       <input
         v-model="draft"
-        :aria-label="`Message ${dm?.display_name ?? 'direct message'}`"
-        :placeholder="dm ? `Message ${dm.display_name}` : 'Select a conversation'"
+        :aria-label="t('dm.messageTarget', { target: dm?.display_name ?? t('app.status.directMessage') })"
+        :placeholder="dm ? t('dm.messageTarget', { target: dm.display_name }) : t('dm.selectPlaceholder')"
         maxlength="2000"
         :disabled="disabled || !dm"
       />
-      <button type="submit" title="Send message" :disabled="disabled || !dm || !draft.trim()">
+      <button type="submit" :title="t('chat.sendMessage')" :disabled="disabled || !dm || !draft.trim()">
         <Send :size="18" aria-hidden="true" />
       </button>
     </form>

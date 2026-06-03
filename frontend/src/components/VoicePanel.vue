@@ -13,6 +13,7 @@ import {
   Settings,
 } from 'lucide-vue-next'
 
+import { useI18n } from '../i18n'
 import type { Channel, User, UserPresenceStatus, VoiceQualityStats, VoiceState } from '../types'
 
 const props = defineProps<{
@@ -41,6 +42,8 @@ defineEmits<{
   openSettings: []
 }>()
 
+const { t } = useI18n()
+
 const qualityLabel = computed(() => {
   const stats = props.qualityStats
   const rtt = stats.averageRoundTripTimeMs === null ? '--' : `${Math.round(stats.averageRoundTripTimeMs)}ms`
@@ -55,33 +58,35 @@ const qualityLabel = computed(() => {
 })
 
 const presenceLabel = computed(() => {
-  if (props.userStatus === 'dnd') return 'Do Not Disturb'
-  return props.userStatus[0].toUpperCase() + props.userStatus.slice(1)
+  if (props.userStatus === 'dnd') return t('common.status.dnd')
+  if (props.userStatus === 'idle') return t('common.status.idle')
+  if (props.userStatus === 'offline') return t('common.status.offline')
+  return t('common.status.online')
 })
 </script>
 
 <template>
-  <section class="voice-panel" aria-label="Voice controls">
+  <section class="voice-panel" :aria-label="t('voice.aria.controls')">
     <div class="user-panel">
       <button
         type="button"
         class="user-identity"
-        title="Change status"
-        aria-label="Change status"
+        :title="t('settings.status')"
+        :aria-label="t('settings.status')"
         @click="$emit('cycleStatus')"
       >
         <span class="user-panel-avatar" :class="userStatus">
           {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
         </span>
         <span class="user-panel-copy">
-          <strong>{{ currentUser?.username ?? 'Demo User' }}</strong>
+          <strong>{{ currentUser?.username ?? t('common.demoUser') }}</strong>
           <small><Circle :size="8" aria-hidden="true" />{{ presenceLabel }}</small>
         </span>
       </button>
       <div class="user-panel-actions">
         <button
           type="button"
-          :title="muted ? 'Unmute microphone' : 'Mute microphone'"
+          :title="muted ? t('voice.unmute') : t('voice.mute')"
           :aria-pressed="muted"
           :disabled="!connected"
           @click="$emit('toggleMute')"
@@ -91,14 +96,19 @@ const presenceLabel = computed(() => {
         </button>
         <button
           type="button"
-          :title="deafened ? 'Undeafen' : 'Deafen'"
+          :title="deafened ? t('voice.undeafen') : t('voice.deafen')"
           :aria-pressed="deafened"
           @click="$emit('toggleDeafen')"
         >
           <HeadphoneOff v-if="deafened" :size="17" aria-hidden="true" />
           <Headphones v-else :size="17" aria-hidden="true" />
         </button>
-        <button type="button" title="User settings" aria-label="User settings" @click="$emit('openSettings')">
+        <button
+          type="button"
+          :title="t('voice.userSettings')"
+          :aria-label="t('voice.userSettings')"
+          @click="$emit('openSettings')"
+        >
           <Settings :size="17" aria-hidden="true" />
         </button>
       </div>
@@ -108,30 +118,34 @@ const presenceLabel = computed(() => {
       <Radio :size="17" aria-hidden="true" />
       <div>
         <span>{{ channel?.name ?? 'voice-room' }}</span>
-        <small>{{ connected ? 'Connected' : 'Disconnected' }}</small>
+        <small>{{ connected ? t('common.status.connected') : t('common.status.disconnected') }}</small>
       </div>
     </div>
     <div class="voice-presence" aria-live="polite">
-      <span>{{ participants.length }} online</span>
+      <span>{{ t('voice.onlineCount', { count: participants.length }) }}</span>
       <small v-if="error">{{ error }}</small>
-      <small v-else-if="localSpeaking">Speaking</small>
+      <small v-else-if="localSpeaking">{{ t('voice.speaking') }}</small>
       <small v-else>
-        {{ signalingReady ? `Signaling ready | ${turnConfigured ? 'TURN ready' : 'STUN only'}` : 'Gateway required' }}
+        {{
+          signalingReady
+            ? t('voice.signaling', { ice: turnConfigured ? t('voice.turnReady') : t('voice.stunOnly') })
+            : t('voice.gatewayRequired')
+        }}
       </small>
       <small v-if="connected" class="voice-quality">{{ qualityLabel }}</small>
-      <meter min="0" max="100" :value="inputLevel" aria-label="Microphone input level" />
+      <meter min="0" max="100" :value="inputLevel" :aria-label="t('voice.aria.inputLevel')" />
     </div>
     <div class="voice-actions">
       <button
         type="button"
-        :title="screenSharing ? 'Stop screen share' : 'Share screen'"
+        :title="screenSharing ? t('voice.stopScreenShare') : t('voice.screenShare')"
         :disabled="!connected"
         @click="$emit('toggleScreen')"
       >
         <ScreenShareOff v-if="screenSharing" :size="18" aria-hidden="true" />
         <ScreenShare v-else :size="18" aria-hidden="true" />
       </button>
-      <button type="button" :title="connected ? 'Disconnect voice' : 'Connect voice'" @click="$emit('toggle')">
+      <button type="button" :title="connected ? t('voice.disconnect') : t('voice.connect')" @click="$emit('toggle')">
         <PhoneOff v-if="connected" :size="18" aria-hidden="true" />
         <Mic v-else :size="18" aria-hidden="true" />
       </button>

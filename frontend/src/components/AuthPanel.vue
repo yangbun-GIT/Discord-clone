@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { FlaskConical, LogIn, UserPlus } from 'lucide-vue-next'
 
+import { useI18n } from '../i18n'
+
 type AuthMode = 'login' | 'register'
 
 const emit = defineEmits<{
@@ -18,8 +20,9 @@ defineProps<{
 const mode = ref<AuthMode>('login')
 const username = ref('')
 const password = ref('')
+const { t } = useI18n()
 
-const submitLabel = computed(() => (mode.value === 'login' ? 'Log in' : 'Create account'))
+const submitLabel = computed(() => (mode.value === 'login' ? t('auth.login') : t('auth.submit.create')))
 const isSubmittable = computed(() => username.value.trim().length >= 2 && password.value.length >= 8)
 
 function submit() {
@@ -34,11 +37,11 @@ function submit() {
 </script>
 
 <template>
-  <main class="auth-shell" aria-label="Discord clone authentication">
+  <main class="auth-shell" :aria-label="t('auth.aria.shell')">
     <section class="auth-panel">
       <div class="auth-mark">DC</div>
 
-      <div class="auth-tabs" role="tablist" aria-label="Authentication mode">
+      <div class="auth-tabs" role="tablist" :aria-label="t('auth.aria.tabs')">
         <button
           type="button"
           :class="{ active: mode === 'login' }"
@@ -47,7 +50,7 @@ function submit() {
           @click="mode = 'login'"
         >
           <LogIn :size="17" aria-hidden="true" />
-          <span>Log in</span>
+          <span>{{ t('auth.login') }}</span>
         </button>
         <button
           type="button"
@@ -57,18 +60,18 @@ function submit() {
           @click="mode = 'register'"
         >
           <UserPlus :size="17" aria-hidden="true" />
-          <span>Register</span>
+          <span>{{ t('auth.register') }}</span>
         </button>
       </div>
 
       <form class="auth-form" @submit.prevent="submit">
         <label>
-          <span>Username</span>
+          <span>{{ t('auth.username') }}</span>
           <input v-model="username" autocomplete="username" minlength="2" maxlength="32" required />
         </label>
 
         <label>
-          <span>Password</span>
+          <span>{{ t('auth.password') }}</span>
           <input
             v-model="password"
             autocomplete="current-password"
@@ -88,7 +91,7 @@ function submit() {
 
       <button class="demo-button" type="button" :disabled="loading" @click="emit('demo')">
         <FlaskConical :size="17" aria-hidden="true" />
-        <span>Demo user</span>
+        <span>{{ t('auth.demo') }}</span>
       </button>
     </section>
   </main>

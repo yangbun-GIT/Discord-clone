@@ -1,5 +1,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 
+import { useI18n } from '../i18n'
+
 type GatewayStatus = 'idle' | 'connecting' | 'connected' | 'disconnected'
 
 type GatewayEvent = {
@@ -45,6 +47,8 @@ function send(payload: GatewayEvent) {
 }
 
 export function useGateway() {
+  const { t } = useI18n()
+
   function connect(token: string, options: { onDispatch?: GatewayDispatchHandler } = {}) {
     dispatchHandler.value = options.onDispatch ?? null
     if (socket.value && socket.value.readyState <= WebSocket.OPEN) {
@@ -101,10 +105,10 @@ export function useGateway() {
   return {
     status,
     statusLabel: computed(() => {
-      if (status.value === 'connected') return 'Gateway online'
-      if (status.value === 'connecting') return 'Connecting'
-      if (status.value === 'disconnected') return 'Gateway offline'
-      return 'Gateway idle'
+      if (status.value === 'connected') return t('gateway.connected')
+      if (status.value === 'connecting') return t('gateway.connecting')
+      if (status.value === 'disconnected') return t('gateway.disconnected')
+      return t('gateway.idle')
     }),
     connect,
     disconnect,

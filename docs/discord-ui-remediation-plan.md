@@ -161,7 +161,7 @@ Completion notes:
 
 ## Stage 8.3: Korean And English I18n Foundation
 
-Status: pending.
+Status: completed.
 
 Goal: support Korean and English through a reusable frontend i18n layer.
 
@@ -186,6 +186,22 @@ Verification:
 - Browser smoke for language switching and reload persistence.
 - Check Korean and English labels do not overflow core surfaces.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/i18n/index.ts` defines Korean/English dictionaries and the `useI18n()`
+  helper with parameter interpolation.
+- `frontend/src/stores/preferences.ts` persists the selected language in localStorage.
+- High-visibility UI copy is wired in the auth panel, app shell/header, private
+  sidebar, channel sidebar, Friends home, server chat composer/actions, DM view,
+  voice panel, gateway status label, and user settings.
+- Settings now includes a `Language` panel with Korean/English radio choices.
+- Browser QA verified Korean default copy, English switching, reload persistence,
+  gateway/voice status labels, and no horizontal overflow.
+- Stage 8.3 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-3-ko-home.png`
+  - `docs/qa-artifacts/stage-8-3-en-home.png`
+  - `docs/qa-artifacts/stage-8-3-en-settings.png`
 
 ## Stage 8.4: Bottom User And Voice Panel Redesign
 

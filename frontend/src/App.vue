@@ -35,9 +35,11 @@ import VoicePanel from './components/VoicePanel.vue'
 import VoiceVideoSink from './components/VoiceVideoSink.vue'
 import { useGateway } from './composables/useGateway'
 import { useVoiceRtc } from './composables/useVoiceRtc'
+import { useI18n } from './i18n'
 import { useDmStore } from './stores/dms'
 import { useGuildStore } from './stores/guilds'
 import { useNavigationStore } from './stores/navigation'
+import { usePreferencesStore } from './stores/preferences'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
 import type { ServerRailGuildMeta, UserPresenceStatus, VoiceConfig, VoiceIceServer } from './types'
@@ -46,7 +48,9 @@ const session = useSessionStore()
 const guilds = useGuildStore()
 const dms = useDmStore()
 const navigation = useNavigationStore()
+const preferences = usePreferencesStore()
 const store = useStoreStore()
+const { t } = useI18n()
 const {
   connect: connectGateway,
   disconnect: disconnectGateway,
@@ -64,13 +68,13 @@ const remoteScreenStreams = computed(() =>
   voiceRtc.remoteStreams.value.filter((remote) => remote.sharingScreen),
 )
 const workspaceTitle = computed(() => {
-  if (navigation.destination === 'friends') return 'Friends'
+  if (navigation.destination === 'friends') return t('app.status.friends')
   if (navigation.destination === 'dm') {
-    return dms.getDm(navigation.activeDmId)?.display_name ?? 'Direct Message'
+    return dms.getDm(navigation.activeDmId)?.display_name ?? t('app.status.directMessage')
   }
-  if (navigation.destination === 'settings') return 'User Settings'
-  if (!activeGuild.value) return 'No servers'
-  return activeChannel.value?.name ?? 'loading'
+  if (navigation.destination === 'settings') return t('app.status.userSettings')
+  if (!activeGuild.value) return t('app.status.noServers')
+  return activeChannel.value?.name ?? t('app.status.loading')
 })
 const isPrivateDestination = computed(() =>
   navigation.destination === 'friends' || navigation.destination === 'dm',
@@ -137,6 +141,7 @@ async function loadVoiceConfig() {
 }
 
 onMounted(async () => {
+  preferences.restorePreferences()
   await session.restoreSession()
   if (session.token) {
     await openWorkspace()
@@ -151,7 +156,7 @@ async function runAuth(action: () => Promise<void>) {
       await action()
       await openWorkspace()
   } catch (error) {
-    authError.value = error instanceof Error ? error.message : 'Authentication failed'
+    authError.value = error instanceof Error ? error.message : t('app.error.authFailed')
   } finally {
     isAuthenticating.value = false
   }
@@ -208,7 +213,7 @@ async function handleMessageFriend(friendId: number) {
       navigation.openDm(dm.id)
     }
   } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : 'Direct message creation failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.dmCreateFailed')
   }
 }
 
@@ -248,7 +253,7 @@ async function handleCreateGuild(name: string) {
     closeAddServer()
     closeDiscovery()
   } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : 'Server creation failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.guildCreateFailed')
   } finally {
     isCreatingGuild.value = false
   }
@@ -258,13 +263,13 @@ function handleCreateChannel(name: string, type: 0 | 1 = 0) {
   workspaceError.value = null
   workspaceNotice.value = null
   void guilds.createChannel(session.token, name, type).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Channel creation failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.channelCreateFailed')
   })
 }
 
 function showHeaderPlaceholder(label: string) {
   workspaceError.value = null
-  workspaceNotice.value = `${label} is wired as a local app-shell control for this stage.`
+  workspaceNotice.value = t('app.notice.localControl', { label })
 }
 
 function handleChannelSettings() {
@@ -274,7 +279,7 @@ function handleChannelSettings() {
 function handleSendMessage(content: string) {
   workspaceError.value = null
   void guilds.sendMessage(session.token, content).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Message send failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.messageSendFailed')
   })
 }
 
@@ -282,56 +287,56 @@ function handleSendDmMessage(content: string) {
   if (!selectedDm.value) return
   workspaceError.value = null
   void dms.sendDmMessage(session.token, selectedDm.value.id, content).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Direct message send failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.dmSendFailed')
   })
 }
 
 function handleEditMessage(messageId: number, content: string) {
   workspaceError.value = null
   void guilds.editMessage(session.token, messageId, content).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Message edit failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.messageEditFailed')
   })
 }
 
 function handleDeleteMessage(messageId: number) {
   workspaceError.value = null
   void guilds.deleteMessage(session.token, messageId).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Message deletion failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.messageDeleteFailed')
   })
 }
 
 function handleCreateRole(name: string, permissions: number) {
   workspaceError.value = null
   void guilds.createRole(session.token, name, permissions).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Role creation failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.roleCreateFailed')
   })
 }
 
 function handleAssignRole(memberId: number, roleId: number) {
   workspaceError.value = null
   void guilds.assignRole(session.token, memberId, roleId).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Role assignment failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.roleAssignFailed')
   })
 }
 
 function handleRemoveRole(memberId: number, roleId: number) {
   workspaceError.value = null
   void guilds.removeRole(session.token, memberId, roleId).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Role removal failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.roleRemoveFailed')
   })
 }
 
 function handleRefreshMembers() {
   workspaceError.value = null
   void guilds.refreshActiveGuild(session.token).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Member refresh failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.memberRefreshFailed')
   })
 }
 
 function handleRemoveMember(memberId: number) {
   workspaceError.value = null
   void guilds.removeMember(session.token, memberId).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Member removal failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.memberRemoveFailed')
   })
 }
 
@@ -365,7 +370,7 @@ async function connectVoiceToChannel(channelId: number) {
       sendSignal: sendVoiceSignal,
     })
   } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : 'Voice connection failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.voiceConnectFailed')
     return
   }
 
@@ -441,7 +446,7 @@ function handleToggleMute() {
 function handleToggleScreenShare() {
   workspaceError.value = null
   void voiceRtc.toggleScreenShare().catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : 'Screen sharing failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.screenShareFailed')
   })
 }
 
@@ -450,7 +455,7 @@ watch(
   () => {
     if (!voiceRtc.isCapturing.value || !session.user) return
     void voiceRtc.syncParticipants(guilds.activeVoiceStates).catch((error) => {
-      workspaceError.value = error instanceof Error ? error.message : 'Voice peer sync failed'
+      workspaceError.value = error instanceof Error ? error.message : t('app.error.voicePeerSyncFailed')
     })
   },
 )
@@ -460,7 +465,7 @@ watch(
   (signal) => {
     if (!signal) return
     void voiceRtc.handleSignal(signal).catch((error) => {
-      workspaceError.value = error instanceof Error ? error.message : 'Voice signal failed'
+      workspaceError.value = error instanceof Error ? error.message : t('app.error.voiceSignalFailed')
     })
   },
 )
@@ -479,7 +484,7 @@ async function handleJoinGuild(code: string) {
     await guilds.joinInvite(session.token, trimmedCode)
     closeAddServer()
   } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : 'Invite join failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.inviteJoinFailed')
   } finally {
     isInviteWorking.value = false
   }
@@ -498,7 +503,7 @@ async function handleCreateInvite() {
     inviteCode.value = invite?.code ?? null
     showInvite.value = true
   } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : 'Invite creation failed'
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.inviteCreateFailed')
   } finally {
     isInviteWorking.value = false
   }
@@ -506,7 +511,7 @@ async function handleCreateInvite() {
 </script>
 
 <template>
-  <div v-if="isBooting" class="boot-screen" role="status">Loading</div>
+  <div v-if="isBooting" class="boot-screen" role="status">{{ t('app.boot.loading') }}</div>
 
   <AuthPanel
     v-else-if="!session.token"
@@ -521,7 +526,7 @@ async function handleCreateInvite() {
     v-else
     class="app-shell"
     :class="{ 'settings-mode': navigation.destination === 'settings' }"
-    aria-label="Discord clone workspace"
+    :aria-label="t('app.aria.workspace')"
   >
     <ServerRail
       v-if="navigation.destination !== 'settings'"
@@ -568,39 +573,39 @@ async function handleCreateInvite() {
           <Hash v-else :size="19" aria-hidden="true" />
           <span>{{ workspaceTitle }}</span>
         </div>
-        <div v-if="isServerDestination" class="channel-header-tools" aria-label="Channel tools">
+        <div v-if="isServerDestination" class="channel-header-tools" :aria-label="t('app.header.channelTools')">
           <button
             class="topbar-icon-button"
             type="button"
-            title="Threads"
-            aria-label="Threads"
-            @click="showHeaderPlaceholder('Threads')"
+            :title="t('app.header.threads')"
+            :aria-label="t('app.header.threads')"
+            @click="showHeaderPlaceholder(t('app.header.threads'))"
           >
             <List :size="17" aria-hidden="true" />
           </button>
           <button
             class="topbar-icon-button"
             type="button"
-            title="Notification settings"
-            aria-label="Notification settings"
-            @click="showHeaderPlaceholder('Notification settings')"
+            :title="t('app.header.notifications')"
+            :aria-label="t('app.header.notifications')"
+            @click="showHeaderPlaceholder(t('app.header.notifications'))"
           >
             <Bell :size="17" aria-hidden="true" />
           </button>
           <button
             class="topbar-icon-button"
             type="button"
-            title="Pinned messages"
-            aria-label="Pinned messages"
-            @click="showHeaderPlaceholder('Pinned messages')"
+            :title="t('app.header.pins')"
+            :aria-label="t('app.header.pins')"
+            @click="showHeaderPlaceholder(t('app.header.pins'))"
           >
             <Pin :size="17" aria-hidden="true" />
           </button>
           <button
             class="topbar-icon-button"
             type="button"
-            title="Toggle member list"
-            aria-label="Toggle member list"
+            :title="t('app.header.memberList')"
+            :aria-label="t('app.header.memberList')"
             :class="{ active: showMemberList }"
             @click="showMemberList = !showMemberList"
           >
@@ -610,26 +615,26 @@ async function handleCreateInvite() {
             <Search :size="15" aria-hidden="true" />
             <input
               type="search"
-              placeholder="Search"
-              aria-label="Search messages"
-              @focus="showHeaderPlaceholder('Search')"
+              :placeholder="t('app.header.search')"
+              :aria-label="t('app.header.searchMessages')"
+              @focus="showHeaderPlaceholder(t('app.header.search'))"
             />
           </label>
           <button
             class="topbar-icon-button"
             type="button"
-            title="Inbox"
-            aria-label="Inbox"
-            @click="showHeaderPlaceholder('Inbox')"
+            :title="t('app.header.inbox')"
+            :aria-label="t('app.header.inbox')"
+            @click="showHeaderPlaceholder(t('app.header.inbox'))"
           >
             <Inbox :size="17" aria-hidden="true" />
           </button>
           <button
             class="topbar-icon-button"
             type="button"
-            title="Help"
-            aria-label="Help"
-            @click="showHeaderPlaceholder('Help')"
+            :title="t('app.header.help')"
+            :aria-label="t('app.header.help')"
+            @click="showHeaderPlaceholder(t('app.header.help'))"
           >
             <CircleHelp :size="17" aria-hidden="true" />
           </button>
@@ -643,7 +648,7 @@ async function handleCreateInvite() {
           <button
             class="topbar-icon-button"
             type="button"
-            aria-label="Create invite"
+            :aria-label="t('app.header.createInvite')"
             :disabled="!activeGuild || isInviteWorking"
             v-if="isServerDestination"
             @click="handleCreateInvite"
@@ -653,13 +658,13 @@ async function handleCreateInvite() {
           <button
             class="topbar-icon-button"
             type="button"
-            aria-label="Join server"
+            :aria-label="t('app.header.joinServer')"
             v-if="isServerDestination"
             @click="openJoinGuild"
           >
             <LogIn :size="17" aria-hidden="true" />
           </button>
-          <button class="topbar-icon-button" type="button" aria-label="Log out" @click="handleLogout">
+          <button class="topbar-icon-button" type="button" :aria-label="t('app.header.logout')" @click="handleLogout">
             <LogOut :size="17" aria-hidden="true" />
           </button>
         </div>
@@ -672,7 +677,9 @@ async function handleCreateInvite() {
         {{ workspaceNotice }}
       </div>
 
-      <div v-if="guilds.isLoading || dms.isLoading" class="workspace-loading" role="status">Loading workspace</div>
+      <div v-if="guilds.isLoading || dms.isLoading" class="workspace-loading" role="status">
+        {{ t('app.workspace.loading') }}
+      </div>
 
       <SettingsView
         v-if="navigation.destination === 'settings'"
@@ -727,11 +734,11 @@ async function handleCreateInvite() {
         />
       </div>
 
-      <section v-else class="empty-workspace" aria-label="No servers">
-        <div>No servers</div>
+      <section v-else class="empty-workspace" :aria-label="t('app.empty.noServers')">
+        <div>{{ t('app.empty.noServers') }}</div>
         <div class="empty-actions">
-          <button type="button" @click="openCreateGuild">Create server</button>
-          <button type="button" @click="openJoinGuild">Join server</button>
+          <button type="button" @click="openCreateGuild">{{ t('app.empty.createServer') }}</button>
+          <button type="button" @click="openJoinGuild">{{ t('app.empty.joinServer') }}</button>
         </div>
       </section>
     </section>

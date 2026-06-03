@@ -29,7 +29,8 @@ Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stag
 7.12 final QA/documentation are complete and pushed to GitHub.
 Stage 8 Discord UI remediation has started with the controlling plan in
 `docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
-plus Stage 8.2 sidebar text-overlap/channel-creation cleanup are complete.
+plus Stage 8.2 sidebar text-overlap/channel-creation cleanup and Stage 8.3
+Korean/English i18n foundation are complete.
 
 The app boots in two local modes:
 
@@ -760,8 +761,9 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.3 is next: add the Korean/English i18n foundation and wire high-visibility
-  UI copy to language preferences.
+- Stage 8.4 is next: redesign the bottom user and voice panel so user identity,
+  connection state, mute/deafen, screen share, speaking, and disconnect controls are
+  compact and easy to read.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -878,6 +880,18 @@ Discord app inspection observation:
     channel rows, row actions, and voice member rows inside the fixed sidebar width.
   - QA created text and voice channels through the UI and captured
     `docs/qa-artifacts/stage-8-2-sidebar.png`.
+- Stage 8.3 completed the Korean/English i18n foundation:
+  - `frontend/src/i18n/index.ts` owns flat Korean/English dictionaries and the
+    `useI18n()` helper.
+  - `frontend/src/stores/preferences.ts` persists `ko`/`en` language selection in
+    localStorage.
+  - Auth, app shell/header, private sidebar, channel sidebar, Friends home, chat
+    composer/actions, DM view, VoicePanel, gateway status label, and Settings use
+    i18n for high-visibility copy.
+  - Settings has a Language panel with Korean and English choices.
+  - QA screenshots are `docs/qa-artifacts/stage-8-3-ko-home.png`,
+    `docs/qa-artifacts/stage-8-3-en-home.png`, and
+    `docs/qa-artifacts/stage-8-3-en-settings.png`.
 
 Store planning observation:
 

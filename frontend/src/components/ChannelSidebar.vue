@@ -14,6 +14,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 
+import { useI18n } from '../i18n'
 import type { Channel, Guild, VoiceState } from '../types'
 
 const props = defineProps<{
@@ -36,6 +37,7 @@ const createChannelType = ref<0 | 1 | null>(null)
 const textCollapsed = ref(false)
 const voiceCollapsed = ref(false)
 const channelDraft = ref('')
+const { t } = useI18n()
 
 const textChannels = computed(() => propsChannels(0))
 const voiceChannels = computed(() => propsChannels(1))
@@ -72,17 +74,17 @@ function channelVoiceStates(channelId: number) {
 </script>
 
 <template>
-  <aside class="channel-sidebar" aria-label="Channels">
+  <aside class="channel-sidebar" :aria-label="t('channel.aria.channels')">
     <div class="guild-heading">
       <span>{{ guild.name }}</span>
-      <button type="button" title="Server menu" aria-label="Server menu">
+      <button type="button" :title="t('channel.aria.serverMenu')" :aria-label="t('channel.aria.serverMenu')">
         <MoreHorizontal :size="18" aria-hidden="true" />
       </button>
     </div>
 
     <button type="button" class="events-entry">
       <CalendarDays :size="17" aria-hidden="true" />
-      <span>Events</span>
+      <span>{{ t('channel.events') }}</span>
     </button>
 
     <div class="channel-group">
@@ -95,29 +97,41 @@ function channelVoiceStates(channelId: number) {
         >
           <ChevronDown v-if="!textCollapsed" :size="14" aria-hidden="true" />
           <ChevronRight v-else :size="14" aria-hidden="true" />
-          <span>Text Channels</span>
+          <span>{{ t('channel.textChannels') }}</span>
         </button>
-        <button type="button" title="Create text channel" aria-label="Create text channel" @click="openChannelForm(0)">
+        <button
+          type="button"
+          :title="t('channel.aria.createText')"
+          :aria-label="t('channel.aria.createText')"
+          @click="openChannelForm(0)"
+        >
           <Plus :size="15" aria-hidden="true" />
         </button>
       </div>
       <form v-if="createChannelType === 0" class="channel-create-form" @submit.prevent="submitChannel">
         <label>
-          <span>Text channel name</span>
+          <span>{{ t('channel.name.text') }}</span>
           <input
             v-model="channelDraft"
-            aria-label="Text channel name"
+            :aria-label="t('channel.name.text')"
             maxlength="100"
-            placeholder="new-channel"
+            :placeholder="t('channel.placeholder.text')"
             autofocus
           />
         </label>
         <div class="channel-create-actions">
-          <button type="submit" class="primary" title="Create text channel" :disabled="!channelDraft.trim()">
+          <button
+            type="submit"
+            class="primary"
+            :title="t('channel.aria.createText')"
+            :disabled="!channelDraft.trim()"
+          >
             <Plus :size="15" aria-hidden="true" />
-            <span>Create</span>
+            <span>{{ t('channel.create') }}</span>
           </button>
-          <button type="button" class="ghost" title="Cancel channel creation" @click="closeChannelForm">Cancel</button>
+          <button type="button" class="ghost" :title="t('channel.cancel')" @click="closeChannelForm">
+            {{ t('channel.cancel') }}
+          </button>
         </div>
       </form>
       <div
@@ -136,13 +150,18 @@ function channelVoiceStates(channelId: number) {
           <span>{{ channel.name }}</span>
         </button>
         <div class="channel-row-actions" aria-label="Channel actions">
-          <button type="button" title="Create invite" aria-label="Create invite" @click.stop="$emit('createInvite')">
+          <button
+            type="button"
+            :title="t('channel.aria.createInvite')"
+            :aria-label="t('channel.aria.createInvite')"
+            @click.stop="$emit('createInvite')"
+          >
             <UserPlus :size="14" aria-hidden="true" />
           </button>
           <button
             type="button"
-            title="Channel settings"
-            aria-label="Channel settings"
+            :title="t('channel.aria.settings')"
+            :aria-label="t('channel.aria.settings')"
             @click.stop="$emit('channelSettings', channel.id)"
           >
             <Settings :size="14" aria-hidden="true" />
@@ -161,29 +180,41 @@ function channelVoiceStates(channelId: number) {
         >
           <ChevronDown v-if="!voiceCollapsed" :size="14" aria-hidden="true" />
           <ChevronRight v-else :size="14" aria-hidden="true" />
-          <span>Voice Channels</span>
+          <span>{{ t('channel.voiceChannels') }}</span>
         </button>
-        <button type="button" title="Create voice channel" aria-label="Create voice channel" @click="openChannelForm(1)">
+        <button
+          type="button"
+          :title="t('channel.aria.createVoice')"
+          :aria-label="t('channel.aria.createVoice')"
+          @click="openChannelForm(1)"
+        >
           <Plus :size="15" aria-hidden="true" />
         </button>
       </div>
       <form v-if="createChannelType === 1" class="channel-create-form" @submit.prevent="submitChannel">
         <label>
-          <span>Voice channel name</span>
+          <span>{{ t('channel.name.voice') }}</span>
           <input
             v-model="channelDraft"
-            aria-label="Voice channel name"
+            :aria-label="t('channel.name.voice')"
             maxlength="100"
-            placeholder="voice-room"
+            :placeholder="t('channel.placeholder.voice')"
             autofocus
           />
         </label>
         <div class="channel-create-actions">
-          <button type="submit" class="primary" title="Create voice channel" :disabled="!channelDraft.trim()">
+          <button
+            type="submit"
+            class="primary"
+            :title="t('channel.aria.createVoice')"
+            :disabled="!channelDraft.trim()"
+          >
             <Plus :size="15" aria-hidden="true" />
-            <span>Create</span>
+            <span>{{ t('channel.create') }}</span>
           </button>
-          <button type="button" class="ghost" title="Cancel channel creation" @click="closeChannelForm">Cancel</button>
+          <button type="button" class="ghost" :title="t('channel.cancel')" @click="closeChannelForm">
+            {{ t('channel.cancel') }}
+          </button>
         </div>
       </form>
       <div
@@ -205,8 +236,8 @@ function channelVoiceStates(channelId: number) {
           <button
             v-if="connectedVoiceChannelId === channel.id"
             type="button"
-            title="Leave voice channel"
-            aria-label="Leave voice channel"
+            :title="t('channel.aria.leaveVoice')"
+            :aria-label="t('channel.aria.leaveVoice')"
             @click.stop="$emit('leaveVoice', channel.id)"
           >
             <LogOut :size="14" aria-hidden="true" />
@@ -214,19 +245,24 @@ function channelVoiceStates(channelId: number) {
           <button
             v-else
             type="button"
-            title="Join voice channel"
-            aria-label="Join voice channel"
+            :title="t('channel.aria.joinVoice')"
+            :aria-label="t('channel.aria.joinVoice')"
             @click.stop="$emit('joinVoice', channel.id)"
           >
             <LogIn :size="14" aria-hidden="true" />
           </button>
-          <button type="button" title="Create invite" aria-label="Create invite" @click.stop="$emit('createInvite')">
+          <button
+            type="button"
+            :title="t('channel.aria.createInvite')"
+            :aria-label="t('channel.aria.createInvite')"
+            @click.stop="$emit('createInvite')"
+          >
             <UserPlus :size="14" aria-hidden="true" />
           </button>
           <button
             type="button"
-            title="Channel settings"
-            aria-label="Channel settings"
+            :title="t('channel.aria.settings')"
+            :aria-label="t('channel.aria.settings')"
             @click.stop="$emit('channelSettings', channel.id)"
           >
             <Settings :size="14" aria-hidden="true" />
@@ -235,9 +271,11 @@ function channelVoiceStates(channelId: number) {
         <div
           v-if="channelVoiceStates(channel.id).length || connectedVoiceChannelId === channel.id"
           class="voice-sidebar-members"
-          aria-label="Voice channel members"
+          :aria-label="t('channel.aria.voiceMembers')"
         >
-          <span v-if="connectedVoiceChannelId === channel.id" class="voice-sidebar-member self">You</span>
+          <span v-if="connectedVoiceChannelId === channel.id" class="voice-sidebar-member self">
+            {{ t('channel.you') }}
+          </span>
           <span
             v-for="state in channelVoiceStates(channel.id)"
             :key="`${channel.id}:${state.user_id}`"

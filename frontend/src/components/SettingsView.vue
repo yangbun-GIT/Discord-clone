@@ -8,14 +8,16 @@ import {
   LogOut,
   Mic,
   Monitor,
+  Languages,
   Shield,
   UserRound,
   X,
 } from 'lucide-vue-next'
 
+import { useI18n } from '../i18n'
 import type { User, UserPresenceStatus } from '../types'
 
-type SettingsPanel = 'account' | 'profiles' | 'privacy' | 'voice' | 'appearance' | 'keybinds' | 'logout'
+type SettingsPanel = 'account' | 'profiles' | 'privacy' | 'voice' | 'appearance' | 'keybinds' | 'language' | 'logout'
 
 const props = defineProps<{
   currentUser: User | null
@@ -36,39 +38,45 @@ const activePanel = ref<SettingsPanel>('account')
 const compactMode = ref(false)
 const reduceMotion = ref(false)
 const dmSafety = ref(true)
+const { language, setLanguage, t } = useI18n()
 
-const panels: Array<{ id: SettingsPanel; label: string; group: 'user' | 'app'; icon: unknown }> = [
-  { id: 'account', label: 'My Account', group: 'user', icon: UserRound },
-  { id: 'profiles', label: 'Profiles', group: 'user', icon: Brush },
-  { id: 'privacy', label: 'Privacy & Safety', group: 'user', icon: Shield },
-  { id: 'voice', label: 'Voice & Video', group: 'app', icon: Headphones },
-  { id: 'appearance', label: 'Appearance', group: 'app', icon: Monitor },
-  { id: 'keybinds', label: 'Keybinds', group: 'app', icon: KeyRound },
-  { id: 'logout', label: 'Log Out', group: 'app', icon: LogOut },
-]
+const panels = computed<Array<{ id: SettingsPanel; label: string; group: 'user' | 'app'; icon: unknown }>>(() => [
+  { id: 'account', label: t('settings.myAccount'), group: 'user', icon: UserRound },
+  { id: 'profiles', label: t('settings.profiles'), group: 'user', icon: Brush },
+  { id: 'privacy', label: t('settings.privacy'), group: 'user', icon: Shield },
+  { id: 'voice', label: t('settings.voice'), group: 'app', icon: Headphones },
+  { id: 'appearance', label: t('settings.appearance'), group: 'app', icon: Monitor },
+  { id: 'keybinds', label: t('settings.keybinds'), group: 'app', icon: KeyRound },
+  { id: 'language', label: t('settings.language'), group: 'app', icon: Languages },
+  { id: 'logout', label: t('settings.logout'), group: 'app', icon: LogOut },
+])
 
-const activePanelLabel = computed(() => panels.find((panel) => panel.id === activePanel.value)?.label ?? 'Settings')
+const activePanelLabel = computed(
+  () => panels.value.find((panel) => panel.id === activePanel.value)?.label ?? t('settings.userSettings'),
+)
 const statusLabel = computed(() => {
-  if (props.userStatus === 'dnd') return 'Do Not Disturb'
-  return props.userStatus[0].toUpperCase() + props.userStatus.slice(1)
+  if (props.userStatus === 'dnd') return t('common.status.dnd')
+  if (props.userStatus === 'idle') return t('common.status.idle')
+  if (props.userStatus === 'offline') return t('common.status.offline')
+  return t('common.status.online')
 })
 </script>
 
 <template>
-  <section class="settings-view" aria-label="User settings">
-    <aside class="settings-sidebar" aria-label="Settings navigation">
+  <section class="settings-view" :aria-label="t('settings.userSettings')">
+    <aside class="settings-sidebar" :aria-label="t('settings.userSettings')">
       <div class="settings-user-card">
         <span class="settings-avatar" :class="userStatus">
           {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
         </span>
         <div>
-          <strong>{{ currentUser?.username ?? 'Demo User' }}</strong>
+          <strong>{{ currentUser?.username ?? t('common.demoUser') }}</strong>
           <small>{{ statusLabel }}</small>
         </div>
       </div>
 
-      <div class="settings-group" aria-label="User settings">
-        <p>User Settings</p>
+      <div class="settings-group" :aria-label="t('settings.userSettings')">
+        <p>{{ t('settings.userSettings') }}</p>
         <button
           v-for="panel in panels.filter((item) => item.group === 'user')"
           :key="panel.id"
@@ -81,8 +89,8 @@ const statusLabel = computed(() => {
         </button>
       </div>
 
-      <div class="settings-group" aria-label="App settings">
-        <p>App Settings</p>
+      <div class="settings-group" :aria-label="t('settings.appSettings')">
+        <p>{{ t('settings.appSettings') }}</p>
         <button
           v-for="panel in panels.filter((item) => item.group === 'app')"
           :key="panel.id"
@@ -101,39 +109,45 @@ const statusLabel = computed(() => {
         <div>
           <h1 :id="`settings-${activePanel}`">{{ activePanelLabel }}</h1>
         </div>
-        <button type="button" class="settings-close-button" title="Close settings" aria-label="Close settings" @click="$emit('close')">
+        <button
+          type="button"
+          class="settings-close-button"
+          :title="t('settings.close')"
+          :aria-label="t('settings.close')"
+          @click="$emit('close')"
+        >
           <X :size="20" aria-hidden="true" />
         </button>
       </header>
 
       <div v-if="activePanel === 'account'" class="settings-section-grid">
         <section class="settings-card">
-          <h2>Account</h2>
+          <h2>{{ t('settings.account') }}</h2>
           <dl>
             <div>
-              <dt>Username</dt>
-              <dd>{{ currentUser?.username ?? 'Demo User' }}</dd>
+              <dt>{{ t('settings.username') }}</dt>
+              <dd>{{ currentUser?.username ?? t('common.demoUser') }}</dd>
             </div>
             <div>
-              <dt>User ID</dt>
+              <dt>{{ t('settings.userId') }}</dt>
               <dd>{{ currentUser?.id ?? 'local-demo' }}</dd>
             </div>
             <div>
-              <dt>Status</dt>
+              <dt>{{ t('settings.status') }}</dt>
               <dd>{{ statusLabel }}</dd>
             </div>
           </dl>
         </section>
         <section class="settings-card">
-          <h2>Session</h2>
+          <h2>{{ t('settings.session') }}</h2>
           <dl>
             <div>
-              <dt>Mode</dt>
-              <dd>Local demo</dd>
+              <dt>{{ t('settings.mode') }}</dt>
+              <dd>{{ t('common.status.localDemo') }}</dd>
             </div>
             <div>
-              <dt>State</dt>
-              <dd>Saved session</dd>
+              <dt>{{ t('settings.state') }}</dt>
+              <dd>{{ t('common.status.savedSession') }}</dd>
             </div>
           </dl>
         </section>
@@ -145,7 +159,7 @@ const statusLabel = computed(() => {
             {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
           </span>
           <div>
-            <h2>{{ currentUser?.username ?? 'Demo User' }}</h2>
+            <h2>{{ currentUser?.username ?? t('common.demoUser') }}</h2>
             <p>{{ statusLabel }}</p>
           </div>
         </section>
@@ -153,22 +167,22 @@ const statusLabel = computed(() => {
 
       <div v-else-if="activePanel === 'privacy'" class="settings-section-grid">
         <section class="settings-card">
-          <h2>Direct Message Safety</h2>
+          <h2>{{ t('settings.dmSafety') }}</h2>
           <label class="settings-toggle">
-            <span>Filter message requests from unknown demo users</span>
+            <span>{{ t('settings.dmSafetyFilter') }}</span>
             <input v-model="dmSafety" type="checkbox" />
           </label>
         </section>
         <section class="settings-card">
-          <h2>Server Privacy</h2>
+          <h2>{{ t('settings.serverPrivacy') }}</h2>
           <dl>
             <div>
-              <dt>Invite access</dt>
-              <dd>Protected</dd>
+              <dt>{{ t('settings.inviteAccess') }}</dt>
+              <dd>{{ t('common.status.protected') }}</dd>
             </div>
             <div>
-              <dt>Member data</dt>
-              <dd>Scoped</dd>
+              <dt>{{ t('settings.memberData') }}</dt>
+              <dd>{{ t('common.status.scoped') }}</dd>
             </div>
           </dl>
         </section>
@@ -176,44 +190,44 @@ const statusLabel = computed(() => {
 
       <div v-else-if="activePanel === 'voice'" class="settings-section-grid">
         <section class="settings-card">
-          <h2>Voice State</h2>
+          <h2>{{ t('settings.voice') }}</h2>
           <dl>
             <div>
-              <dt>Connection</dt>
-              <dd>{{ voiceConnected ? 'Connected' : 'Disconnected' }}</dd>
+              <dt>{{ t('settings.connection') }}</dt>
+              <dd>{{ voiceConnected ? t('common.status.connected') : t('common.status.disconnected') }}</dd>
             </div>
             <div>
-              <dt>Microphone</dt>
-              <dd>{{ muted ? 'Muted' : 'Ready' }}</dd>
+              <dt>{{ t('settings.microphone') }}</dt>
+              <dd>{{ muted ? t('common.status.muted') : t('common.status.ready') }}</dd>
             </div>
             <div>
-              <dt>Headphones</dt>
-              <dd>{{ deafened ? 'Deafened' : 'Listening' }}</dd>
+              <dt>{{ t('settings.headphones') }}</dt>
+              <dd>{{ deafened ? t('common.status.deafened') : t('common.status.listening') }}</dd>
             </div>
             <div>
-              <dt>ICE</dt>
-              <dd>{{ turnConfigured ? 'TURN ready' : 'STUN only' }}</dd>
+              <dt>{{ t('settings.ice') }}</dt>
+              <dd>{{ turnConfigured ? t('voice.turnReady') : t('voice.stunOnly') }}</dd>
             </div>
           </dl>
         </section>
         <section class="settings-card">
-          <h2>Input Level</h2>
+          <h2>{{ t('settings.inputLevel') }}</h2>
           <div class="settings-meter-row">
             <Mic :size="18" aria-hidden="true" />
-            <meter min="0" max="100" :value="inputLevel" aria-label="Microphone input level" />
+            <meter min="0" max="100" :value="inputLevel" :aria-label="t('voice.aria.inputLevel')" />
           </div>
         </section>
       </div>
 
       <div v-else-if="activePanel === 'appearance'" class="settings-section-grid">
         <section class="settings-card">
-          <h2>Display</h2>
+          <h2>{{ t('settings.appearance') }}</h2>
           <label class="settings-toggle">
-            <span>Compact channel and message spacing</span>
+            <span>{{ t('settings.compactSpacing') }}</span>
             <input v-model="compactMode" type="checkbox" />
           </label>
           <label class="settings-toggle">
-            <span>Reduce motion for local transitions</span>
+            <span>{{ t('settings.reduceMotion') }}</span>
             <input v-model="reduceMotion" type="checkbox" />
           </label>
         </section>
@@ -221,19 +235,48 @@ const statusLabel = computed(() => {
 
       <div v-else-if="activePanel === 'keybinds'" class="settings-section-grid">
         <section class="settings-card">
-          <h2>Keyboard Shortcuts</h2>
+          <h2>{{ t('settings.keybinds') }}</h2>
           <div class="keybind-row"><kbd>Ctrl</kbd><kbd>K</kbd><span>Quick switcher placeholder</span></div>
           <div class="keybind-row"><kbd>Esc</kbd><span>Close overlays</span></div>
           <div class="keybind-row"><kbd>Enter</kbd><span>Send focused composer message</span></div>
         </section>
       </div>
 
+      <div v-else-if="activePanel === 'language'" class="settings-section-grid">
+        <section class="settings-card">
+          <h2>{{ t('settings.language') }}</h2>
+          <p>{{ t('settings.languageDescription') }}</p>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.language')">
+            <label>
+              <input
+                type="radio"
+                name="app-language"
+                value="ko"
+                :checked="language === 'ko'"
+                @change="setLanguage('ko')"
+              />
+              <span>{{ t('settings.languageKorean') }}</span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="app-language"
+                value="en"
+                :checked="language === 'en'"
+                @change="setLanguage('en')"
+              />
+              <span>{{ t('settings.languageEnglish') }}</span>
+            </label>
+          </div>
+        </section>
+      </div>
+
       <div v-else class="settings-section-grid">
         <section class="settings-card logout-card">
           <BellOff :size="28" aria-hidden="true" />
-          <h2>Log out of this demo session?</h2>
-          <p>This clears local session state and returns to the login screen.</p>
-          <button type="button" @click="$emit('logout')">Log Out</button>
+          <h2>{{ t('settings.logoutTitle') }}</h2>
+          <p>{{ t('settings.logoutDescription') }}</p>
+          <button type="button" @click="$emit('logout')">{{ t('settings.logoutButton') }}</button>
         </section>
       </div>
     </article>

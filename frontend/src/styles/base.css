@@ -1276,6 +1276,30 @@ select:focus-visible {
   accent-color: #5eead4;
 }
 
+.settings-radio-list {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-radio-list label {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  color: #d7dee8;
+  background: rgb(0 0 0 / 14%);
+  padding: 0 12px;
+}
+
+.settings-radio-list input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: #5eead4;
+}
+
 .settings-meter-row {
   display: flex;
   align-items: center;

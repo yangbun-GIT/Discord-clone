@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.2 sidebar text overlap and channel creation UI.
+- Status: completed through Stage 8.3 Korean/English i18n foundation.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -276,3 +276,7 @@
 - Completed Stage 8.2: `frontend/src/components/ChannelSidebar.vue` renders channel
   creation as stable stacked panels, and sidebar CSS keeps category labels, generated
   channel rows, row actions, and voice members within the fixed sidebar width.
+- Completed Stage 8.3: `frontend/src/i18n/index.ts` and
+  `frontend/src/stores/preferences.ts` provide Korean/English UI language switching
+  with localStorage persistence; key app shell, sidebar, friends, chat, voice, and
+  settings copy is wired to the i18n helper.

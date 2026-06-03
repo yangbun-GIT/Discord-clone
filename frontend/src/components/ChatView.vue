@@ -14,6 +14,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 
+import { useI18n } from '../i18n'
 import type { Channel, Message, User } from '../types'
 
 const props = defineProps<{
@@ -28,6 +29,7 @@ const editDraft = ref('')
 const editingMessageId = ref<number | null>(null)
 const replyTargetId = ref<number | null>(null)
 const optionsMessageId = ref<number | null>(null)
+const { t } = useI18n()
 
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
@@ -96,7 +98,7 @@ function submitEdit(message: Message) {
 </script>
 
 <template>
-  <section class="chat-view" aria-label="Messages">
+  <section class="chat-view" :aria-label="t('chat.aria.messages')">
     <div class="message-list">
       <article v-for="message in messages" :key="message.id" class="message-row">
         <div class="avatar" aria-hidden="true">
@@ -108,13 +110,13 @@ function submitEdit(message: Message) {
             <span>#{{ message.id }}</span>
             <div
               class="message-actions"
-              aria-label="Message actions"
+              :aria-label="t('chat.aria.messageActions')"
             >
               <button
                 class="message-icon-button"
                 type="button"
-                title="Reply"
-                aria-label="Reply"
+                :title="t('chat.reply')"
+                :aria-label="t('chat.reply')"
                 @click="startReply(message)"
               >
                 <Reply :size="14" aria-hidden="true" />
@@ -123,8 +125,8 @@ function submitEdit(message: Message) {
                 v-if="canEditMessage(message)"
                 class="message-icon-button"
                 type="button"
-                title="Edit message"
-                aria-label="Edit message"
+                :title="t('chat.editMessage')"
+                :aria-label="t('chat.editMessage')"
                 @click="startEdit(message)"
               >
                 <Pencil :size="14" aria-hidden="true" />
@@ -133,8 +135,8 @@ function submitEdit(message: Message) {
                 v-if="canDeleteMessage(message)"
                 class="message-icon-button danger"
                 type="button"
-                title="Delete message"
-                aria-label="Delete message"
+                :title="t('chat.deleteMessage')"
+                :aria-label="t('chat.deleteMessage')"
                 @click="deleteMessage(message)"
               >
                 <Trash2 :size="14" aria-hidden="true" />
@@ -142,8 +144,8 @@ function submitEdit(message: Message) {
               <button
                 class="message-icon-button"
                 type="button"
-                title="More message actions"
-                aria-label="More message actions"
+                :title="t('chat.moreActions')"
+                :aria-label="t('chat.moreActions')"
                 :aria-expanded="optionsMessageId === message.id"
                 @click="toggleOptions(message)"
               >
@@ -152,11 +154,11 @@ function submitEdit(message: Message) {
               <div v-if="optionsMessageId === message.id" class="message-options-menu" role="menu">
                 <button type="button" role="menuitem" @click="startReply(message)">
                   <Reply :size="14" aria-hidden="true" />
-                  <span>Reply</span>
+                  <span>{{ t('chat.reply') }}</span>
                 </button>
                 <button v-if="canEditMessage(message)" type="button" role="menuitem" @click="startEdit(message)">
                   <Pencil :size="14" aria-hidden="true" />
-                  <span>Edit</span>
+                  <span>{{ t('chat.edit') }}</span>
                 </button>
                 <button
                   v-if="canDeleteMessage(message)"
@@ -166,13 +168,13 @@ function submitEdit(message: Message) {
                   @click="deleteMessage(message)"
                 >
                   <Trash2 :size="14" aria-hidden="true" />
-                  <span>Delete</span>
+                  <span>{{ t('chat.delete') }}</span>
                 </button>
               </div>
             </div>
           </div>
-          <div v-if="replyTargetId === message.id" class="reply-preview" aria-label="Reply target">
-            Replying to {{ message.author_name }}
+          <div v-if="replyTargetId === message.id" class="reply-preview" :aria-label="t('chat.aria.replyTarget')">
+            {{ t('chat.replyingTo', { author: message.author_name }) }}
           </div>
           <form
             v-if="editingMessageId === message.id"
@@ -181,15 +183,15 @@ function submitEdit(message: Message) {
           >
             <input
               v-model="editDraft"
-              aria-label="Edit message content"
+              :aria-label="t('chat.aria.editContent')"
               maxlength="2000"
               autofocus
               @keydown.esc.prevent="cancelEdit"
             />
-            <button type="submit" title="Save message" :disabled="!editDraft.trim()">
+            <button type="submit" :title="t('chat.saveMessage')" :disabled="!editDraft.trim()">
               <Check :size="15" aria-hidden="true" />
             </button>
-            <button type="button" title="Cancel edit" @click="cancelEdit">
+            <button type="button" :title="t('chat.cancelEdit')" @click="cancelEdit">
               <X :size="15" aria-hidden="true" />
             </button>
           </form>
@@ -198,37 +200,37 @@ function submitEdit(message: Message) {
       </article>
     </div>
 
-    <section class="composer-shell" aria-label="Message composer">
+    <section class="composer-shell" :aria-label="t('chat.aria.composer')">
       <div v-if="replyTarget" class="composer-reply-bar">
-        <span>Replying to {{ replyTarget.author_name }}</span>
-        <button type="button" title="Cancel reply" aria-label="Cancel reply" @click="cancelReply">
+        <span>{{ t('chat.replyingTo', { author: replyTarget.author_name }) }}</span>
+        <button type="button" :title="t('chat.cancelReply')" :aria-label="t('chat.cancelReply')" @click="cancelReply">
           <X :size="15" aria-hidden="true" />
         </button>
       </div>
       <form class="composer" @submit.prevent="submitMessage">
-        <div class="composer-actions" aria-label="Composer actions">
-          <button type="button" title="Upload file" aria-label="Upload file">
+        <div class="composer-actions" :aria-label="t('chat.aria.composer')">
+          <button type="button" :title="t('chat.uploadFile')" :aria-label="t('chat.uploadFile')">
             <PlusCircle :size="18" aria-hidden="true" />
           </button>
-          <button type="button" title="Send gift" aria-label="Send gift">
+          <button type="button" :title="t('chat.sendGift')" :aria-label="t('chat.sendGift')">
             <Gift :size="18" aria-hidden="true" />
           </button>
         </div>
         <input
           v-model="draft"
-          :aria-label="`Message ${channel?.name ?? 'channel'}`"
-          :placeholder="channel ? `Message #${channel.name}` : 'Loading channel'"
+          :aria-label="t('chat.messageChannel', { channel: channel?.name ?? 'channel' })"
+          :placeholder="channel ? t('chat.messageChannel', { channel: `#${channel.name}` }) : t('chat.loadingChannel')"
           maxlength="2000"
         />
-        <div class="composer-actions" aria-label="Expression actions">
-          <button type="button" title="Apps and actions" aria-label="Apps and actions">
+        <div class="composer-actions" :aria-label="t('chat.aria.expressionActions')">
+          <button type="button" :title="t('chat.apps')" :aria-label="t('chat.apps')">
             <ImagePlus :size="18" aria-hidden="true" />
           </button>
-          <button type="button" title="Emoji" aria-label="Emoji">
+          <button type="button" :title="t('chat.emoji')" :aria-label="t('chat.emoji')">
             <Laugh :size="18" aria-hidden="true" />
           </button>
         </div>
-        <button class="composer-send-button" type="submit" title="Send message" :disabled="!draft.trim()">
+        <button class="composer-send-button" type="submit" :title="t('chat.sendMessage')" :disabled="!draft.trim()">
           <Send :size="18" aria-hidden="true" />
         </button>
       </form>
