@@ -20,8 +20,9 @@ Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-re
 scope, focused PostgreSQL repository coverage for current guild/message mutations,
 Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stage 6.2
 Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
-state are complete and pushed to GitHub. Store UI work is now deferred; Stage 7
-Discord app parity is the current primary implementation direction.
+state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
+app destination state and Stage 7.2 `@me` Friends/DM shell are complete and pushed to
+GitHub.
 
 The app boots in two local modes:
 
@@ -303,9 +304,12 @@ The app boots in two local modes:
   - Creates Vue app, Pinia, and Vue Router.
 - `frontend/src/App.vue`
   - Main Discord-like workspace screen.
-  - Composes server rail, channel sidebar, chat view, member list, and voice panel.
+  - Composes server rail, private-channel sidebar, Friends home, channel sidebar,
+    chat view, member list, and voice panel.
   - Restores saved sessions, shows auth UI when logged out, loads guild data after
     authentication, and connects the gateway.
+  - Opens the `@me` Friends destination after login, preserves current guild/channel
+    state, and switches back to the server workspace when a server is selected.
 - `frontend/src/components/AuthPanel.vue`
   - Login/register form plus an explicit Demo user button for local development.
   - Emits auth actions to `App.vue`; it does not own token storage.
@@ -341,6 +345,11 @@ The app boots in two local modes:
   - Applies gateway `GUILD_UPDATE` dispatches by replacing the local guild snapshot
     and preserving a valid active channel.
   - Uses `document.startViewTransition()` when available for channel switching.
+- `frontend/src/stores/navigation.ts`
+  - Pinia app destination store for the Discord-like shell.
+  - Tracks `friends`, `dm`, `server_channel`, `voice_channel`, and `settings`
+    destinations plus active demo DM ID.
+  - Keeps `@me` navigation independent from guild/channel state.
 - `frontend/src/stores/store.ts`
   - Pinia Store state module for Stage 6.
   - Uses `shallowRef` for catalog, active item detail, and future inventory payloads.
@@ -362,7 +371,14 @@ The app boots in two local modes:
     stream tracking, screen-share renegotiation, WebRTC `getStats()` quality
     sampling, and cleanup.
 - `frontend/src/components/ServerRail.vue`
-  - Server icon rail and create-server icon button placeholder.
+  - Discord-like rail with `@me` Direct Messages button, server icons, separator, and
+    create-server icon button.
+- `frontend/src/components/PrivateChannelSidebar.vue`
+  - `@me` sidebar with search/start conversation button, Friends/Nitro/Shop/Quests
+    entries, demo DM list, unread badges, and create-DM action placeholder.
+- `frontend/src/components/FriendsHome.vue`
+  - Friends home surface with Online/All/Pending/Blocked/Add Friend tabs, search, demo
+    friend rows, message actions, and add-friend placeholder form.
 - `frontend/src/components/ChannelSidebar.vue`
   - Text and voice channel lists.
   - Provides an inline text-channel creation form.
@@ -442,6 +458,15 @@ The app boots in two local modes:
     bearer token and keeps Store filters/sort state independent from guild state.
   - `App.vue` calls `store.resetStoreState()` during logout so Store state cannot
     leak between sessions.
+- Discord app destination flow:
+  - `openWorkspace()` loads guilds and voice config, then opens the `friends`
+    destination before connecting the gateway.
+  - `ServerRail.vue` emits `home` for the `@me` button and `select` for guild icons.
+  - `App.vue` routes `friends` and `dm` destinations to
+    `PrivateChannelSidebar.vue`; `friends` renders `FriendsHome.vue`, while `dm`
+    currently renders a Stage 7.3 placeholder.
+  - Selecting a server switches the destination to `server_channel` and preserves the
+    existing guild/channel chat behavior.
 - Guild creation flow:
   - `ServerRail.vue` and the empty workspace call `App.vue`'s create-server handler.
   - `App.vue` opens a focused server-name dialog.
@@ -629,9 +654,9 @@ npm run docker:down
 
 Next implementation stage:
 
-- Start Stage 7.1 from `docs/discord-app-clone-implementation-plan.md` by adding an
-  app destination model for `friends`, `dm`, `server_channel`, `voice_channel`, and
-  `settings` while preserving current guild/channel behavior.
+- Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
+  7.3 Direct Messages: backend DM schemas/routes/service, frontend DM state, and DM
+  message composer integration.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -645,6 +670,11 @@ Discord app inspection observation:
   timeline/composer, voice channel rows, bottom user panel, and settings entry.
 - Do not copy real Discord private names, messages, server content, or assets into
   repository fixtures or documentation.
+- Stage 7.1 and 7.2 completed the first app-parity slice:
+  - App destination state is in `frontend/src/stores/navigation.ts`.
+  - `@me` private sidebar is in `frontend/src/components/PrivateChannelSidebar.vue`.
+  - Friends home is in `frontend/src/components/FriendsHome.vue`.
+  - Safe demo friend/DM data is local to `frontend/src/App.vue`.
 
 Store planning observation:
 

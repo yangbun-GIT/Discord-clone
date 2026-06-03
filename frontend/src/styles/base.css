@@ -223,6 +223,22 @@ select:focus-visible {
   background: #1f2933;
 }
 
+.server-button.home {
+  color: #dbeafe;
+  background: #5865f2;
+}
+
+.server-button.home.active,
+.server-button.home:hover {
+  background: #4752c4;
+}
+
+.server-separator {
+  width: 32px;
+  height: 1px;
+  background: rgb(255 255 255 / 12%);
+}
+
 .channel-sidebar {
   display: flex;
   flex-direction: column;
@@ -232,6 +248,179 @@ select:focus-visible {
   background: rgb(30 32 38 / 78%);
   border-right: 1px solid rgb(255 255 255 / 8%);
   backdrop-filter: blur(18px);
+}
+
+.private-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 12px 10px;
+  background: rgb(30 32 38 / 78%);
+  border-right: 1px solid rgb(255 255 255 / 8%);
+  backdrop-filter: blur(18px);
+}
+
+.dm-search-button,
+.private-nav-button,
+.dm-row {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.dm-search-button {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  color: #9ca3af;
+  background: rgb(255 255 255 / 7%);
+}
+
+.dm-search-button span,
+.private-nav-button span,
+.dm-copy strong,
+.dm-copy small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.private-nav {
+  display: grid;
+  gap: 4px;
+}
+
+.private-nav-button {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.private-nav-button:hover,
+.private-nav-button.active,
+.dm-row:hover,
+.dm-row.active {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.private-nav-button.muted {
+  color: #9ca3af;
+}
+
+.dm-list-section {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.dm-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.dm-list-heading p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.dm-list-heading button {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.dm-list-heading button:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.dm-row {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0 8px;
+  text-align: left;
+}
+
+.dm-avatar,
+.friend-avatar,
+.dm-placeholder-avatar {
+  display: grid;
+  place-items: center;
+  color: #111827;
+  background: #94a3b8;
+  font-weight: 900;
+}
+
+.dm-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 13px;
+}
+
+.dm-avatar.online,
+.friend-avatar.online {
+  background: #86efac;
+}
+
+.dm-avatar.idle,
+.friend-avatar.idle {
+  background: #fde68a;
+}
+
+.dm-avatar.dnd,
+.friend-avatar.dnd {
+  background: #fca5a5;
+}
+
+.dm-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.dm-copy small {
+  color: #9ca3af;
+  font-size: 0.74rem;
+}
+
+.dm-badge {
+  min-width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #ef4444;
+  padding: 0 6px;
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 .guild-heading {
@@ -446,6 +635,197 @@ select:focus-visible {
   background: #5eead4;
   padding: 0 14px;
   font-weight: 800;
+}
+
+.friends-home {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.friends-header {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.friends-header h1 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.friends-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.friends-tabs button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+  padding: 0 11px;
+  font-weight: 800;
+}
+
+.friends-tabs button:hover,
+.friends-tabs button.active {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.friends-tabs button:last-child.active,
+.friends-tabs button:last-child:hover {
+  color: #111827;
+  background: #86efac;
+}
+
+.friend-search {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 18px;
+  border-radius: 8px;
+  color: #9ca3af;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 12px;
+}
+
+.friend-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #f8fafc;
+  background: transparent;
+}
+
+.friend-list {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 18px 20px;
+}
+
+.friend-list h2 {
+  margin: 0 0 8px;
+  color: #9ca3af;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.friend-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 36px 36px;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  border-top: 1px solid rgb(255 255 255 / 7%);
+}
+
+.friend-avatar,
+.dm-placeholder-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 15px;
+}
+
+.friend-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.friend-copy strong,
+.friend-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-copy small,
+.friends-empty,
+.add-friend-panel p,
+.dm-placeholder p {
+  color: #9ca3af;
+}
+
+.friend-row button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: rgb(255 255 255 / 8%);
+}
+
+.friend-row button:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 14%);
+}
+
+.add-friend-panel,
+.dm-placeholder {
+  min-height: 0;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 12px;
+  padding: 24px;
+}
+
+.add-friend-panel h2,
+.dm-placeholder h2 {
+  margin: 0;
+}
+
+.add-friend-panel p,
+.dm-placeholder p {
+  margin: 0;
+}
+
+.add-friend-form {
+  width: min(100%, 520px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 10px;
+}
+
+.add-friend-form input {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 12px;
+}
+
+.add-friend-form button,
+.dm-placeholder button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  color: #111827;
+  background: #86efac;
+  padding: 0 12px;
+  font-weight: 800;
+}
+
+.add-friend-form button {
+  width: 44px;
+}
+
+.add-friend-form button:disabled {
+  color: #94a3b8;
+  background: rgb(255 255 255 / 9%);
 }
 
 .modal-layer {

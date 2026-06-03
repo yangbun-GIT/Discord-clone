@@ -164,7 +164,8 @@
 
 ## Stage 7: Discord App Parity
 
-- Status: current primary implementation direction.
+- Status: implementation started; app destination model plus `@me` private sidebar and
+  Friends home are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -174,3 +175,10 @@
   realtime DM expansion, persistence, responsive QA, and documentation.
 - Privacy note: real Discord personal names, message contents, and private server
   content observed during browser inspection must not be copied into repository data.
+- Completed first slice:
+  - `frontend/src/stores/navigation.ts` tracks app destinations.
+  - `frontend/src/components/PrivateChannelSidebar.vue` renders the `@me` sidebar.
+  - `frontend/src/components/FriendsHome.vue` renders the Friends home tabs and demo
+    friend rows.
+  - `frontend/src/App.vue` opens Friends by default after login and preserves current
+    server/channel behavior when selecting a server.

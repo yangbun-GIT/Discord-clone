@@ -6,7 +6,9 @@ import { apiGet } from './services/api'
 import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
 import ChatView from './components/ChatView.vue'
+import FriendsHome from './components/FriendsHome.vue'
 import MemberList from './components/MemberList.vue'
+import PrivateChannelSidebar from './components/PrivateChannelSidebar.vue'
 import ServerRail from './components/ServerRail.vue'
 import VoiceAudioSink from './components/VoiceAudioSink.vue'
 import VoicePanel from './components/VoicePanel.vue'
@@ -14,12 +16,14 @@ import VoiceVideoSink from './components/VoiceVideoSink.vue'
 import { useGateway } from './composables/useGateway'
 import { useVoiceRtc } from './composables/useVoiceRtc'
 import { useGuildStore } from './stores/guilds'
+import { useNavigationStore } from './stores/navigation'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
-import type { VoiceConfig, VoiceIceServer } from './types'
+import type { DirectMessage, Friend, VoiceConfig, VoiceIceServer } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
+const navigation = useNavigationStore()
 const store = useStoreStore()
 const {
   connect: connectGateway,
@@ -31,6 +35,82 @@ const {
 } = useGateway()
 const voiceRtc = useVoiceRtc()
 
+const demoFriends: Friend[] = [
+  {
+    id: 701,
+    username: 'Project Lead',
+    handle: 'project.lead',
+    status: 'online',
+    activity: 'Reviewing the sprint board',
+    relationship: 'friend',
+  },
+  {
+    id: 702,
+    username: 'Frontend Pair',
+    handle: 'frontend.pair',
+    status: 'online',
+    activity: 'Building components',
+    relationship: 'friend',
+  },
+  {
+    id: 703,
+    username: 'Backend Pair',
+    handle: 'backend.pair',
+    status: 'idle',
+    activity: 'Reading API logs',
+    relationship: 'friend',
+  },
+  {
+    id: 704,
+    username: 'QA Reviewer',
+    handle: 'qa.reviewer',
+    status: 'offline',
+    activity: null,
+    relationship: 'friend',
+  },
+  {
+    id: 705,
+    username: 'Design Critic',
+    handle: 'design.critic',
+    status: 'offline',
+    activity: null,
+    relationship: 'pending_incoming',
+  },
+]
+
+const demoDms: DirectMessage[] = [
+  {
+    id: 801,
+    recipient_ids: [701],
+    display_name: 'Project Lead',
+    status: 'online',
+    activity: 'Reviewing the sprint board',
+    unread_count: 2,
+    is_group: false,
+    member_count: 2,
+  },
+  {
+    id: 802,
+    recipient_ids: [702],
+    display_name: 'Frontend Pair',
+    status: 'online',
+    activity: 'Building components',
+    unread_count: 0,
+    is_group: false,
+    member_count: 2,
+  },
+  {
+    id: 803,
+    recipient_ids: [701, 702, 703],
+    display_name: 'Clone Planning',
+    status: 'idle',
+    activity: null,
+    unread_count: 1,
+    is_group: true,
+    member_count: 4,
+  },
+]
+
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
 const activeMessages = computed(() => guilds.activeMessages)
@@ -38,9 +118,17 @@ const remoteScreenStreams = computed(() =>
   voiceRtc.remoteStreams.value.filter((remote) => remote.sharingScreen),
 )
 const workspaceTitle = computed(() => {
+  if (navigation.destination === 'friends') return 'Friends'
+  if (navigation.destination === 'dm') {
+    return demoDms.find((dm) => dm.id === navigation.activeDmId)?.display_name ?? 'Direct Message'
+  }
   if (!activeGuild.value) return 'No servers'
   return activeChannel.value?.name ?? 'loading'
 })
+const isPrivateDestination = computed(() =>
+  navigation.destination === 'friends' || navigation.destination === 'dm',
+)
+const selectedDm = computed(() => demoDms.find((dm) => dm.id === navigation.activeDmId) ?? null)
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
@@ -60,6 +148,7 @@ async function openWorkspace() {
   if (!session.token) return
   await guilds.loadGuilds(session.token)
   await loadVoiceConfig()
+  navigation.openFriends()
   connectGateway(session.token, { onDispatch: guilds.handleGatewayDispatch })
 }
 
@@ -108,8 +197,22 @@ function handleLogout() {
   authError.value = null
   workspaceError.value = null
   session.logout()
+  navigation.resetNavigation()
   guilds.resetGuilds()
   store.resetStoreState()
+}
+
+function handleSelectGuild(guildId: number) {
+  navigation.openServerChannel()
+  guilds.selectGuild(guildId)
+}
+
+function handleOpenFriends() {
+  navigation.openFriends()
+}
+
+function handleOpenDm(dmId: number) {
+  navigation.openDm(dmId)
 }
 
 function openCreateGuild() {
@@ -327,12 +430,24 @@ async function handleCreateInvite() {
     <ServerRail
       :guilds="guilds.guilds"
       :active-guild-id="guilds.activeGuildId"
-      @select="guilds.selectGuild"
+      :home-active="isPrivateDestination"
+      @home="handleOpenFriends"
+      @select="handleSelectGuild"
       @create="openCreateGuild"
     />
 
+    <PrivateChannelSidebar
+      v-if="isPrivateDestination"
+      :dms="demoDms"
+      :active-dm-id="navigation.activeDmId"
+      :active-destination="navigation.destination"
+      @open-friends="handleOpenFriends"
+      @open-dm="handleOpenDm"
+      @create-dm="handleOpenFriends"
+    />
+
     <ChannelSidebar
-      v-if="activeGuild"
+      v-else-if="activeGuild"
       :guild="activeGuild"
       :active-channel-id="guilds.activeChannelId"
       @select="guilds.selectChannel"
@@ -342,7 +457,7 @@ async function handleCreateInvite() {
     <section class="workspace">
       <header class="topbar">
         <div class="channel-title">
-          <Radio v-if="activeChannel?.type === 1" :size="19" aria-hidden="true" />
+          <Radio v-if="!isPrivateDestination && activeChannel?.type === 1" :size="19" aria-hidden="true" />
           <Hash v-else :size="19" aria-hidden="true" />
           <span>{{ workspaceTitle }}</span>
         </div>
@@ -357,6 +472,7 @@ async function handleCreateInvite() {
             type="button"
             aria-label="Create invite"
             :disabled="!activeGuild || isInviteWorking"
+            v-if="!isPrivateDestination"
             @click="handleCreateInvite"
           >
             <Link :size="17" aria-hidden="true" />
@@ -365,6 +481,7 @@ async function handleCreateInvite() {
             class="topbar-icon-button"
             type="button"
             aria-label="Join server"
+            v-if="!isPrivateDestination"
             @click="openJoinGuild"
           >
             <LogIn :size="17" aria-hidden="true" />
@@ -380,6 +497,15 @@ async function handleCreateInvite() {
       </div>
 
       <div v-if="guilds.isLoading" class="workspace-loading" role="status">Loading servers</div>
+
+      <FriendsHome v-else-if="navigation.destination === 'friends'" :friends="demoFriends" />
+
+      <section v-else-if="navigation.destination === 'dm'" class="dm-placeholder" aria-label="Direct message">
+        <div class="dm-placeholder-avatar">{{ selectedDm?.display_name.slice(0, 1).toUpperCase() ?? 'D' }}</div>
+        <h2>{{ selectedDm?.display_name ?? 'Direct Message' }}</h2>
+        <p>Direct message persistence is planned in Stage 7.3.</p>
+        <button type="button" @click="handleOpenFriends">Back to Friends</button>
+      </section>
 
       <div v-else-if="activeGuild" class="content-grid">
         <ChatView

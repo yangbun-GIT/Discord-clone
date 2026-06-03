@@ -4,6 +4,28 @@ export type User = {
   status: number
 }
 
+export type UserPresenceStatus = 'online' | 'idle' | 'dnd' | 'offline'
+
+export type Friend = {
+  id: number
+  username: string
+  handle: string
+  status: UserPresenceStatus
+  activity: string | null
+  relationship: 'friend' | 'pending_incoming' | 'pending_outgoing' | 'blocked'
+}
+
+export type DirectMessage = {
+  id: number
+  recipient_ids: number[]
+  display_name: string
+  status: UserPresenceStatus
+  activity: string | null
+  unread_count: number
+  is_group: boolean
+  member_count: number
+}
+
 export type Channel = {
   id: number
   guild_id: number

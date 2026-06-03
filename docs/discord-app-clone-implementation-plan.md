@@ -35,6 +35,8 @@ The first screen after login should behave like Discord's app shell:
 
 ## Stage 7.1: App Destination Model
 
+Status: completed.
+
 Goal: let the frontend represent Discord-like destinations before adding more views.
 
 Tasks:
@@ -51,7 +53,7 @@ Tasks:
 
 Deliverables:
 
-- App destination state in `frontend/src/App.vue` or a small navigation store.
+- App destination state in `frontend/src/stores/navigation.ts`.
 - Updated `PROJECT_CONTEXT.md`.
 
 Verification:
@@ -60,6 +62,8 @@ Verification:
 - Browser smoke test for switching between `@me` and a server channel.
 
 ## Stage 7.2: Private Channel Sidebar And Friends Home
+
+Status: completed.
 
 Goal: clone the `channels/@me` structure.
 
@@ -81,14 +85,15 @@ Tasks:
 
 Deliverables:
 
-- Private sidebar component.
-- Friends home component.
+- Private sidebar component: `frontend/src/components/PrivateChannelSidebar.vue`.
+- Friends home component: `frontend/src/components/FriendsHome.vue`.
 - Demo DM/friend data model.
 
 Verification:
 
 - Frontend lint/build.
-- Browser smoke test for tabs and DM selection.
+- Browser smoke test for `@me` Friends home, DM selection placeholder, server
+  switching, and returning to `@me`.
 
 ## Stage 7.3: Direct Messages
 
