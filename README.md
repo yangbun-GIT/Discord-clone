@@ -100,7 +100,7 @@ The backend voice metadata also reports whether TURN is configured, and the voic
 panel shows peer count, RTT, jitter, packet loss, and outbound bitrate while connected.
 
 Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
-in `docs/voice-qa.md`.
+in `docs/voice-qa.md`. The documentation index is maintained in `docs/README.md`.
 
 ## Verification
 

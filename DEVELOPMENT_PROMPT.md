@@ -41,7 +41,8 @@ Before starting any non-trivial task, read in this order:
 3. `PROJECT_CONTEXT.md`
 4. `docs/implementation-plan.md`
 5. `README.md`
-6. Any task-specific document, such as `docs/deployment.md` or `docs/voice-qa.md`
+6. `docs/README.md` for the document index
+7. Any task-specific document, such as `docs/deployment.md` or `docs/voice-qa.md`
 
 Treat `PROJECT_CONTEXT.md` as the implementation map. It should describe live file
 ownership, integration points, commands, known decisions, and next work.
@@ -130,6 +131,7 @@ Use this documentation ownership:
 - `AGENTS.md`: concise agent-facing project rules.
 - `PROJECT_CONTEXT.md`: current implementation map and integration notes.
 - `docs/implementation-plan.md`: staged roadmap and stage status.
+- `docs/README.md`: document index and task-based reading guide.
 - `docs/deployment.md`: deployment and runtime hardening.
 - `docs/voice-qa.md`: voice, screen sharing, TURN, and browser WebRTC QA.
 

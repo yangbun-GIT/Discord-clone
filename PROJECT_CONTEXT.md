@@ -11,6 +11,7 @@ editing code, then update it whenever a meaningful implementation change lands.
 3. `PROJECT_CONTEXT.md` for the current implementation map and integration points.
 4. `docs/implementation-plan.md` for the staged roadmap.
 5. `README.md` for setup and verification commands.
+6. `docs/README.md` for the document index and task-specific reading guide.
 
 ## Current Milestone
 
@@ -51,6 +52,10 @@ The app boots in two local modes:
   - TypeScript, Pinia, Vue Router, Oxlint, and lucide icons are configured here.
 - `docs/`
   - Long-lived project planning documents.
+- `docs/README.md`
+  - Documentation index and task-based reading guide.
+  - Lists startup reading order, task-specific docs, update rules, and documentation
+    verification commands.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
@@ -608,6 +613,8 @@ Completed Stage 2 bridge work:
   Uvicorn workers.
 - Added `DEVELOPMENT_PROMPT.md` as the project-specific development prompt and linked
   it from `AGENTS.md` plus the required reading order.
+- Added `docs/README.md` as the document index and aligned prompt, agent, project
+  context, and roadmap reading-order rules.
 
 After each stage or meaningful feature:
 

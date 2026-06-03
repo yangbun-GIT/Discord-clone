@@ -1,0 +1,55 @@
+# Documentation Index
+
+This index points future development work to the right project documents. Start with
+the project prompt and context files before changing code.
+
+## Required Startup Reading
+
+1. `DEVELOPMENT_PROMPT.md`
+   - Project-specific AI development prompt.
+   - Defines role, implementation policy, verification policy, documentation policy,
+     security policy, and response policy.
+2. `AGENTS.md`
+   - Concise repository rules for coding agents.
+   - Mirrors the key backend, frontend, context recovery, and Git rules.
+3. `PROJECT_CONTEXT.md`
+   - Current implementation map.
+   - File ownership, integration flows, commands, constraints, completed work, and
+     next work.
+4. `docs/implementation-plan.md`
+   - Stage roadmap and current stage status.
+5. `README.md`
+   - Local setup, Docker setup, environment notes, and verification commands.
+
+## Task-Specific Documents
+
+- `docs/deployment.md`
+  - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
+    WebRTC TURN guidance, health checks, and deployment verification.
+- `docs/voice-qa.md`
+  - Local two-browser voice smoke test, TURN/NAT test, deployment voice checklist,
+    and WebRTC quality signal interpretation.
+
+## Update Rules
+
+- Update `PROJECT_CONTEXT.md` whenever implementation maps, integrations, commands,
+  constraints, completed work, or next work change.
+- Update `docs/implementation-plan.md` when stage status or roadmap scope changes.
+- Update `docs/deployment.md` when runtime, deployment, environment, Redis, Docker,
+  HTTPS, WebSocket, or TURN assumptions change.
+- Update `docs/voice-qa.md` when voice, screen sharing, TURN, or WebRTC quality QA
+  steps change.
+- Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
+  changes.
+
+## Verification For Documentation Changes
+
+For documentation-only changes:
+
+```powershell
+git diff --check
+rg -n -i "api[_-]?key|jwt_secret\s*=|password\s*=|credential\s*=|secret\s*=|token\s*=" DEVELOPMENT_PROMPT.md AGENTS.md PROJECT_CONTEXT.md README.md docs
+```
+
+The secret-pattern search is a guardrail. It may need adjustment if future docs add
+safe placeholder examples that intentionally mention environment variable names.

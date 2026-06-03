@@ -12,7 +12,8 @@
 
 ## Documentation Maintenance
 
-- Future work must start by reading `PROJECT_CONTEXT.md`, this plan, and `AGENTS.md`.
+- Future work must start by reading `DEVELOPMENT_PROMPT.md`, `AGENTS.md`,
+  `PROJECT_CONTEXT.md`, this plan, `README.md`, and `docs/README.md`.
 - Meaningful implementation changes must update `PROJECT_CONTEXT.md`.
 - Stage progress changes must update this file.
 - Completed stages should be committed and pushed to `origin/main`.

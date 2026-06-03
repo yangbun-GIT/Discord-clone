@@ -8,11 +8,13 @@
 
 ## Context Recovery Rules
 
-- Before starting implementation, read `DEVELOPMENT_PROMPT.md`, `PROJECT_CONTEXT.md`,
-  and `docs/implementation-plan.md`.
+- Before starting implementation, read `DEVELOPMENT_PROMPT.md`, `AGENTS.md`,
+  `PROJECT_CONTEXT.md`, `docs/implementation-plan.md`, `README.md`, and
+  `docs/README.md`.
 - Treat `DEVELOPMENT_PROMPT.md` as the project-specific development prompt:
   operating role, verification policy, documentation policy, security policy, and
   collaboration policy.
+- Treat `docs/README.md` as the document index for task-specific docs.
 - Treat `PROJECT_CONTEXT.md` as the current implementation map: file ownership,
   integration points, commands, known decisions, and next work.
 - After meaningful code or policy changes, update `PROJECT_CONTEXT.md` and any
