@@ -5,10 +5,12 @@ editing code, then update it whenever a meaningful implementation change lands.
 
 ## Required Reading Order
 
-1. `AGENTS.md` for engineering rules and documentation maintenance rules.
-2. `PROJECT_CONTEXT.md` for the current implementation map and integration points.
-3. `docs/implementation-plan.md` for the staged roadmap.
-4. `README.md` for setup and verification commands.
+1. `DEVELOPMENT_PROMPT.md` for the project-specific operating prompt, verification
+   policy, documentation policy, security policy, and collaboration policy.
+2. `AGENTS.md` for concise agent-facing engineering rules.
+3. `PROJECT_CONTEXT.md` for the current implementation map and integration points.
+4. `docs/implementation-plan.md` for the staged roadmap.
+5. `README.md` for setup and verification commands.
 
 ## Current Milestone
 
@@ -26,6 +28,10 @@ The app boots in two local modes:
 
 ## Repository Layout
 
+- `DEVELOPMENT_PROMPT.md`
+  - Project-specific AI development prompt adapted from the adaptive prompt template.
+  - Defines role, startup order, implementation policy, verification policy,
+    documentation policy, security policy, and response policy.
 - `package.json`
   - Root script entrypoint.
   - Runs backend tests/lint through `.venv`.
@@ -514,6 +520,9 @@ npm run docker:down
 
 ## Known Decisions And Constraints
 
+- `DEVELOPMENT_PROMPT.md` is the highest-level local prompt document for future
+  AI-assisted development in this repository. Keep it focused on durable operating
+  policy, not one-off implementation details.
 - The SRS says Pydantic v3, but the current PyPI line is Pydantic v2. The backend
   pins Pydantic v2 and isolates schema code for a future upgrade.
 - In Docker Compose mode, text channels and messages persist across backend restarts
@@ -597,6 +606,8 @@ Completed Stage 2 bridge work:
   smoke testing, TURN/NAT testing, and HTTPS deployment verification.
 - Added deployment notes and switched backend runtime Docker image to Gunicorn with
   Uvicorn workers.
+- Added `DEVELOPMENT_PROMPT.md` as the project-specific development prompt and linked
+  it from `AGENTS.md` plus the required reading order.
 
 After each stage or meaningful feature:
 

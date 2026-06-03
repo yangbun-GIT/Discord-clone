@@ -8,12 +8,15 @@
 
 ## Context Recovery Rules
 
-- Before starting implementation, read `PROJECT_CONTEXT.md` and
-  `docs/implementation-plan.md`.
+- Before starting implementation, read `DEVELOPMENT_PROMPT.md`, `PROJECT_CONTEXT.md`,
+  and `docs/implementation-plan.md`.
+- Treat `DEVELOPMENT_PROMPT.md` as the project-specific development prompt:
+  operating role, verification policy, documentation policy, security policy, and
+  collaboration policy.
 - Treat `PROJECT_CONTEXT.md` as the current implementation map: file ownership,
   integration points, commands, known decisions, and next work.
-- After meaningful code changes, update `PROJECT_CONTEXT.md` and any relevant files
-  in `docs/` before committing.
+- After meaningful code or policy changes, update `PROJECT_CONTEXT.md` and any
+  relevant files in `docs/` before committing.
 - Keep documentation factual and concise. Prefer concrete file paths and live
   integration details over broad summaries.
 - Continue committing and pushing completed stages to `origin/main` unless the user
