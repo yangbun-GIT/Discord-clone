@@ -263,6 +263,9 @@ function voiceStateStatusLabel(state: VoiceState) {
           <small v-if="connectedVoiceChannelId === channel.id" class="channel-state-badge">
             {{ t('common.status.connected') }}
           </small>
+          <small v-else-if="channel.id === activeChannelId" class="channel-state-badge selected">
+            {{ t('voice.selected') }}
+          </small>
         </button>
         <div class="channel-row-actions" aria-label="Channel actions">
           <button

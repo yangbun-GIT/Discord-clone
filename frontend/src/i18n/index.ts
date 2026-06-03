@@ -252,9 +252,17 @@ const ko = {
   'voice.deafen': '소리 차단',
   'voice.disconnect': '음성 연결 끊기',
   'voice.gatewayRequired': '게이트웨이 필요',
+  'voice.inviteHint': '초대하거나 다른 참여자가 들어오면 여기에 표시됩니다.',
+  'voice.joinSelected': '음성 참여',
+  'voice.leaveSelected': '나가기',
+  'voice.localPreview': '참여 전 미리보기',
   'voice.mute': '마이크 끄기',
+  'voice.noRemoteParticipants': '아직 다른 참여자가 없습니다.',
   'voice.onlineCount': '{count}명 온라인',
   'voice.screenShare': '화면 공유',
+  'voice.screenLive': '화면 공유 중',
+  'voice.selected': '선택됨',
+  'voice.selectToPreview': '선택됨 / 참여 전',
   'voice.signaling': '신호 준비 | {ice}',
   'voice.speaking': '말하는 중',
   'voice.stopScreenShare': '화면 공유 중지',
@@ -263,6 +271,7 @@ const ko = {
   'voice.undeafen': '소리 차단 해제',
   'voice.unmute': '마이크 켜기',
   'voice.userSettings': '사용자 설정',
+  'voice.workspaceAria': '음성 채널 작업공간',
 } as const
 
 const en: Record<keyof typeof ko, string> = {
@@ -515,9 +524,17 @@ const en: Record<keyof typeof ko, string> = {
   'voice.deafen': 'Deafen',
   'voice.disconnect': 'Disconnect voice',
   'voice.gatewayRequired': 'Gateway required',
+  'voice.inviteHint': 'Invite someone or wait for another participant to appear here.',
+  'voice.joinSelected': 'Join Voice',
+  'voice.leaveSelected': 'Leave',
+  'voice.localPreview': 'Preview before joining',
   'voice.mute': 'Mute microphone',
+  'voice.noRemoteParticipants': 'No other participants yet.',
   'voice.onlineCount': '{count} online',
   'voice.screenShare': 'Share screen',
+  'voice.screenLive': 'Screen sharing',
+  'voice.selected': 'Selected',
+  'voice.selectToPreview': 'Selected / not joined',
   'voice.signaling': 'Signaling ready | {ice}',
   'voice.speaking': 'Speaking',
   'voice.stopScreenShare': 'Stop screen share',
@@ -526,6 +543,7 @@ const en: Record<keyof typeof ko, string> = {
   'voice.undeafen': 'Undeafen',
   'voice.unmute': 'Unmute microphone',
   'voice.userSettings': 'User settings',
+  'voice.workspaceAria': 'Voice channel workspace',
 }
 
 const dictionaries: Record<AppLanguage, Record<keyof typeof ko, string>> = {

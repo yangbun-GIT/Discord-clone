@@ -306,3 +306,8 @@
   Experience, and Session groups with account/privacy, voice/video, appearance,
   accessibility, keybind, language/time, and logout panels. Useful voice, language,
   and time controls are real local panels, and demo-only scope is explicit.
+- Completed Stage 8.11: selecting a voice channel now opens a dedicated voice
+  workspace before joining. The workspace distinguishes preview, connected,
+  screen-share availability, local/remote participant tiles, and join/leave state;
+  sidebar and bottom voice-panel copy now make selected versus connected channels
+  clearer.

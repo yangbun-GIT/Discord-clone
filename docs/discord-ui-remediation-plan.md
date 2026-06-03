@@ -506,7 +506,7 @@ Completion notes:
 
 ## Stage 8.11: Voice And Screen Share Workspace UX
 
-Status: pending.
+Status: completed.
 
 Goal: make voice channel entry and voice workspace less ambiguous.
 
@@ -528,6 +528,22 @@ Verification:
 - Browser smoke for voice select, join, leave, mute, deafen, and screen-share toggle
   where browser permissions allow.
 - Commit and push.
+
+Completion notes:
+
+- `App.vue` now opens a dedicated voice workspace when a voice channel is selected,
+  separating channel preview from joining the call.
+- The workspace shows the active guild/channel, local connected/preview state,
+  remote/empty participant tiles, join/leave actions, and an explicitly disabled
+  screen-share action until the user is connected.
+- `ChannelSidebar.vue` marks selected-but-not-connected voice channels separately
+  from connected channels, and `VoicePanel.vue` uses clearer selected-channel copy.
+- Browser QA covered the in-app permission-denied path plus a fake-media Chrome path
+  for select, join, mute, deafen, screen-share enabled state, leave, and horizontal
+  overflow checks.
+- Stage 8.11 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-11-voice-workspace.png`
+  - `docs/qa-artifacts/stage-8-11-voice-workspace-fake-media.png`
 
 ## Stage 8.12: Low-Frequency Feature Scope Decisions
 

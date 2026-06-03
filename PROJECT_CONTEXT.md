@@ -765,8 +765,9 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.11 is next: improve voice and screen-share workspace UX so selecting,
-  joining, leaving, and sharing are visually distinct.
+- Stage 8.12 is next: classify low-frequency or demo-only features and make sure
+  visible controls either perform useful local behavior or clearly explain the
+  deferred scope.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -976,6 +977,23 @@ Discord app inspection observation:
   - `frontend/src/styles/base.css` tightens settings sidebar selection, card copy,
     radio rows, toggles, and keybind rows so labels do not clip.
   - QA screenshot is `docs/qa-artifacts/stage-8-10-settings.png`.
+- Stage 8.11 completed voice and screen-share workspace clarity:
+  - `frontend/src/App.vue` opens a dedicated voice workspace when a voice channel is
+    selected, before the user joins the call.
+  - The workspace exposes selected guild/channel context, preview versus connected
+    state, local and remote participant tiles, join/leave actions, and screen-share
+    availability.
+  - `frontend/src/components/ChannelSidebar.vue` marks selected voice channels
+    separately from connected voice channels.
+  - `frontend/src/components/VoicePanel.vue` uses selected-channel copy in its idle
+    state so users understand the next action.
+  - `frontend/src/styles/base.css` bounds the voice workspace, action buttons,
+    participant tiles, and mobile layout to avoid overlap and horizontal overflow.
+  - Browser QA covered in-app permission failure plus fake-media select, join,
+    mute, deafen, screen-share-enabled state, leave, and no-horizontal-overflow
+    checks.
+  - QA screenshots are `docs/qa-artifacts/stage-8-11-voice-workspace.png` and
+    `docs/qa-artifacts/stage-8-11-voice-workspace-fake-media.png`.
 
 Store planning observation:
 

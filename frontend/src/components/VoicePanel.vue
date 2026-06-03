@@ -125,7 +125,7 @@ const presenceLabel = computed(() => {
       <Radio :size="16" aria-hidden="true" />
       <div>
         <span>{{ channel?.name ?? 'voice-room' }}</span>
-        <small>{{ t('common.status.disconnected') }}</small>
+        <small>{{ t('voice.selectToPreview') }}</small>
       </div>
     </div>
     <div class="voice-presence" aria-live="polite">
@@ -160,7 +160,7 @@ const presenceLabel = computed(() => {
         type="button"
         class="call-button"
         :class="{ connected }"
-        :title="connected ? t('voice.disconnect') : t('voice.connect')"
+        :title="connected ? t('voice.disconnect') : t('voice.joinSelected')"
         @click="$emit('toggle')"
       >
         <PhoneOff v-if="connected" :size="18" aria-hidden="true" />

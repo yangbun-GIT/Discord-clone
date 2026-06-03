@@ -9,10 +9,15 @@ import {
   List,
   LogIn,
   LogOut,
+  Mic,
   Pin,
   Radio,
   Search,
   Settings,
+  PhoneOff,
+  ScreenShare,
+  ScreenShareOff,
+  UserRound,
   Users,
   Wifi,
   WifiOff,
@@ -123,6 +128,27 @@ const voiceTurnConfigured = ref(false)
 const userPresenceStatus = ref<UserPresenceStatus>('online')
 const isDeafened = ref(false)
 const connectedVoiceChannelId = computed(() => (guilds.voiceConnected ? guilds.voiceChannel?.id ?? null : null))
+const selectedVoiceChannel = computed(() => (activeChannel.value?.type === 1 ? activeChannel.value : null))
+const selectedVoiceParticipants = computed(() =>
+  selectedVoiceChannel.value ? voiceParticipantsForChannel(selectedVoiceChannel.value.id) : [],
+)
+const selectedVoicePeers = computed(() =>
+  selectedVoiceParticipants.value.filter((state) => state.user_id !== session.user?.id),
+)
+const selectedVoiceConnected = computed(() =>
+  selectedVoiceChannel.value?.id === connectedVoiceChannelId.value,
+)
+const voiceWorkspaceStatus = computed(() => {
+  if (!selectedVoiceChannel.value) return t('voice.selectToPreview')
+  if (selectedVoiceConnected.value) {
+    if (voiceRtc.isScreenSharing.value) return t('voice.screenLive')
+    if (isDeafened.value) return t('common.status.deafened')
+    if (voiceRtc.isMuted.value) return t('common.status.muted')
+    if (voiceRtc.localSpeaking.value) return t('voice.speaking')
+    return t('common.status.connected')
+  }
+  return t('voice.selectToPreview')
+})
 const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
   const entries = guilds.guilds.map((guild, index) => {
     const unreadCount = activeGuild.value?.id === guild.id ? 0 : Math.min(guild.messages.length, 9)
@@ -833,6 +859,85 @@ async function handleCreateInvite() {
         :disabled="dms.isMutating"
         @send="handleSendDmMessage"
       />
+
+      <section
+        v-else-if="activeGuild && selectedVoiceChannel"
+        class="voice-workspace"
+        :aria-label="t('voice.workspaceAria')"
+      >
+        <header class="voice-workspace-header">
+          <div>
+            <span class="voice-workspace-icon"><Radio :size="22" aria-hidden="true" /></span>
+            <div>
+              <h2>{{ selectedVoiceChannel.name }}</h2>
+              <p class="voice-workspace-status">{{ activeGuild.name }} / {{ voiceWorkspaceStatus }}</p>
+            </div>
+          </div>
+          <div class="voice-workspace-actions">
+            <button
+              v-if="selectedVoiceConnected"
+              type="button"
+              class="danger"
+              @click="handleLeaveVoiceChannel(selectedVoiceChannel.id)"
+            >
+              <PhoneOff :size="17" aria-hidden="true" />
+              <span>{{ t('voice.leaveSelected') }}</span>
+            </button>
+            <button v-else type="button" class="primary" @click="handleJoinVoiceChannel(selectedVoiceChannel.id)">
+              <Mic :size="17" aria-hidden="true" />
+              <span>{{ t('voice.joinSelected') }}</span>
+            </button>
+            <button
+              type="button"
+              class="screen"
+              :class="{ active: voiceRtc.isScreenSharing.value }"
+              :aria-pressed="voiceRtc.isScreenSharing.value"
+              :disabled="!selectedVoiceConnected"
+              @click="handleToggleScreenShare"
+            >
+              <ScreenShareOff v-if="voiceRtc.isScreenSharing.value" :size="17" aria-hidden="true" />
+              <ScreenShare v-else :size="17" aria-hidden="true" />
+              <span>{{ voiceRtc.isScreenSharing.value ? t('voice.stopScreenShare') : t('voice.screenShare') }}</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="voice-workspace-grid">
+          <article
+            class="voice-tile local"
+            :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
+          >
+            <span class="voice-tile-avatar">{{ session.user?.username.slice(0, 2).toUpperCase() ?? 'YA' }}</span>
+            <div>
+              <strong>{{ session.user?.username ?? t('common.demoUser') }}</strong>
+              <span>{{ selectedVoiceConnected ? voiceWorkspaceStatus : t('voice.localPreview') }}</span>
+            </div>
+            <small v-if="voiceRtc.isScreenSharing.value">{{ t('voice.screenLive') }}</small>
+          </article>
+
+          <article v-if="!selectedVoicePeers.length" class="voice-tile empty">
+            <UserRound :size="34" aria-hidden="true" />
+            <div>
+              <strong>{{ t('voice.noRemoteParticipants') }}</strong>
+              <span>{{ t('voice.inviteHint') }}</span>
+            </div>
+          </article>
+
+          <article v-for="participant in selectedVoicePeers" :key="participant.user_id" class="voice-tile">
+            <span class="voice-tile-avatar remote">
+              {{ (participant.username ?? `U${participant.user_id}`).slice(0, 2).toUpperCase() }}
+            </span>
+            <div>
+              <strong>{{ participant.username ?? `User ${participant.user_id}` }}</strong>
+              <span>{{ participant.self_mute ? t('common.status.muted') : t('common.status.connected') }}</span>
+            </div>
+          </article>
+        </div>
+
+        <aside v-if="workspaceError" class="voice-workspace-error" role="status">
+          {{ workspaceError }}
+        </aside>
+      </section>
 
       <div v-else-if="activeGuild" class="content-grid" :class="{ 'members-hidden': !showMemberList }">
         <ChatView
