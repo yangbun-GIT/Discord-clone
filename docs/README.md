@@ -40,6 +40,11 @@ the project prompt and context files before changing code.
 - `docs/discord-ui-remediation-plan.md`
   - Current controlling Stage 8 plan for fixing Discord UI polish, layout overlap,
     i18n, voice/status visibility, placeholder-button behavior, and final QA.
+- `docs/discord-visual-parity-remediation-plan.md`
+  - Current controlling Stage 9 plan from the user's real Discord versus clone
+    screenshots.
+  - Lists visual/design/functionality/usability gaps, staged remediation order,
+    verification expectations, and user-provided measurement requests.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -92,6 +97,9 @@ the project prompt and context files before changing code.
   app clone scope, stage order, UI observations, API contracts, or QA plan changes.
 - Update `docs/discord-ui-remediation-plan.md` when Stage 8 scope, stage status,
   Discord UI remediation priorities, or button reliability policy changes.
+- Update `docs/discord-visual-parity-remediation-plan.md` when Stage 9 screenshot
+  observations, visual parity priorities, measurement targets, staged remediation
+  steps, requested user reference data, or final QA notes change.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

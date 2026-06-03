@@ -27,14 +27,18 @@ sidebar/header controls, Stage 7.6 composer/message actions, Stage 7.7 voice
 channel UX, Stage 7.8 user settings shell, Stage 7.9 server add/discovery flows,
 Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stage
 7.12 final QA/documentation are complete and pushed to GitHub.
-Stage 8 Discord UI remediation has started with the controlling plan in
-`docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
-plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
-Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
-Stage 8.5 current location/state visibility, and Stage 8.6 placeholder-button
-cleanup, Stage 8.7 channel-header panels, and Stage 8.8 composer action panels are
-complete. Stage 8.9 Friends/DM information density and Stage 8.10 Settings
-reorganization are complete.
+Stage 8 Discord UI remediation is complete through Stage 8.14 final QA, including
+layout tokens, sidebar overlap cleanup, Korean/English i18n, bottom voice controls,
+current-location visibility, placeholder-button cleanup, channel-header panels,
+composer panels, Friends/DM information density, settings reorganization, voice
+workspace clarity, low-frequency feature scope cleanup, responsive/accessibility QA,
+and final command/Docker verification.
+
+Stage 9 Discord visual parity and density remediation is planned from the user's
+side-by-side real Discord versus clone screenshots. The controlling plan is
+`docs/discord-visual-parity-remediation-plan.md`; it lists the current visual,
+functional, density, usability, voice, screen-share, and responsiveness gaps plus
+the staged remediation order from measurement through final visual QA.
 
 The app boots in two local modes:
 
@@ -100,6 +104,10 @@ The app boots in two local modes:
   - Current controlling Stage 8 plan for Discord UI polish, layout overlap fixes,
     Korean/English i18n, voice/status clarity, placeholder-button reliability,
     responsive/accessibility QA, and final verification.
+- `docs/discord-visual-parity-remediation-plan.md`
+  - Current controlling Stage 9 plan for real Discord versus clone visual parity.
+  - Records screenshot-based problem inventory, staged remediation process,
+    verification rules, and additional user reference-data requests.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
@@ -764,10 +772,13 @@ npm run docker:down
 
 Next implementation stage:
 
-- Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.0 through Stage 8.14 are complete. Next work should be user-directed; likely
-  candidates are real multi-browser WebRTC/TURN QA, deployment execution, or a new
-  feature slice.
+- Start Stage 9 from `docs/discord-visual-parity-remediation-plan.md`.
+- Stage 8.0 through Stage 8.14 are complete. The next user-directed priority is
+  Discord visual parity and density remediation based on the side-by-side comparison
+  screenshots.
+- Stage 9 should begin with baseline measurement, screenshot matrix capture, safe
+  demo content density, and global shell design-token tuning before individual
+  Friends, channel, composer, and voice surfaces are polished.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
