@@ -37,6 +37,9 @@ the project prompt and context files before changing code.
   - Current primary staged plan for cloning the core Discord web app rooted at
     `https://discord.com/channels/@me`, including Friends/DM home, server rail,
     server/channel workspace, DM messaging, settings, voice UX, and responsive QA.
+- `docs/discord-ui-remediation-plan.md`
+  - Current controlling Stage 8 plan for fixing Discord UI polish, layout overlap,
+    i18n, voice/status visibility, placeholder-button behavior, and final QA.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -69,6 +72,8 @@ the project prompt and context files before changing code.
   API contracts, data model, or QA plan changes.
 - Update `docs/discord-app-clone-implementation-plan.md` when the primary Discord
   app clone scope, stage order, UI observations, API contracts, or QA plan changes.
+- Update `docs/discord-ui-remediation-plan.md` when Stage 8 scope, stage status,
+  Discord UI remediation priorities, or button reliability policy changes.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

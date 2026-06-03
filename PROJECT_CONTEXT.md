@@ -27,6 +27,8 @@ sidebar/header controls, Stage 7.6 composer/message actions, Stage 7.7 voice
 channel UX, Stage 7.8 user settings shell, Stage 7.9 server add/discovery flows,
 Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stage
 7.12 final QA/documentation are complete and pushed to GitHub.
+Stage 8 Discord UI remediation has started with the controlling plan in
+`docs/discord-ui-remediation-plan.md`.
 
 The app boots in two local modes:
 
@@ -88,6 +90,10 @@ The app boots in two local modes:
   - Covers Friends/DM home, private-channel sidebar, server rail, server/channel
     workspace, DM messaging, settings, voice UX, discovery/add server flows,
     persistence expansion, responsive QA, and documentation.
+- `docs/discord-ui-remediation-plan.md`
+  - Current controlling Stage 8 plan for Discord UI polish, layout overlap fixes,
+    Korean/English i18n, voice/status clarity, placeholder-button reliability,
+    responsive/accessibility QA, and final verification.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
@@ -752,8 +758,9 @@ npm run docker:down
 
 Next implementation stage:
 
-- Stage 7.12 is complete. Choose the next product direction before starting a new
-  implementation stage.
+- Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
+- Stage 8.0 is the documentation guardrail stage. Stage 8.1 begins implementation
+  with layout tokens and app shell sizing.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -847,6 +854,12 @@ Discord app inspection observation:
     text/voice channel switching, settings, create/join server, and logout reset.
   - Final QA notes and residual external verification items are in
     `docs/stage-7-12-final-qa.md`.
+- Stage 8 started from the user's Discord reference screenshots:
+  - The controlling plan is `docs/discord-ui-remediation-plan.md`.
+  - Priorities are layout/text-overlap cleanup, app-shell sizing, Korean/English
+    language support, current-location and voice-state clarity, and removal or
+    conversion of misleading placeholder buttons.
+  - Do not copy private Discord screenshot content into code, fixtures, or docs.
 
 Store planning observation:
 

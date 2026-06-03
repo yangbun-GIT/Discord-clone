@@ -253,3 +253,17 @@
     passed.
   - Docker Compose PostgreSQL smoke and headless Chrome app workflow smoke passed.
   - Final QA notes are recorded in `docs/stage-7-12-final-qa.md`.
+
+## Stage 8: Discord UI Remediation And Interaction Polish
+
+- Status: started with Stage 8.0 documentation guardrails.
+- Plan document: `docs/discord-ui-remediation-plan.md`.
+- Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
+  reference screenshots: bottom controls, text overlap, sizing, Korean/English
+  support, location/status clarity, and visible buttons that do not work.
+- Privacy note: reference screenshots may contain private Discord names, messages,
+  avatars, and server content. Use only layout and interaction structure; do not copy
+  private content into repository data or documentation.
+- Stage execution rule: complete each Stage 8 sub-stage with verification, fix any
+  discovered sub-issues before moving on, update docs, commit, and push to
+  `origin/main`.
