@@ -105,8 +105,9 @@ Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are main
 in `docs/voice-qa.md`. The documentation index is maintained in `docs/README.md`.
 Git workflow notes are maintained in `docs/GITHUB_COLLABORATION_WORKFLOW.md`, and
 prompt-alignment status is maintained in `docs/PROMPT_COMPLIANCE.md`.
-The Discord Store-like shop roadmap is maintained in
-`docs/store-clone-implementation-plan.md`.
+The current Discord app clone roadmap is maintained in
+`docs/discord-app-clone-implementation-plan.md`. The deferred Store-like shop roadmap
+is maintained in `docs/store-clone-implementation-plan.md`.
 
 ## Verification
 

@@ -131,8 +131,9 @@
 
 ## Stage 6: Discord Store-Like Shop
 
-- Status: implementation started; Store scope/data contracts, seed catalog, backend
-  read APIs, and frontend Store state are complete.
+- Status: deferred after early infrastructure work. Store scope/data contracts, seed
+  catalog, backend read APIs, and frontend Store state are complete, but Store is no
+  longer the primary product direction.
 - Plan document: `docs/store-clone-implementation-plan.md`.
 - Target: add an in-app Store tab inspired by Discord's Store, using original demo
   cosmetics and no real payment processing.
@@ -149,6 +150,9 @@
 - Frontend Store state completed: `frontend/src/stores/store.ts` isolates Store
   catalog/detail/inventory references, loading state, active tab, search, filters,
   sort state, and logout reset behavior from guild/chat state.
+- Current decision: the project target is the core Discord web app experience rooted
+  at `https://discord.com/channels/@me`; continue with Stage 7 before resuming Store
+  UI work.
 - Scope includes Store entry, catalog, featured collections, Browse tab, search,
   sort, filters, item cards, item detail preview, demo purchase, inventory, apply,
   bundles, gifting, Orbs exclusives, Nitro-like discounts, profile integration,
@@ -157,3 +161,16 @@
   browser did not share the user's Discord login session and was redirected to
   `https://discord.com/login?redirect_to=%2Fstore`; public Discord Shop/Profile docs
   were used for feature structure.
+
+## Stage 7: Discord App Parity
+
+- Status: current primary implementation direction.
+- Plan document: `docs/discord-app-clone-implementation-plan.md`.
+- Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
+  not a Store-first surface.
+- Observed scope includes `@me` Friends/DM home, private-channel sidebar, server rail,
+  server/channel sidebar, text and voice channels, channel header controls, message
+  composer actions, user status/settings panel, add/join/discovery flows, settings,
+  realtime DM expansion, persistence, responsive QA, and documentation.
+- Privacy note: real Discord personal names, message contents, and private server
+  content observed during browser inspection must not be copied into repository data.

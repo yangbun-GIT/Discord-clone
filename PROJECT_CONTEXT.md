@@ -20,7 +20,8 @@ Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-re
 scope, focused PostgreSQL repository coverage for current guild/message mutations,
 Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stage 6.2
 Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
-state are complete and pushed to GitHub.
+state are complete and pushed to GitHub. Store UI work is now deferred; Stage 7
+Discord app parity is the current primary implementation direction.
 
 The app boots in two local modes:
 
@@ -68,6 +69,14 @@ The app boots in two local modes:
   - Detailed staged plan for implementing a Discord Store-like in-app shop.
   - Covers Store catalog, browse/search/filter, item detail preview, demo purchase,
     inventory, apply, gifting, Orbs, Nitro-like discounts, persistence, and QA.
+  - Deferred after Stage 6.4 because the target is the full Discord app, not a
+    Store-first surface.
+- `docs/discord-app-clone-implementation-plan.md`
+  - Current primary staged plan for cloning the core Discord web app rooted at
+    `https://discord.com/channels/@me`.
+  - Covers Friends/DM home, private-channel sidebar, server rail, server/channel
+    workspace, DM messaging, settings, voice UX, discovery/add server flows,
+    persistence expansion, responsive QA, and documentation.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
@@ -620,12 +629,22 @@ npm run docker:down
 
 Next implementation stage:
 
-- Start Stage 6's Store implementation from
-  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.5's Store entry
-  in the app shell.
+- Start Stage 7.1 from `docs/discord-app-clone-implementation-plan.md` by adding an
+  app destination model for `friends`, `dm`, `server_channel`, `voice_channel`, and
+  `settings` while preserving current guild/channel behavior.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
+
+Discord app inspection observation:
+
+- `https://discord.com/channels/@me` was inspected through the Codex in-app browser on
+  2026-06-03 with the user's logged-in Discord session.
+- The implementation target is the Discord app shell: server rail, private-channel
+  sidebar, Friends/DM home, server/channel sidebar, channel header controls, message
+  timeline/composer, voice channel rows, bottom user panel, and settings entry.
+- Do not copy real Discord private names, messages, server content, or assets into
+  repository fixtures or documentation.
 
 Store planning observation:
 
@@ -650,6 +669,8 @@ Store planning observation:
   - Store state is in `frontend/src/stores/store.ts`.
   - Store read wrappers are in `frontend/src/services/api.ts`.
   - Logout reset integration is in `frontend/src/App.vue`.
+- Store UI work is deferred. Resume only after Stage 7 core Discord app parity or if
+  the user explicitly asks to resume Store.
 
 Completed Stage 2 bridge work:
 
@@ -727,6 +748,8 @@ Completed Stage 2 bridge work:
 - Added Stage 6.3 authenticated Store read APIs for catalog and item detail payloads.
 - Added Stage 6.4 frontend Store Pinia state, read API wrappers, filtering/sorting
   state, and logout reset integration.
+- Added `docs/discord-app-clone-implementation-plan.md` as the current primary plan
+  for cloning the Discord web app rooted at `channels/@me`.
 
 After each stage or meaningful feature:
 
