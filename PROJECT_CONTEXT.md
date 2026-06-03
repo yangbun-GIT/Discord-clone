@@ -23,8 +23,8 @@ Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend St
 state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
 app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
 demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
-sidebar/header controls, and Stage 7.6 composer/message actions are complete and
-pushed to GitHub.
+sidebar/header controls, Stage 7.6 composer/message actions, and Stage 7.7 voice
+channel UX are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -716,8 +716,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.7 Voice Channel UX: active voice membership inside the sidebar, channel join/leave
-  affordances, and bottom user status/mute/deafen visual state.
+  7.8 User Settings Shell: settings destination, settings navigation, safe demo
+  panels, close behavior, and logout integration.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -758,6 +758,16 @@ Discord app inspection observation:
     menu state, composer action buttons, and the expanded composer layout.
   - Existing backend send/edit/delete routes remain unchanged and covered by backend
     API tests.
+- Stage 7.7 completed voice channel UX:
+  - `frontend/src/stores/guilds.ts` now prefers the selected active voice channel
+    when deriving the current voice target.
+  - `frontend/src/components/ChannelSidebar.vue` owns voice-channel join/leave
+    affordances and displays active voice membership under voice channel rows.
+  - `frontend/src/components/VoicePanel.vue` owns the bottom user identity, local
+    status cycle, mute/deafen controls, settings entry, and existing WebRTC
+    screen-share/quality controls.
+  - `frontend/src/App.vue` orchestrates voice join/leave by channel id and mirrors
+    mute/deafen state into gateway voice-state updates.
 
 Store planning observation:
 

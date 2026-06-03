@@ -210,6 +210,8 @@ Verification:
 
 ## Stage 7.7: Voice Channel UX
 
+Status: completed.
+
 Goal: align the voice entry, user panel, and channel sidebar with Discord patterns.
 
 Tasks:

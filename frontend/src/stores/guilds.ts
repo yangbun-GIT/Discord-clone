@@ -26,7 +26,10 @@ export const useGuildStore = defineStore('guilds', () => {
     if (!activeChannel.value) return []
     return activeGuild.value?.messages.filter((message) => message.channel_id === activeChannel.value?.id) ?? []
   })
-  const voiceChannel = computed(() => activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null)
+  const voiceChannel = computed(() => {
+    if (activeChannel.value?.type === 1) return activeChannel.value
+    return activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null
+  })
   const activeVoiceStates = computed(() => {
     if (!voiceChannel.value) return []
     return voiceStates.value.filter((state) => state.channel_id === voiceChannel.value?.id)

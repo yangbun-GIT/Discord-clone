@@ -4,6 +4,8 @@ import {
   ChevronDown,
   ChevronRight,
   Hash,
+  LogIn,
+  LogOut,
   MoreHorizontal,
   Plus,
   Radio,
@@ -12,11 +14,13 @@ import {
 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 
-import type { Channel, Guild } from '../types'
+import type { Channel, Guild, VoiceState } from '../types'
 
 const props = defineProps<{
   guild: Guild
   activeChannelId: number | null
+  voiceStates: VoiceState[]
+  connectedVoiceChannelId: number | null
 }>()
 
 const emit = defineEmits<{
@@ -24,6 +28,8 @@ const emit = defineEmits<{
   createChannel: [name: string, type: 0 | 1]
   createInvite: []
   channelSettings: [channelId: number]
+  joinVoice: [channelId: number]
+  leaveVoice: [channelId: number]
 }>()
 
 const createChannelType = ref<0 | 1 | null>(null)
@@ -58,6 +64,10 @@ function closeChannelForm() {
 
 function channelIconLabel(channel: Channel) {
   return channel.type === 0 ? `# ${channel.name}` : `Voice ${channel.name}`
+}
+
+function channelVoiceStates(channelId: number) {
+  return props.voiceStates.filter((state) => state.channel_id === channelId)
 }
 </script>
 
@@ -180,6 +190,24 @@ function channelIconLabel(channel: Channel) {
           <span>{{ channel.name }}</span>
         </button>
         <div class="channel-row-actions" aria-label="Channel actions">
+          <button
+            v-if="connectedVoiceChannelId === channel.id"
+            type="button"
+            title="Leave voice channel"
+            aria-label="Leave voice channel"
+            @click.stop="$emit('leaveVoice', channel.id)"
+          >
+            <LogOut :size="14" aria-hidden="true" />
+          </button>
+          <button
+            v-else
+            type="button"
+            title="Join voice channel"
+            aria-label="Join voice channel"
+            @click.stop="$emit('joinVoice', channel.id)"
+          >
+            <LogIn :size="14" aria-hidden="true" />
+          </button>
           <button type="button" title="Create invite" aria-label="Create invite" @click.stop="$emit('createInvite')">
             <UserPlus :size="14" aria-hidden="true" />
           </button>
@@ -191,6 +219,20 @@ function channelIconLabel(channel: Channel) {
           >
             <Settings :size="14" aria-hidden="true" />
           </button>
+        </div>
+        <div
+          v-if="channelVoiceStates(channel.id).length || connectedVoiceChannelId === channel.id"
+          class="voice-sidebar-members"
+          aria-label="Voice channel members"
+        >
+          <span v-if="connectedVoiceChannelId === channel.id" class="voice-sidebar-member self">You</span>
+          <span
+            v-for="state in channelVoiceStates(channel.id)"
+            :key="`${channel.id}:${state.user_id}`"
+            class="voice-sidebar-member"
+          >
+            {{ state.username ?? `User ${state.user_id}` }}
+          </span>
         </div>
       </div>
     </div>

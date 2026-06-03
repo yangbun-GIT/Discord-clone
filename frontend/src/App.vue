@@ -36,7 +36,7 @@ import { useGuildStore } from './stores/guilds'
 import { useNavigationStore } from './stores/navigation'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
-import type { ServerRailGuildMeta, VoiceConfig, VoiceIceServer } from './types'
+import type { ServerRailGuildMeta, UserPresenceStatus, VoiceConfig, VoiceIceServer } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
@@ -88,6 +88,9 @@ const joinCode = ref('')
 const inviteCode = ref<string | null>(null)
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 const voiceTurnConfigured = ref(false)
+const userPresenceStatus = ref<UserPresenceStatus>('online')
+const isDeafened = ref(false)
+const connectedVoiceChannelId = computed(() => (guilds.voiceConnected ? guilds.voiceChannel?.id ?? null : null))
 const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
   const entries = guilds.guilds.map((guild, index) => {
     const unreadCount = activeGuild.value?.id === guild.id ? 0 : Math.min(guild.messages.length, 9)
@@ -166,6 +169,8 @@ function handleLogout() {
   guilds.resetGuilds()
   dms.resetDms()
   store.resetStoreState()
+  userPresenceStatus.value = 'online'
+  isDeafened.value = false
 }
 
 function handleSelectGuild(guildId: number) {
@@ -312,25 +317,32 @@ function handleRemoveMember(memberId: number) {
   })
 }
 
-async function handleToggleVoice() {
-  if (!activeGuild.value || !guilds.voiceChannel || !session.user) return
-  if (guilds.voiceConnected) {
-    updateVoiceState({
-      guild_id: activeGuild.value.id,
-      channel_id: null,
-      self_mute: false,
-      self_deaf: false,
-    })
-    voiceRtc.disconnect()
-    guilds.setVoiceConnected(false)
-    return
-  }
+function disconnectVoice() {
+  if (!activeGuild.value) return
+  updateVoiceState({
+    guild_id: activeGuild.value.id,
+    channel_id: null,
+    self_mute: false,
+    self_deaf: false,
+  })
+  voiceRtc.disconnect()
+  guilds.setVoiceConnected(false)
+}
+
+function voiceParticipantsForChannel(channelId: number) {
+  return guilds.voiceStates.filter((state) => state.channel_id === channelId)
+}
+
+async function connectVoiceToChannel(channelId: number) {
+  if (!activeGuild.value || !session.user) return
+  const targetChannel = activeGuild.value.channels.find((channel) => channel.id === channelId && channel.type === 1)
+  if (!targetChannel) return
 
   try {
     await voiceRtc.connect({
-      channelId: guilds.voiceChannel.id,
+      channelId: targetChannel.id,
       currentUserId: session.user.id,
-      participants: guilds.activeVoiceStates,
+      participants: voiceParticipantsForChannel(targetChannel.id),
       iceServers: voiceIceServers.value,
       sendSignal: sendVoiceSignal,
     })
@@ -339,18 +351,71 @@ async function handleToggleVoice() {
     return
   }
 
-  const nextConnected = !guilds.voiceConnected
-  guilds.setVoiceConnected(nextConnected)
+  guilds.setVoiceConnected(true)
   updateVoiceState({
     guild_id: activeGuild.value.id,
-    channel_id: nextConnected ? guilds.voiceChannel.id : null,
-    self_mute: false,
-    self_deaf: false,
+    channel_id: targetChannel.id,
+    self_mute: voiceRtc.isMuted.value,
+    self_deaf: isDeafened.value,
   })
+}
+
+async function handleToggleVoice() {
+  if (!activeGuild.value || !guilds.voiceChannel || !session.user) return
+  if (guilds.voiceConnected) {
+    disconnectVoice()
+    return
+  }
+
+  await connectVoiceToChannel(guilds.voiceChannel.id)
+}
+
+async function handleJoinVoiceChannel(channelId: number) {
+  workspaceError.value = null
+  guilds.selectChannel(channelId)
+  if (connectedVoiceChannelId.value === channelId) return
+  if (guilds.voiceConnected) {
+    disconnectVoice()
+  }
+  await connectVoiceToChannel(channelId)
+}
+
+function handleLeaveVoiceChannel(channelId: number) {
+  workspaceError.value = null
+  if (connectedVoiceChannelId.value !== channelId) return
+  disconnectVoice()
+}
+
+function cycleUserPresence() {
+  const statuses: UserPresenceStatus[] = ['online', 'idle', 'dnd', 'offline']
+  const currentIndex = statuses.indexOf(userPresenceStatus.value)
+  userPresenceStatus.value = statuses[(currentIndex + 1) % statuses.length]
+}
+
+function handleToggleDeafen() {
+  isDeafened.value = !isDeafened.value
+  if (!activeGuild.value || !guilds.voiceConnected || !guilds.voiceChannel) return
+  updateVoiceState({
+    guild_id: activeGuild.value.id,
+    channel_id: guilds.voiceChannel.id,
+    self_mute: voiceRtc.isMuted.value,
+    self_deaf: isDeafened.value,
+  })
+}
+
+function handleOpenUserSettings() {
+  showHeaderPlaceholder('User settings')
 }
 
 function handleToggleMute() {
   voiceRtc.toggleMute()
+  if (!activeGuild.value || !guilds.voiceConnected || !guilds.voiceChannel) return
+  updateVoiceState({
+    guild_id: activeGuild.value.id,
+    channel_id: guilds.voiceChannel.id,
+    self_mute: voiceRtc.isMuted.value,
+    self_deaf: isDeafened.value,
+  })
 }
 
 function handleToggleScreenShare() {
@@ -463,10 +528,14 @@ async function handleCreateInvite() {
       v-else-if="activeGuild"
       :guild="activeGuild"
       :active-channel-id="guilds.activeChannelId"
+      :voice-states="guilds.voiceStates"
+      :connected-voice-channel-id="connectedVoiceChannelId"
       @select="guilds.selectChannel"
       @create-channel="handleCreateChannel"
       @create-invite="handleCreateInvite"
       @channel-settings="handleChannelSettings"
+      @join-voice="handleJoinVoiceChannel"
+      @leave-voice="handleLeaveVoiceChannel"
     />
 
     <section class="workspace">
@@ -703,19 +772,25 @@ async function handleCreateInvite() {
 
     <VoicePanel
       :channel="guilds.voiceChannel"
+      :current-user="session.user"
+      :user-status="userPresenceStatus"
       :connected="guilds.voiceConnected"
       :participants="guilds.activeVoiceStates"
       :signaling-ready="gatewayStatus === 'connected'"
       :local-speaking="voiceRtc.localSpeaking.value"
       :input-level="voiceRtc.inputLevel.value"
       :muted="voiceRtc.isMuted.value"
+      :deafened="isDeafened"
       :screen-sharing="voiceRtc.isScreenSharing.value"
       :quality-stats="voiceRtc.qualityStats.value"
       :turn-configured="voiceTurnConfigured"
       :error="voiceRtc.error.value"
       @toggle="handleToggleVoice"
       @toggle-mute="handleToggleMute"
+      @toggle-deafen="handleToggleDeafen"
       @toggle-screen="handleToggleScreenShare"
+      @cycle-status="cycleUserPresence"
+      @open-settings="handleOpenUserSettings"
     />
     <div v-if="remoteScreenStreams.length" class="screen-share-stage" aria-label="Screen shares">
       <VoiceVideoSink

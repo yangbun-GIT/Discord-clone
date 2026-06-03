@@ -166,7 +166,8 @@
 
 - Status: implementation started; app destination model, `@me` private sidebar,
   Friends home, first-class demo-backed Direct Messages, server rail parity, server
-  sidebar/header controls, and composer/message actions are complete.
+  sidebar/header controls, composer/message actions, and voice channel UX are
+  complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -209,3 +210,11 @@
     REST behavior.
   - The composer supports a local reply target banner, and message rows expose a
     compact options menu with reply/edit/delete actions.
+- Completed Stage 7.7 Voice Channel UX:
+  - `frontend/src/components/ChannelSidebar.vue` now shows voice channel membership
+    rows and join/leave affordances for voice channels.
+  - `frontend/src/components/VoicePanel.vue` now includes the bottom user identity,
+    status cycle, mute/deafen controls, settings entry, and existing WebRTC
+    screen-share/quality controls.
+  - `frontend/src/App.vue` connects voice join/leave by channel id and keeps mute and
+    deafen state reflected through gateway voice-state updates.
