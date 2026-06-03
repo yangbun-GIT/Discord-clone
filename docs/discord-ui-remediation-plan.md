@@ -585,7 +585,7 @@ Completion notes:
 
 ## Stage 8.13: Responsive And Accessibility QA
 
-Status: pending.
+Status: completed.
 
 Goal: verify Stage 8 changes across sizes and keyboard/screen-reader basics.
 
@@ -607,6 +607,17 @@ Verification:
 - Browser screenshots at desktop and mobile widths.
 - DOM overflow metric check.
 - Commit and push.
+
+Completion notes:
+
+- `docs/stage-8-responsive-accessibility-qa.md` records desktop/mobile overflow
+  metrics, focus-order observations, screenshots, and residual manual QA gaps.
+- QA caught and fixed a duplicate rail `aria-current="page"` condition. `ServerRail.vue`
+  now only exposes a server as current when the Direct Messages/Friends home is not
+  active.
+- Stage 8.13 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-13-desktop.png`
+  - `docs/qa-artifacts/stage-8-13-mobile.png`
 
 ## Stage 8.14: Final Stage 8 Verification And Documentation
 

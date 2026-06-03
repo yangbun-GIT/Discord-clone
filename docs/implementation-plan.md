@@ -316,3 +316,7 @@
   controls were removed from the active UI, composer app actions were reframed as
   local templates, and Settings now documents commerce, external app, real file
   transfer, GIF search, and production-notification scope.
+- Completed Stage 8.13: responsive/accessibility QA is documented in
+  `docs/stage-8-responsive-accessibility-qa.md` with desktop/mobile screenshots,
+  overflow metrics, focus-order notes, residual manual checks, and a rail
+  `aria-current` correction in `ServerRail.vue`.

@@ -765,8 +765,7 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.13 is next: run responsive and accessibility QA for Stage 8 surfaces,
-  capture artifacts, and document residual issues before final Stage 8 verification.
+- Stage 8.14 is next: run final Stage 8 verification and documentation closure.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -1005,6 +1004,16 @@ Discord app inspection observation:
   - `frontend/src/i18n/index.ts` contains Korean/English labels for the new scope
     and local-template copy.
   - QA screenshot is `docs/qa-artifacts/stage-8-12-feature-scope.png`.
+- Stage 8.13 completed responsive and accessibility QA:
+  - QA notes are in `docs/stage-8-responsive-accessibility-qa.md`.
+  - Desktop and mobile screenshots are
+    `docs/qa-artifacts/stage-8-13-desktop.png` and
+    `docs/qa-artifacts/stage-8-13-mobile.png`.
+  - CDP viewport checks found no horizontal overflow at 1366 x 900 or 390 x 844.
+  - `frontend/src/components/ServerRail.vue` now prevents duplicate
+    `aria-current="page"` when the Direct Messages/Friends home is active.
+  - Residual manual QA gap: rerun full human keyboard/screen-reader passes if modal
+    or settings focus behavior changes.
 
 Store planning observation:
 

@@ -101,7 +101,7 @@ function ariaLabelForGuild(guild: Guild) {
           type="button"
           :title="guild.name"
           :aria-label="ariaLabelForGuild(guild)"
-          :aria-current="guild.id === activeGuildId ? 'page' : undefined"
+          :aria-current="!homeActive && guild.id === activeGuildId ? 'page' : undefined"
           @click="$emit('select', guild.id)"
         >
           {{ guildInitials(guild.name) }}
@@ -135,7 +135,7 @@ function ariaLabelForGuild(guild: Guild) {
             type="button"
             :title="guild.name"
             :aria-label="ariaLabelForGuild(guild)"
-            :aria-current="guild.id === activeGuildId ? 'page' : undefined"
+            :aria-current="!homeActive && guild.id === activeGuildId ? 'page' : undefined"
             @click="$emit('select', guild.id)"
           >
             {{ guildInitials(guild.name) }}

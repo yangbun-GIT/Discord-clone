@@ -54,6 +54,9 @@ the project prompt and context files before changing code.
   - Stage 8.12 classification for low-frequency, deferred, or local-template
     feature surfaces such as Nitro, Shop, Quests, gifts, upload, notifications,
     external apps, and GIF search.
+- `docs/stage-8-responsive-accessibility-qa.md`
+  - Stage 8.13 desktop/mobile overflow, screenshot, focus-order, accessibility-label,
+    and residual manual QA notes for the UI remediation stage.
 
 ## Update Rules
 
@@ -71,6 +74,9 @@ the project prompt and context files before changing code.
 - Update `docs/stage-8-12-feature-scope.md` when low-frequency feature scope,
   composer action classification, commerce/deferred UI decisions, or related
   verification notes change.
+- Update `docs/stage-8-responsive-accessibility-qa.md` when Stage 8 responsive
+  breakpoints, focus order, accessibility labeling, screenshot artifacts, or residual
+  QA notes change.
 - Update `docs/GITHUB_COLLABORATION_WORKFLOW.md` when branch, PR, commit, staging,
   push, or final-report rules change.
 - Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or
