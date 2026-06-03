@@ -29,9 +29,9 @@ Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stag
 7.12 final QA/documentation are complete and pushed to GitHub.
 Stage 8 Discord UI remediation has started with the controlling plan in
 `docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
-plus Stage 8.2 sidebar text-overlap/channel-creation cleanup and Stage 8.3
-Korean/English i18n foundation plus Stage 8.4 bottom user/voice panel redesign are
-complete.
+plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
+Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
+Stage 8.5 current location/state visibility are complete.
 
 The app boots in two local modes:
 
@@ -762,9 +762,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.5 is next: strengthen current location and voice state visibility across
-  server rail, channel rows, header summary, sidebar voice members, and bottom
-  voice panel.
+- Stage 8.6 is next: audit visible placeholder buttons and convert them to useful
+  local panels, concise demo-disabled notices, or hidden low-value controls.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -904,6 +903,20 @@ Discord app inspection observation:
   - QA screenshots are `docs/qa-artifacts/stage-8-4-voice-disconnected.png`,
     `docs/qa-artifacts/stage-8-4-voice-connected.png`, and
     `docs/qa-artifacts/stage-8-4-mobile.png`.
+- Stage 8.5 completed current location and state visibility:
+  - `frontend/src/App.vue` renders a destination subtitle and connected voice
+    location/status pill in the topbar.
+  - `frontend/src/components/ServerRail.vue`,
+    `frontend/src/components/PrivateChannelSidebar.vue`, and
+    `frontend/src/components/ChannelSidebar.vue` expose active selections through
+    `aria-current` plus stronger selected styles.
+  - `frontend/src/components/ChannelSidebar.vue` shows the connected voice channel,
+    self voice row, and muted/deafened/speaking labels.
+  - `frontend/src/components/VoicePanel.vue` prioritizes muted/deafened labels in the
+    bottom voice status area.
+  - Browser QA verified Friends, DM, server text channel, fake-media voice join, and
+    mute state visibility with no horizontal overflow.
+  - QA screenshot is `docs/qa-artifacts/stage-8-5-voice-state.png`.
 
 Store planning observation:
 

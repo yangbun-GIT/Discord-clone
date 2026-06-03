@@ -76,6 +76,25 @@ const workspaceTitle = computed(() => {
   if (!activeGuild.value) return t('app.status.noServers')
   return activeChannel.value?.name ?? t('app.status.loading')
 })
+const workspaceSubtitle = computed(() => {
+  if (navigation.destination === 'friends') return t('app.location.privateHome')
+  if (navigation.destination === 'dm') return t('app.location.directMessage')
+  if (navigation.destination === 'settings') return t('app.location.settings')
+  if (!activeGuild.value) return t('app.location.noServer')
+  const channelKind = activeChannel.value?.type === 1 ? t('app.location.voiceChannel') : t('app.location.textChannel')
+  return `${activeGuild.value.name} / ${channelKind}`
+})
+const voiceLocationSummary = computed(() => {
+  if (!guilds.voiceConnected || !guilds.voiceChannel || !activeGuild.value) return null
+  const state = isDeafened.value
+    ? t('common.status.deafened')
+    : voiceRtc.isMuted.value
+      ? t('common.status.muted')
+      : voiceRtc.localSpeaking.value
+        ? t('voice.speaking')
+        : t('common.status.connected')
+  return `${activeGuild.value.name} / ${guilds.voiceChannel.name} · ${state}`
+})
 const isPrivateDestination = computed(() =>
   navigation.destination === 'friends' || navigation.destination === 'dm',
 )
@@ -557,6 +576,10 @@ async function handleCreateInvite() {
       :active-channel-id="guilds.activeChannelId"
       :voice-states="guilds.voiceStates"
       :connected-voice-channel-id="connectedVoiceChannelId"
+      :current-user-id="session.user?.id ?? null"
+      :local-speaking="voiceRtc.localSpeaking.value"
+      :muted="voiceRtc.isMuted.value"
+      :deafened="isDeafened"
       @select="guilds.selectChannel"
       @create-channel="handleCreateChannel"
       @create-invite="handleCreateInvite"
@@ -571,7 +594,11 @@ async function handleCreateInvite() {
           <Settings v-if="navigation.destination === 'settings'" :size="19" aria-hidden="true" />
           <Radio v-else-if="isServerDestination && activeChannel?.type === 1" :size="19" aria-hidden="true" />
           <Hash v-else :size="19" aria-hidden="true" />
-          <span>{{ workspaceTitle }}</span>
+          <span class="channel-title-copy">
+            <span>{{ workspaceTitle }}</span>
+            <small>{{ workspaceSubtitle }}</small>
+          </span>
+          <span v-if="voiceLocationSummary" class="channel-location-summary">{{ voiceLocationSummary }}</span>
         </div>
         <div v-if="isServerDestination" class="channel-header-tools" :aria-label="t('app.header.channelTools')">
           <button

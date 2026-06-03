@@ -131,6 +131,8 @@ const presenceLabel = computed(() => {
     <div class="voice-presence" aria-live="polite">
       <span>{{ t('voice.onlineCount', { count: participants.length }) }}</span>
       <small v-if="error">{{ error }}</small>
+      <small v-else-if="deafened">{{ t('common.status.deafened') }}</small>
+      <small v-else-if="muted">{{ t('common.status.muted') }}</small>
       <small v-else-if="localSpeaking" class="speaking">{{ t('voice.speaking') }}</small>
       <small v-else>
         {{

@@ -79,6 +79,7 @@ function ariaLabelForGuild(guild: Guild) {
         type="button"
         title="Direct Messages"
         :aria-label="homeUnreadCount ? `Direct Messages, ${homeUnreadCount} unread` : 'Direct Messages'"
+        :aria-current="homeActive ? 'page' : undefined"
         @click="$emit('home')"
       >
         <MessageCircle :size="22" aria-hidden="true" />
@@ -100,6 +101,7 @@ function ariaLabelForGuild(guild: Guild) {
           type="button"
           :title="guild.name"
           :aria-label="ariaLabelForGuild(guild)"
+          :aria-current="guild.id === activeGuildId ? 'page' : undefined"
           @click="$emit('select', guild.id)"
         >
           {{ guildInitials(guild.name) }}
@@ -133,6 +135,7 @@ function ariaLabelForGuild(guild: Guild) {
             type="button"
             :title="guild.name"
             :aria-label="ariaLabelForGuild(guild)"
+            :aria-current="guild.id === activeGuildId ? 'page' : undefined"
             @click="$emit('select', guild.id)"
           >
             {{ guildInitials(guild.name) }}

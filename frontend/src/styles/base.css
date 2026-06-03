@@ -271,6 +271,12 @@ select:focus-visible {
   transform: translateY(-1px);
 }
 
+.server-button[aria-current="page"] {
+  box-shadow:
+    0 0 0 2px rgb(255 255 255 / 18%),
+    0 0 0 5px rgb(79 70 229 / 18%);
+}
+
 .server-button.muted {
   color: #a9b1c4;
   background: #252832;
@@ -449,6 +455,11 @@ select:focus-visible {
 .dm-row.active {
   color: #ffffff;
   background: rgb(255 255 255 / 10%);
+}
+
+.private-nav-button[aria-current="page"],
+.dm-row[aria-current="page"] {
+  box-shadow: inset 3px 0 0 #5eead4;
 }
 
 .private-nav-button.muted {
@@ -785,6 +796,18 @@ select:focus-visible {
   background: rgb(255 255 255 / 10%);
 }
 
+.channel-row[aria-current="page"] {
+  box-shadow: inset 3px 0 0 #5eead4;
+}
+
+.channel-row.connected {
+  background: rgb(34 197 94 / 8%);
+}
+
+.channel-row.active.connected {
+  background: linear-gradient(90deg, rgb(34 197 94 / 14%), rgb(255 255 255 / 10%));
+}
+
 .channel-button {
   min-width: 0;
   min-height: 38px;
@@ -806,6 +829,20 @@ select:focus-visible {
 .channel-button span {
   min-width: 0;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel-button .channel-state-badge {
+  flex: 0 0 auto;
+  max-width: 76px;
+  overflow: hidden;
+  border-radius: 999px;
+  color: #bbf7d0;
+  background: rgb(34 197 94 / 14%);
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -862,13 +899,33 @@ select:focus-visible {
   color: #aeb7c8;
   padding: 2px 7px;
   font-size: 0.78rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
 }
 
 .voice-sidebar-member.self {
   color: #d7fff6;
   background: rgb(94 234 212 / 10%);
+}
+
+.voice-sidebar-member strong,
+.voice-sidebar-member small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.voice-sidebar-member small {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.voice-sidebar-member small.speaking {
+  color: #86efac;
 }
 
 .workspace {
@@ -901,11 +958,47 @@ select:focus-visible {
   min-width: 0;
 }
 
-.channel-title span {
+.channel-title {
+  flex: 1 1 auto;
+}
+
+.channel-title-copy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.channel-title-copy span,
+.channel-title-copy small {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.channel-title-copy span {
   font-weight: 800;
+}
+
+.channel-title-copy small {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.channel-location-summary {
+  flex: 0 1 auto;
+  max-width: min(34vw, 360px);
+  overflow: hidden;
+  border: 1px solid rgb(94 234 212 / 16%);
+  border-radius: 999px;
+  color: #bbf7d0;
+  background: rgb(20 184 166 / 10%);
+  padding: 5px 9px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .session-state {

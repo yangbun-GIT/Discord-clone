@@ -247,7 +247,7 @@ Completion notes:
 
 ## Stage 8.5: Current Location And State Visibility
 
-Status: pending.
+Status: completed.
 
 Goal: make the current destination and voice state obvious.
 
@@ -271,6 +271,23 @@ Verification:
 - Browser smoke for `@me`, DM, text channel, voice channel, mute, and speaking-state
   visual indicators.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/App.vue` now renders a compact destination subtitle in the header and
+  a voice-location status pill while connected.
+- `frontend/src/components/ServerRail.vue`,
+  `frontend/src/components/PrivateChannelSidebar.vue`, and
+  `frontend/src/components/ChannelSidebar.vue` expose current selection through
+  `aria-current` and stronger active styling.
+- `frontend/src/components/ChannelSidebar.vue` shows the locally connected voice
+  channel, current user's voice row, and muted/deafened/speaking state labels.
+- `frontend/src/components/VoicePanel.vue` prioritizes muted/deafened state in the
+  bottom voice status area.
+- Browser QA verified Friends, DM, server text channel, voice join, and mute state
+  visibility with no horizontal overflow.
+- Stage 8.5 browser QA screenshot:
+  - `docs/qa-artifacts/stage-8-5-voice-state.png`
 
 ## Stage 8.6: Placeholder Button Audit And Cleanup
 

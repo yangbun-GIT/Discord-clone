@@ -22,6 +22,10 @@ const props = defineProps<{
   activeChannelId: number | null
   voiceStates: VoiceState[]
   connectedVoiceChannelId: number | null
+  currentUserId: number | null
+  localSpeaking: boolean
+  muted: boolean
+  deafened: boolean
 }>()
 
 const emit = defineEmits<{
@@ -70,6 +74,23 @@ function channelIconLabel(channel: Channel) {
 
 function channelVoiceStates(channelId: number) {
   return props.voiceStates.filter((state) => state.channel_id === channelId)
+}
+
+function otherVoiceStates(channelId: number) {
+  return channelVoiceStates(channelId).filter((state) => state.user_id !== props.currentUserId)
+}
+
+function selfVoiceStatusLabel() {
+  if (props.deafened) return t('common.status.deafened')
+  if (props.muted) return t('common.status.muted')
+  if (props.localSpeaking) return t('voice.speaking')
+  return t('common.status.connected')
+}
+
+function voiceStateStatusLabel(state: VoiceState) {
+  if (state.self_deaf) return t('common.status.deafened')
+  if (state.self_mute) return t('common.status.muted')
+  return t('common.status.listening')
 }
 </script>
 
@@ -139,6 +160,7 @@ function channelVoiceStates(channelId: number) {
         :key="channel.id"
         class="channel-row"
         :class="{ active: channel.id === activeChannelId }"
+        :aria-current="channel.id === activeChannelId ? 'page' : undefined"
       >
         <button
           class="channel-button"
@@ -221,7 +243,8 @@ function channelVoiceStates(channelId: number) {
         v-for="channel in voiceCollapsed ? [] : voiceChannels"
         :key="channel.id"
         class="channel-row"
-        :class="{ active: channel.id === activeChannelId }"
+        :class="{ active: channel.id === activeChannelId, connected: connectedVoiceChannelId === channel.id }"
+        :aria-current="channel.id === activeChannelId ? 'page' : undefined"
       >
         <button
           class="channel-button"
@@ -231,6 +254,9 @@ function channelVoiceStates(channelId: number) {
         >
           <Radio :size="17" aria-hidden="true" />
           <span>{{ channel.name }}</span>
+          <small v-if="connectedVoiceChannelId === channel.id" class="channel-state-badge">
+            {{ t('common.status.connected') }}
+          </small>
         </button>
         <div class="channel-row-actions" aria-label="Channel actions">
           <button
@@ -274,14 +300,16 @@ function channelVoiceStates(channelId: number) {
           :aria-label="t('channel.aria.voiceMembers')"
         >
           <span v-if="connectedVoiceChannelId === channel.id" class="voice-sidebar-member self">
-            {{ t('channel.you') }}
+            <strong>{{ t('channel.you') }}</strong>
+            <small :class="{ speaking: localSpeaking }">{{ selfVoiceStatusLabel() }}</small>
           </span>
           <span
-            v-for="state in channelVoiceStates(channel.id)"
+            v-for="state in otherVoiceStates(channel.id)"
             :key="`${channel.id}:${state.user_id}`"
             class="voice-sidebar-member"
           >
-            {{ state.username ?? `User ${state.user_id}` }}
+            <strong>{{ state.username ?? `User ${state.user_id}` }}</strong>
+            <small>{{ voiceStateStatusLabel(state) }}</small>
           </span>
         </div>
       </div>

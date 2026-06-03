@@ -31,6 +31,7 @@ const { t } = useI18n()
         type="button"
         class="private-nav-button"
         :class="{ active: activeDestination === 'friends' }"
+        :aria-current="activeDestination === 'friends' ? 'page' : undefined"
         @click="$emit('openFriends')"
       >
         <MessageCircle :size="18" aria-hidden="true" />
@@ -63,6 +64,7 @@ const { t } = useI18n()
         type="button"
         class="dm-row"
         :class="{ active: activeDestination === 'dm' && dm.id === activeDmId }"
+        :aria-current="activeDestination === 'dm' && dm.id === activeDmId ? 'page' : undefined"
         @click="$emit('openDm', dm.id)"
       >
         <span class="dm-avatar" :class="dm.status">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>

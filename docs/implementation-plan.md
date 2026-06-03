@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.4 bottom user and voice panel redesign.
+- Status: completed through Stage 8.5 current location and state visibility.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -284,3 +284,7 @@
   `frontend/src/styles/base.css` separate bottom user identity controls from voice
   connection status, speaking/meter detail, and screen/call actions, with verified
   connected/disconnected and mobile layouts.
+- Completed Stage 8.5: `frontend/src/App.vue`, `ServerRail.vue`,
+  `PrivateChannelSidebar.vue`, `ChannelSidebar.vue`, `VoicePanel.vue`, and
+  `frontend/src/styles/base.css` make current destination, active rail/sidebar rows,
+  connected voice channel, self voice row, and muted/deafened/speaking state visible.
