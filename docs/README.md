@@ -57,6 +57,9 @@ the project prompt and context files before changing code.
 - `docs/stage-8-responsive-accessibility-qa.md`
   - Stage 8.13 desktop/mobile overflow, screenshot, focus-order, accessibility-label,
     and residual manual QA notes for the UI remediation stage.
+- `docs/stage-8-final-qa.md`
+  - Stage 8.14 final command verification, Docker smoke notes, browser QA artifact
+    index, and residual post-Stage 8 gaps.
 
 ## Update Rules
 
@@ -77,6 +80,8 @@ the project prompt and context files before changing code.
 - Update `docs/stage-8-responsive-accessibility-qa.md` when Stage 8 responsive
   breakpoints, focus order, accessibility labeling, screenshot artifacts, or residual
   QA notes change.
+- Update `docs/stage-8-final-qa.md` when final Stage 8 verification commands,
+  Docker smoke behavior, artifact inventory, or post-Stage 8 residual gaps change.
 - Update `docs/GITHUB_COLLABORATION_WORKFLOW.md` when branch, PR, commit, staging,
   push, or final-report rules change.
 - Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or

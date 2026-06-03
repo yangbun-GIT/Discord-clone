@@ -621,7 +621,7 @@ Completion notes:
 
 ## Stage 8.14: Final Stage 8 Verification And Documentation
 
-Status: pending.
+Status: completed.
 
 Goal: close the UI remediation slice.
 
@@ -653,3 +653,12 @@ Deliverables:
 Verification:
 
 - Full command and browser smoke pass before the goal is complete.
+
+Completion notes:
+
+- Final QA notes are in `docs/stage-8-final-qa.md`.
+- `npm run test:backend`, `npm run lint:backend`, `npm run lint:frontend`, and
+  `npm --prefix frontend run build` passed.
+- Docker Compose backend/frontend/postgres services were running; container-internal
+  backend health confirmed PostgreSQL configured and connected.
+- Stage 8 browser QA artifacts are indexed from `docs/stage-8-final-qa.md`.

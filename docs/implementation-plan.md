@@ -320,3 +320,7 @@
   `docs/stage-8-responsive-accessibility-qa.md` with desktop/mobile screenshots,
   overflow metrics, focus-order notes, residual manual checks, and a rail
   `aria-current` correction in `ServerRail.vue`.
+- Completed Stage 8.14: final Stage 8 verification is documented in
+  `docs/stage-8-final-qa.md`. Backend tests, backend lint, frontend lint, frontend
+  production build, Docker service status, container-internal backend health, and the
+  Stage 8 browser QA artifact index were recorded.

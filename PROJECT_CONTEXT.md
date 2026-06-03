@@ -765,7 +765,9 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.14 is next: run final Stage 8 verification and documentation closure.
+- Stage 8.0 through Stage 8.14 are complete. Next work should be user-directed; likely
+  candidates are real multi-browser WebRTC/TURN QA, deployment execution, or a new
+  feature slice.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -1014,6 +1016,15 @@ Discord app inspection observation:
     `aria-current="page"` when the Direct Messages/Friends home is active.
   - Residual manual QA gap: rerun full human keyboard/screen-reader passes if modal
     or settings focus behavior changes.
+- Stage 8.14 completed final Stage 8 verification:
+  - Final QA notes are in `docs/stage-8-final-qa.md`.
+  - Backend tests, backend lint, frontend lint, and frontend production build passed.
+  - Docker Compose services were running; container-internal backend health confirmed
+    PostgreSQL configured and connected.
+  - Host `127.0.0.1:8000` may show native fallback health if another local backend is
+    bound to loopback; use container-internal health for Docker database verification
+    unless local port ownership is cleared.
+  - Stage 8 browser QA artifact paths are indexed in the final QA document.
 
 Store planning observation:
 
