@@ -547,7 +547,7 @@ Completion notes:
 
 ## Stage 8.12: Low-Frequency Feature Scope Decisions
 
-Status: pending.
+Status: completed.
 
 Goal: prevent misleading UI for features not worth implementing in this clone slice.
 
@@ -568,6 +568,20 @@ Verification:
 - Frontend lint/build.
 - Browser smoke that no visible low-frequency button appears dead.
 - Commit and push.
+
+Completion notes:
+
+- `docs/stage-8-12-feature-scope.md` classifies high-use local features versus
+  deferred commerce, external-app, production-notification, GIF-search, and real file
+  transfer scope.
+- `PrivateChannelSidebar.vue` no longer exposes separate Nitro, Shop, or Quests rows;
+  it uses one `Clone scope` entry instead.
+- `ChatView.vue` removes the composer gift button and renames external-app-style
+  actions to `Local templates` while keeping upload metadata preview, emoji
+  insertion, and message sending visible.
+- `SettingsView.vue` now has a clone-scope card documenting deferred features.
+- Stage 8.12 browser QA screenshot:
+  - `docs/qa-artifacts/stage-8-12-feature-scope.png`
 
 ## Stage 8.13: Responsive And Accessibility QA
 

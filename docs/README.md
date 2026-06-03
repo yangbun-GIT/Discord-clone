@@ -50,6 +50,10 @@ the project prompt and context files before changing code.
   - Desktop/mobile responsive QA notes and screenshot artifact paths for Stage 7.11.
 - `docs/stage-7-12-final-qa.md`
   - Final Stage 7.12 command, Docker, and browser smoke verification notes.
+- `docs/stage-8-12-feature-scope.md`
+  - Stage 8.12 classification for low-frequency, deferred, or local-template
+    feature surfaces such as Nitro, Shop, Quests, gifts, upload, notifications,
+    external apps, and GIF search.
 
 ## Update Rules
 
@@ -64,6 +68,9 @@ the project prompt and context files before changing code.
   screenshot artifacts change.
 - Update `docs/stage-7-12-final-qa.md` when the final Discord app smoke suite,
   Docker smoke, or residual QA notes change.
+- Update `docs/stage-8-12-feature-scope.md` when low-frequency feature scope,
+  composer action classification, commerce/deferred UI decisions, or related
+  verification notes change.
 - Update `docs/GITHUB_COLLABORATION_WORKFLOW.md` when branch, PR, commit, staging,
   push, or final-report rules change.
 - Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or

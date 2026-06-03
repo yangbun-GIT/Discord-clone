@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   Check,
-  Gift,
   ImagePlus,
   Laugh,
   MoreHorizontal,
@@ -29,7 +28,7 @@ const editDraft = ref('')
 const editingMessageId = ref<number | null>(null)
 const replyTargetId = ref<number | null>(null)
 const optionsMessageId = ref<number | null>(null)
-const activeComposerPanel = ref<'upload' | 'gift' | 'apps' | 'emoji' | null>(null)
+const activeComposerPanel = ref<'upload' | 'templates' | 'emoji' | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFileLabel = ref('')
 const { t } = useI18n()
@@ -40,8 +39,7 @@ const replyTarget = computed(
 )
 const activeComposerPanelLabel = computed(() => {
   if (activeComposerPanel.value === 'upload') return t('chat.uploadFile')
-  if (activeComposerPanel.value === 'gift') return t('chat.sendGift')
-  if (activeComposerPanel.value === 'apps') return t('chat.apps')
+  if (activeComposerPanel.value === 'templates') return t('chat.templates')
   if (activeComposerPanel.value === 'emoji') return t('chat.emoji')
   return ''
 })
@@ -88,7 +86,7 @@ function toggleOptions(message: Message) {
   optionsMessageId.value = optionsMessageId.value === message.id ? null : message.id
 }
 
-function toggleComposerPanel(panel: 'upload' | 'gift' | 'apps' | 'emoji') {
+function toggleComposerPanel(panel: 'upload' | 'templates' | 'emoji') {
   activeComposerPanel.value = activeComposerPanel.value === panel ? null : panel
 }
 
@@ -108,7 +106,7 @@ function handleFileSelected(event: Event) {
 }
 
 function insertAppAction(action: 'poll' | 'todo') {
-  insertText(action === 'poll' ? t('chat.apps.pollTemplate') : t('chat.apps.todoTemplate'))
+  insertText(action === 'poll' ? t('chat.templates.pollTemplate') : t('chat.templates.todoTemplate'))
   activeComposerPanel.value = null
 }
 
@@ -254,15 +252,6 @@ function submitEdit(message: Message) {
           >
             <PlusCircle :size="18" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            :title="t('chat.sendGift')"
-            :aria-label="t('chat.sendGift')"
-            :aria-expanded="activeComposerPanel === 'gift'"
-            @click="toggleComposerPanel('gift')"
-          >
-            <Gift :size="18" aria-hidden="true" />
-          </button>
         </div>
         <input
           v-model="draft"
@@ -273,10 +262,10 @@ function submitEdit(message: Message) {
         <div class="composer-actions" :aria-label="t('chat.aria.expressionActions')">
           <button
             type="button"
-            :title="t('chat.apps')"
-            :aria-label="t('chat.apps')"
-            :aria-expanded="activeComposerPanel === 'apps'"
-            @click="toggleComposerPanel('apps')"
+            :title="t('chat.templates')"
+            :aria-label="t('chat.templates')"
+            :aria-expanded="activeComposerPanel === 'templates'"
+            @click="toggleComposerPanel('templates')"
           >
             <ImagePlus :size="18" aria-hidden="true" />
           </button>
@@ -300,7 +289,7 @@ function submitEdit(message: Message) {
           <span v-if="activeComposerPanel === 'upload'">
             {{ selectedFileLabel || t('chat.uploadDescription') }}
           </span>
-          <span v-else-if="activeComposerPanel === 'apps'">{{ t('chat.appsDescription') }}</span>
+          <span v-else-if="activeComposerPanel === 'templates'">{{ t('chat.templatesDescription') }}</span>
           <span v-else-if="activeComposerPanel === 'emoji'">{{ t('chat.emojiDescription') }}</span>
           <span v-else>{{ t('chat.demoPanel.description') }}</span>
         </div>
@@ -310,9 +299,9 @@ function submitEdit(message: Message) {
             {{ emoji }}
           </button>
         </div>
-        <div v-else-if="activeComposerPanel === 'apps'" class="composer-app-grid">
-          <button type="button" @click="insertAppAction('poll')">{{ t('chat.apps.poll') }}</button>
-          <button type="button" @click="insertAppAction('todo')">{{ t('chat.apps.todo') }}</button>
+        <div v-else-if="activeComposerPanel === 'templates'" class="composer-app-grid">
+          <button type="button" @click="insertAppAction('poll')">{{ t('chat.templates.poll') }}</button>
+          <button type="button" @click="insertAppAction('todo')">{{ t('chat.templates.todo') }}</button>
         </div>
         <button v-else-if="activeComposerPanel === 'upload'" type="button" @click="openFilePicker">
           {{ t('chat.chooseFile') }}

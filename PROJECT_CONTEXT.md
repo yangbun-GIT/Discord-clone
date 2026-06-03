@@ -765,9 +765,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.12 is next: classify low-frequency or demo-only features and make sure
-  visible controls either perform useful local behavior or clearly explain the
-  deferred scope.
+- Stage 8.13 is next: run responsive and accessibility QA for Stage 8 surfaces,
+  capture artifacts, and document residual issues before final Stage 8 verification.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -994,6 +993,18 @@ Discord app inspection observation:
     checks.
   - QA screenshots are `docs/qa-artifacts/stage-8-11-voice-workspace.png` and
     `docs/qa-artifacts/stage-8-11-voice-workspace-fake-media.png`.
+- Stage 8.12 completed low-frequency feature scope cleanup:
+  - Scope decisions are documented in `docs/stage-8-12-feature-scope.md`.
+  - `frontend/src/components/PrivateChannelSidebar.vue` replaces separate Nitro,
+    Shop, and Quests rows with a single clone-scope entry.
+  - `frontend/src/components/ChatView.vue` removes the gift checkout button and
+    reframes external-app-style composer actions as local templates.
+  - `frontend/src/components/SettingsView.vue` adds a clone-scope decisions card for
+    commerce, external apps/activities, GIF search, real file transfer, and
+    production notifications.
+  - `frontend/src/i18n/index.ts` contains Korean/English labels for the new scope
+    and local-template copy.
+  - QA screenshot is `docs/qa-artifacts/stage-8-12-feature-scope.png`.
 
 Store planning observation:
 

@@ -311,3 +311,8 @@
   screen-share availability, local/remote participant tiles, and join/leave state;
   sidebar and bottom voice-panel copy now make selected versus connected channels
   clearer.
+- Completed Stage 8.12: low-frequency and deferred features are classified in
+  `docs/stage-8-12-feature-scope.md`. Separate Nitro, Shop, Quests, and gift
+  controls were removed from the active UI, composer app actions were reframed as
+  local templates, and Settings now documents commerce, external app, real file
+  transfer, GIF search, and production-notification scope.

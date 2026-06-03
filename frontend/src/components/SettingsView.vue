@@ -172,6 +172,15 @@ const statusLabel = computed(() => {
           <h2>{{ t('settings.demoScopeTitle') }}</h2>
           <p>{{ t('settings.demoScopeDescription') }}</p>
         </section>
+        <section class="settings-card">
+          <h2>{{ t('settings.cloneScopeTitle') }}</h2>
+          <ul class="settings-scope-list">
+            <li>{{ t('settings.cloneScopeCommerce') }}</li>
+            <li>{{ t('settings.cloneScopeExternalApps') }}</li>
+            <li>{{ t('settings.cloneScopeMediaTransfer') }}</li>
+            <li>{{ t('settings.cloneScopeNotifications') }}</li>
+          </ul>
+        </section>
       </div>
 
       <div v-else-if="activePanel === 'privacy'" class="settings-section-grid">

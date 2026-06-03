@@ -466,6 +466,36 @@ select:focus-visible {
   color: #9ca3af;
 }
 
+.private-nav-button.scope {
+  min-height: 52px;
+  align-items: flex-start;
+  padding-block: 8px;
+  color: #aeb7c8;
+}
+
+.private-nav-button.scope span {
+  display: grid;
+  gap: 2px;
+}
+
+.private-nav-button.scope strong,
+.private-nav-button.scope small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.private-nav-button.scope strong {
+  color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.private-nav-button.scope small {
+  color: #8f98aa;
+  font-size: 0.74rem;
+}
+
 .dm-list-section {
   min-height: 0;
   display: grid;
@@ -1535,6 +1565,19 @@ select:focus-visible {
   margin: 0;
   color: #f8fafc;
   text-align: right;
+}
+
+.settings-scope-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.settings-scope-list li::marker {
+  color: #7dd3fc;
 }
 
 .profile-preview {
