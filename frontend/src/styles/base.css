@@ -929,6 +929,7 @@ select:focus-visible {
 }
 
 .workspace {
+  position: relative;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -1077,6 +1078,121 @@ select:focus-visible {
 .topbar-icon-button:disabled {
   color: #64748b;
   background: rgb(255 255 255 / 5%);
+}
+
+.channel-header-panel {
+  position: absolute;
+  z-index: 35;
+  top: calc(var(--topbar-height) + 8px);
+  right: 16px;
+  width: min(420px, calc(100% - 32px));
+  max-height: min(520px, calc(100% - var(--topbar-height) - 24px));
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  color: #d7dee8;
+  background: #272932;
+  padding: 14px;
+  box-shadow: 0 20px 56px rgb(0 0 0 / 38%);
+}
+
+.channel-header-panel-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.channel-header-panel-title strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel-header-panel-title button,
+.header-panel-result {
+  border: 0;
+  border-radius: 8px;
+}
+
+.channel-header-panel-title button {
+  min-height: 30px;
+  color: #111827;
+  background: #7dd3fc;
+  padding: 0 10px;
+  font-weight: 800;
+}
+
+.header-panel-options,
+.header-panel-search {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.header-panel-options label {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 6%);
+  padding: 0 10px;
+}
+
+.header-panel-options input {
+  width: 16px;
+  height: 16px;
+  accent-color: #5eead4;
+}
+
+.header-panel-options small,
+.header-panel-empty {
+  color: #9ca3af;
+  font-size: 0.84rem;
+}
+
+.header-panel-search input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(0 0 0 / 18%);
+  padding: 0 10px;
+}
+
+.header-panel-result {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  color: #d7dee8;
+  background: rgb(255 255 255 / 6%);
+  padding: 10px;
+  text-align: left;
+}
+
+.header-panel-result:hover,
+.header-panel-result:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.header-panel-result strong,
+.header-panel-result span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-panel-result span {
+  color: #aeb7c8;
+  font-size: 0.84rem;
 }
 
 .workspace-alerts {

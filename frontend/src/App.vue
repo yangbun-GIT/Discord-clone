@@ -109,6 +109,9 @@ const workspaceNotice = ref<string | null>(null)
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
+const activeHeaderPanel = ref<'threads' | 'notifications' | 'pins' | 'search' | null>(null)
+const notificationMode = ref<'all' | 'mentions' | 'none'>('all')
+const channelSearchQuery = ref('')
 const showAddServer = ref(false)
 const addServerMode = ref<'create' | 'join'>('create')
 const showDiscovery = ref(false)
@@ -135,6 +138,14 @@ const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
     ] as const
   })
   return Object.fromEntries(entries)
+})
+const channelSearchResults = computed(() => {
+  const query = channelSearchQuery.value.trim().toLowerCase()
+  if (!query) return []
+  return activeMessages.value.filter((message) =>
+    message.content.toLowerCase().includes(query)
+    || message.author_name.toLowerCase().includes(query),
+  )
 })
 
 async function openWorkspace() {
@@ -210,17 +221,20 @@ function handleLogout() {
 
 function handleSelectGuild(guildId: number) {
   workspaceNotice.value = null
+  activeHeaderPanel.value = null
   navigation.openServerChannel()
   guilds.selectGuild(guildId)
 }
 
 function handleOpenFriends() {
   workspaceNotice.value = null
+  activeHeaderPanel.value = null
   navigation.openFriends()
 }
 
 function handleOpenDm(dmId: number) {
   workspaceNotice.value = null
+  activeHeaderPanel.value = null
   navigation.openDm(dmId)
 }
 
@@ -289,6 +303,12 @@ function handleCreateChannel(name: string, type: 0 | 1 = 0) {
 function showHeaderPlaceholder(label: string) {
   workspaceError.value = null
   workspaceNotice.value = t('app.notice.localControl', { label })
+}
+
+function toggleHeaderPanel(panel: 'threads' | 'notifications' | 'pins' | 'search') {
+  workspaceError.value = null
+  workspaceNotice.value = null
+  activeHeaderPanel.value = activeHeaderPanel.value === panel ? null : panel
 }
 
 function showDemoNotice(label: string) {
@@ -613,7 +633,8 @@ async function handleCreateInvite() {
             type="button"
             :title="t('app.header.threads')"
             :aria-label="t('app.header.threads')"
-            @click="showHeaderPlaceholder(t('app.header.threads'))"
+            :aria-expanded="activeHeaderPanel === 'threads'"
+            @click="toggleHeaderPanel('threads')"
           >
             <List :size="17" aria-hidden="true" />
           </button>
@@ -622,7 +643,8 @@ async function handleCreateInvite() {
             type="button"
             :title="t('app.header.notifications')"
             :aria-label="t('app.header.notifications')"
-            @click="showHeaderPlaceholder(t('app.header.notifications'))"
+            :aria-expanded="activeHeaderPanel === 'notifications'"
+            @click="toggleHeaderPanel('notifications')"
           >
             <Bell :size="17" aria-hidden="true" />
           </button>
@@ -631,7 +653,8 @@ async function handleCreateInvite() {
             type="button"
             :title="t('app.header.pins')"
             :aria-label="t('app.header.pins')"
-            @click="showHeaderPlaceholder(t('app.header.pins'))"
+            :aria-expanded="activeHeaderPanel === 'pins'"
+            @click="toggleHeaderPanel('pins')"
           >
             <Pin :size="17" aria-hidden="true" />
           </button>
@@ -648,10 +671,12 @@ async function handleCreateInvite() {
           <label class="topbar-search">
             <Search :size="15" aria-hidden="true" />
             <input
+              v-model="channelSearchQuery"
               type="search"
               :placeholder="t('app.header.search')"
               :aria-label="t('app.header.searchMessages')"
-              @focus="showHeaderPlaceholder(t('app.header.search'))"
+              @focus="activeHeaderPanel = 'search'"
+              @input="activeHeaderPanel = 'search'"
             />
           </label>
           <button
@@ -703,6 +728,71 @@ async function handleCreateInvite() {
           </button>
         </div>
       </header>
+
+      <section v-if="isServerDestination && activeHeaderPanel" class="channel-header-panel" role="dialog">
+        <div class="channel-header-panel-title">
+          <strong>
+            {{
+              activeHeaderPanel === 'threads'
+                ? t('headerPanel.threads.title')
+                : activeHeaderPanel === 'notifications'
+                  ? t('headerPanel.notifications.title')
+                  : activeHeaderPanel === 'pins'
+                    ? t('headerPanel.pins.title')
+                    : t('headerPanel.search.title')
+            }}
+          </strong>
+          <button type="button" @click="activeHeaderPanel = null">{{ t('common.close') }}</button>
+        </div>
+
+        <div v-if="activeHeaderPanel === 'notifications'" class="header-panel-options">
+          <label>
+            <input v-model="notificationMode" type="radio" value="all" />
+            <span>{{ t('headerPanel.notifications.all') }}</span>
+          </label>
+          <label>
+            <input v-model="notificationMode" type="radio" value="mentions" />
+            <span>{{ t('headerPanel.notifications.mentions') }}</span>
+          </label>
+          <label>
+            <input v-model="notificationMode" type="radio" value="none" />
+            <span>{{ t('headerPanel.notifications.none') }}</span>
+          </label>
+          <small>{{ t('headerPanel.notifications.saved') }}</small>
+        </div>
+
+        <div v-else-if="activeHeaderPanel === 'search'" class="header-panel-search">
+          <input
+            v-model="channelSearchQuery"
+            type="search"
+            :placeholder="t('headerPanel.search.placeholder')"
+            autofocus
+          />
+          <div v-if="!channelSearchQuery.trim()" class="header-panel-empty">
+            {{ t('headerPanel.search.empty') }}
+          </div>
+          <div v-else-if="!channelSearchResults.length" class="header-panel-empty">
+            {{ t('headerPanel.search.noResults') }}
+          </div>
+          <button
+            v-for="message in channelSearchResults.slice(0, 8)"
+            :key="message.id"
+            type="button"
+            class="header-panel-result"
+          >
+            <strong>{{ message.author_name }}</strong>
+            <span>{{ message.content }}</span>
+          </button>
+        </div>
+
+        <div v-else class="header-panel-empty">
+          {{
+            activeHeaderPanel === 'threads'
+              ? t('headerPanel.threads.empty')
+              : t('headerPanel.pins.empty')
+          }}
+        </div>
+      </section>
 
       <div class="workspace-alerts">
         <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">

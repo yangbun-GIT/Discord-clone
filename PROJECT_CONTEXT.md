@@ -32,7 +32,7 @@ Stage 8 Discord UI remediation has started with the controlling plan in
 plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
 Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
 Stage 8.5 current location/state visibility, and Stage 8.6 placeholder-button
-cleanup are complete.
+cleanup, and Stage 8.7 channel-header panels are complete.
 
 The app boots in two local modes:
 
@@ -763,8 +763,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.7 is next: implement useful local channel-header panels for notifications,
-  pinned messages, threads, and channel search.
+- Stage 8.8 is next: expand composer action panels for useful local emoji insertion,
+  attachment preview/demo limitation, and apps/actions behavior.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -931,6 +931,17 @@ Discord app inspection observation:
   - `frontend/src/styles/base.css` keeps workspace notices compact so they do not
     consume the main content area.
   - QA screenshot is `docs/qa-artifacts/stage-8-6-button-panels.png`.
+- Stage 8.7 completed channel-header panels:
+  - `frontend/src/App.vue` owns local panel state for threads, notifications, pinned
+    messages, and current-channel search.
+  - Notification settings support all messages, mentions only, and mute notifications
+    as local session state.
+  - Current-channel search filters the active in-memory messages by content or author.
+  - Threads and pinned messages now show useful empty states instead of generic
+    placeholder notices.
+  - `frontend/src/styles/base.css` positions header panels below the topbar without
+    consuming workspace layout rows.
+  - QA screenshot is `docs/qa-artifacts/stage-8-7-header-panels.png`.
 
 Store planning observation:
 

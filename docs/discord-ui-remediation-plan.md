@@ -338,7 +338,7 @@ Completion notes:
 
 ## Stage 8.7: Channel Header Panels
 
-Status: pending.
+Status: completed.
 
 Goal: turn common channel-header buttons into useful local panels.
 
@@ -360,6 +360,23 @@ Verification:
 - Frontend lint/build.
 - Browser smoke for each header icon and search result behavior.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/App.vue` now owns local channel-header panel state for threads,
+  notifications, pinned messages, and current-channel search.
+- Threads and pinned messages open useful empty-state panels instead of generic
+  notices.
+- Notification settings support all messages, mentions only, and mute notifications
+  as local session state.
+- Channel search filters the active channel's in-memory messages by author or
+  content and shows empty/no-result states.
+- `frontend/src/styles/base.css` positions the panel below the topbar without
+  affecting the workspace grid.
+- Browser QA verified threads, notifications, pinned messages, search, radio option
+  selection, and no horizontal overflow.
+- Stage 8.7 browser QA screenshot:
+  - `docs/qa-artifacts/stage-8-7-header-panels.png`
 
 ## Stage 8.8: Composer Action Panels
 
