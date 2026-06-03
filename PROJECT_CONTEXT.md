@@ -32,7 +32,8 @@ Stage 8 Discord UI remediation has started with the controlling plan in
 plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
 Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
 Stage 8.5 current location/state visibility, and Stage 8.6 placeholder-button
-cleanup, and Stage 8.7 channel-header panels are complete.
+cleanup, Stage 8.7 channel-header panels, and Stage 8.8 composer action panels are
+complete.
 
 The app boots in two local modes:
 
@@ -763,8 +764,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.8 is next: expand composer action panels for useful local emoji insertion,
-  attachment preview/demo limitation, and apps/actions behavior.
+- Stage 8.9 is next: improve Friends and DM information density, selected-state
+  clarity, and scan-friendly profile/activity context.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -942,6 +943,16 @@ Discord app inspection observation:
   - `frontend/src/styles/base.css` positions header panels below the topbar without
     consuming workspace layout rows.
   - QA screenshot is `docs/qa-artifacts/stage-8-7-header-panels.png`.
+- Stage 8.8 completed composer action panels:
+  - `frontend/src/components/ChatView.vue` now inserts local emoji into drafts,
+    exposes a bounded upload metadata panel, provides poll/todo apps action
+    templates, and keeps gift as an explicit demo limitation.
+  - `frontend/src/components/DirectMessageView.vue` adds DM composer emoji insertion
+    while preserving button-based DM send.
+  - `frontend/src/styles/base.css` keeps composer panels within the input area and
+    fixes the DM composer grid for input, expression action, and send controls.
+  - QA screenshots are `docs/qa-artifacts/stage-8-8-composer-panels.png` and
+    `docs/qa-artifacts/stage-8-8-dm-composer.png`.
 
 Store planning observation:
 

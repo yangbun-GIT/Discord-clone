@@ -380,7 +380,7 @@ Completion notes:
 
 ## Stage 8.8: Composer Action Panels
 
-Status: pending.
+Status: completed.
 
 Goal: make composer actions useful without external services.
 
@@ -402,6 +402,21 @@ Verification:
 - Frontend lint/build.
 - Browser smoke for emoji insertion, file/demo panel, message send, edit, delete.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/components/ChatView.vue` now supports local emoji insertion, a
+  hidden file picker with selected-file metadata, useful apps/action templates for
+  poll and todo drafting, and an explicit gift demo limitation.
+- `frontend/src/components/DirectMessageView.vue` has DM composer parity for local
+  emoji insertion while preserving the existing DM message send flow.
+- `frontend/src/styles/base.css` keeps composer panels bounded under the input and
+  fixes the DM composer grid so the input, expression action, and send button align.
+- Browser QA verified server composer emoji insertion, apps template insertion,
+  upload demo metadata, DM composer emoji insertion, and DM button-based send.
+- Stage 8.8 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-8-composer-panels.png`
+  - `docs/qa-artifacts/stage-8-8-dm-composer.png`
 
 ## Stage 8.9: Friends And DM Information Density
 

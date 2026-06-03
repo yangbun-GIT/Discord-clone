@@ -30,7 +30,10 @@ const editingMessageId = ref<number | null>(null)
 const replyTargetId = ref<number | null>(null)
 const optionsMessageId = ref<number | null>(null)
 const activeComposerPanel = ref<'upload' | 'gift' | 'apps' | 'emoji' | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
+const selectedFileLabel = ref('')
 const { t } = useI18n()
+const emojiOptions = ['😀', '👍', '✅', '🔥', '🎉', '🙏', '👀', '💡']
 
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
@@ -87,6 +90,26 @@ function toggleOptions(message: Message) {
 
 function toggleComposerPanel(panel: 'upload' | 'gift' | 'apps' | 'emoji') {
   activeComposerPanel.value = activeComposerPanel.value === panel ? null : panel
+}
+
+function insertText(value: string) {
+  draft.value = `${draft.value}${draft.value ? ' ' : ''}${value}`.slice(0, 2000)
+}
+
+function openFilePicker() {
+  activeComposerPanel.value = 'upload'
+  fileInput.value?.click()
+}
+
+function handleFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  selectedFileLabel.value = file ? `${file.name} · ${Math.ceil(file.size / 1024)} KB` : ''
+}
+
+function insertAppAction(action: 'poll' | 'todo') {
+  insertText(action === 'poll' ? t('chat.apps.pollTemplate') : t('chat.apps.todoTemplate'))
+  activeComposerPanel.value = null
 }
 
 function deleteMessage(message: Message) {
@@ -227,7 +250,7 @@ function submitEdit(message: Message) {
             :title="t('chat.uploadFile')"
             :aria-label="t('chat.uploadFile')"
             :aria-expanded="activeComposerPanel === 'upload'"
-            @click="toggleComposerPanel('upload')"
+            @click="openFilePicker"
           >
             <PlusCircle :size="18" aria-hidden="true" />
           </button>
@@ -272,8 +295,28 @@ function submitEdit(message: Message) {
         </button>
       </form>
       <div v-if="activeComposerPanel" class="composer-demo-panel" role="status">
-        <strong>{{ t('chat.demoPanel.title', { label: activeComposerPanelLabel }) }}</strong>
-        <span>{{ t('chat.demoPanel.description') }}</span>
+        <div class="composer-panel-copy">
+          <strong>{{ t('chat.demoPanel.title', { label: activeComposerPanelLabel }) }}</strong>
+          <span v-if="activeComposerPanel === 'upload'">
+            {{ selectedFileLabel || t('chat.uploadDescription') }}
+          </span>
+          <span v-else-if="activeComposerPanel === 'apps'">{{ t('chat.appsDescription') }}</span>
+          <span v-else-if="activeComposerPanel === 'emoji'">{{ t('chat.emojiDescription') }}</span>
+          <span v-else>{{ t('chat.demoPanel.description') }}</span>
+        </div>
+        <input ref="fileInput" class="visually-hidden" type="file" @change="handleFileSelected" />
+        <div v-if="activeComposerPanel === 'emoji'" class="composer-emoji-grid">
+          <button v-for="emoji in emojiOptions" :key="emoji" type="button" @click="insertText(emoji)">
+            {{ emoji }}
+          </button>
+        </div>
+        <div v-else-if="activeComposerPanel === 'apps'" class="composer-app-grid">
+          <button type="button" @click="insertAppAction('poll')">{{ t('chat.apps.poll') }}</button>
+          <button type="button" @click="insertAppAction('todo')">{{ t('chat.apps.todo') }}</button>
+        </div>
+        <button v-else-if="activeComposerPanel === 'upload'" type="button" @click="openFilePicker">
+          {{ t('chat.chooseFile') }}
+        </button>
         <button type="button" @click="activeComposerPanel = null">{{ t('common.close') }}</button>
       </div>
     </section>

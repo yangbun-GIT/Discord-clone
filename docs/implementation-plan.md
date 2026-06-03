@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.7 channel header panels.
+- Status: completed through Stage 8.8 composer action panels.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -294,3 +294,7 @@
 - Completed Stage 8.7: channel header threads, notifications, pinned messages, and
   current-channel search open local panels with useful empty states, local
   notification selection, and active-message filtering.
+- Completed Stage 8.8: server and DM composers support useful local emoji
+  insertion; the server composer also provides bounded upload metadata, apps/action
+  drafting templates, and an explicit gift demo limitation without breaking message
+  send/edit/delete behavior.
