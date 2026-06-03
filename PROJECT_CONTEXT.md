@@ -18,7 +18,8 @@ editing code, then update it whenever a meaningful implementation change lands.
 Stage 4's implementation scope is complete. Stage 1, the Docker development baseline,
 Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-realtime
 scope, focused PostgreSQL repository coverage for current guild/message mutations,
-and Stage 5 deployment notes/runtime hardening are complete and pushed to GitHub.
+Stage 5 deployment notes/runtime hardening, and Stage 6.1 Store data contracts are
+complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -245,10 +246,18 @@ The app boots in two local modes:
   - Coordinates registration/login with async repository calls and runs bcrypt
     hashing/verification off the event loop.
 - `backend/app/schemas/`
-  - Pydantic API schemas for auth, guilds, and messages.
+  - Pydantic API schemas for auth, guilds, messages, and Store contracts.
+- `backend/app/schemas/store.py`
+  - Store item, collection, price, preview, catalog, detail, inventory, purchase,
+    gift, equip, and mutation response schemas.
+  - Defines supported item types, ownership states, sort modes, and equip slots for
+    Stage 6 before Store routes are implemented.
+  - Validates hex color tokens, JavaScript-safe IDs, bundle child-item boundaries, and
+    Store mutation request payload limits.
 - `backend/tests/`
   - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
-    API routes, gateway connection management, message schema sanitization, and
+    API routes, gateway connection management, message schema sanitization, Store
+    schema validation, and
     focused guild repository mutation behavior for guild creation/reads, channel
     creation, invites, roles, member removal, and message update/delete.
 
@@ -341,6 +350,8 @@ The app boots in two local modes:
   - App layout, accessible focus styles, responsive behavior, and View Transitions rule.
 - `frontend/src/types.ts`
   - Shared frontend types matching the current backend demo API shape.
+  - Includes Store TypeScript contracts for item types, ownership states, catalog,
+    filters, item detail, inventory, purchase, gift, equip, and mutation responses.
 - `docs/deployment.md`
   - VM/runtime deployment checklist, production environment variables, HTTPS/gateway
     notes, ICE/TURN guidance, voice verification, and hardening notes.
@@ -564,8 +575,8 @@ npm run docker:down
 Next implementation stage:
 
 - Start Stage 6's Store implementation from
-  `docs/store-clone-implementation-plan.md`, beginning with Store scope/data
-  contracts and a safe original demo catalog.
+  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.2's safe
+  original demo catalog.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -578,6 +589,10 @@ Store planning observation:
 - Store feature scope was therefore derived from route behavior plus Discord's public
   Shop/Profile support documentation. The implementation plan avoids real Discord
   assets, item names, prices, and payment processing.
+- Stage 6.1 completed the cross-stack Store data contract:
+  - Backend contracts are in `backend/app/schemas/store.py`.
+  - Frontend contracts are in `frontend/src/types.ts`.
+  - Validation coverage is in `backend/tests/test_store_schema.py`.
 
 Completed Stage 2 bridge work:
 
@@ -648,6 +663,8 @@ Completed Stage 2 bridge work:
   record remaining external-only gaps.
 - Added `docs/store-clone-implementation-plan.md` as the detailed Stage 6 plan for a
   Discord Store-like in-app shop.
+- Added Stage 6.1 Store contracts across backend Pydantic schemas, frontend
+  TypeScript types, and backend validation tests.
 
 After each stage or meaningful feature:
 

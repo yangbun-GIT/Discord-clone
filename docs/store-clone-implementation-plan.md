@@ -36,6 +36,8 @@ Build a Store tab that feels native to the current Discord clone workspace:
 
 ## Stage 6.1: Store Scope And Data Contract
 
+Status: completed.
+
 Goal: define exactly what the Store supports before UI work starts.
 
 Tasks:
@@ -78,7 +80,8 @@ Deliverables:
 
 Verification:
 
-- Backend schema unit tests for validation boundaries.
+- Backend schema unit tests for validation boundaries: `npm run test:backend --
+  tests/test_store_schema.py`.
 - Frontend type check through `npm --prefix frontend run build`.
 
 ## Stage 6.2: Store Seed Catalog

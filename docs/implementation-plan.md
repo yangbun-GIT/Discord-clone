@@ -131,10 +131,14 @@
 
 ## Stage 6: Discord Store-Like Shop
 
-- Status: detailed implementation plan created; implementation not started.
+- Status: implementation started; Store scope and API/data contracts are complete.
 - Plan document: `docs/store-clone-implementation-plan.md`.
 - Target: add an in-app Store tab inspired by Discord's Store, using original demo
   cosmetics and no real payment processing.
+- Store contracts completed: backend Pydantic schemas in `backend/app/schemas/store.py`
+  and frontend TypeScript types in `frontend/src/types.ts` define item types,
+  ownership states, price metadata, catalog/detail/inventory responses, and
+  purchase/gift/equip request-response shapes.
 - Scope includes Store entry, catalog, featured collections, Browse tab, search,
   sort, filters, item cards, item detail preview, demo purchase, inventory, apply,
   bundles, gifting, Orbs exclusives, Nitro-like discounts, profile integration,
