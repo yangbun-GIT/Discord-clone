@@ -170,6 +170,8 @@ Verification:
 
 ## Stage 6.4: Store Frontend State
 
+Status: completed.
+
 Goal: isolate Store state from guild/chat state.
 
 Tasks:
@@ -191,8 +193,9 @@ Tasks:
 
 Deliverables:
 
-- Pinia Store store.
-- Store API wrapper functions.
+- Pinia Store store: `frontend/src/stores/store.ts`.
+- Store API wrapper functions: `fetchStoreCatalog()` and `fetchStoreItemDetail()` in
+  `frontend/src/services/api.ts`.
 
 Verification:
 

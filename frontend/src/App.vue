@@ -15,10 +15,12 @@ import { useGateway } from './composables/useGateway'
 import { useVoiceRtc } from './composables/useVoiceRtc'
 import { useGuildStore } from './stores/guilds'
 import { useSessionStore } from './stores/session'
+import { useStoreStore } from './stores/store'
 import type { VoiceConfig, VoiceIceServer } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
+const store = useStoreStore()
 const {
   connect: connectGateway,
   disconnect: disconnectGateway,
@@ -107,6 +109,7 @@ function handleLogout() {
   workspaceError.value = null
   session.logout()
   guilds.resetGuilds()
+  store.resetStoreState()
 }
 
 function openCreateGuild() {

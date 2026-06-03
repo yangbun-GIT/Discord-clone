@@ -19,8 +19,8 @@ Stage 4's implementation scope is complete. Stage 1, the Docker development base
 Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-realtime
 scope, focused PostgreSQL repository coverage for current guild/message mutations,
 Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stage 6.2
-Store seed catalog, and Stage 6.3 Store backend read APIs are complete and pushed to
-GitHub.
+Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
+state are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -303,6 +303,8 @@ The app boots in two local modes:
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
   - GET, POST, PATCH, and DELETE calls accept an optional bearer token.
+  - Exposes Store read wrappers for `/api/store/catalog` and
+    `/api/store/items/{item_id}`.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
   - Calls `/api/auth/login`, `/api/auth/register`, `/api/auth/me`, and
@@ -330,6 +332,14 @@ The app boots in two local modes:
   - Applies gateway `GUILD_UPDATE` dispatches by replacing the local guild snapshot
     and preserving a valid active channel.
   - Uses `document.startViewTransition()` when available for channel switching.
+- `frontend/src/stores/store.ts`
+  - Pinia Store state module for Stage 6.
+  - Uses `shallowRef` for catalog, active item detail, and future inventory payloads.
+  - Tracks catalog/detail/inventory loading, active tab, search query, selected item
+    type/ownership/show-only/color/theme/collection filters, sort mode, mutation
+    state, and API errors.
+  - Provides computed featured, Orb-eligible, and filtered/sorted item result sets.
+  - Resets Store state independently from guild/chat state on logout.
 - `frontend/src/composables/useGateway.ts`
   - Browser WebSocket gateway client.
   - On Hello opcode 10, sends Identify opcode 2 and starts heartbeat opcode 1.
@@ -417,6 +427,12 @@ The app boots in two local modes:
     categories, filter metadata, demo Orb balance, and Nitro-like demo metadata.
   - `GET /api/store/items/{item_id}` returns item detail, included bundle children,
     related items, purchase/gift eligibility, and current equip eligibility.
+- Store frontend state flow:
+  - `frontend/src/services/api.ts` wraps Store catalog and item-detail fetches.
+  - `frontend/src/stores/store.ts` loads Store catalog/detail data with the current
+    bearer token and keeps Store filters/sort state independent from guild state.
+  - `App.vue` calls `store.resetStoreState()` during logout so Store state cannot
+    leak between sessions.
 - Guild creation flow:
   - `ServerRail.vue` and the empty workspace call `App.vue`'s create-server handler.
   - `App.vue` opens a focused server-name dialog.
@@ -605,8 +621,8 @@ npm run docker:down
 Next implementation stage:
 
 - Start Stage 6's Store implementation from
-  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.4's frontend
-  Store Pinia state and API wrapper integration.
+  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.5's Store entry
+  in the app shell.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -630,6 +646,10 @@ Store planning observation:
   - Route handlers are in `backend/app/api/routes/store.py`.
   - Response assembly is in `backend/app/services/store_service.py`.
   - API coverage is in `backend/tests/test_store_api.py`.
+- Stage 6.4 completed frontend Store state:
+  - Store state is in `frontend/src/stores/store.ts`.
+  - Store read wrappers are in `frontend/src/services/api.ts`.
+  - Logout reset integration is in `frontend/src/App.vue`.
 
 Completed Stage 2 bridge work:
 
@@ -705,6 +725,8 @@ Completed Stage 2 bridge work:
 - Added Stage 6.2 Store seed catalog with original demo collections, cosmetics,
   bundle metadata, Orb exclusives, limited drops, and catalog integrity tests.
 - Added Stage 6.3 authenticated Store read APIs for catalog and item detail payloads.
+- Added Stage 6.4 frontend Store Pinia state, read API wrappers, filtering/sorting
+  state, and logout reset integration.
 
 After each stage or meaningful feature:
 

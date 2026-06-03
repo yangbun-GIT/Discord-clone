@@ -1,3 +1,5 @@
+import type { StoreCatalog, StoreItemDetail } from '../types'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 async function readError(response: Response, method: string, path: string) {
@@ -81,4 +83,15 @@ export async function apiDelete<TResponse>(path: string, token?: string | null):
     throw await readError(response, 'DELETE', path)
   }
   return response.json() as Promise<TResponse>
+}
+
+export function fetchStoreCatalog(token?: string | null): Promise<StoreCatalog> {
+  return apiGet<StoreCatalog>('/api/store/catalog', token)
+}
+
+export function fetchStoreItemDetail(
+  itemId: number,
+  token?: string | null,
+): Promise<StoreItemDetail> {
+  return apiGet<StoreItemDetail>(`/api/store/items/${itemId}`, token)
 }

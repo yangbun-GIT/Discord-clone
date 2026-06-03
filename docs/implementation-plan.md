@@ -131,8 +131,8 @@
 
 ## Stage 6: Discord Store-Like Shop
 
-- Status: implementation started; Store scope/data contracts, seed catalog, and
-  backend read APIs are complete.
+- Status: implementation started; Store scope/data contracts, seed catalog, backend
+  read APIs, and frontend Store state are complete.
 - Plan document: `docs/store-clone-implementation-plan.md`.
 - Target: add an in-app Store tab inspired by Discord's Store, using original demo
   cosmetics and no real payment processing.
@@ -146,6 +146,9 @@
 - Backend read APIs completed: authenticated `GET /api/store/catalog` and
   `GET /api/store/items/{item_id}` return catalog metadata, default ownership states,
   featured items, filter metadata, item details, bundle contents, and related items.
+- Frontend Store state completed: `frontend/src/stores/store.ts` isolates Store
+  catalog/detail/inventory references, loading state, active tab, search, filters,
+  sort state, and logout reset behavior from guild/chat state.
 - Scope includes Store entry, catalog, featured collections, Browse tab, search,
   sort, filters, item cards, item detail preview, demo purchase, inventory, apply,
   bundles, gifting, Orbs exclusives, Nitro-like discounts, profile integration,
