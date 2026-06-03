@@ -114,17 +114,24 @@ const presenceLabel = computed(() => {
       </div>
     </div>
 
-    <div class="voice-copy">
-      <Radio :size="17" aria-hidden="true" />
+    <div v-if="connected" class="voice-connection-card">
+      <Radio :size="18" aria-hidden="true" />
       <div>
         <span>{{ channel?.name ?? 'voice-room' }}</span>
         <small>{{ connected ? t('common.status.connected') : t('common.status.disconnected') }}</small>
       </div>
     </div>
+    <div v-else class="voice-connection-idle">
+      <Radio :size="16" aria-hidden="true" />
+      <div>
+        <span>{{ channel?.name ?? 'voice-room' }}</span>
+        <small>{{ t('common.status.disconnected') }}</small>
+      </div>
+    </div>
     <div class="voice-presence" aria-live="polite">
       <span>{{ t('voice.onlineCount', { count: participants.length }) }}</span>
       <small v-if="error">{{ error }}</small>
-      <small v-else-if="localSpeaking">{{ t('voice.speaking') }}</small>
+      <small v-else-if="localSpeaking" class="speaking">{{ t('voice.speaking') }}</small>
       <small v-else>
         {{
           signalingReady
@@ -138,6 +145,8 @@ const presenceLabel = computed(() => {
     <div class="voice-actions">
       <button
         type="button"
+        class="screen-button"
+        :class="{ active: screenSharing }"
         :title="screenSharing ? t('voice.stopScreenShare') : t('voice.screenShare')"
         :disabled="!connected"
         @click="$emit('toggleScreen')"
@@ -145,7 +154,13 @@ const presenceLabel = computed(() => {
         <ScreenShareOff v-if="screenSharing" :size="18" aria-hidden="true" />
         <ScreenShare v-else :size="18" aria-hidden="true" />
       </button>
-      <button type="button" :title="connected ? t('voice.disconnect') : t('voice.connect')" @click="$emit('toggle')">
+      <button
+        type="button"
+        class="call-button"
+        :class="{ connected }"
+        :title="connected ? t('voice.disconnect') : t('voice.connect')"
+        @click="$emit('toggle')"
+      >
         <PhoneOff v-if="connected" :size="18" aria-hidden="true" />
         <Mic v-else :size="18" aria-hidden="true" />
       </button>

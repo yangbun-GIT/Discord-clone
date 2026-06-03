@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.3 Korean/English i18n foundation.
+- Status: completed through Stage 8.4 bottom user and voice panel redesign.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -280,3 +280,7 @@
   `frontend/src/stores/preferences.ts` provide Korean/English UI language switching
   with localStorage persistence; key app shell, sidebar, friends, chat, voice, and
   settings copy is wired to the i18n helper.
+- Completed Stage 8.4: `frontend/src/components/VoicePanel.vue` and
+  `frontend/src/styles/base.css` separate bottom user identity controls from voice
+  connection status, speaking/meter detail, and screen/call actions, with verified
+  connected/disconnected and mobile layouts.

@@ -205,7 +205,7 @@ Completion notes:
 
 ## Stage 8.4: Bottom User And Voice Panel Redesign
 
-Status: pending.
+Status: completed.
 
 Goal: make the bottom area clean, compact, and informative.
 
@@ -228,6 +228,22 @@ Verification:
 - Browser smoke for mute, deafen, settings, join/leave, and connected/disconnected
   layout.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/components/VoicePanel.vue` now separates user identity/actions,
+  voice connection summary, presence/meter/status, and screen/call controls.
+- `frontend/src/styles/base.css` styles connected and disconnected voice states as
+  distinct compact summaries, with a green connected card, explicit speaking state,
+  and a red disconnect button while connected.
+- Narrow layouts hide secondary connection/presence detail and keep the user/actions
+  row within the bottom panel.
+- Browser QA used fake media capture and verified connect, mute, deafen, settings
+  entry, disconnect, desktop overflow, and mobile overflow.
+- Stage 8.4 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-4-voice-disconnected.png`
+  - `docs/qa-artifacts/stage-8-4-voice-connected.png`
+  - `docs/qa-artifacts/stage-8-4-mobile.png`
 
 ## Stage 8.5: Current Location And State Visibility
 

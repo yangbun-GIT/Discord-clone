@@ -30,7 +30,8 @@ Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stag
 Stage 8 Discord UI remediation has started with the controlling plan in
 `docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
 plus Stage 8.2 sidebar text-overlap/channel-creation cleanup and Stage 8.3
-Korean/English i18n foundation are complete.
+Korean/English i18n foundation plus Stage 8.4 bottom user/voice panel redesign are
+complete.
 
 The app boots in two local modes:
 
@@ -761,9 +762,9 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.4 is next: redesign the bottom user and voice panel so user identity,
-  connection state, mute/deafen, screen share, speaking, and disconnect controls are
-  compact and easy to read.
+- Stage 8.5 is next: strengthen current location and voice state visibility across
+  server rail, channel rows, header summary, sidebar voice members, and bottom
+  voice panel.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -892,6 +893,17 @@ Discord app inspection observation:
   - QA screenshots are `docs/qa-artifacts/stage-8-3-ko-home.png`,
     `docs/qa-artifacts/stage-8-3-en-home.png`, and
     `docs/qa-artifacts/stage-8-3-en-settings.png`.
+- Stage 8.4 completed the bottom user and voice panel redesign:
+  - `frontend/src/components/VoicePanel.vue` separates user identity/actions, voice
+    connection summary, presence/meter/status, and screen/call controls.
+  - `frontend/src/styles/base.css` now styles connected/disconnected summaries,
+    speaking state, active screen share, and connected disconnect controls with fixed
+    bottom-panel sizing.
+  - Browser QA used fake media capture to verify connect, mute, deafen, settings
+    entry, disconnect, desktop layout, and mobile layout.
+  - QA screenshots are `docs/qa-artifacts/stage-8-4-voice-disconnected.png`,
+    `docs/qa-artifacts/stage-8-4-voice-connected.png`, and
+    `docs/qa-artifacts/stage-8-4-mobile.png`.
 
 Store planning observation:
 
