@@ -122,7 +122,7 @@ Completion notes:
 
 ## Stage 8.2: Sidebar Text Overlap And Channel Creation UI
 
-Status: pending.
+Status: completed.
 
 Goal: remove overlapping category labels and make channel creation clean.
 
@@ -146,6 +146,18 @@ Verification:
 - Browser smoke for creating text and voice channels.
 - Visual check for default and newly created channels.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/components/ChannelSidebar.vue` now renders text and voice channel
+  creation as compact stacked panels instead of cramped three-column inline forms.
+- `frontend/src/styles/base.css` now keeps category labels, create panels, channel
+  rows, row icons, action buttons, and voice-member rows inside the fixed sidebar
+  width with truncation instead of overlap.
+- Browser smoke created one text channel and one voice channel through the UI, then
+  verified category labels, generated rows, and form bounds.
+- Stage 8.2 browser QA screenshot:
+  - `docs/qa-artifacts/stage-8-2-sidebar.png`
 
 ## Stage 8.3: Korean And English I18n Foundation
 

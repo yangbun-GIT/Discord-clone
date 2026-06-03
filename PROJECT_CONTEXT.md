@@ -29,7 +29,7 @@ Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stag
 7.12 final QA/documentation are complete and pushed to GitHub.
 Stage 8 Discord UI remediation has started with the controlling plan in
 `docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
-is complete.
+plus Stage 8.2 sidebar text-overlap/channel-creation cleanup are complete.
 
 The app boots in two local modes:
 
@@ -760,8 +760,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.2 is next: fix sidebar text overlap and replace cramped channel creation
-  controls with a stable compact form or panel.
+- Stage 8.3 is next: add the Korean/English i18n foundation and wire high-visibility
+  UI copy to language preferences.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -871,6 +871,13 @@ Discord app inspection observation:
     workspace viewport.
   - QA screenshots are `docs/qa-artifacts/stage-8-1-desktop.png` and
     `docs/qa-artifacts/stage-8-1-mobile.png`.
+- Stage 8.2 completed sidebar text overlap and channel creation cleanup:
+  - `frontend/src/components/ChannelSidebar.vue` now uses stable stacked create
+    panels for text and voice channel creation.
+  - `frontend/src/styles/base.css` keeps channel category headings, create forms,
+    channel rows, row actions, and voice member rows inside the fixed sidebar width.
+  - QA created text and voice channels through the UI and captured
+    `docs/qa-artifacts/stage-8-2-sidebar.png`.
 
 Store planning observation:
 

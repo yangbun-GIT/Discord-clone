@@ -102,17 +102,23 @@ function channelVoiceStates(channelId: number) {
         </button>
       </div>
       <form v-if="createChannelType === 0" class="channel-create-form" @submit.prevent="submitChannel">
-        <input
-          v-model="channelDraft"
-          aria-label="Channel name"
-          maxlength="100"
-          placeholder="new-channel"
-          autofocus
-        />
-        <button type="submit" title="Create channel" :disabled="!channelDraft.trim()">
-          <Plus :size="15" aria-hidden="true" />
-        </button>
-        <button type="button" title="Cancel channel creation" @click="closeChannelForm">Cancel</button>
+        <label>
+          <span>Text channel name</span>
+          <input
+            v-model="channelDraft"
+            aria-label="Text channel name"
+            maxlength="100"
+            placeholder="new-channel"
+            autofocus
+          />
+        </label>
+        <div class="channel-create-actions">
+          <button type="submit" class="primary" title="Create text channel" :disabled="!channelDraft.trim()">
+            <Plus :size="15" aria-hidden="true" />
+            <span>Create</span>
+          </button>
+          <button type="button" class="ghost" title="Cancel channel creation" @click="closeChannelForm">Cancel</button>
+        </div>
       </form>
       <div
         v-for="channel in textCollapsed ? [] : textChannels"
@@ -162,17 +168,23 @@ function channelVoiceStates(channelId: number) {
         </button>
       </div>
       <form v-if="createChannelType === 1" class="channel-create-form" @submit.prevent="submitChannel">
-        <input
-          v-model="channelDraft"
-          aria-label="Voice channel name"
-          maxlength="100"
-          placeholder="voice-room"
-          autofocus
-        />
-        <button type="submit" title="Create channel" :disabled="!channelDraft.trim()">
-          <Plus :size="15" aria-hidden="true" />
-        </button>
-        <button type="button" title="Cancel channel creation" @click="closeChannelForm">Cancel</button>
+        <label>
+          <span>Voice channel name</span>
+          <input
+            v-model="channelDraft"
+            aria-label="Voice channel name"
+            maxlength="100"
+            placeholder="voice-room"
+            autofocus
+          />
+        </label>
+        <div class="channel-create-actions">
+          <button type="submit" class="primary" title="Create voice channel" :disabled="!channelDraft.trim()">
+            <Plus :size="15" aria-hidden="true" />
+            <span>Create</span>
+          </button>
+          <button type="button" class="ghost" title="Cancel channel creation" @click="closeChannelForm">Cancel</button>
+        </div>
       </form>
       <div
         v-for="channel in voiceCollapsed ? [] : voiceChannels"

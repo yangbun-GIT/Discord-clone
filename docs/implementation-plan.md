@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.1 layout tokens and app shell sizing.
+- Status: completed through Stage 8.2 sidebar text overlap and channel creation UI.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -273,3 +273,6 @@
   sizing tokens and viewport-bound layout rules; desktop/mobile screenshots are in
   `docs/qa-artifacts/stage-8-1-desktop.png` and
   `docs/qa-artifacts/stage-8-1-mobile.png`.
+- Completed Stage 8.2: `frontend/src/components/ChannelSidebar.vue` renders channel
+  creation as stable stacked panels, and sidebar CSS keeps category labels, generated
+  channel rows, row actions, and voice members within the fixed sidebar width.

@@ -611,11 +611,14 @@ select:focus-visible {
 }
 
 .channel-group {
+  min-width: 0;
   display: grid;
-  gap: 6px;
+  gap: 7px;
 }
 
 .channel-group-heading {
+  min-width: 0;
+  min-height: 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -633,6 +636,7 @@ select:focus-visible {
 }
 
 .channel-collapse-button {
+  flex: 1 1 auto;
   min-width: 0;
   display: inline-flex;
   align-items: center;
@@ -644,12 +648,24 @@ select:focus-visible {
   text-align: left;
 }
 
+.channel-collapse-button svg {
+  flex: 0 0 auto;
+}
+
+.channel-collapse-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .channel-collapse-button:hover {
   color: #ffffff;
   background: rgb(255 255 255 / 8%);
 }
 
 .channel-group-heading button {
+  flex: 0 0 auto;
   width: 26px;
   height: 26px;
   display: grid;
@@ -665,11 +681,45 @@ select:focus-visible {
   background: rgb(255 255 255 / 10%);
 }
 
+.channel-group-heading .channel-collapse-button {
+  width: auto;
+  height: 26px;
+  display: inline-flex;
+  justify-content: flex-start;
+}
+
 .channel-create-form {
+  min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 32px auto;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 10px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  background: rgb(12 14 18 / 34%);
+}
+
+.channel-create-form label {
+  min-width: 0;
+  display: grid;
   gap: 6px;
-  align-items: center;
+}
+
+.channel-create-form label span {
+  min-width: 0;
+  overflow: hidden;
+  color: #aeb7c8;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel-create-actions {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
 }
 
 .channel-create-form input {
@@ -684,21 +734,35 @@ select:focus-visible {
 }
 
 .channel-create-form button {
-  width: 32px;
-  height: 32px;
+  min-width: 0;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 0;
   border-radius: 8px;
+  padding: 0 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.channel-create-form button.primary {
   color: #111827;
   background: #5eead4;
 }
 
-.channel-create-form button:last-child {
-  width: auto;
+.channel-create-form button.ghost {
+  flex: 0 0 auto;
   color: #cbd5e1;
   background: rgb(255 255 255 / 8%);
-  padding: 0 8px;
-  font-size: 0.78rem;
-  font-weight: 800;
+}
+
+.channel-create-form button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .channel-create-form button:disabled {
@@ -735,6 +799,10 @@ select:focus-visible {
   text-align: left;
 }
 
+.channel-button svg {
+  flex: 0 0 auto;
+}
+
 .channel-button span {
   min-width: 0;
   overflow: hidden;
@@ -749,6 +817,8 @@ select:focus-visible {
 }
 
 .channel-row-actions {
+  flex: 0 0 auto;
+  min-width: 0;
   display: inline-flex;
   gap: 2px;
   padding-right: 4px;
