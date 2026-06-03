@@ -166,8 +166,8 @@
 
 - Status: implementation started; app destination model, `@me` private sidebar,
   Friends home, first-class demo-backed Direct Messages, server rail parity, server
-  sidebar/header controls, composer/message actions, and voice channel UX are
-  complete.
+  sidebar/header controls, composer/message actions, voice channel UX, and user
+  settings shell are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -218,3 +218,10 @@
     screen-share/quality controls.
   - `frontend/src/App.vue` connects voice join/leave by channel id and keeps mute and
     deafen state reflected through gateway voice-state updates.
+- Completed Stage 7.8 User Settings Shell:
+  - `frontend/src/components/SettingsView.vue` renders account, profile, privacy,
+    voice, appearance, keybind, and logout settings panels.
+  - `frontend/src/stores/navigation.ts` records the previous app destination before
+    opening settings and restores it on close.
+  - `frontend/src/App.vue` opens settings from the bottom user panel and reuses the
+    existing logout path from the settings logout panel.

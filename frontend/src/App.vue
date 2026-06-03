@@ -12,6 +12,7 @@ import {
   Pin,
   Radio,
   Search,
+  Settings,
   Users,
   Wifi,
   WifiOff,
@@ -26,6 +27,7 @@ import FriendsHome from './components/FriendsHome.vue'
 import MemberList from './components/MemberList.vue'
 import PrivateChannelSidebar from './components/PrivateChannelSidebar.vue'
 import ServerRail from './components/ServerRail.vue'
+import SettingsView from './components/SettingsView.vue'
 import VoiceAudioSink from './components/VoiceAudioSink.vue'
 import VoicePanel from './components/VoicePanel.vue'
 import VoiceVideoSink from './components/VoiceVideoSink.vue'
@@ -64,11 +66,15 @@ const workspaceTitle = computed(() => {
   if (navigation.destination === 'dm') {
     return dms.getDm(navigation.activeDmId)?.display_name ?? 'Direct Message'
   }
+  if (navigation.destination === 'settings') return 'User Settings'
   if (!activeGuild.value) return 'No servers'
   return activeChannel.value?.name ?? 'loading'
 })
 const isPrivateDestination = computed(() =>
   navigation.destination === 'friends' || navigation.destination === 'dm',
+)
+const isServerDestination = computed(() =>
+  navigation.destination === 'server_channel' || navigation.destination === 'voice_channel',
 )
 const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
@@ -404,7 +410,9 @@ function handleToggleDeafen() {
 }
 
 function handleOpenUserSettings() {
-  showHeaderPlaceholder('User settings')
+  workspaceError.value = null
+  workspaceNotice.value = null
+  navigation.openSettings()
 }
 
 function handleToggleMute() {
@@ -501,8 +509,14 @@ async function handleCreateInvite() {
     @demo="handleDemo"
   />
 
-  <main v-else class="app-shell" aria-label="Discord clone workspace">
+  <main
+    v-else
+    class="app-shell"
+    :class="{ 'settings-mode': navigation.destination === 'settings' }"
+    aria-label="Discord clone workspace"
+  >
     <ServerRail
+      v-if="navigation.destination !== 'settings'"
       :guilds="guilds.guilds"
       :active-guild-id="guilds.activeGuildId"
       :home-active="isPrivateDestination"
@@ -525,7 +539,7 @@ async function handleCreateInvite() {
     />
 
     <ChannelSidebar
-      v-else-if="activeGuild"
+      v-else-if="navigation.destination !== 'settings' && activeGuild"
       :guild="activeGuild"
       :active-channel-id="guilds.activeChannelId"
       :voice-states="guilds.voiceStates"
@@ -541,11 +555,12 @@ async function handleCreateInvite() {
     <section class="workspace">
       <header class="topbar">
         <div class="channel-title">
-          <Radio v-if="!isPrivateDestination && activeChannel?.type === 1" :size="19" aria-hidden="true" />
+          <Settings v-if="navigation.destination === 'settings'" :size="19" aria-hidden="true" />
+          <Radio v-else-if="isServerDestination && activeChannel?.type === 1" :size="19" aria-hidden="true" />
           <Hash v-else :size="19" aria-hidden="true" />
           <span>{{ workspaceTitle }}</span>
         </div>
-        <div v-if="!isPrivateDestination" class="channel-header-tools" aria-label="Channel tools">
+        <div v-if="isServerDestination" class="channel-header-tools" aria-label="Channel tools">
           <button
             class="topbar-icon-button"
             type="button"
@@ -622,7 +637,7 @@ async function handleCreateInvite() {
             type="button"
             aria-label="Create invite"
             :disabled="!activeGuild || isInviteWorking"
-            v-if="!isPrivateDestination"
+            v-if="isServerDestination"
             @click="handleCreateInvite"
           >
             <Link :size="17" aria-hidden="true" />
@@ -631,7 +646,7 @@ async function handleCreateInvite() {
             class="topbar-icon-button"
             type="button"
             aria-label="Join server"
-            v-if="!isPrivateDestination"
+            v-if="isServerDestination"
             @click="openJoinGuild"
           >
             <LogIn :size="17" aria-hidden="true" />
@@ -650,6 +665,19 @@ async function handleCreateInvite() {
       </div>
 
       <div v-if="guilds.isLoading || dms.isLoading" class="workspace-loading" role="status">Loading workspace</div>
+
+      <SettingsView
+        v-if="navigation.destination === 'settings'"
+        :current-user="session.user"
+        :user-status="userPresenceStatus"
+        :muted="voiceRtc.isMuted.value"
+        :deafened="isDeafened"
+        :input-level="voiceRtc.inputLevel.value"
+        :turn-configured="voiceTurnConfigured"
+        :voice-connected="guilds.voiceConnected"
+        @close="navigation.closeSettings"
+        @logout="handleLogout"
+      />
 
       <FriendsHome
         v-else-if="navigation.destination === 'friends'"
@@ -771,6 +799,7 @@ async function handleCreateInvite() {
     </section>
 
     <VoicePanel
+      v-if="navigation.destination !== 'settings'"
       :channel="guilds.voiceChannel"
       :current-user="session.user"
       :user-status="userPresenceStatus"
@@ -792,7 +821,11 @@ async function handleCreateInvite() {
       @cycle-status="cycleUserPresence"
       @open-settings="handleOpenUserSettings"
     />
-    <div v-if="remoteScreenStreams.length" class="screen-share-stage" aria-label="Screen shares">
+    <div
+      v-if="navigation.destination !== 'settings' && remoteScreenStreams.length"
+      class="screen-share-stage"
+      aria-label="Screen shares"
+    >
       <VoiceVideoSink
         v-for="remote in remoteScreenStreams"
         :key="remote.userId"

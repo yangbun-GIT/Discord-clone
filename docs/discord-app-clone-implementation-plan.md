@@ -233,6 +233,8 @@ Verification:
 
 ## Stage 7.8: User Settings Shell
 
+Status: completed.
+
 Goal: implement the settings destination opened from the bottom user panel.
 
 Tasks:

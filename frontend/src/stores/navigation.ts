@@ -6,6 +6,8 @@ export type AppDestination = 'friends' | 'dm' | 'server_channel' | 'voice_channe
 export const useNavigationStore = defineStore('navigation', () => {
   const destination = ref<AppDestination>('friends')
   const activeDmId = ref<number | null>(null)
+  const settingsReturnDestination = ref<AppDestination>('friends')
+  const settingsReturnDmId = ref<number | null>(null)
 
   function openFriends() {
     destination.value = 'friends'
@@ -28,12 +30,23 @@ export const useNavigationStore = defineStore('navigation', () => {
   }
 
   function openSettings() {
+    if (destination.value !== 'settings') {
+      settingsReturnDestination.value = destination.value
+      settingsReturnDmId.value = activeDmId.value
+    }
     destination.value = 'settings'
+  }
+
+  function closeSettings() {
+    destination.value = settingsReturnDestination.value
+    activeDmId.value = settingsReturnDmId.value
   }
 
   function resetNavigation() {
     destination.value = 'friends'
     activeDmId.value = null
+    settingsReturnDestination.value = 'friends'
+    settingsReturnDmId.value = null
   }
 
   return {
@@ -44,6 +57,7 @@ export const useNavigationStore = defineStore('navigation', () => {
     openServerChannel,
     openVoiceChannel,
     openSettings,
+    closeSettings,
     resetNavigation,
   }
 })

@@ -24,7 +24,7 @@ state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.
 app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
 demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
 sidebar/header controls, Stage 7.6 composer/message actions, and Stage 7.7 voice
-channel UX are complete and pushed to GitHub.
+channel UX, and Stage 7.8 user settings shell are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -716,8 +716,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.8 User Settings Shell: settings destination, settings navigation, safe demo
-  panels, close behavior, and logout integration.
+  7.9 Server Discovery And Add Server: improve the create-server modal, wire invite
+  join from the rail add path, and add local discovery demo servers.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -768,6 +768,14 @@ Discord app inspection observation:
     screen-share/quality controls.
   - `frontend/src/App.vue` orchestrates voice join/leave by channel id and mirrors
     mute/deafen state into gateway voice-state updates.
+- Stage 7.8 completed the user settings shell:
+  - `frontend/src/components/SettingsView.vue` owns the settings navigation and safe
+    demo panels for My Account, Profiles, Privacy & Safety, Voice & Video,
+    Appearance, Keybinds, and Log Out.
+  - `frontend/src/stores/navigation.ts` records the pre-settings destination and
+    restores it when settings closes.
+  - `frontend/src/App.vue` opens settings from the bottom user panel, hides the app
+    sidebars while settings is active, and reuses the existing logout reset path.
 
 Store planning observation:
 
