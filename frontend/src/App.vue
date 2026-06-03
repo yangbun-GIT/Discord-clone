@@ -26,6 +26,8 @@ import DirectMessageView from './components/DirectMessageView.vue'
 import FriendsHome from './components/FriendsHome.vue'
 import MemberList from './components/MemberList.vue'
 import PrivateChannelSidebar from './components/PrivateChannelSidebar.vue'
+import ServerAddDialog from './components/ServerAddDialog.vue'
+import ServerDiscoveryDialog from './components/ServerDiscoveryDialog.vue'
 import ServerRail from './components/ServerRail.vue'
 import SettingsView from './components/SettingsView.vue'
 import VoiceAudioSink from './components/VoiceAudioSink.vue'
@@ -84,13 +86,11 @@ const workspaceNotice = ref<string | null>(null)
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
-const showCreateGuild = ref(false)
-const showJoinGuild = ref(false)
+const showAddServer = ref(false)
+const addServerMode = ref<'create' | 'join'>('create')
 const showDiscovery = ref(false)
 const showInvite = ref(false)
 const showMemberList = ref(true)
-const guildName = ref('')
-const joinCode = ref('')
 const inviteCode = ref<string | null>(null)
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 const voiceTurnConfigured = ref(false)
@@ -207,20 +207,25 @@ async function handleMessageFriend(friendId: number) {
   }
 }
 
-function openCreateGuild() {
+function openAddServer(mode: 'create' | 'join' = 'create') {
   workspaceError.value = null
   workspaceNotice.value = null
-  showCreateGuild.value = true
+  addServerMode.value = mode
+  showAddServer.value = true
 }
 
-function closeCreateGuild() {
-  showCreateGuild.value = false
-  guildName.value = ''
+function openCreateGuild() {
+  openAddServer('create')
+}
+
+function closeAddServer() {
+  showAddServer.value = false
 }
 
 function openDiscovery() {
   workspaceError.value = null
   workspaceNotice.value = null
+  showAddServer.value = false
   showDiscovery.value = true
 }
 
@@ -228,13 +233,15 @@ function closeDiscovery() {
   showDiscovery.value = false
 }
 
-async function handleCreateGuild() {
-  if (!guildName.value.trim()) return
+async function handleCreateGuild(name: string) {
+  const trimmedName = name.trim()
+  if (!trimmedName) return
   workspaceError.value = null
   isCreatingGuild.value = true
   try {
-    await guilds.createGuild(session.token, guildName.value)
-    closeCreateGuild()
+    await guilds.createGuild(session.token, trimmedName)
+    closeAddServer()
+    closeDiscovery()
   } catch (error) {
     workspaceError.value = error instanceof Error ? error.message : 'Server creation failed'
   } finally {
@@ -455,21 +462,17 @@ watch(
 
 function openJoinGuild() {
   workspaceError.value = null
-  showJoinGuild.value = true
+  openAddServer('join')
 }
 
-function closeJoinGuild() {
-  showJoinGuild.value = false
-  joinCode.value = ''
-}
-
-async function handleJoinGuild() {
-  if (!joinCode.value.trim()) return
+async function handleJoinGuild(code: string) {
+  const trimmedCode = code.trim()
+  if (!trimmedCode) return
   workspaceError.value = null
   isInviteWorking.value = true
   try {
-    await guilds.joinInvite(session.token, joinCode.value)
-    closeJoinGuild()
+    await guilds.joinInvite(session.token, trimmedCode)
+    closeAddServer()
   } catch (error) {
     workspaceError.value = error instanceof Error ? error.message : 'Invite join failed'
   } finally {
@@ -728,62 +731,21 @@ async function handleCreateInvite() {
       </section>
     </section>
 
-    <section v-if="showCreateGuild" class="modal-layer" aria-label="Create server">
-      <form class="server-create-dialog" @submit.prevent="handleCreateGuild">
-        <div class="auth-mark">DC</div>
-        <label>
-          <span>Server name</span>
-          <input
-            v-model="guildName"
-            autocomplete="off"
-            maxlength="100"
-            minlength="2"
-            required
-            autofocus
-          />
-        </label>
-        <div class="dialog-actions">
-          <button type="button" @click="closeCreateGuild">Cancel</button>
-          <button type="submit" :disabled="guildName.trim().length < 2 || isCreatingGuild || guilds.isMutating">
-            Create
-          </button>
-        </div>
-      </form>
-    </section>
+    <ServerAddDialog
+      v-if="showAddServer"
+      :initial-mode="addServerMode"
+      :loading="isCreatingGuild || isInviteWorking || guilds.isMutating"
+      @close="closeAddServer"
+      @create="handleCreateGuild"
+      @join="handleJoinGuild"
+      @discover="openDiscovery"
+    />
 
-    <section v-if="showJoinGuild" class="modal-layer" aria-label="Join server">
-      <form class="server-create-dialog" @submit.prevent="handleJoinGuild">
-        <div class="auth-mark">DC</div>
-        <label>
-          <span>Invite code</span>
-          <input v-model="joinCode" autocomplete="off" required autofocus />
-        </label>
-        <div class="dialog-actions">
-          <button type="button" @click="closeJoinGuild">Cancel</button>
-          <button type="submit" :disabled="!joinCode.trim() || isInviteWorking || guilds.isMutating">
-            Join
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <section v-if="showDiscovery" class="modal-layer" aria-label="Server discovery">
-      <div class="server-create-dialog discovery-dialog">
-        <div class="auth-mark">EX</div>
-        <div class="discovery-copy">
-          <h2>Explore Servers</h2>
-          <p>Local discovery opens in Stage 7.9. This entry is wired now so the rail layout is complete.</p>
-        </div>
-        <div class="discovery-list" aria-label="Preview categories">
-          <span>Study groups</span>
-          <span>Project rooms</span>
-          <span>Voice hangouts</span>
-        </div>
-        <div class="dialog-actions single">
-          <button type="button" @click="closeDiscovery">Done</button>
-        </div>
-      </div>
-    </section>
+    <ServerDiscoveryDialog
+      v-if="showDiscovery"
+      @close="closeDiscovery"
+      @create-server="handleCreateGuild"
+    />
 
     <section v-if="showInvite" class="modal-layer" aria-label="Server invite">
       <div class="server-create-dialog">

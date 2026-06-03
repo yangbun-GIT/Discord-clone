@@ -262,6 +262,8 @@ Verification:
 
 ## Stage 7.9: Server Discovery And Add Server
 
+Status: completed.
+
 Goal: complete Discord-like navigation branches without external network dependency.
 
 Tasks:

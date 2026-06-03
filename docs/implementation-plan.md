@@ -167,7 +167,7 @@
 - Status: implementation started; app destination model, `@me` private sidebar,
   Friends home, first-class demo-backed Direct Messages, server rail parity, server
   sidebar/header controls, composer/message actions, voice channel UX, and user
-  settings shell are complete.
+  settings shell, and server add/discovery flows are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -225,3 +225,9 @@
     opening settings and restores it on close.
   - `frontend/src/App.vue` opens settings from the bottom user panel and reuses the
     existing logout path from the settings logout panel.
+- Completed Stage 7.9 Server Discovery And Add Server:
+  - `frontend/src/components/ServerAddDialog.vue` provides a unified create/join
+    server path from the rail, empty workspace, and topbar join action.
+  - `frontend/src/components/ServerDiscoveryDialog.vue` provides local demo public
+    server cards and search without external network dependency.
+  - Existing backend guild create and invite join APIs remain the mutation boundary.

@@ -24,7 +24,8 @@ state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.
 app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
 demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
 sidebar/header controls, Stage 7.6 composer/message actions, and Stage 7.7 voice
-channel UX, and Stage 7.8 user settings shell are complete and pushed to GitHub.
+channel UX, Stage 7.8 user settings shell, and Stage 7.9 server add/discovery flows
+are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -716,8 +717,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.9 Server Discovery And Add Server: improve the create-server modal, wire invite
-  join from the rail add path, and add local discovery demo servers.
+  7.10 Persistence And Realtime Expansion: PostgreSQL relationship/DM persistence,
+  demo fallback equivalence, and realtime DM message dispatch.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -776,6 +777,13 @@ Discord app inspection observation:
     restores it when settings closes.
   - `frontend/src/App.vue` opens settings from the bottom user panel, hides the app
     sidebars while settings is active, and reuses the existing logout reset path.
+- Stage 7.9 completed server add and discovery flows:
+  - `frontend/src/components/ServerAddDialog.vue` owns the unified create/join server
+    modal used by the rail add path, empty workspace actions, and topbar join action.
+  - `frontend/src/components/ServerDiscoveryDialog.vue` owns local demo public server
+    cards plus search and can start server creation from a discovery card.
+  - `frontend/src/App.vue` still routes actual mutations through existing
+    `guilds.createGuild()` and `guilds.joinInvite()` API wrappers.
 
 Store planning observation:
 

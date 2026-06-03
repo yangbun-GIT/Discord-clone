@@ -1419,6 +1419,215 @@ select:focus-visible {
   box-shadow: 0 24px 80px rgb(0 0 0 / 34%);
 }
 
+.server-add-dialog,
+.server-discovery-dialog {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 16px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  background: #1c1f25;
+  padding: 20px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 34%);
+}
+
+.server-discovery-dialog {
+  width: min(100%, 760px);
+  max-height: min(760px, calc(100vh - 44px));
+  overflow-y: auto;
+}
+
+.server-add-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.server-add-header > div {
+  display: grid;
+  gap: 10px;
+}
+
+.server-add-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.server-add-header > button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.server-add-header > button:hover,
+.server-add-header > button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.server-add-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.server-add-tabs button,
+.server-discovery-link {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 10px;
+  font-weight: 800;
+}
+
+.server-add-tabs button:hover,
+.server-add-tabs button:focus-visible,
+.server-add-tabs button.active,
+.server-discovery-link:hover,
+.server-discovery-link:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 13%);
+}
+
+.server-add-dialog label {
+  display: grid;
+  gap: 7px;
+}
+
+.server-add-dialog label span {
+  color: #9ca3af;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.server-add-dialog input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 12px;
+}
+
+.server-discovery-link {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.discovery-search {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 8px;
+  color: #9ca3af;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 12px;
+}
+
+.discovery-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #f8fafc;
+  background: transparent;
+}
+
+.discovery-server-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.discovery-server-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 6%);
+  padding: 14px;
+}
+
+.discovery-server-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #111827;
+  font-weight: 900;
+}
+
+.discovery-server-copy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.discovery-server-copy span,
+.discovery-server-copy h3,
+.discovery-server-copy p {
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discovery-server-copy span {
+  color: #9ca3af;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.discovery-server-copy h3 {
+  font-size: 1rem;
+}
+
+.discovery-server-copy p {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #aeb7c8;
+  font-size: 0.8rem;
+}
+
+.discovery-server-card button {
+  grid-column: 1 / -1;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  color: #111827;
+  background: #5eead4;
+  font-weight: 900;
+}
+
+.discovery-server-card button:hover,
+.discovery-server-card button:focus-visible {
+  background: #99f6e4;
+}
+
 .dialog-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2240,6 +2449,10 @@ select:focus-visible {
 
   .settings-panel {
     padding: 20px 16px;
+  }
+
+  .discovery-server-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
