@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.9 Friends and DM information density.
+- Status: completed through Stage 8.10 Settings reorganization.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -302,3 +302,7 @@
   intros now expose scan-friendly status, activity, handle, participant, unread, and
   selected-state information, with a wide-screen Friends profile panel and responsive
   fallback rules for narrower layouts.
+- Completed Stage 8.10: `SettingsView.vue` is reorganized into Account,
+  Experience, and Session groups with account/privacy, voice/video, appearance,
+  accessibility, keybind, language/time, and logout panels. Useful voice, language,
+  and time controls are real local panels, and demo-only scope is explicit.

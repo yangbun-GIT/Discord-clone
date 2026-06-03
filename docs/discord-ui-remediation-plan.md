@@ -463,7 +463,7 @@ Completion notes:
 
 ## Stage 8.10: Settings Reorganization
 
-Status: pending.
+Status: completed.
 
 Goal: make Settings closer to the Discord structure while remaining locally useful.
 
@@ -486,6 +486,23 @@ Verification:
 - Browser smoke for settings navigation, language switching, voice panel visibility,
   logout, and narrow viewport.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/components/SettingsView.vue` now groups settings into Account,
+  Experience, and Session navigation sections.
+- Settings panels now cover account/privacy, voice and video, appearance,
+  accessibility, keybinds, language/time, and logout with explicit local-demo scope.
+- Useful voice state, input level, ICE readiness, language selection, and time-format
+  controls are real local panels instead of loose placeholders.
+- `frontend/src/styles/base.css` adds denser settings selection, card copy, radio,
+  toggle, and keybind text handling so long labels do not clip.
+- Browser QA verified settings navigation, voice panel visibility, accessibility
+  controls, Korean/English switching, language/time controls, logout, and relogin.
+  The in-app Browser surface does not expose viewport resizing, so narrow viewport
+  coverage remains build-verified through the existing responsive CSS rules.
+- Stage 8.10 browser QA screenshot:
+  - `docs/qa-artifacts/stage-8-10-settings.png`
 
 ## Stage 8.11: Voice And Screen Share Workspace UX
 

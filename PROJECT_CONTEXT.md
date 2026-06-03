@@ -33,7 +33,8 @@ plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
 Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
 Stage 8.5 current location/state visibility, and Stage 8.6 placeholder-button
 cleanup, Stage 8.7 channel-header panels, and Stage 8.8 composer action panels are
-complete. Stage 8.9 Friends/DM information density is complete.
+complete. Stage 8.9 Friends/DM information density and Stage 8.10 Settings
+reorganization are complete.
 
 The app boots in two local modes:
 
@@ -764,8 +765,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.10 is next: reorganize Settings into clearer account, voice/video,
-  appearance, accessibility, keybind, language/time, and logout groups.
+- Stage 8.11 is next: improve voice and screen-share workspace UX so selecting,
+  joining, leaving, and sharing are visually distinct.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -965,6 +966,16 @@ Discord app inspection observation:
     Friends profile panel at narrower breakpoints.
   - QA screenshots are `docs/qa-artifacts/stage-8-9-friends-home.png` and
     `docs/qa-artifacts/stage-8-9-friends-dm.png`.
+- Stage 8.10 completed Settings reorganization:
+  - `frontend/src/components/SettingsView.vue` groups Settings into Account,
+    Experience, and Session sections with account/privacy, voice/video, appearance,
+    accessibility, keybinds, language/time, and logout panels.
+  - Voice connection state, input level, ICE readiness, language choice, and
+    time-format choice are represented as real local settings panels.
+  - Demo-only scope is explicit for local-only controls.
+  - `frontend/src/styles/base.css` tightens settings sidebar selection, card copy,
+    radio rows, toggles, and keybind rows so labels do not clip.
+  - QA screenshot is `docs/qa-artifacts/stage-8-10-settings.png`.
 
 Store planning observation:
 

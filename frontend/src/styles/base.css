@@ -1327,7 +1327,7 @@ select:focus-visible {
   overflow-y: auto;
   display: grid;
   align-content: start;
-  gap: 16px;
+  gap: 14px;
   border-right: 1px solid rgb(255 255 255 / 8%);
   background: rgb(15 17 21 / 78%);
   padding: 18px 12px;
@@ -1434,6 +1434,7 @@ select:focus-visible {
 .settings-group button.active {
   color: #ffffff;
   background: rgb(255 255 255 / 10%);
+  box-shadow: inset 3px 0 0 #5eead4;
 }
 
 .settings-group button.danger {
@@ -1469,6 +1470,7 @@ select:focus-visible {
 .settings-panel-header p,
 .settings-card p {
   color: #9ca3af;
+  line-height: 1.45;
 }
 
 .settings-close-button {
@@ -1526,6 +1528,10 @@ select:focus-visible {
 }
 
 .settings-card dd {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   margin: 0;
   color: #f8fafc;
   text-align: right;
@@ -1539,6 +1545,8 @@ select:focus-visible {
 .settings-toggle span,
 .keybind-row span {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: #d7dee8;
 }
 
@@ -1555,6 +1563,7 @@ select:focus-visible {
 }
 
 .settings-radio-list label {
+  min-width: 0;
   min-height: 42px;
   display: flex;
   align-items: center;
@@ -1564,6 +1573,13 @@ select:focus-visible {
   color: #d7dee8;
   background: rgb(0 0 0 / 14%);
   padding: 0 12px;
+}
+
+.settings-radio-list span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .settings-radio-list input {
@@ -1586,6 +1602,11 @@ select:focus-visible {
 
 .keybind-row {
   justify-content: flex-start;
+}
+
+.settings-demo-note {
+  border-color: rgb(94 234 212 / 24%);
+  background: rgb(94 234 212 / 8%);
 }
 
 .keybind-row kbd {

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import {
+  Accessibility,
   BellOff,
-  Brush,
+  Clock3,
   Headphones,
   KeyRound,
   LogOut,
   Mic,
   Monitor,
-  Languages,
   Shield,
   UserRound,
   X,
@@ -17,7 +17,17 @@ import {
 import { useI18n } from '../i18n'
 import type { User, UserPresenceStatus } from '../types'
 
-type SettingsPanel = 'account' | 'profiles' | 'privacy' | 'voice' | 'appearance' | 'keybinds' | 'language' | 'logout'
+type SettingsPanel =
+  | 'account'
+  | 'privacy'
+  | 'voice'
+  | 'appearance'
+  | 'accessibility'
+  | 'keybinds'
+  | 'language'
+  | 'logout'
+
+type SettingsGroup = 'account' | 'experience' | 'session'
 
 const props = defineProps<{
   currentUser: User | null
@@ -38,17 +48,24 @@ const activePanel = ref<SettingsPanel>('account')
 const compactMode = ref(false)
 const reduceMotion = ref(false)
 const dmSafety = ref(true)
+const timeFormat = ref<'auto' | '24h'>('auto')
 const { language, setLanguage, t } = useI18n()
 
-const panels = computed<Array<{ id: SettingsPanel; label: string; group: 'user' | 'app'; icon: unknown }>>(() => [
-  { id: 'account', label: t('settings.myAccount'), group: 'user', icon: UserRound },
-  { id: 'profiles', label: t('settings.profiles'), group: 'user', icon: Brush },
-  { id: 'privacy', label: t('settings.privacy'), group: 'user', icon: Shield },
-  { id: 'voice', label: t('settings.voice'), group: 'app', icon: Headphones },
-  { id: 'appearance', label: t('settings.appearance'), group: 'app', icon: Monitor },
-  { id: 'keybinds', label: t('settings.keybinds'), group: 'app', icon: KeyRound },
-  { id: 'language', label: t('settings.language'), group: 'app', icon: Languages },
-  { id: 'logout', label: t('settings.logout'), group: 'app', icon: LogOut },
+const settingsGroups = computed<Array<{ id: SettingsGroup; label: string }>>(() => [
+  { id: 'account', label: t('settings.groupAccount') },
+  { id: 'experience', label: t('settings.groupExperience') },
+  { id: 'session', label: t('settings.groupSession') },
+])
+
+const panels = computed<Array<{ id: SettingsPanel; label: string; group: SettingsGroup; icon: unknown }>>(() => [
+  { id: 'account', label: t('settings.myAccount'), group: 'account', icon: UserRound },
+  { id: 'privacy', label: t('settings.privacy'), group: 'account', icon: Shield },
+  { id: 'voice', label: t('settings.voice'), group: 'experience', icon: Headphones },
+  { id: 'appearance', label: t('settings.appearance'), group: 'experience', icon: Monitor },
+  { id: 'accessibility', label: t('settings.accessibility'), group: 'experience', icon: Accessibility },
+  { id: 'keybinds', label: t('settings.keybinds'), group: 'experience', icon: KeyRound },
+  { id: 'language', label: t('settings.languageTime'), group: 'experience', icon: Clock3 },
+  { id: 'logout', label: t('settings.logout'), group: 'session', icon: LogOut },
 ])
 
 const activePanelLabel = computed(
@@ -75,24 +92,15 @@ const statusLabel = computed(() => {
         </div>
       </div>
 
-      <div class="settings-group" :aria-label="t('settings.userSettings')">
-        <p>{{ t('settings.userSettings') }}</p>
+      <div
+        v-for="group in settingsGroups"
+        :key="group.id"
+        class="settings-group"
+        :aria-label="group.label"
+      >
+        <p>{{ group.label }}</p>
         <button
-          v-for="panel in panels.filter((item) => item.group === 'user')"
-          :key="panel.id"
-          type="button"
-          :class="{ active: activePanel === panel.id }"
-          @click="activePanel = panel.id"
-        >
-          <component :is="panel.icon" :size="17" aria-hidden="true" />
-          <span>{{ panel.label }}</span>
-        </button>
-      </div>
-
-      <div class="settings-group" :aria-label="t('settings.appSettings')">
-        <p>{{ t('settings.appSettings') }}</p>
-        <button
-          v-for="panel in panels.filter((item) => item.group === 'app')"
+          v-for="panel in panels.filter((item) => item.group === group.id)"
           :key="panel.id"
           type="button"
           :class="{ active: activePanel === panel.id, danger: panel.id === 'logout' }"
@@ -138,6 +146,15 @@ const statusLabel = computed(() => {
             </div>
           </dl>
         </section>
+        <section class="settings-card profile-preview">
+          <span class="settings-avatar large" :class="userStatus">
+            {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
+          </span>
+          <div>
+            <h2>{{ t('settings.profilePreview') }}</h2>
+            <p>{{ currentUser?.username ?? t('common.demoUser') }} · {{ statusLabel }}</p>
+          </div>
+        </section>
         <section class="settings-card">
           <h2>{{ t('settings.session') }}</h2>
           <dl>
@@ -151,17 +168,9 @@ const statusLabel = computed(() => {
             </div>
           </dl>
         </section>
-      </div>
-
-      <div v-else-if="activePanel === 'profiles'" class="settings-section-grid">
-        <section class="settings-card profile-preview">
-          <span class="settings-avatar large" :class="userStatus">
-            {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
-          </span>
-          <div>
-            <h2>{{ currentUser?.username ?? t('common.demoUser') }}</h2>
-            <p>{{ statusLabel }}</p>
-          </div>
+        <section class="settings-card settings-demo-note">
+          <h2>{{ t('settings.demoScopeTitle') }}</h2>
+          <p>{{ t('settings.demoScopeDescription') }}</p>
         </section>
       </div>
 
@@ -222,29 +231,53 @@ const statusLabel = computed(() => {
       <div v-else-if="activePanel === 'appearance'" class="settings-section-grid">
         <section class="settings-card">
           <h2>{{ t('settings.appearance') }}</h2>
+          <dl>
+            <div>
+              <dt>{{ t('settings.theme') }}</dt>
+              <dd>{{ t('settings.themeDark') }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('settings.density') }}</dt>
+              <dd>{{ compactMode ? t('common.status.connected') : t('common.status.ready') }}</dd>
+            </div>
+          </dl>
           <label class="settings-toggle">
             <span>{{ t('settings.compactSpacing') }}</span>
             <input v-model="compactMode" type="checkbox" />
           </label>
+        </section>
+      </div>
+
+      <div v-else-if="activePanel === 'accessibility'" class="settings-section-grid">
+        <section class="settings-card">
+          <h2>{{ t('settings.accessibility') }}</h2>
+          <p>{{ t('settings.demoOnly') }}</p>
           <label class="settings-toggle">
             <span>{{ t('settings.reduceMotion') }}</span>
             <input v-model="reduceMotion" type="checkbox" />
           </label>
+          <dl>
+            <div>
+              <dt>{{ t('settings.sound') }}</dt>
+              <dd>{{ t('common.status.scoped') }}</dd>
+            </div>
+          </dl>
         </section>
       </div>
 
       <div v-else-if="activePanel === 'keybinds'" class="settings-section-grid">
         <section class="settings-card">
           <h2>{{ t('settings.keybinds') }}</h2>
-          <div class="keybind-row"><kbd>Ctrl</kbd><kbd>K</kbd><span>Quick switcher placeholder</span></div>
-          <div class="keybind-row"><kbd>Esc</kbd><span>Close overlays</span></div>
-          <div class="keybind-row"><kbd>Enter</kbd><span>Send focused composer message</span></div>
+          <p>{{ t('settings.demoOnly') }}</p>
+          <div class="keybind-row"><kbd>Ctrl</kbd><kbd>K</kbd><span>{{ t('settings.keybindQuick') }}</span></div>
+          <div class="keybind-row"><kbd>Esc</kbd><span>{{ t('settings.keybindClose') }}</span></div>
+          <div class="keybind-row"><kbd>Enter</kbd><span>{{ t('settings.keybindSend') }}</span></div>
         </section>
       </div>
 
       <div v-else-if="activePanel === 'language'" class="settings-section-grid">
         <section class="settings-card">
-          <h2>{{ t('settings.language') }}</h2>
+          <h2>{{ t('settings.languageTime') }}</h2>
           <p>{{ t('settings.languageDescription') }}</p>
           <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.language')">
             <label>
@@ -266,6 +299,19 @@ const statusLabel = computed(() => {
                 @change="setLanguage('en')"
               />
               <span>{{ t('settings.languageEnglish') }}</span>
+            </label>
+          </div>
+        </section>
+        <section class="settings-card">
+          <h2>{{ t('settings.timeFormat') }}</h2>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.timeFormat')">
+            <label>
+              <input v-model="timeFormat" type="radio" name="time-format" value="auto" />
+              <span>{{ t('settings.timeAutomatic') }}</span>
+            </label>
+            <label>
+              <input v-model="timeFormat" type="radio" name="time-format" value="24h" />
+              <span>{{ t('settings.time24') }}</span>
             </label>
           </div>
         </section>
