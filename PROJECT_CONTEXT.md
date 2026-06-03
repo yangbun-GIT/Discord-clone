@@ -31,7 +31,8 @@ Stage 8 Discord UI remediation has started with the controlling plan in
 `docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
 plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
 Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
-Stage 8.5 current location/state visibility are complete.
+Stage 8.5 current location/state visibility, and Stage 8.6 placeholder-button
+cleanup are complete.
 
 The app boots in two local modes:
 
@@ -762,8 +763,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.6 is next: audit visible placeholder buttons and convert them to useful
-  local panels, concise demo-disabled notices, or hidden low-value controls.
+- Stage 8.7 is next: implement useful local channel-header panels for notifications,
+  pinned messages, threads, and channel search.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -917,6 +918,19 @@ Discord app inspection observation:
   - Browser QA verified Friends, DM, server text channel, fake-media voice join, and
     mute state visibility with no horizontal overflow.
   - QA screenshot is `docs/qa-artifacts/stage-8-5-voice-state.png`.
+- Stage 8.6 completed placeholder button audit and cleanup:
+  - `frontend/src/App.vue` owns the shared demo-disabled notice pattern.
+  - `frontend/src/components/PrivateChannelSidebar.vue` wires DM search, Nitro, Shop,
+    and Quests to scoped demo notices.
+  - `frontend/src/components/ChannelSidebar.vue` wires server menu and Events to
+    scoped demo notices while preserving real channel and invite flows.
+  - `frontend/src/components/FriendsHome.vue` turns the friend More button into a
+    local profile-summary menu with a message action.
+  - `frontend/src/components/ChatView.vue` turns upload, gift, apps, and emoji
+    composer buttons into local demo panels until Stage 8.8 expands composer actions.
+  - `frontend/src/styles/base.css` keeps workspace notices compact so they do not
+    consume the main content area.
+  - QA screenshot is `docs/qa-artifacts/stage-8-6-button-panels.png`.
 
 Store planning observation:
 

@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.5 current location and state visibility.
+- Status: completed through Stage 8.6 placeholder button audit and cleanup.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -288,3 +288,6 @@
   `PrivateChannelSidebar.vue`, `ChannelSidebar.vue`, `VoicePanel.vue`, and
   `frontend/src/styles/base.css` make current destination, active rail/sidebar rows,
   connected voice channel, self voice row, and muted/deafened/speaking state visible.
+- Completed Stage 8.6: visible placeholder actions in the private sidebar, server
+  sidebar, Friends rows, and chat composer now open scoped demo notices or local
+  panels instead of doing nothing.

@@ -16,6 +16,7 @@ defineEmits<{
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('online')
 const searchQuery = ref('')
 const addFriendName = ref('')
+const moreFriendId = ref<number | null>(null)
 const { t } = useI18n()
 
 const visibleFriends = computed(() => {
@@ -128,9 +129,23 @@ const activeTabLabel = computed(() => {
           <button type="button" :aria-label="t('friends.sendMessage')" @click="$emit('messageFriend', friend.id)">
             <Send :size="17" aria-hidden="true" />
           </button>
-          <button type="button" aria-label="More">
+          <button
+            type="button"
+            :aria-label="t('friends.more')"
+            :aria-expanded="moreFriendId === friend.id"
+            @click="moreFriendId = moreFriendId === friend.id ? null : friend.id"
+          >
             <MoreHorizontal :size="18" aria-hidden="true" />
           </button>
+          <div v-if="moreFriendId === friend.id" class="friend-local-menu" role="menu">
+            <strong>{{ t('friends.profileSummary') }}</strong>
+            <span>{{ friend.handle }}</span>
+            <small>{{ t('friends.currentActivity') }}: {{ friend.activity ?? friend.status }}</small>
+            <button type="button" role="menuitem" @click="$emit('messageFriend', friend.id)">
+              <Send :size="15" aria-hidden="true" />
+              <span>{{ t('friends.sendMessage') }}</span>
+            </button>
+          </div>
         </article>
       </section>
     </template>

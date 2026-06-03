@@ -29,11 +29,19 @@ const editDraft = ref('')
 const editingMessageId = ref<number | null>(null)
 const replyTargetId = ref<number | null>(null)
 const optionsMessageId = ref<number | null>(null)
+const activeComposerPanel = ref<'upload' | 'gift' | 'apps' | 'emoji' | null>(null)
 const { t } = useI18n()
 
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
 )
+const activeComposerPanelLabel = computed(() => {
+  if (activeComposerPanel.value === 'upload') return t('chat.uploadFile')
+  if (activeComposerPanel.value === 'gift') return t('chat.sendGift')
+  if (activeComposerPanel.value === 'apps') return t('chat.apps')
+  if (activeComposerPanel.value === 'emoji') return t('chat.emoji')
+  return ''
+})
 
 const emit = defineEmits<{
   send: [content: string]
@@ -47,6 +55,7 @@ function submitMessage() {
   emit('send', content)
   draft.value = ''
   replyTargetId.value = null
+  activeComposerPanel.value = null
 }
 
 function canEditMessage(message: Message) {
@@ -74,6 +83,10 @@ function cancelReply() {
 
 function toggleOptions(message: Message) {
   optionsMessageId.value = optionsMessageId.value === message.id ? null : message.id
+}
+
+function toggleComposerPanel(panel: 'upload' | 'gift' | 'apps' | 'emoji') {
+  activeComposerPanel.value = activeComposerPanel.value === panel ? null : panel
 }
 
 function deleteMessage(message: Message) {
@@ -209,10 +222,22 @@ function submitEdit(message: Message) {
       </div>
       <form class="composer" @submit.prevent="submitMessage">
         <div class="composer-actions" :aria-label="t('chat.aria.composer')">
-          <button type="button" :title="t('chat.uploadFile')" :aria-label="t('chat.uploadFile')">
+          <button
+            type="button"
+            :title="t('chat.uploadFile')"
+            :aria-label="t('chat.uploadFile')"
+            :aria-expanded="activeComposerPanel === 'upload'"
+            @click="toggleComposerPanel('upload')"
+          >
             <PlusCircle :size="18" aria-hidden="true" />
           </button>
-          <button type="button" :title="t('chat.sendGift')" :aria-label="t('chat.sendGift')">
+          <button
+            type="button"
+            :title="t('chat.sendGift')"
+            :aria-label="t('chat.sendGift')"
+            :aria-expanded="activeComposerPanel === 'gift'"
+            @click="toggleComposerPanel('gift')"
+          >
             <Gift :size="18" aria-hidden="true" />
           </button>
         </div>
@@ -223,10 +248,22 @@ function submitEdit(message: Message) {
           maxlength="2000"
         />
         <div class="composer-actions" :aria-label="t('chat.aria.expressionActions')">
-          <button type="button" :title="t('chat.apps')" :aria-label="t('chat.apps')">
+          <button
+            type="button"
+            :title="t('chat.apps')"
+            :aria-label="t('chat.apps')"
+            :aria-expanded="activeComposerPanel === 'apps'"
+            @click="toggleComposerPanel('apps')"
+          >
             <ImagePlus :size="18" aria-hidden="true" />
           </button>
-          <button type="button" :title="t('chat.emoji')" :aria-label="t('chat.emoji')">
+          <button
+            type="button"
+            :title="t('chat.emoji')"
+            :aria-label="t('chat.emoji')"
+            :aria-expanded="activeComposerPanel === 'emoji'"
+            @click="toggleComposerPanel('emoji')"
+          >
             <Laugh :size="18" aria-hidden="true" />
           </button>
         </div>
@@ -234,6 +271,11 @@ function submitEdit(message: Message) {
           <Send :size="18" aria-hidden="true" />
         </button>
       </form>
+      <div v-if="activeComposerPanel" class="composer-demo-panel" role="status">
+        <strong>{{ t('chat.demoPanel.title', { label: activeComposerPanelLabel }) }}</strong>
+        <span>{{ t('chat.demoPanel.description') }}</span>
+        <button type="button" @click="activeComposerPanel = null">{{ t('common.close') }}</button>
+      </div>
     </section>
   </section>
 </template>

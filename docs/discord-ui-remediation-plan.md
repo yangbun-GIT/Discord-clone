@@ -291,7 +291,7 @@ Completion notes:
 
 ## Stage 8.6: Placeholder Button Audit And Cleanup
 
-Status: pending.
+Status: completed.
 
 Goal: remove or convert misleading buttons.
 
@@ -315,6 +315,26 @@ Verification:
 - Browser smoke clicks for every header/composer/sidebar action visible in the main
   surfaces.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/App.vue` now exposes a shared demo-disabled notice pattern for
+  visible actions that remain outside the local clone scope.
+- `frontend/src/components/PrivateChannelSidebar.vue` wires DM search, Nitro, Shop,
+  and Quests to the demo notice instead of leaving them inert.
+- `frontend/src/components/ChannelSidebar.vue` wires server menu and Events to the
+  demo notice while preserving real create/invite/channel flows.
+- `frontend/src/components/FriendsHome.vue` turns the friend-row More button into a
+  local profile-summary menu with a message action.
+- `frontend/src/components/ChatView.vue` turns upload, gift, apps, and emoji composer
+  buttons into a local scoped demo panel until Stage 8.8 expands useful composer
+  actions.
+- The workspace notice row was fixed so demo notices stay compact and do not consume
+  the main content area.
+- Browser QA clicked the representative private-sidebar, server-sidebar,
+  friend-row, and composer controls and verified no horizontal overflow.
+- Stage 8.6 browser QA screenshot:
+  - `docs/qa-artifacts/stage-8-6-button-panels.png`
 
 ## Stage 8.7: Channel Header Panels
 

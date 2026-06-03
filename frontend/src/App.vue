@@ -291,8 +291,13 @@ function showHeaderPlaceholder(label: string) {
   workspaceNotice.value = t('app.notice.localControl', { label })
 }
 
+function showDemoNotice(label: string) {
+  workspaceError.value = null
+  workspaceNotice.value = t('app.notice.demoDisabled', { label })
+}
+
 function handleChannelSettings() {
-  showHeaderPlaceholder('Channel settings')
+  showHeaderPlaceholder(t('channel.aria.settings'))
 }
 
 function handleSendMessage(content: string) {
@@ -568,6 +573,7 @@ async function handleCreateInvite() {
       @open-friends="handleOpenFriends"
       @open-dm="handleOpenDm"
       @create-dm="handleOpenFriends"
+      @demo-notice="showDemoNotice"
     />
 
     <ChannelSidebar
@@ -586,6 +592,7 @@ async function handleCreateInvite() {
       @channel-settings="handleChannelSettings"
       @join-voice="handleJoinVoiceChannel"
       @leave-voice="handleLeaveVoiceChannel"
+      @demo-notice="showDemoNotice"
     />
 
     <section class="workspace">
@@ -697,11 +704,13 @@ async function handleCreateInvite() {
         </div>
       </header>
 
-      <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
-        {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
-      </div>
-      <div v-else-if="workspaceNotice" class="app-notice" role="status">
-        {{ workspaceNotice }}
+      <div class="workspace-alerts">
+        <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
+          {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
+        </div>
+        <div v-else-if="workspaceNotice" class="app-notice" role="status">
+          {{ workspaceNotice }}
+        </div>
       </div>
 
       <div v-if="guilds.isLoading || dms.isLoading" class="workspace-loading" role="status">

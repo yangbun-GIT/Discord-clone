@@ -14,6 +14,7 @@ defineEmits<{
   openFriends: []
   openDm: [dmId: number]
   createDm: []
+  demoNotice: [label: string]
 }>()
 
 const { t } = useI18n()
@@ -21,7 +22,7 @@ const { t } = useI18n()
 
 <template>
   <aside class="private-sidebar" :aria-label="t('channel.aria.privateChannels')">
-    <button class="dm-search-button" type="button">
+    <button class="dm-search-button" type="button" @click="$emit('demoNotice', t('channel.findConversation'))">
       <Search :size="15" aria-hidden="true" />
       <span>{{ t('channel.findConversation') }}</span>
     </button>
@@ -37,15 +38,15 @@ const { t } = useI18n()
         <MessageCircle :size="18" aria-hidden="true" />
         <span>{{ t('channel.friends') }}</span>
       </button>
-      <button type="button" class="private-nav-button muted">
+      <button type="button" class="private-nav-button muted" @click="$emit('demoNotice', t('channel.nitro'))">
         <Sparkles :size="18" aria-hidden="true" />
         <span>{{ t('channel.nitro') }}</span>
       </button>
-      <button type="button" class="private-nav-button muted">
+      <button type="button" class="private-nav-button muted" @click="$emit('demoNotice', t('channel.shop'))">
         <Store :size="18" aria-hidden="true" />
         <span>{{ t('channel.shop') }}</span>
       </button>
-      <button type="button" class="private-nav-button muted">
+      <button type="button" class="private-nav-button muted" @click="$emit('demoNotice', t('channel.quests'))">
         <Target :size="18" aria-hidden="true" />
         <span>{{ t('channel.quests') }}</span>
       </button>

@@ -35,6 +35,7 @@ const emit = defineEmits<{
   channelSettings: [channelId: number]
   joinVoice: [channelId: number]
   leaveVoice: [channelId: number]
+  demoNotice: [label: string]
 }>()
 
 const createChannelType = ref<0 | 1 | null>(null)
@@ -98,12 +99,17 @@ function voiceStateStatusLabel(state: VoiceState) {
   <aside class="channel-sidebar" :aria-label="t('channel.aria.channels')">
     <div class="guild-heading">
       <span>{{ guild.name }}</span>
-      <button type="button" :title="t('channel.aria.serverMenu')" :aria-label="t('channel.aria.serverMenu')">
+      <button
+        type="button"
+        :title="t('channel.aria.serverMenu')"
+        :aria-label="t('channel.aria.serverMenu')"
+        @click="$emit('demoNotice', t('channel.aria.serverMenu'))"
+      >
         <MoreHorizontal :size="18" aria-hidden="true" />
       </button>
     </div>
 
-    <button type="button" class="events-entry">
+    <button type="button" class="events-entry" @click="$emit('demoNotice', t('channel.events'))">
       <CalendarDays :size="17" aria-hidden="true" />
       <span>{{ t('channel.events') }}</span>
     </button>
