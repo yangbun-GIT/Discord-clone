@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Laugh, Send } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
-import type { DirectMessage, User } from '../types'
+import type { DirectMessage, User, UserPresenceStatus } from '../types'
 
 const props = defineProps<{
   dm: DirectMessage | null
@@ -32,6 +32,14 @@ function insertEmoji(emoji: string) {
   draft.value = `${draft.value}${draft.value ? ' ' : ''}${emoji}`.slice(0, 2000)
 }
 
+const otherParticipants = computed(() =>
+  props.dm?.participants.filter((participant) => participant.id !== props.currentUser?.id) ?? [],
+)
+
+function statusLabel(status: UserPresenceStatus) {
+  return t(`common.status.${status}`)
+}
+
 watch(
   () => props.dm?.id,
   () => {
@@ -45,12 +53,39 @@ watch(
   <section class="chat-view" :aria-label="t('dm.aria.directMessages')">
     <div class="message-list">
       <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
-        <div class="dm-placeholder-avatar" :class="dm.status">
-          {{ dm.display_name.slice(0, 1).toUpperCase() }}
+        <div class="dm-intro-heading">
+          <div class="dm-placeholder-avatar" :class="dm.status">
+            {{ dm.display_name.slice(0, 1).toUpperCase() }}
+          </div>
+          <div class="dm-intro-title">
+            <h2>{{ dm.display_name }}</h2>
+            <p v-if="dm.is_group">{{ t('dm.groupDescription', { count: dm.member_count }) }}</p>
+            <p v-else>{{ dm.activity ?? t('dm.beginning') }}</p>
+          </div>
         </div>
-        <h2>{{ dm.display_name }}</h2>
-        <p v-if="dm.is_group">{{ t('dm.groupDescription', { count: dm.member_count }) }}</p>
-        <p v-else>{{ dm.activity ?? t('dm.beginning') }}</p>
+        <dl class="dm-intro-meta">
+          <div>
+            <dt>{{ t('dm.status') }}</dt>
+            <dd>
+              <span class="presence-dot" :class="dm.status" aria-hidden="true"></span>
+              {{ statusLabel(dm.status) }}
+            </dd>
+          </div>
+          <div>
+            <dt>{{ t('dm.messages') }}</dt>
+            <dd>{{ t('dm.messageCount', { count: dm.messages.length }) }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('dm.participants') }}</dt>
+            <dd>{{ dm.participants.map((participant) => participant.username).join(', ') }}</dd>
+          </div>
+        </dl>
+        <div v-if="otherParticipants.length" class="dm-participant-strip" :aria-label="t('dm.participants')">
+          <span v-for="participant in otherParticipants" :key="participant.id">
+            <span class="presence-dot" :class="participant.status" aria-hidden="true"></span>
+            {{ participant.username }}
+          </span>
+        </div>
       </section>
 
       <section v-else class="dm-chat-intro" :aria-label="t('dm.aria.noSelection')">

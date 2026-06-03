@@ -33,7 +33,7 @@ plus Stage 8.2 sidebar text-overlap/channel-creation cleanup, Stage 8.3
 Korean/English i18n foundation, Stage 8.4 bottom user/voice panel redesign, and
 Stage 8.5 current location/state visibility, and Stage 8.6 placeholder-button
 cleanup, Stage 8.7 channel-header panels, and Stage 8.8 composer action panels are
-complete.
+complete. Stage 8.9 Friends/DM information density is complete.
 
 The app boots in two local modes:
 
@@ -764,8 +764,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.9 is next: improve Friends and DM information density, selected-state
-  clarity, and scan-friendly profile/activity context.
+- Stage 8.10 is next: reorganize Settings into clearer account, voice/video,
+  appearance, accessibility, keybind, language/time, and logout groups.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -953,6 +953,18 @@ Discord app inspection observation:
     fixes the DM composer grid for input, expression action, and send controls.
   - QA screenshots are `docs/qa-artifacts/stage-8-8-composer-panels.png` and
     `docs/qa-artifacts/stage-8-8-dm-composer.png`.
+- Stage 8.9 completed Friends and DM information density:
+  - `frontend/src/components/FriendsHome.vue` shows friend status, relationship,
+    handle, activity, selected-row state, and a wide-screen profile/activity panel.
+  - `frontend/src/components/PrivateChannelSidebar.vue` shows DM presence dots,
+    status/activity detail, group member counts, unread badges, and stronger selected
+    state.
+  - `frontend/src/components/DirectMessageView.vue` shows DM status, message count,
+    participants, and participant chips in the conversation intro.
+  - `frontend/src/styles/base.css` bounds Friends/DM detail layouts and hides the
+    Friends profile panel at narrower breakpoints.
+  - QA screenshots are `docs/qa-artifacts/stage-8-9-friends-home.png` and
+    `docs/qa-artifacts/stage-8-9-friends-dm.png`.
 
 Store planning observation:
 

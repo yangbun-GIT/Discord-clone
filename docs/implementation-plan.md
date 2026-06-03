@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: completed through Stage 8.8 composer action panels.
+- Status: completed through Stage 8.9 Friends and DM information density.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -298,3 +298,7 @@
   insertion; the server composer also provides bounded upload metadata, apps/action
   drafting templates, and an explicit gift demo limitation without breaking message
   send/edit/delete behavior.
+- Completed Stage 8.9: Friends rows, the private DM sidebar, and DM conversation
+  intros now expose scan-friendly status, activity, handle, participant, unread, and
+  selected-state information, with a wide-screen Friends profile panel and responsive
+  fallback rules for narrower layouts.

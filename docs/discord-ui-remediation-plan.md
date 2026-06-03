@@ -420,7 +420,7 @@ Completion notes:
 
 ## Stage 8.9: Friends And DM Information Density
 
-Status: pending.
+Status: completed.
 
 Goal: make `@me` and DM screens easier to scan.
 
@@ -441,6 +441,25 @@ Verification:
 - Frontend lint/build.
 - Browser smoke for Friends tabs, DM open, DM send, narrow layout.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/components/FriendsHome.vue` now shows status, relationship, handle,
+  activity, selected-row state, and a wide-screen profile/activity summary panel.
+- `frontend/src/components/PrivateChannelSidebar.vue` now shows DM presence dots,
+  status/activity details, group member counts, unread badges, and stronger selected
+  state in the private sidebar.
+- `frontend/src/components/DirectMessageView.vue` now shows a richer DM intro with
+  status, message count, participant names, and participant chips.
+- `frontend/src/styles/base.css` adds bounded Friends/DM detail layouts and hides
+  the Friends profile panel under the narrow breakpoint so the list remains primary.
+- Browser QA verified Friends rows/summary panel, DM selected state, DM intro
+  metadata, DM send, and no horizontal overflow in the available desktop viewport.
+  The in-app Browser surface does not expose viewport resizing, so the narrow layout
+  was verified by the 1180/900/620px responsive CSS rules plus frontend build.
+- Stage 8.9 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-9-friends-home.png`
+  - `docs/qa-artifacts/stage-8-9-friends-dm.png`
 
 ## Stage 8.10: Settings Reorganization
 

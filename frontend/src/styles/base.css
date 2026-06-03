@@ -508,13 +508,19 @@ select:focus-visible {
 }
 
 .dm-row {
-  min-height: 46px;
+  min-height: 54px;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
   padding: 0 8px;
   text-align: left;
+}
+
+.dm-avatar-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
 }
 
 .dm-avatar,
@@ -531,6 +537,43 @@ select:focus-visible {
   width: 34px;
   height: 34px;
   border-radius: 13px;
+}
+
+.dm-avatar-wrap .dm-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.dm-avatar-wrap .presence-dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  border: 2px solid #1e2026;
+}
+
+.presence-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  border-radius: 999px;
+  background: #6b7280;
+}
+
+.presence-dot.online {
+  background: #22c55e;
+}
+
+.presence-dot.idle {
+  background: #f59e0b;
+}
+
+.presence-dot.dnd {
+  background: #ef4444;
+}
+
+.presence-dot.offline {
+  background: #6b7280;
 }
 
 .dm-avatar.online,
@@ -552,6 +595,22 @@ select:focus-visible {
   min-width: 0;
   display: grid;
   gap: 2px;
+}
+
+.dm-title-line,
+.dm-state-line {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dm-title-line strong,
+.dm-state-line small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dm-copy small {
@@ -1564,6 +1623,22 @@ select:focus-visible {
   overflow: hidden;
 }
 
+.friends-content {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  overflow: hidden;
+}
+
+.friends-list-pane {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
 .friends-header {
   min-width: 0;
   min-height: 58px;
@@ -1649,11 +1724,23 @@ select:focus-visible {
 .friend-row {
   position: relative;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 36px 36px;
+  grid-template-columns: 42px minmax(0, 1fr) 36px 36px;
   align-items: center;
   gap: 12px;
-  min-height: 58px;
+  min-height: 74px;
   border-top: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 8px;
+  padding: 0 8px;
+  cursor: default;
+}
+
+.friend-row:hover,
+.friend-row.active {
+  background: rgb(255 255 255 / 6%);
+}
+
+.friend-row.active {
+  box-shadow: inset 3px 0 0 #5eead4;
 }
 
 .friend-avatar,
@@ -1666,14 +1753,47 @@ select:focus-visible {
 .friend-copy {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 
-.friend-copy strong,
-.friend-copy small {
+.friend-name-line,
+.friend-status-line {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.friend-name-line strong,
+.friend-name-line small,
+.friend-status-line small,
+.friend-activity {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.friend-name-line small {
+  color: #9ca3af;
+  font-size: 0.76rem;
+}
+
+.friend-status-line {
+  color: #cbd5e1;
+}
+
+.friend-relationship {
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgb(96 165 250 / 18%);
+  padding: 2px 7px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.friend-activity {
+  display: block;
 }
 
 .friend-copy small,
@@ -1739,6 +1859,90 @@ select:focus-visible {
   padding: 0 10px;
 }
 
+.friend-activity-panel {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  border-left: 1px solid rgb(255 255 255 / 8%);
+  background: rgb(20 22 27 / 64%);
+  padding: 22px 18px;
+  overflow: auto;
+}
+
+.friend-avatar.large {
+  width: 64px;
+  height: 64px;
+  border-radius: 22px;
+  font-size: 1.25rem;
+}
+
+.friend-activity-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.friend-activity-copy h2,
+.friend-activity-copy p {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.friend-activity-copy p {
+  color: #9ca3af;
+}
+
+.friend-activity-panel dl,
+.dm-intro-meta {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.friend-activity-panel dl > div,
+.dm-intro-meta > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.friend-activity-panel dt,
+.dm-intro-meta dt {
+  color: #9ca3af;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.friend-activity-panel dd,
+.dm-intro-meta dd {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.friend-activity-panel button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  color: #111827;
+  background: #86efac;
+  padding: 0 12px;
+  font-weight: 900;
+}
+
 .add-friend-panel,
 .dm-placeholder,
 .dm-chat-intro {
@@ -1767,6 +1971,48 @@ select:focus-visible {
   border-bottom: 1px solid rgb(255 255 255 / 7%);
   margin-bottom: 10px;
   padding: 4px 0 20px;
+}
+
+.dm-intro-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dm-intro-title {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.dm-intro-title h2,
+.dm-intro-title p,
+.dm-intro-meta dd {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dm-participant-strip {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dm-participant-strip span {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgb(96 165 250 / 14%);
+  padding: 5px 9px;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .add-friend-form {
@@ -2929,6 +3175,16 @@ select:focus-visible {
   font-size: 0.78rem;
 }
 
+@media (max-width: 1180px) {
+  .friends-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .friend-activity-panel {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: var(--server-rail-width-mobile) minmax(0, 1fr);
@@ -3049,12 +3305,17 @@ select:focus-visible {
     margin: 18px 12px;
   }
 
+  .friends-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .session-state {
     display: none;
   }
 
   .friend-row {
     grid-template-columns: 40px minmax(0, 1fr) 36px;
+    min-height: 72px;
   }
 
   .friend-row button:last-child {

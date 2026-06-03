@@ -2,7 +2,7 @@
 import { Gift, MessageCircle, Plus, Search, Sparkles, Store, Target } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
-import type { DirectMessage } from '../types'
+import type { DirectMessage, UserPresenceStatus } from '../types'
 
 defineProps<{
   dms: DirectMessage[]
@@ -18,6 +18,10 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+function statusLabel(status: UserPresenceStatus) {
+  return t(`common.status.${status}`)
+}
 </script>
 
 <template>
@@ -68,11 +72,20 @@ const { t } = useI18n()
         :aria-current="activeDestination === 'dm' && dm.id === activeDmId ? 'page' : undefined"
         @click="$emit('openDm', dm.id)"
       >
-        <span class="dm-avatar" :class="dm.status">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
+        <span class="dm-avatar-wrap">
+          <span class="dm-avatar" :class="dm.status">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
+          <span class="presence-dot" :class="dm.status" aria-hidden="true"></span>
+        </span>
         <span class="dm-copy">
-          <strong>{{ dm.display_name }}</strong>
-          <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
-          <small v-else>{{ dm.activity ?? dm.status }}</small>
+          <span class="dm-title-line">
+            <strong>{{ dm.display_name }}</strong>
+            <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
+          </span>
+          <span class="dm-state-line">
+            <small>{{ statusLabel(dm.status) }}</small>
+            <small v-if="dm.activity">{{ dm.activity }}</small>
+            <small v-else-if="!dm.is_group">{{ t('friends.noActivity') }}</small>
+          </span>
         </span>
         <span v-if="dm.unread_count" class="dm-badge">{{ dm.unread_count }}</span>
       </button>
