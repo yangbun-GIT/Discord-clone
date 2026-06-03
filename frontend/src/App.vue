@@ -21,7 +21,7 @@ import { useGuildStore } from './stores/guilds'
 import { useNavigationStore } from './stores/navigation'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
-import type { VoiceConfig, VoiceIceServer } from './types'
+import type { ServerRailGuildMeta, VoiceConfig, VoiceIceServer } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
@@ -64,12 +64,29 @@ const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
 const showCreateGuild = ref(false)
 const showJoinGuild = ref(false)
+const showDiscovery = ref(false)
 const showInvite = ref(false)
 const guildName = ref('')
 const joinCode = ref('')
 const inviteCode = ref<string | null>(null)
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 const voiceTurnConfigured = ref(false)
+const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
+  const entries = guilds.guilds.map((guild, index) => {
+    const unreadCount = activeGuild.value?.id === guild.id ? 0 : Math.min(guild.messages.length, 9)
+    return [
+      guild.id,
+      {
+        unread_count: unreadCount,
+        mention_count: index === 0 && !isPrivateDestination.value ? 0 : Number(index === 0 && unreadCount > 0),
+        muted: index % 3 === 2,
+        folder_name: index < 2 ? 'Project' : null,
+        folder_color: index < 2 ? '#5eead4' : null,
+      },
+    ] as const
+  })
+  return Object.fromEntries(entries)
+})
 
 async function openWorkspace() {
   if (!session.token) return
@@ -166,6 +183,15 @@ function openCreateGuild() {
 function closeCreateGuild() {
   showCreateGuild.value = false
   guildName.value = ''
+}
+
+function openDiscovery() {
+  workspaceError.value = null
+  showDiscovery.value = true
+}
+
+function closeDiscovery() {
+  showDiscovery.value = false
 }
 
 async function handleCreateGuild() {
@@ -382,9 +408,12 @@ async function handleCreateInvite() {
       :guilds="guilds.guilds"
       :active-guild-id="guilds.activeGuildId"
       :home-active="isPrivateDestination"
+      :home-unread-count="dms.unreadCount"
+      :guild-meta="serverRailMeta"
       @home="handleOpenFriends"
       @select="handleSelectGuild"
       @create="openCreateGuild"
+      @discover="openDiscovery"
     />
 
     <PrivateChannelSidebar
@@ -535,6 +564,24 @@ async function handleCreateInvite() {
           </button>
         </div>
       </form>
+    </section>
+
+    <section v-if="showDiscovery" class="modal-layer" aria-label="Server discovery">
+      <div class="server-create-dialog discovery-dialog">
+        <div class="auth-mark">EX</div>
+        <div class="discovery-copy">
+          <h2>Explore Servers</h2>
+          <p>Local discovery opens in Stage 7.9. This entry is wired now so the rail layout is complete.</p>
+        </div>
+        <div class="discovery-list" aria-label="Preview categories">
+          <span>Study groups</span>
+          <span>Project rooms</span>
+          <span>Voice hangouts</span>
+        </div>
+        <div class="dialog-actions single">
+          <button type="button" @click="closeDiscovery">Done</button>
+        </div>
+      </div>
     </section>
 
     <section v-if="showInvite" class="modal-layer" aria-label="Server invite">

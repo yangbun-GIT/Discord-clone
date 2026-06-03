@@ -21,8 +21,9 @@ scope, focused PostgreSQL repository coverage for current guild/message mutation
 Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stage 6.2
 Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
 state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
-app destination state, Stage 7.2 `@me` Friends/DM shell, and Stage 7.3 first-class
-demo-backed Direct Messages are complete and pushed to GitHub.
+app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
+demo-backed Direct Messages, and Stage 7.4 server rail parity are complete and pushed
+to GitHub.
 
 The app boots in two local modes:
 
@@ -401,8 +402,10 @@ The app boots in two local modes:
     stream tracking, screen-share renegotiation, WebRTC `getStats()` quality
     sampling, and cleanup.
 - `frontend/src/components/ServerRail.vue`
-  - Discord-like rail with `@me` Direct Messages button, server icons, separator, and
-    create-server icon button.
+  - Discord-like rail with `@me` Direct Messages button, server icons, separators,
+    server unread/mention badges, muted indicator, demo folder grouping, create-server
+    icon button, and discovery icon button.
+  - Uses accessible labels that include unread, mention, and muted state.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - `@me` sidebar with search/start conversation button, Friends/Nitro/Shop/Quests
     entries, API-backed DM list, unread badges, and create-DM action placeholder.
@@ -703,8 +706,9 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.4 Server Rail Parity: unread/mention indicators, muted state, folder grouping,
-  add-server/discovery rail entries, and accessible labels/focus behavior.
+  7.5 Server Sidebar And Header Controls: server header, Events entry, collapsible
+  channel categories, channel action buttons, channel header controls, and member-list
+  visibility toggle.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -731,6 +735,11 @@ Discord app inspection observation:
     `backend/app/demo/store.py`.
   - DM frontend state is in `frontend/src/stores/dms.ts`.
   - DM chat UI is in `frontend/src/components/DirectMessageView.vue`.
+- Stage 7.4 completed server rail parity:
+  - Rail UI is in `frontend/src/components/ServerRail.vue`.
+  - Safe demo rail metadata is computed in `frontend/src/App.vue`.
+  - The rail exposes `@me` unread count, server unread/mention state, muted state,
+    folder grouping, create-server, and discovery entry points.
 
 Store planning observation:
 
@@ -839,6 +848,9 @@ Completed Stage 2 bridge work:
 - Added Stage 7.3 Direct Messages: authenticated relationship and DM APIs, demo-store
   DM membership checks, sanitized DM message creation, frontend DM state, friend-row
   DM creation/opening, and a functional DM chat composer.
+- Added Stage 7.4 Server Rail Parity: `@me` unread badge, server unread/mention
+  indicators, muted server state, demo folder grouping, add-server/discovery rail
+  buttons, and browser-verified rail interactions.
 
 After each stage or meaningful feature:
 

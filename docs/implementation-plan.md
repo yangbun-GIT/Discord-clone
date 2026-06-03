@@ -165,7 +165,8 @@
 ## Stage 7: Discord App Parity
 
 - Status: implementation started; app destination model, `@me` private sidebar,
-  Friends home, and first-class demo-backed Direct Messages are complete.
+  Friends home, first-class demo-backed Direct Messages, and server rail parity are
+  complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -189,3 +190,9 @@
     sends DM messages.
   - `frontend/src/components/DirectMessageView.vue` renders DM history and composer
     inside the `dm` destination.
+- Completed Stage 7.4 Server Rail Parity:
+  - `frontend/src/components/ServerRail.vue` now shows `@me` unread count, server
+    unread/mention indicators, muted state, a demo folder grouping, and distinct add
+    server/discovery buttons with accessible labels.
+  - `frontend/src/App.vue` computes safe demo rail metadata and opens a wired
+    discovery entry placeholder ahead of Stage 7.9.

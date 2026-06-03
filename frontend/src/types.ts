@@ -101,6 +101,14 @@ export type Guild = {
   messages: Message[]
 }
 
+export type ServerRailGuildMeta = {
+  unread_count: number
+  mention_count: number
+  muted: boolean
+  folder_name: string | null
+  folder_color: string | null
+}
+
 export type Invite = {
   code: string
   guild_id: number

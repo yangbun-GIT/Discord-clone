@@ -125,6 +125,8 @@ Verification:
 
 ## Stage 7.4: Server Rail Parity
 
+Status: completed.
+
 Goal: make the server rail closer to Discord's navigation.
 
 Tasks:
