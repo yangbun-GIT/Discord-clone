@@ -97,6 +97,8 @@ Verification:
 
 ## Stage 7.3: Direct Messages
 
+Status: completed.
+
 Goal: make DMs a functional first-class workspace.
 
 Tasks:

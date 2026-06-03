@@ -72,6 +72,8 @@ Useful backend auth endpoints:
 - `POST http://127.0.0.1:8000/api/auth/register`
 - `POST http://127.0.0.1:8000/api/auth/login`
 - `GET http://127.0.0.1:8000/api/auth/me`
+- `GET http://127.0.0.1:8000/api/users/me/relationships`
+- `GET http://127.0.0.1:8000/api/dms`
 - `GET http://127.0.0.1:8000/api/store/catalog`
 - `GET http://127.0.0.1:8000/api/store/items/6401`
 

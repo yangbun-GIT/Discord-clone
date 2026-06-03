@@ -21,8 +21,8 @@ scope, focused PostgreSQL repository coverage for current guild/message mutation
 Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stage 6.2
 Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
 state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
-app destination state and Stage 7.2 `@me` Friends/DM shell are complete and pushed to
-GitHub.
+app destination state, Stage 7.2 `@me` Friends/DM shell, and Stage 7.3 first-class
+demo-backed Direct Messages are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -222,6 +222,16 @@ The app boots in two local modes:
     or lacks `SEND_MESSAGES`.
   - After persistence succeeds, publishes `MESSAGE_CREATE`, `MESSAGE_UPDATE`, or
     `MESSAGE_DELETE` through the realtime publisher.
+- `backend/app/api/routes/users.py`
+  - `GET /api/users/me/relationships` requires a bearer token and returns safe demo
+    relationship rows for the current local user.
+- `backend/app/api/routes/dms.py`
+  - `GET /api/dms` requires a bearer token and returns only DM threads where the
+    current user is a participant.
+  - `POST /api/dms` creates or returns an existing one-to-one or group DM for known
+    demo recipients.
+  - `POST /api/dms/{dm_id}/messages` creates sanitized DM messages and rejects
+    non-members or path/payload ID mismatches.
 - `backend/app/api/routes/meta.py`
   - `/api/meta/permissions` exposes permission names and integer values.
   - `/api/meta/voice` exposes WebRTC ICE server config from
@@ -244,10 +254,12 @@ The app boots in two local modes:
     and building filter metadata for future Store APIs.
 - `backend/app/demo/store.py`
   - Process-local mutable demo store.
-  - Creates guilds, invite codes, roles, member-role assignments, channels, and
-    messages with Snowflake IDs.
+  - Creates guilds, invite codes, roles, member-role assignments, channels, messages,
+    relationships, DM threads, and DM messages with Snowflake IDs.
   - Updates and deletes messages for the message author or guild owner.
-  - Still used only when no database pool is configured.
+  - Still used for guild/channel/message fallback when no database pool is configured.
+  - DM and relationship state intentionally uses this demo store until Stage 7.10
+    adds PostgreSQL persistence and realtime DM dispatch.
   - Filters guild reads by member and enforces owner-only channel creation plus
     owner-only role/member management plus member-only message creation.
 - `backend/app/repositories/guilds.py`
@@ -267,6 +279,10 @@ The app boots in two local modes:
 - `backend/app/services/guild_service.py`
   - Runtime switch between PostgreSQL repositories and the process-local demo store.
   - Keeps route handlers independent from the current persistence mode.
+- `backend/app/services/dm_service.py`
+  - Async service boundary for Stage 7.3 DM APIs.
+  - Delegates to `demo_store` for relationships, DM list/create, and DM message
+    creation until Stage 7.10 introduces repository-backed persistence.
 - `backend/app/services/auth_service.py`
   - Coordinates registration/login with async repository calls and runs bcrypt
     hashing/verification off the event loop.
@@ -277,7 +293,13 @@ The app boots in two local modes:
     and a local demo Nitro-like flag for user ID `42`.
   - Keeps Stage 6 read APIs independent from future purchase/inventory persistence.
 - `backend/app/schemas/`
-  - Pydantic API schemas for auth, guilds, messages, and Store contracts.
+  - Pydantic API schemas for auth, guilds, messages, Direct Messages, and Store
+    contracts.
+- `backend/app/schemas/dm.py`
+  - Relationship, DM participant, DM thread, DM message, DM create, and DM message
+    create contracts.
+  - Sanitizes DM message content with the shared message sanitizer at the schema
+    boundary.
 - `backend/app/schemas/store.py`
   - Store item, collection, price, preview, catalog, detail, inventory, purchase,
     gift, equip, and mutation response schemas.
@@ -305,7 +327,7 @@ The app boots in two local modes:
 - `frontend/src/App.vue`
   - Main Discord-like workspace screen.
   - Composes server rail, private-channel sidebar, Friends home, channel sidebar,
-    chat view, member list, and voice panel.
+    DM chat view, server chat view, member list, and voice panel.
   - Restores saved sessions, shows auth UI when logged out, loads guild data after
     authentication, and connects the gateway.
   - Opens the `@me` Friends destination after login, preserves current guild/channel
@@ -316,6 +338,8 @@ The app boots in two local modes:
 - `frontend/src/services/api.ts`
   - Small fetch wrapper for GET and POST calls.
   - GET, POST, PATCH, and DELETE calls accept an optional bearer token.
+  - Exposes relationship and Direct Message wrappers for
+    `/api/users/me/relationships`, `/api/dms`, and `/api/dms/{dm_id}/messages`.
   - Exposes Store read wrappers for `/api/store/catalog` and
     `/api/store/items/{item_id}`.
 - `frontend/src/stores/session.ts`
@@ -345,10 +369,16 @@ The app boots in two local modes:
   - Applies gateway `GUILD_UPDATE` dispatches by replacing the local guild snapshot
     and preserving a valid active channel.
   - Uses `document.startViewTransition()` when available for channel switching.
+- `frontend/src/stores/dms.ts`
+  - Pinia DM store for Stage 7.3.
+  - Uses `shallowRef` for relationship rows and DM thread snapshots.
+  - Loads authenticated relationship and DM data, creates or opens DM threads from a
+    friend row, sends sanitized DM messages through the backend, appends returned
+    messages immutably, and resets on logout.
 - `frontend/src/stores/navigation.ts`
   - Pinia app destination store for the Discord-like shell.
   - Tracks `friends`, `dm`, `server_channel`, `voice_channel`, and `settings`
-    destinations plus active demo DM ID.
+    destinations plus active DM ID.
   - Keeps `@me` navigation independent from guild/channel state.
 - `frontend/src/stores/store.ts`
   - Pinia Store state module for Stage 6.
@@ -375,10 +405,16 @@ The app boots in two local modes:
     create-server icon button.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - `@me` sidebar with search/start conversation button, Friends/Nitro/Shop/Quests
-    entries, demo DM list, unread badges, and create-DM action placeholder.
+    entries, API-backed DM list, unread badges, and create-DM action placeholder.
 - `frontend/src/components/FriendsHome.vue`
-  - Friends home surface with Online/All/Pending/Blocked/Add Friend tabs, search, demo
-    friend rows, message actions, and add-friend placeholder form.
+  - Friends home surface with Online/All/Pending/Blocked/Add Friend tabs, search,
+    API-backed safe demo relationship rows, message actions, and add-friend
+    placeholder form.
+  - Emits `messageFriend` so `App.vue` can create or open a DM through `dms.ts`.
+- `frontend/src/components/DirectMessageView.vue`
+  - Renders selected DM participant intro, message history, and a DM composer inside
+    the `dm` destination.
+  - Keeps server channel editing/deletion behavior isolated in `ChatView.vue`.
 - `frontend/src/components/ChannelSidebar.vue`
   - Text and voice channel lists.
   - Provides an inline text-channel creation form.
@@ -461,12 +497,24 @@ The app boots in two local modes:
 - Discord app destination flow:
   - `openWorkspace()` loads guilds and voice config, then opens the `friends`
     destination before connecting the gateway.
+  - `openWorkspace()` also loads relationships and Direct Messages through
+    `frontend/src/stores/dms.ts`.
   - `ServerRail.vue` emits `home` for the `@me` button and `select` for guild icons.
   - `App.vue` routes `friends` and `dm` destinations to
     `PrivateChannelSidebar.vue`; `friends` renders `FriendsHome.vue`, while `dm`
-    currently renders a Stage 7.3 placeholder.
+    renders `DirectMessageView.vue`.
   - Selecting a server switches the destination to `server_channel` and preserves the
     existing guild/channel chat behavior.
+- Direct Message flow:
+  - `GET /api/users/me/relationships` and `GET /api/dms` hydrate `dms.ts` after
+    login/demo session restore.
+  - `PrivateChannelSidebar.vue` renders loaded DM threads and opens a selected thread
+    through `navigation.openDm()`.
+  - `FriendsHome.vue` emits `messageFriend`; `App.vue` calls
+    `dms.createDm(token, [friendId])`, then opens the returned thread.
+  - `DirectMessageView.vue` emits submitted content; `dms.ts` POSTs to
+    `/api/dms/{dm_id}/messages`, appends the returned sanitized message, and keeps
+    `ChatView.vue` focused on server text channels.
 - Guild creation flow:
   - `ServerRail.vue` and the empty workspace call `App.vue`'s create-server handler.
   - `App.vue` opens a focused server-name dialog.
@@ -655,8 +703,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.3 Direct Messages: backend DM schemas/routes/service, frontend DM state, and DM
-  message composer integration.
+  7.4 Server Rail Parity: unread/mention indicators, muted state, folder grouping,
+  add-server/discovery rail entries, and accessible labels/focus behavior.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -674,7 +722,15 @@ Discord app inspection observation:
   - App destination state is in `frontend/src/stores/navigation.ts`.
   - `@me` private sidebar is in `frontend/src/components/PrivateChannelSidebar.vue`.
   - Friends home is in `frontend/src/components/FriendsHome.vue`.
-  - Safe demo friend/DM data is local to `frontend/src/App.vue`.
+- Stage 7.3 moved safe demo friend/DM data into the backend and completed functional
+  DM messaging:
+  - DM contracts are in `backend/app/schemas/dm.py`.
+  - DM routes are in `backend/app/api/routes/users.py` and
+    `backend/app/api/routes/dms.py`.
+  - DM service/demo fallback logic is in `backend/app/services/dm_service.py` and
+    `backend/app/demo/store.py`.
+  - DM frontend state is in `frontend/src/stores/dms.ts`.
+  - DM chat UI is in `frontend/src/components/DirectMessageView.vue`.
 
 Store planning observation:
 
@@ -780,6 +836,9 @@ Completed Stage 2 bridge work:
   state, and logout reset integration.
 - Added `docs/discord-app-clone-implementation-plan.md` as the current primary plan
   for cloning the Discord web app rooted at `channels/@me`.
+- Added Stage 7.3 Direct Messages: authenticated relationship and DM APIs, demo-store
+  DM membership checks, sanitized DM message creation, frontend DM state, friend-row
+  DM creation/opening, and a functional DM chat composer.
 
 After each stage or meaningful feature:
 

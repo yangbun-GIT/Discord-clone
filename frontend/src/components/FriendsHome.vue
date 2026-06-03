@@ -8,6 +8,10 @@ const props = defineProps<{
   friends: Friend[]
 }>()
 
+defineEmits<{
+  messageFriend: [friendId: number]
+}>()
+
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('online')
 const searchQuery = ref('')
 const addFriendName = ref('')
@@ -97,7 +101,7 @@ const visibleFriends = computed(() => {
       </label>
 
       <section class="friend-list" :aria-label="`${activeTab} friends`">
-        <h2>{{ activeTab === 'online' ? `Online — ${visibleFriends.length}` : `Friends — ${visibleFriends.length}` }}</h2>
+        <h2>{{ activeTab === 'online' ? `Online - ${visibleFriends.length}` : `Friends - ${visibleFriends.length}` }}</h2>
         <div v-if="!visibleFriends.length" class="friends-empty">No demo friends match this view.</div>
         <article v-for="friend in visibleFriends" :key="friend.id" class="friend-row">
           <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
@@ -105,7 +109,7 @@ const visibleFriends = computed(() => {
             <strong>{{ friend.username }}</strong>
             <small>{{ friend.activity ?? friend.status }}</small>
           </span>
-          <button type="button" aria-label="Send message">
+          <button type="button" aria-label="Send message" @click="$emit('messageFriend', friend.id)">
             <Send :size="17" aria-hidden="true" />
           </button>
           <button type="button" aria-label="More">

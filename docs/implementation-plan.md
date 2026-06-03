@@ -164,8 +164,8 @@
 
 ## Stage 7: Discord App Parity
 
-- Status: implementation started; app destination model plus `@me` private sidebar and
-  Friends home are complete.
+- Status: implementation started; app destination model, `@me` private sidebar,
+  Friends home, and first-class demo-backed Direct Messages are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -182,3 +182,10 @@
     friend rows.
   - `frontend/src/App.vue` opens Friends by default after login and preserves current
     server/channel behavior when selecting a server.
+- Completed Stage 7.3 Direct Messages:
+  - Authenticated `/api/users/me/relationships`, `/api/dms`, and DM message APIs are
+    implemented with demo-store fallback data.
+  - `frontend/src/stores/dms.ts` loads relationships/DMs, creates DM threads, and
+    sends DM messages.
+  - `frontend/src/components/DirectMessageView.vue` renders DM history and composer
+    inside the `dm` destination.

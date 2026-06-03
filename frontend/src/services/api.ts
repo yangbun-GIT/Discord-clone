@@ -1,4 +1,12 @@
-import type { StoreCatalog, StoreItemDetail } from '../types'
+import type {
+  DirectMessage,
+  DmCreate,
+  DmMessage,
+  DmMessageCreate,
+  Friend,
+  StoreCatalog,
+  StoreItemDetail,
+} from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -94,4 +102,27 @@ export function fetchStoreItemDetail(
   token?: string | null,
 ): Promise<StoreItemDetail> {
   return apiGet<StoreItemDetail>(`/api/store/items/${itemId}`, token)
+}
+
+export function fetchRelationships(token?: string | null): Promise<Friend[]> {
+  return apiGet<Friend[]>('/api/users/me/relationships', token)
+}
+
+export function fetchDirectMessages(token?: string | null): Promise<DirectMessage[]> {
+  return apiGet<DirectMessage[]>('/api/dms', token)
+}
+
+export function createDirectMessage(
+  payload: DmCreate,
+  token?: string | null,
+): Promise<DirectMessage> {
+  return apiPost<DirectMessage, DmCreate>('/api/dms', payload, token)
+}
+
+export function createDirectMessageMessage(
+  dmId: number,
+  payload: DmMessageCreate,
+  token?: string | null,
+): Promise<DmMessage> {
+  return apiPost<DmMessage, DmMessageCreate>(`/api/dms/${dmId}/messages`, payload, token)
 }

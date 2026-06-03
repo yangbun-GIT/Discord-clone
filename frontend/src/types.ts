@@ -18,12 +18,39 @@ export type Friend = {
 export type DirectMessage = {
   id: number
   recipient_ids: number[]
+  participants: DmParticipant[]
   display_name: string
   status: UserPresenceStatus
   activity: string | null
   unread_count: number
   is_group: boolean
   member_count: number
+  messages: DmMessage[]
+}
+
+export type DmParticipant = {
+  id: number
+  username: string
+  handle: string
+  status: UserPresenceStatus
+  activity: string | null
+}
+
+export type DmMessage = {
+  id: number
+  dm_id: number
+  author_id: number
+  author_name: string
+  content: string
+}
+
+export type DmCreate = {
+  recipient_ids: number[]
+}
+
+export type DmMessageCreate = {
+  dm_id: number
+  content: string
 }
 
 export type Channel = {

@@ -8,6 +8,14 @@ from app.demo.data import create_initial_guilds
 from app.domain.permissions import ALL_PERMISSIONS
 from app.domain.snowflake import SnowflakeGenerator
 from app.schemas.auth import UserPublic
+from app.schemas.dm import (
+    DmCreate,
+    DmMessageCreate,
+    DmMessageRead,
+    DmParticipantRead,
+    DmRead,
+    RelationshipRead,
+)
 from app.schemas.guild import (
     ChannelCreate,
     ChannelRead,
@@ -31,6 +39,9 @@ class DemoStore:
         self._id_generator = SnowflakeGenerator(worker_id=1)
         self._guilds = create_initial_guilds()
         self._invites: dict[str, int] = {}
+        self._dm_profiles = self._seed_dm_profiles()
+        self._relationships_by_user = self._seed_relationships()
+        self._dms = self._seed_dms()
 
     def list_guilds(self, user_id: int | None = None) -> list[GuildRead]:
         with self._lock:
@@ -260,6 +271,75 @@ class DemoStore:
             ]
             return MessageDeleteRead(id=message_id, channel_id=channel_id)
 
+    def list_relationships(self, user_id: int) -> list[RelationshipRead]:
+        with self._lock:
+            return deepcopy(self._relationships_by_user.get(user_id, []))
+
+    def list_dms(self, user: UserPublic) -> list[DmRead]:
+        with self._lock:
+            return [
+                self._dm_view_for_user(dm, user.id)
+                for dm in self._dms
+                if any(participant.id == user.id for participant in dm.participants)
+            ]
+
+    def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead:
+        with self._lock:
+            recipient_ids = sorted(set(payload.recipient_ids))
+            if user.id in recipient_ids:
+                raise ValueError("direct messages cannot target the current user")
+
+            self._ensure_user_profile(user)
+            for recipient_id in recipient_ids:
+                self._find_dm_profile(recipient_id)
+            participant_ids = sorted({user.id, *recipient_ids})
+
+            for dm in self._dms:
+                if sorted(participant.id for participant in dm.participants) == participant_ids:
+                    return self._dm_view_for_user(dm, user.id)
+
+            participants = [
+                self._dm_profiles[participant_id] for participant_id in participant_ids
+            ]
+            dm = DmRead(
+                id=self._id_generator.generate(),
+                recipient_ids=recipient_ids,
+                participants=participants,
+                display_name=self._dm_display_name(participants, user.id),
+                status=self._dm_status(participants, user.id),
+                activity=self._dm_activity(participants, user.id),
+                unread_count=0,
+                is_group=len(participants) > 2,
+                member_count=len(participants),
+                messages=[],
+            )
+            self._dms.append(dm)
+            return self._dm_view_for_user(dm, user.id)
+
+    def create_dm_message(
+        self,
+        *,
+        dm_id: int,
+        payload: DmMessageCreate,
+        author: UserPublic,
+    ) -> DmMessageRead:
+        with self._lock:
+            dm = self._find_dm(dm_id)
+            if not any(participant.id == author.id for participant in dm.participants):
+                raise PermissionError("direct message membership required")
+
+            self._ensure_user_profile(author)
+            message = DmMessageRead(
+                id=self._id_generator.generate(),
+                dm_id=dm_id,
+                author_id=author.id,
+                author_name=author.username,
+                content=payload.content,
+            )
+            dm.messages.append(message)
+            dm.unread_count = 0
+            return deepcopy(message)
+
     def _find_guild(self, guild_id: int) -> GuildRead:
         for guild in self._guilds:
             if guild.id == guild_id:
@@ -295,6 +375,62 @@ class DemoStore:
                 return message
         raise KeyError(message_id)
 
+    def _find_dm(self, dm_id: int) -> DmRead:
+        for dm in self._dms:
+            if dm.id == dm_id:
+                return dm
+        raise KeyError(dm_id)
+
+    def _find_dm_profile(self, user_id: int) -> DmParticipantRead:
+        profile = self._dm_profiles.get(user_id)
+        if profile is None:
+            raise KeyError(user_id)
+        return profile
+
+    def _ensure_user_profile(self, user: UserPublic) -> None:
+        if user.id in self._dm_profiles:
+            return
+        self._dm_profiles[user.id] = DmParticipantRead(
+            id=user.id,
+            username=user.username,
+            handle=user.username.lower(),
+            status="online" if user.status else "offline",
+            activity=None,
+        )
+
+    def _dm_view_for_user(self, dm: DmRead, user_id: int) -> DmRead:
+        visible = deepcopy(dm)
+        visible.recipient_ids = [
+            participant.id for participant in visible.participants if participant.id != user_id
+        ]
+        visible.display_name = self._dm_display_name(visible.participants, user_id)
+        visible.status = self._dm_status(visible.participants, user_id)
+        visible.activity = self._dm_activity(visible.participants, user_id)
+        visible.is_group = len(visible.participants) > 2
+        visible.member_count = len(visible.participants)
+        return visible
+
+    def _dm_display_name(self, participants: list[DmParticipantRead], user_id: int) -> str:
+        others = [participant for participant in participants if participant.id != user_id]
+        if not others:
+            return "Direct Message"
+        if len(others) == 1:
+            return others[0].username
+        return ", ".join(participant.username for participant in others[:3])
+
+    def _dm_status(self, participants: list[DmParticipantRead], user_id: int) -> str:
+        others = [participant for participant in participants if participant.id != user_id]
+        for status_name in ("online", "idle", "dnd"):
+            if any(participant.status == status_name for participant in others):
+                return status_name
+        return "offline"
+
+    def _dm_activity(self, participants: list[DmParticipantRead], user_id: int) -> str | None:
+        for participant in participants:
+            if participant.id != user_id and participant.activity:
+                return participant.activity
+        return None
+
     def _require_owner(self, guild: GuildRead, actor: UserPublic) -> None:
         if actor.id != guild.owner_id:
             raise PermissionError("administrator permission required")
@@ -320,6 +456,173 @@ class DemoStore:
         if assigned_names:
             return ", ".join(assigned_names)
         return "Member"
+
+    def _seed_dm_profiles(self) -> dict[int, DmParticipantRead]:
+        return {
+            42: DmParticipantRead(
+                id=42,
+                username="yangbun",
+                handle="yangbun",
+                status="online",
+                activity=None,
+            ),
+            701: DmParticipantRead(
+                id=701,
+                username="Project Lead",
+                handle="project.lead",
+                status="online",
+                activity="Reviewing the sprint board",
+            ),
+            702: DmParticipantRead(
+                id=702,
+                username="Frontend Pair",
+                handle="frontend.pair",
+                status="online",
+                activity="Building components",
+            ),
+            703: DmParticipantRead(
+                id=703,
+                username="Backend Pair",
+                handle="backend.pair",
+                status="idle",
+                activity="Reading API logs",
+            ),
+            704: DmParticipantRead(
+                id=704,
+                username="QA Reviewer",
+                handle="qa.reviewer",
+                status="offline",
+                activity=None,
+            ),
+            705: DmParticipantRead(
+                id=705,
+                username="Design Critic",
+                handle="design.critic",
+                status="offline",
+                activity=None,
+            ),
+        }
+
+    def _seed_relationships(self) -> dict[int, list[RelationshipRead]]:
+        return {
+            42: [
+                RelationshipRead(
+                    id=701,
+                    username="Project Lead",
+                    handle="project.lead",
+                    status="online",
+                    activity="Reviewing the sprint board",
+                    relationship="friend",
+                ),
+                RelationshipRead(
+                    id=702,
+                    username="Frontend Pair",
+                    handle="frontend.pair",
+                    status="online",
+                    activity="Building components",
+                    relationship="friend",
+                ),
+                RelationshipRead(
+                    id=703,
+                    username="Backend Pair",
+                    handle="backend.pair",
+                    status="idle",
+                    activity="Reading API logs",
+                    relationship="friend",
+                ),
+                RelationshipRead(
+                    id=704,
+                    username="QA Reviewer",
+                    handle="qa.reviewer",
+                    status="offline",
+                    activity=None,
+                    relationship="friend",
+                ),
+                RelationshipRead(
+                    id=705,
+                    username="Design Critic",
+                    handle="design.critic",
+                    status="offline",
+                    activity=None,
+                    relationship="pending_incoming",
+                ),
+            ]
+        }
+
+    def _seed_dms(self) -> list[DmRead]:
+        seeds: list[DmRead] = []
+        seed_specs = [
+            (
+                801,
+                [42, 701],
+                2,
+                [
+                    DmMessageRead(
+                        id=8101,
+                        dm_id=801,
+                        author_id=701,
+                        author_name="Project Lead",
+                        content="Stage notes are ready for review.",
+                    ),
+                    DmMessageRead(
+                        id=8102,
+                        dm_id=801,
+                        author_id=42,
+                        author_name="yangbun",
+                        content="I'll wire the next slice through the app shell.",
+                    ),
+                ],
+            ),
+            (
+                802,
+                [42, 702],
+                0,
+                [
+                    DmMessageRead(
+                        id=8201,
+                        dm_id=802,
+                        author_id=702,
+                        author_name="Frontend Pair",
+                        content="The private sidebar is ready for API data.",
+                    )
+                ],
+            ),
+            (
+                803,
+                [42, 701, 702, 703],
+                1,
+                [
+                    DmMessageRead(
+                        id=8301,
+                        dm_id=803,
+                        author_id=703,
+                        author_name="Backend Pair",
+                        content="DM persistence can move to PostgreSQL in Stage 7.10.",
+                    )
+                ],
+            ),
+        ]
+        for dm_id, participant_ids, unread_count, messages in seed_specs:
+            participants = [self._dm_profiles[participant_id] for participant_id in participant_ids]
+            seeds.append(
+                DmRead(
+                    id=dm_id,
+                    recipient_ids=[
+                        participant_id
+                        for participant_id in participant_ids
+                        if participant_id != 42
+                    ],
+                    participants=participants,
+                    display_name=self._dm_display_name(participants, 42),
+                    status=self._dm_status(participants, 42),
+                    activity=self._dm_activity(participants, 42),
+                    unread_count=unread_count,
+                    is_group=len(participants) > 2,
+                    member_count=len(participants),
+                    messages=messages,
+                )
+            )
+        return seeds
 
 
 demo_store = DemoStore()

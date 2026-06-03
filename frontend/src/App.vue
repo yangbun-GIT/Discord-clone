@@ -6,6 +6,7 @@ import { apiGet } from './services/api'
 import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
 import ChatView from './components/ChatView.vue'
+import DirectMessageView from './components/DirectMessageView.vue'
 import FriendsHome from './components/FriendsHome.vue'
 import MemberList from './components/MemberList.vue'
 import PrivateChannelSidebar from './components/PrivateChannelSidebar.vue'
@@ -15,14 +16,16 @@ import VoicePanel from './components/VoicePanel.vue'
 import VoiceVideoSink from './components/VoiceVideoSink.vue'
 import { useGateway } from './composables/useGateway'
 import { useVoiceRtc } from './composables/useVoiceRtc'
+import { useDmStore } from './stores/dms'
 import { useGuildStore } from './stores/guilds'
 import { useNavigationStore } from './stores/navigation'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
-import type { DirectMessage, Friend, VoiceConfig, VoiceIceServer } from './types'
+import type { VoiceConfig, VoiceIceServer } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
+const dms = useDmStore()
 const navigation = useNavigationStore()
 const store = useStoreStore()
 const {
@@ -35,82 +38,6 @@ const {
 } = useGateway()
 const voiceRtc = useVoiceRtc()
 
-const demoFriends: Friend[] = [
-  {
-    id: 701,
-    username: 'Project Lead',
-    handle: 'project.lead',
-    status: 'online',
-    activity: 'Reviewing the sprint board',
-    relationship: 'friend',
-  },
-  {
-    id: 702,
-    username: 'Frontend Pair',
-    handle: 'frontend.pair',
-    status: 'online',
-    activity: 'Building components',
-    relationship: 'friend',
-  },
-  {
-    id: 703,
-    username: 'Backend Pair',
-    handle: 'backend.pair',
-    status: 'idle',
-    activity: 'Reading API logs',
-    relationship: 'friend',
-  },
-  {
-    id: 704,
-    username: 'QA Reviewer',
-    handle: 'qa.reviewer',
-    status: 'offline',
-    activity: null,
-    relationship: 'friend',
-  },
-  {
-    id: 705,
-    username: 'Design Critic',
-    handle: 'design.critic',
-    status: 'offline',
-    activity: null,
-    relationship: 'pending_incoming',
-  },
-]
-
-const demoDms: DirectMessage[] = [
-  {
-    id: 801,
-    recipient_ids: [701],
-    display_name: 'Project Lead',
-    status: 'online',
-    activity: 'Reviewing the sprint board',
-    unread_count: 2,
-    is_group: false,
-    member_count: 2,
-  },
-  {
-    id: 802,
-    recipient_ids: [702],
-    display_name: 'Frontend Pair',
-    status: 'online',
-    activity: 'Building components',
-    unread_count: 0,
-    is_group: false,
-    member_count: 2,
-  },
-  {
-    id: 803,
-    recipient_ids: [701, 702, 703],
-    display_name: 'Clone Planning',
-    status: 'idle',
-    activity: null,
-    unread_count: 1,
-    is_group: true,
-    member_count: 4,
-  },
-]
-
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
 const activeMessages = computed(() => guilds.activeMessages)
@@ -120,7 +47,7 @@ const remoteScreenStreams = computed(() =>
 const workspaceTitle = computed(() => {
   if (navigation.destination === 'friends') return 'Friends'
   if (navigation.destination === 'dm') {
-    return demoDms.find((dm) => dm.id === navigation.activeDmId)?.display_name ?? 'Direct Message'
+    return dms.getDm(navigation.activeDmId)?.display_name ?? 'Direct Message'
   }
   if (!activeGuild.value) return 'No servers'
   return activeChannel.value?.name ?? 'loading'
@@ -128,7 +55,7 @@ const workspaceTitle = computed(() => {
 const isPrivateDestination = computed(() =>
   navigation.destination === 'friends' || navigation.destination === 'dm',
 )
-const selectedDm = computed(() => demoDms.find((dm) => dm.id === navigation.activeDmId) ?? null)
+const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
@@ -146,8 +73,11 @@ const voiceTurnConfigured = ref(false)
 
 async function openWorkspace() {
   if (!session.token) return
-  await guilds.loadGuilds(session.token)
-  await loadVoiceConfig()
+  await Promise.all([
+    guilds.loadGuilds(session.token),
+    dms.loadPrivateWorkspace(session.token),
+    loadVoiceConfig(),
+  ])
   navigation.openFriends()
   connectGateway(session.token, { onDispatch: guilds.handleGatewayDispatch })
 }
@@ -199,6 +129,7 @@ function handleLogout() {
   session.logout()
   navigation.resetNavigation()
   guilds.resetGuilds()
+  dms.resetDms()
   store.resetStoreState()
 }
 
@@ -213,6 +144,18 @@ function handleOpenFriends() {
 
 function handleOpenDm(dmId: number) {
   navigation.openDm(dmId)
+}
+
+async function handleMessageFriend(friendId: number) {
+  workspaceError.value = null
+  try {
+    const dm = await dms.createDm(session.token, [friendId])
+    if (dm) {
+      navigation.openDm(dm.id)
+    }
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : 'Direct message creation failed'
+  }
 }
 
 function openCreateGuild() {
@@ -250,6 +193,14 @@ function handleSendMessage(content: string) {
   workspaceError.value = null
   void guilds.sendMessage(session.token, content).catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : 'Message send failed'
+  })
+}
+
+function handleSendDmMessage(content: string) {
+  if (!selectedDm.value) return
+  workspaceError.value = null
+  void dms.sendDmMessage(session.token, selectedDm.value.id, content).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : 'Direct message send failed'
   })
 }
 
@@ -438,7 +389,7 @@ async function handleCreateInvite() {
 
     <PrivateChannelSidebar
       v-if="isPrivateDestination"
-      :dms="demoDms"
+      :dms="dms.dms"
       :active-dm-id="navigation.activeDmId"
       :active-destination="navigation.destination"
       @open-friends="handleOpenFriends"
@@ -492,20 +443,25 @@ async function handleCreateInvite() {
         </div>
       </header>
 
-      <div v-if="authError || workspaceError || guilds.error" class="app-error" role="alert">
-        {{ authError ?? workspaceError ?? guilds.error }}
+      <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
+        {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
       </div>
 
-      <div v-if="guilds.isLoading" class="workspace-loading" role="status">Loading servers</div>
+      <div v-if="guilds.isLoading || dms.isLoading" class="workspace-loading" role="status">Loading workspace</div>
 
-      <FriendsHome v-else-if="navigation.destination === 'friends'" :friends="demoFriends" />
+      <FriendsHome
+        v-else-if="navigation.destination === 'friends'"
+        :friends="dms.relationships"
+        @message-friend="handleMessageFriend"
+      />
 
-      <section v-else-if="navigation.destination === 'dm'" class="dm-placeholder" aria-label="Direct message">
-        <div class="dm-placeholder-avatar">{{ selectedDm?.display_name.slice(0, 1).toUpperCase() ?? 'D' }}</div>
-        <h2>{{ selectedDm?.display_name ?? 'Direct Message' }}</h2>
-        <p>Direct message persistence is planned in Stage 7.3.</p>
-        <button type="button" @click="handleOpenFriends">Back to Friends</button>
-      </section>
+      <DirectMessageView
+        v-else-if="navigation.destination === 'dm'"
+        :dm="selectedDm"
+        :current-user="session.user"
+        :disabled="dms.isMutating"
+        @send="handleSendDmMessage"
+      />
 
       <div v-else-if="activeGuild" class="content-grid">
         <ChatView
