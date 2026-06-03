@@ -62,6 +62,10 @@ The app boots in two local modes:
 - `docs/PROMPT_COMPLIANCE.md`
   - Maps `DEVELOPMENT_PROMPT.md` policies to concrete repository files and documents.
   - Records prompt-alignment status plus external gaps that cannot be closed locally.
+- `docs/store-clone-implementation-plan.md`
+  - Detailed staged plan for implementing a Discord Store-like in-app shop.
+  - Covers Store catalog, browse/search/filter, item detail preview, demo purchase,
+    inventory, apply, gifting, Orbs, Nitro-like discounts, persistence, and QA.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
@@ -559,9 +563,21 @@ npm run docker:down
 
 Next implementation stage:
 
+- Start Stage 6's Store implementation from
+  `docs/store-clone-implementation-plan.md`, beginning with Store scope/data
+  contracts and a safe original demo catalog.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
+
+Store planning observation:
+
+- `https://discord.com/store` was inspected through the Codex in-app browser on
+  2026-06-03. The route redirected to Discord login because the in-app browser did
+  not share the user's existing Discord login session.
+- Store feature scope was therefore derived from route behavior plus Discord's public
+  Shop/Profile support documentation. The implementation plan avoids real Discord
+  assets, item names, prices, and payment processing.
 
 Completed Stage 2 bridge work:
 
@@ -630,6 +646,8 @@ Completed Stage 2 bridge work:
   and verification workflow.
 - Added `docs/PROMPT_COMPLIANCE.md` to map prompt policies to concrete files and
   record remaining external-only gaps.
+- Added `docs/store-clone-implementation-plan.md` as the detailed Stage 6 plan for a
+  Discord Store-like in-app shop.
 
 After each stage or meaningful feature:
 

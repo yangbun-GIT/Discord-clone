@@ -29,6 +29,10 @@ the project prompt and context files before changing code.
 - `docs/PROMPT_COMPLIANCE.md`
   - Maps `DEVELOPMENT_PROMPT.md` policies to concrete files and documents.
   - Use it when auditing whether the project structure still reflects the prompt.
+- `docs/store-clone-implementation-plan.md`
+  - Detailed staged plan for implementing a Discord Store-like in-app shop with
+    original demo cosmetics, browse/search/filter, item detail preview, demo purchase,
+    inventory, apply, gifting, and persistence.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -49,6 +53,8 @@ the project prompt and context files before changing code.
   push, or final-report rules change.
 - Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or
   verification changes that affect prompt alignment.
+- Update `docs/store-clone-implementation-plan.md` when Store scope, stage order,
+  API contracts, data model, or QA plan changes.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

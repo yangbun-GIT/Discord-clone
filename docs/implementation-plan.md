@@ -128,3 +128,18 @@
 - `docs/deployment.md` documents Oracle Cloud / GCP VM deployment flow, production
   environment variables, HTTPS/WebSocket requirements, CORS, logging, health checks,
   Redis, WebRTC TURN guidance, and voice verification using browser WebRTC stats.
+
+## Stage 6: Discord Store-Like Shop
+
+- Status: detailed implementation plan created; implementation not started.
+- Plan document: `docs/store-clone-implementation-plan.md`.
+- Target: add an in-app Store tab inspired by Discord's Store, using original demo
+  cosmetics and no real payment processing.
+- Scope includes Store entry, catalog, featured collections, Browse tab, search,
+  sort, filters, item cards, item detail preview, demo purchase, inventory, apply,
+  bundles, gifting, Orbs exclusives, Nitro-like discounts, profile integration,
+  PostgreSQL persistence, accessibility, responsive QA, and final documentation.
+- Current observation: `https://discord.com/store` is login-gated. Codex's in-app
+  browser did not share the user's Discord login session and was redirected to
+  `https://discord.com/login?redirect_to=%2Fstore`; public Discord Shop/Profile docs
+  were used for feature structure.
