@@ -18,8 +18,8 @@ editing code, then update it whenever a meaningful implementation change lands.
 Stage 4's implementation scope is complete. Stage 1, the Docker development baseline,
 Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-realtime
 scope, focused PostgreSQL repository coverage for current guild/message mutations,
-Stage 5 deployment notes/runtime hardening, and Stage 6.1 Store data contracts are
-complete and pushed to GitHub.
+Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, and Stage
+6.2 Store seed catalog are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -217,6 +217,12 @@ The app boots in two local modes:
     `WEBRTC_ICE_SERVERS_JSON`, plus ICE server count and whether TURN is configured.
 - `backend/app/demo/data.py`
   - Initial guild/channel/member/message seed data used before persistence is wired.
+- `backend/app/demo/store_catalog.py`
+  - Original demo Store catalog for Stage 6.
+  - Defines five collections, 23 cosmetics, three bundles, four Orb exclusives, and
+    limited-drop metadata without real Discord assets, item names, or prices.
+  - Exposes copy-returning helpers for listing collections/items, fetching one item,
+    and building filter metadata for future Store APIs.
 - `backend/app/demo/store.py`
   - Process-local mutable demo store.
   - Creates guilds, invite codes, roles, member-role assignments, channels, and
@@ -257,7 +263,7 @@ The app boots in two local modes:
 - `backend/tests/`
   - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
     API routes, gateway connection management, message schema sanitization, Store
-    schema validation, and
+    schema validation, Store seed catalog integrity, and
     focused guild repository mutation behavior for guild creation/reads, channel
     creation, invites, roles, member removal, and message update/delete.
 
@@ -575,8 +581,8 @@ npm run docker:down
 Next implementation stage:
 
 - Start Stage 6's Store implementation from
-  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.2's safe
-  original demo catalog.
+  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.3's
+  authenticated Store catalog and item-detail read APIs.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -593,6 +599,9 @@ Store planning observation:
   - Backend contracts are in `backend/app/schemas/store.py`.
   - Frontend contracts are in `frontend/src/types.ts`.
   - Validation coverage is in `backend/tests/test_store_schema.py`.
+- Stage 6.2 completed the safe original demo catalog:
+  - Catalog data and helper functions are in `backend/app/demo/store_catalog.py`.
+  - Catalog integrity coverage is in `backend/tests/test_store_catalog.py`.
 
 Completed Stage 2 bridge work:
 
@@ -665,6 +674,8 @@ Completed Stage 2 bridge work:
   Discord Store-like in-app shop.
 - Added Stage 6.1 Store contracts across backend Pydantic schemas, frontend
   TypeScript types, and backend validation tests.
+- Added Stage 6.2 Store seed catalog with original demo collections, cosmetics,
+  bundle metadata, Orb exclusives, limited drops, and catalog integrity tests.
 
 After each stage or meaningful feature:
 

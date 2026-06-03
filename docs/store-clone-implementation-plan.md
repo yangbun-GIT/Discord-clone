@@ -86,6 +86,8 @@ Verification:
 
 ## Stage 6.2: Store Seed Catalog
 
+Status: completed.
+
 Goal: create a safe demo catalog with original placeholder items.
 
 Tasks:
@@ -125,7 +127,9 @@ Deliverables:
 
 Verification:
 
-- Unit tests confirm catalog IDs are unique and required fields are present.
+- Unit tests confirm catalog IDs are unique, item counts match required minimums,
+  collection counts match item metadata, bundle references are valid, and helper
+  functions return copies.
 
 ## Stage 6.3: Store Backend Read APIs
 
