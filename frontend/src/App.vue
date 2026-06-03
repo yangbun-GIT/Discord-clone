@@ -1,6 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { Hash, Link, LogIn, LogOut, Radio, Wifi, WifiOff } from 'lucide-vue-next'
+import {
+  Bell,
+  CircleHelp,
+  Hash,
+  Inbox,
+  Link,
+  List,
+  LogIn,
+  LogOut,
+  Pin,
+  Radio,
+  Search,
+  Users,
+  Wifi,
+  WifiOff,
+} from 'lucide-vue-next'
 
 import { apiGet } from './services/api'
 import AuthPanel from './components/AuthPanel.vue'
@@ -59,6 +74,7 @@ const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
+const workspaceNotice = ref<string | null>(null)
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
@@ -66,6 +82,7 @@ const showCreateGuild = ref(false)
 const showJoinGuild = ref(false)
 const showDiscovery = ref(false)
 const showInvite = ref(false)
+const showMemberList = ref(true)
 const guildName = ref('')
 const joinCode = ref('')
 const inviteCode = ref<string | null>(null)
@@ -143,6 +160,7 @@ function handleLogout() {
   disconnectGateway()
   authError.value = null
   workspaceError.value = null
+  workspaceNotice.value = null
   session.logout()
   navigation.resetNavigation()
   guilds.resetGuilds()
@@ -151,15 +169,18 @@ function handleLogout() {
 }
 
 function handleSelectGuild(guildId: number) {
+  workspaceNotice.value = null
   navigation.openServerChannel()
   guilds.selectGuild(guildId)
 }
 
 function handleOpenFriends() {
+  workspaceNotice.value = null
   navigation.openFriends()
 }
 
 function handleOpenDm(dmId: number) {
+  workspaceNotice.value = null
   navigation.openDm(dmId)
 }
 
@@ -177,6 +198,7 @@ async function handleMessageFriend(friendId: number) {
 
 function openCreateGuild() {
   workspaceError.value = null
+  workspaceNotice.value = null
   showCreateGuild.value = true
 }
 
@@ -187,6 +209,7 @@ function closeCreateGuild() {
 
 function openDiscovery() {
   workspaceError.value = null
+  workspaceNotice.value = null
   showDiscovery.value = true
 }
 
@@ -208,11 +231,21 @@ async function handleCreateGuild() {
   }
 }
 
-function handleCreateChannel(name: string) {
+function handleCreateChannel(name: string, type: 0 | 1 = 0) {
   workspaceError.value = null
-  void guilds.createChannel(session.token, name).catch((error) => {
+  workspaceNotice.value = null
+  void guilds.createChannel(session.token, name, type).catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : 'Channel creation failed'
   })
+}
+
+function showHeaderPlaceholder(label: string) {
+  workspaceError.value = null
+  workspaceNotice.value = `${label} is wired as a local app-shell control for this stage.`
+}
+
+function handleChannelSettings() {
+  showHeaderPlaceholder('Channel settings')
 }
 
 function handleSendMessage(content: string) {
@@ -432,6 +465,8 @@ async function handleCreateInvite() {
       :active-channel-id="guilds.activeChannelId"
       @select="guilds.selectChannel"
       @create-channel="handleCreateChannel"
+      @create-invite="handleCreateInvite"
+      @channel-settings="handleChannelSettings"
     />
 
     <section class="workspace">
@@ -440,6 +475,72 @@ async function handleCreateInvite() {
           <Radio v-if="!isPrivateDestination && activeChannel?.type === 1" :size="19" aria-hidden="true" />
           <Hash v-else :size="19" aria-hidden="true" />
           <span>{{ workspaceTitle }}</span>
+        </div>
+        <div v-if="!isPrivateDestination" class="channel-header-tools" aria-label="Channel tools">
+          <button
+            class="topbar-icon-button"
+            type="button"
+            title="Threads"
+            aria-label="Threads"
+            @click="showHeaderPlaceholder('Threads')"
+          >
+            <List :size="17" aria-hidden="true" />
+          </button>
+          <button
+            class="topbar-icon-button"
+            type="button"
+            title="Notification settings"
+            aria-label="Notification settings"
+            @click="showHeaderPlaceholder('Notification settings')"
+          >
+            <Bell :size="17" aria-hidden="true" />
+          </button>
+          <button
+            class="topbar-icon-button"
+            type="button"
+            title="Pinned messages"
+            aria-label="Pinned messages"
+            @click="showHeaderPlaceholder('Pinned messages')"
+          >
+            <Pin :size="17" aria-hidden="true" />
+          </button>
+          <button
+            class="topbar-icon-button"
+            type="button"
+            title="Toggle member list"
+            aria-label="Toggle member list"
+            :class="{ active: showMemberList }"
+            @click="showMemberList = !showMemberList"
+          >
+            <Users :size="17" aria-hidden="true" />
+          </button>
+          <label class="topbar-search">
+            <Search :size="15" aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Search"
+              aria-label="Search messages"
+              @focus="showHeaderPlaceholder('Search')"
+            />
+          </label>
+          <button
+            class="topbar-icon-button"
+            type="button"
+            title="Inbox"
+            aria-label="Inbox"
+            @click="showHeaderPlaceholder('Inbox')"
+          >
+            <Inbox :size="17" aria-hidden="true" />
+          </button>
+          <button
+            class="topbar-icon-button"
+            type="button"
+            title="Help"
+            aria-label="Help"
+            @click="showHeaderPlaceholder('Help')"
+          >
+            <CircleHelp :size="17" aria-hidden="true" />
+          </button>
         </div>
         <div class="session-state" :class="gatewayStatus">
           <Wifi v-if="gatewayStatus === 'connected'" :size="17" aria-hidden="true" />
@@ -475,6 +576,9 @@ async function handleCreateInvite() {
       <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
         {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
       </div>
+      <div v-else-if="workspaceNotice" class="app-notice" role="status">
+        {{ workspaceNotice }}
+      </div>
 
       <div v-if="guilds.isLoading || dms.isLoading" class="workspace-loading" role="status">Loading workspace</div>
 
@@ -492,7 +596,7 @@ async function handleCreateInvite() {
         @send="handleSendDmMessage"
       />
 
-      <div v-else-if="activeGuild" class="content-grid">
+      <div v-else-if="activeGuild" class="content-grid" :class="{ 'members-hidden': !showMemberList }">
         <ChatView
           :channel="activeChannel"
           :messages="activeMessages"
@@ -503,7 +607,7 @@ async function handleCreateInvite() {
           @delete="handleDeleteMessage"
         />
         <MemberList
-          v-if="activeGuild"
+          v-if="activeGuild && showMemberList"
           :members="activeGuild.members"
           :roles="activeGuild.roles"
           :can-manage-roles="guilds.canManageRoles"

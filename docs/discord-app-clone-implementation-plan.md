@@ -150,6 +150,8 @@ Verification:
 
 ## Stage 7.5: Server Sidebar And Header Controls
 
+Status: completed.
+
 Goal: improve the server workspace to match Discord's server/channel surface.
 
 Tasks:

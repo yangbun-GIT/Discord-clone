@@ -22,8 +22,8 @@ Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stag
 Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
 state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
 app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
-demo-backed Direct Messages, and Stage 7.4 server rail parity are complete and pushed
-to GitHub.
+demo-backed Direct Messages, Stage 7.4 server rail parity, and Stage 7.5 server
+sidebar/header controls are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -333,6 +333,10 @@ The app boots in two local modes:
     authentication, and connects the gateway.
   - Opens the `@me` Friends destination after login, preserves current guild/channel
     state, and switches back to the server workspace when a server is selected.
+  - Renders Discord-like server channel header controls for threads, notification
+    settings, pinned messages, member-list toggle, search, inbox, and help.
+  - Owns member-list visibility state and local placeholder notices for app-shell
+    controls that are intentionally not backend-backed yet.
 - `frontend/src/components/AuthPanel.vue`
   - Login/register form plus an explicit Demo user button for local development.
   - Emits auth actions to `App.vue`; it does not own token storage.
@@ -420,7 +424,9 @@ The app boots in two local modes:
   - Keeps server channel editing/deletion behavior isolated in `ChatView.vue`.
 - `frontend/src/components/ChannelSidebar.vue`
   - Text and voice channel lists.
-  - Provides an inline text-channel creation form.
+  - Provides a server menu entry, Events entry, collapsible text/voice categories,
+    inline text and voice channel creation forms, invite actions, and channel settings
+    placeholder actions.
 - `frontend/src/components/ChatView.vue`
   - Message list and composer UI.
   - Emits submitted message content, message edits, and message deletions to the guild
@@ -706,9 +712,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.5 Server Sidebar And Header Controls: server header, Events entry, collapsible
-  channel categories, channel action buttons, channel header controls, and member-list
-  visibility toggle.
+  7.6 Composer And Message Actions: composer action buttons, reply placeholder,
+  message options menu, and mobile-safe composer/message layout polish.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -740,6 +745,10 @@ Discord app inspection observation:
   - Safe demo rail metadata is computed in `frontend/src/App.vue`.
   - The rail exposes `@me` unread count, server unread/mention state, muted state,
     folder grouping, create-server, and discovery entry points.
+- Stage 7.5 completed server sidebar and header controls:
+  - `frontend/src/components/ChannelSidebar.vue` owns collapsible channel categories,
+    Events entry, channel create forms, and channel row actions.
+  - `frontend/src/App.vue` owns channel header controls and member-list visibility.
 
 Store planning observation:
 
@@ -851,6 +860,10 @@ Completed Stage 2 bridge work:
 - Added Stage 7.4 Server Rail Parity: `@me` unread badge, server unread/mention
   indicators, muted server state, demo folder grouping, add-server/discovery rail
   buttons, and browser-verified rail interactions.
+- Added Stage 7.5 Server Sidebar And Header Controls: server menu and Events entries,
+  collapsible text/voice categories, text/voice channel create forms, channel row
+  invite/settings actions, channel header controls, member-list toggle, and
+  browser-verified sidebar/header interactions.
 
 After each stage or meaningful feature:
 

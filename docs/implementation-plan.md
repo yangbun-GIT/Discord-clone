@@ -165,8 +165,8 @@
 ## Stage 7: Discord App Parity
 
 - Status: implementation started; app destination model, `@me` private sidebar,
-  Friends home, first-class demo-backed Direct Messages, and server rail parity are
-  complete.
+  Friends home, first-class demo-backed Direct Messages, server rail parity, and
+  server sidebar/header controls are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -196,3 +196,10 @@
     server/discovery buttons with accessible labels.
   - `frontend/src/App.vue` computes safe demo rail metadata and opens a wired
     discovery entry placeholder ahead of Stage 7.9.
+- Completed Stage 7.5 Server Sidebar And Header Controls:
+  - `frontend/src/components/ChannelSidebar.vue` now includes a server menu entry,
+    Events entry, collapsible text/voice categories, text and voice channel create
+    forms, invite actions, and settings placeholders.
+  - `frontend/src/App.vue` now renders channel header controls for threads,
+    notifications, pinned messages, member list toggle, search, inbox, and help.
+  - Member list visibility can be toggled without leaving the active channel.
