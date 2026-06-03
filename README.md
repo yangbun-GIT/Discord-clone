@@ -101,6 +101,8 @@ panel shows peer count, RTT, jitter, packet loss, and outbound bitrate while con
 
 Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
 in `docs/voice-qa.md`. The documentation index is maintained in `docs/README.md`.
+Git workflow notes are maintained in `docs/GITHUB_COLLABORATION_WORKFLOW.md`, and
+prompt-alignment status is maintained in `docs/PROMPT_COMPLIANCE.md`.
 
 ## Verification
 

@@ -15,6 +15,10 @@
   operating role, verification policy, documentation policy, security policy, and
   collaboration policy.
 - Treat `docs/README.md` as the document index for task-specific docs.
+- Treat `docs/GITHUB_COLLABORATION_WORKFLOW.md` as the Git staging, commit, push,
+  and final-report workflow.
+- Treat `docs/PROMPT_COMPLIANCE.md` as the audit map for checking whether the
+  repository structure still reflects `DEVELOPMENT_PROMPT.md`.
 - Treat `PROJECT_CONTEXT.md` as the current implementation map: file ownership,
   integration points, commands, known decisions, and next work.
 - After meaningful code or policy changes, update `PROJECT_CONTEXT.md` and any

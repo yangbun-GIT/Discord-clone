@@ -132,6 +132,9 @@ Use this documentation ownership:
 - `PROJECT_CONTEXT.md`: current implementation map and integration notes.
 - `docs/implementation-plan.md`: staged roadmap and stage status.
 - `docs/README.md`: document index and task-based reading guide.
+- `docs/GITHUB_COLLABORATION_WORKFLOW.md`: branch, commit, push, and GitHub workflow.
+- `docs/PROMPT_COMPLIANCE.md`: map from this prompt's policies to concrete project
+  files and remaining external gaps.
 - `docs/deployment.md`: deployment and runtime hardening.
 - `docs/voice-qa.md`: voice, screen sharing, TURN, and browser WebRTC QA.
 

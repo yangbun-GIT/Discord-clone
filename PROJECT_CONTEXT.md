@@ -56,6 +56,12 @@ The app boots in two local modes:
   - Documentation index and task-based reading guide.
   - Lists startup reading order, task-specific docs, update rules, and documentation
     verification commands.
+- `docs/GITHUB_COLLABORATION_WORKFLOW.md`
+  - Branch, commit, push, staging, verification, and final-report workflow for the
+    current `main`-based GitHub flow.
+- `docs/PROMPT_COMPLIANCE.md`
+  - Maps `DEVELOPMENT_PROMPT.md` policies to concrete repository files and documents.
+  - Records prompt-alignment status plus external gaps that cannot be closed locally.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.
@@ -528,6 +534,11 @@ npm run docker:down
 - `DEVELOPMENT_PROMPT.md` is the highest-level local prompt document for future
   AI-assisted development in this repository. Keep it focused on durable operating
   policy, not one-off implementation details.
+- `docs/PROMPT_COMPLIANCE.md` is the audit surface for checking whether the repository
+  structure still reflects `DEVELOPMENT_PROMPT.md`.
+- `docs/GITHUB_COLLABORATION_WORKFLOW.md` documents the current single-user
+  `main`-based push workflow; switch it only when the user requests branch/PR-based
+  collaboration.
 - The SRS says Pydantic v3, but the current PyPI line is Pydantic v2. The backend
   pins Pydantic v2 and isolates schema code for a future upgrade.
 - In Docker Compose mode, text channels and messages persist across backend restarts
@@ -615,10 +626,16 @@ Completed Stage 2 bridge work:
   it from `AGENTS.md` plus the required reading order.
 - Added `docs/README.md` as the document index and aligned prompt, agent, project
   context, and roadmap reading-order rules.
+- Added `docs/GITHUB_COLLABORATION_WORKFLOW.md` for branch, commit, push, staging,
+  and verification workflow.
+- Added `docs/PROMPT_COMPLIANCE.md` to map prompt policies to concrete files and
+  record remaining external-only gaps.
 
 After each stage or meaningful feature:
 
 - Update this file's implementation map and integration notes.
 - Update `docs/implementation-plan.md` stage status.
+- Update `docs/PROMPT_COMPLIANCE.md` when prompt alignment, document ownership, or
+  verification policy changes.
 - Run relevant verification commands.
 - Commit and push to `origin/main` unless the user asks otherwise.

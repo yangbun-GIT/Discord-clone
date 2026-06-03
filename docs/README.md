@@ -23,6 +23,12 @@ the project prompt and context files before changing code.
 
 ## Task-Specific Documents
 
+- `docs/GITHUB_COLLABORATION_WORKFLOW.md`
+  - Branch, commit, push, staging, verification, and final-report workflow for the
+    current single-user `main` flow.
+- `docs/PROMPT_COMPLIANCE.md`
+  - Maps `DEVELOPMENT_PROMPT.md` policies to concrete files and documents.
+  - Use it when auditing whether the project structure still reflects the prompt.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -39,6 +45,10 @@ the project prompt and context files before changing code.
   HTTPS, WebSocket, or TURN assumptions change.
 - Update `docs/voice-qa.md` when voice, screen sharing, TURN, or WebRTC quality QA
   steps change.
+- Update `docs/GITHUB_COLLABORATION_WORKFLOW.md` when branch, PR, commit, staging,
+  push, or final-report rules change.
+- Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or
+  verification changes that affect prompt alignment.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 
