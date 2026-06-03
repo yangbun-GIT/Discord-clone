@@ -165,8 +165,8 @@
 ## Stage 7: Discord App Parity
 
 - Status: implementation started; app destination model, `@me` private sidebar,
-  Friends home, first-class demo-backed Direct Messages, server rail parity, and
-  server sidebar/header controls are complete.
+  Friends home, first-class demo-backed Direct Messages, server rail parity, server
+  sidebar/header controls, and composer/message actions are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -203,3 +203,9 @@
   - `frontend/src/App.vue` now renders channel header controls for threads,
     notifications, pinned messages, member list toggle, search, inbox, and help.
   - Member list visibility can be toggled without leaving the active channel.
+- Completed Stage 7.6 Composer And Message Actions:
+  - `frontend/src/components/ChatView.vue` now exposes upload, gift, apps/actions,
+    emoji, reply, and message options controls around the existing send/edit/delete
+    REST behavior.
+  - The composer supports a local reply target banner, and message rows expose a
+    compact options menu with reply/edit/delete actions.

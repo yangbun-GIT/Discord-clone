@@ -22,8 +22,9 @@ Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stag
 Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend Store
 state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
 app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
-demo-backed Direct Messages, Stage 7.4 server rail parity, and Stage 7.5 server
-sidebar/header controls are complete and pushed to GitHub.
+demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
+sidebar/header controls, and Stage 7.6 composer/message actions are complete and
+pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -433,6 +434,9 @@ The app boots in two local modes:
     store.
   - Shows edit controls for the current user's own messages and delete controls for
     own messages or `MANAGE_MESSAGES`.
+  - Provides local reply targeting, message options menu, and composer action buttons
+    for upload, gift, apps/actions, and emoji while preserving the existing backend
+    send/edit/delete behavior.
 - `frontend/src/components/MemberList.vue`
   - Member presence list.
   - Shows role labels and exposes administrator-only controls for role creation,
@@ -712,8 +716,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.6 Composer And Message Actions: composer action buttons, reply placeholder,
-  message options menu, and mobile-safe composer/message layout polish.
+  7.7 Voice Channel UX: active voice membership inside the sidebar, channel join/leave
+  affordances, and bottom user status/mute/deafen visual state.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -749,6 +753,11 @@ Discord app inspection observation:
   - `frontend/src/components/ChannelSidebar.vue` owns collapsible channel categories,
     Events entry, channel create forms, and channel row actions.
   - `frontend/src/App.vue` owns channel header controls and member-list visibility.
+- Stage 7.6 completed composer and message actions:
+  - `frontend/src/components/ChatView.vue` owns reply target state, message options
+    menu state, composer action buttons, and the expanded composer layout.
+  - Existing backend send/edit/delete routes remain unchanged and covered by backend
+    API tests.
 
 Store planning observation:
 
@@ -864,6 +873,9 @@ Completed Stage 2 bridge work:
   collapsible text/voice categories, text/voice channel create forms, channel row
   invite/settings actions, channel header controls, member-list toggle, and
   browser-verified sidebar/header interactions.
+- Added Stage 7.6 Composer And Message Actions: composer upload/gift/apps/emoji
+  buttons, local reply target banner, message row reply/options menu, preserved
+  edit/delete controls, and browser/backend verification for the message surface.
 
 After each stage or meaningful feature:
 

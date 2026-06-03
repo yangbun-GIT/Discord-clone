@@ -183,6 +183,8 @@ Verification:
 
 ## Stage 7.6: Composer And Message Actions
 
+Status: completed.
+
 Goal: make message composition feel Discord-like.
 
 Tasks:

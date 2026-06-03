@@ -64,7 +64,7 @@ watch(
       </article>
     </div>
 
-    <form class="composer" @submit.prevent="submitMessage">
+    <form class="composer dm-composer" @submit.prevent="submitMessage">
       <input
         v-model="draft"
         :aria-label="`Message ${dm?.display_name ?? 'direct message'}`"
