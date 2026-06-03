@@ -18,8 +18,9 @@ editing code, then update it whenever a meaningful implementation change lands.
 Stage 4's implementation scope is complete. Stage 1, the Docker development baseline,
 Stage 2's main persistence/auth/member-management bridge, Stage 3's main text-realtime
 scope, focused PostgreSQL repository coverage for current guild/message mutations,
-Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, and Stage
-6.2 Store seed catalog are complete and pushed to GitHub.
+Stage 5 deployment notes/runtime hardening, Stage 6.1 Store data contracts, Stage 6.2
+Store seed catalog, and Stage 6.3 Store backend read APIs are complete and pushed to
+GitHub.
 
 The app boots in two local modes:
 
@@ -215,6 +216,14 @@ The app boots in two local modes:
   - `/api/meta/permissions` exposes permission names and integer values.
   - `/api/meta/voice` exposes WebRTC ICE server config from
     `WEBRTC_ICE_SERVERS_JSON`, plus ICE server count and whether TURN is configured.
+- `backend/app/api/routes/store.py`
+  - `GET /api/store/catalog` requires a bearer token and returns the demo Store
+    catalog, featured items, categories, filters, demo Orb balance, Nitro-like demo
+    metadata, and default ownership states.
+  - `GET /api/store/items/{item_id}` requires a bearer token and returns item detail,
+    related items, included bundle items, gift eligibility, purchase eligibility, and
+    current equip eligibility.
+  - Unknown Store item IDs return `404`.
 - `backend/app/demo/data.py`
   - Initial guild/channel/member/message seed data used before persistence is wired.
 - `backend/app/demo/store_catalog.py`
@@ -251,6 +260,12 @@ The app boots in two local modes:
 - `backend/app/services/auth_service.py`
   - Coordinates registration/login with async repository calls and runs bcrypt
     hashing/verification off the event loop.
+- `backend/app/services/store_service.py`
+  - Builds authenticated Store catalog and item-detail responses from the safe demo
+    catalog.
+  - Applies the current user's demo metadata, including `not_owned` ownership state
+    and a local demo Nitro-like flag for user ID `42`.
+  - Keeps Stage 6 read APIs independent from future purchase/inventory persistence.
 - `backend/app/schemas/`
   - Pydantic API schemas for auth, guilds, messages, and Store contracts.
 - `backend/app/schemas/store.py`
@@ -263,7 +278,7 @@ The app boots in two local modes:
 - `backend/tests/`
   - Unit tests for permissions, Snowflake IDs, settings, demo store mutations, protected
     API routes, gateway connection management, message schema sanitization, Store
-    schema validation, Store seed catalog integrity, and
+    schema validation, Store seed catalog integrity, Store read API contracts, and
     focused guild repository mutation behavior for guild creation/reads, channel
     creation, invites, roles, member removal, and message update/delete.
 
@@ -393,6 +408,15 @@ The app boots in two local modes:
   - Backend validates auth schema payloads, uses PostgreSQL users, bcrypt password
     hashes, and returns the same JWT response shape as the dev session endpoint.
   - `GET /api/auth/me` validates bearer tokens through `get_current_user`.
+- Store read API flow:
+  - Store read APIs require the same bearer-token dependency as guild/message APIs.
+  - `GET /api/store/catalog` returns the Stage 6 demo catalog from
+    `store_service.get_store_catalog()`.
+  - `store_service` reads original catalog data from `backend/app/demo/store_catalog.py`,
+    applies the current user's default `not_owned` state, and returns featured items,
+    categories, filter metadata, demo Orb balance, and Nitro-like demo metadata.
+  - `GET /api/store/items/{item_id}` returns item detail, included bundle children,
+    related items, purchase/gift eligibility, and current equip eligibility.
 - Guild creation flow:
   - `ServerRail.vue` and the empty workspace call `App.vue`'s create-server handler.
   - `App.vue` opens a focused server-name dialog.
@@ -581,8 +605,8 @@ npm run docker:down
 Next implementation stage:
 
 - Start Stage 6's Store implementation from
-  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.3's
-  authenticated Store catalog and item-detail read APIs.
+  `docs/store-clone-implementation-plan.md`, continuing with Stage 6.4's frontend
+  Store Pinia state and API wrapper integration.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -602,6 +626,10 @@ Store planning observation:
 - Stage 6.2 completed the safe original demo catalog:
   - Catalog data and helper functions are in `backend/app/demo/store_catalog.py`.
   - Catalog integrity coverage is in `backend/tests/test_store_catalog.py`.
+- Stage 6.3 completed authenticated Store read APIs:
+  - Route handlers are in `backend/app/api/routes/store.py`.
+  - Response assembly is in `backend/app/services/store_service.py`.
+  - API coverage is in `backend/tests/test_store_api.py`.
 
 Completed Stage 2 bridge work:
 
@@ -676,6 +704,7 @@ Completed Stage 2 bridge work:
   TypeScript types, and backend validation tests.
 - Added Stage 6.2 Store seed catalog with original demo collections, cosmetics,
   bundle metadata, Orb exclusives, limited drops, and catalog integrity tests.
+- Added Stage 6.3 authenticated Store read APIs for catalog and item detail payloads.
 
 After each stage or meaningful feature:
 

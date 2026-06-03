@@ -72,6 +72,8 @@ Useful backend auth endpoints:
 - `POST http://127.0.0.1:8000/api/auth/register`
 - `POST http://127.0.0.1:8000/api/auth/login`
 - `GET http://127.0.0.1:8000/api/auth/me`
+- `GET http://127.0.0.1:8000/api/store/catalog`
+- `GET http://127.0.0.1:8000/api/store/items/6401`
 
 Authenticated users can create a server from the `Create server` button. New servers
 start with `general` and `voice-room` channels.

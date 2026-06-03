@@ -133,6 +133,8 @@ Verification:
 
 ## Stage 6.3: Store Backend Read APIs
 
+Status: completed.
+
 Goal: expose catalog and item detail data through authenticated APIs.
 
 Tasks:
@@ -155,16 +157,16 @@ Tasks:
 
 Deliverables:
 
-- Store route module.
-- Store service module.
-- Store schemas.
+- Store route module: `backend/app/api/routes/store.py`.
+- Store service module: `backend/app/services/store_service.py`.
+- Store schemas: `backend/app/schemas/store.py`.
 
 Verification:
 
 - `npm run test:backend`
 - `npm run lint:backend`
-- API route tests for auth required, catalog response shape, item not found, and
-  ownership state.
+- API route tests for auth required, catalog response shape, item not found, bundle
+  detail data, and default ownership state.
 
 ## Stage 6.4: Store Frontend State
 
