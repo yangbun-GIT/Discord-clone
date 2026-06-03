@@ -256,7 +256,7 @@
 
 ## Stage 8: Discord UI Remediation And Interaction Polish
 
-- Status: started with Stage 8.0 documentation guardrails.
+- Status: completed through Stage 8.1 layout tokens and app shell sizing.
 - Plan document: `docs/discord-ui-remediation-plan.md`.
 - Target: fix the post-Stage 7 UI quality gaps identified from the user's Discord
   reference screenshots: bottom controls, text overlap, sizing, Korean/English
@@ -267,3 +267,9 @@
 - Stage execution rule: complete each Stage 8 sub-stage with verification, fix any
   discovered sub-issues before moving on, update docs, commit, and push to
   `origin/main`.
+- Completed Stage 8.0: `docs/discord-ui-remediation-plan.md` is the controlling
+  Stage 8 plan and is linked from project docs.
+- Completed Stage 8.1: `frontend/src/styles/base.css` defines stable app-shell
+  sizing tokens and viewport-bound layout rules; desktop/mobile screenshots are in
+  `docs/qa-artifacts/stage-8-1-desktop.png` and
+  `docs/qa-artifacts/stage-8-1-mobile.png`.

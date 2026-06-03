@@ -28,7 +28,8 @@ channel UX, Stage 7.8 user settings shell, Stage 7.9 server add/discovery flows,
 Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stage
 7.12 final QA/documentation are complete and pushed to GitHub.
 Stage 8 Discord UI remediation has started with the controlling plan in
-`docs/discord-ui-remediation-plan.md`.
+`docs/discord-ui-remediation-plan.md`, and Stage 8.1 layout tokens/app-shell sizing
+is complete.
 
 The app boots in two local modes:
 
@@ -759,8 +760,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 8 from `docs/discord-ui-remediation-plan.md`.
-- Stage 8.0 is the documentation guardrail stage. Stage 8.1 begins implementation
-  with layout tokens and app shell sizing.
+- Stage 8.2 is next: fix sidebar text overlap and replace cramped channel creation
+  controls with a stable compact form or panel.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -860,6 +861,16 @@ Discord app inspection observation:
     language support, current-location and voice-state clarity, and removal or
     conversion of misleading placeholder buttons.
   - Do not copy private Discord screenshot content into code, fixtures, or docs.
+- Stage 8.1 completed layout tokens and app shell sizing:
+  - `frontend/src/styles/base.css` defines stable tokens for app surfaces, server
+    rail, sidebars, header, member list, composer, bottom voice panel, and icon
+    controls.
+  - The app shell is viewport-bound with hidden global overflow; sidebars and content
+    regions own their own scrolling.
+  - Friends home mobile sizing was corrected so tabs/search remain within the
+    workspace viewport.
+  - QA screenshots are `docs/qa-artifacts/stage-8-1-desktop.png` and
+    `docs/qa-artifacts/stage-8-1-mobile.png`.
 
 Store planning observation:
 

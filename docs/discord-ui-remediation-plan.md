@@ -57,7 +57,7 @@ Avoid adding decorative controls that do nothing.
 
 ## Stage 8.0: UI Audit And Guardrail Documentation
 
-Status: in progress.
+Status: completed.
 
 Goal: create this controlling document and connect it from the project documentation
 so future work does not drift into unrelated Store or feature-count work.
@@ -83,7 +83,7 @@ Verification:
 
 ## Stage 8.1: Layout Tokens And App Shell Sizing
 
-Status: pending.
+Status: completed.
 
 Goal: make the base app shell match Discord-like proportions and prevent UI drift.
 
@@ -107,6 +107,18 @@ Verification:
 - `npm --prefix frontend run build`.
 - Browser screenshots at desktop and narrow widths with no horizontal overflow.
 - Commit and push.
+
+Completion notes:
+
+- `frontend/src/styles/base.css` now owns app-shell sizing tokens for the server
+  rail, channel/private sidebar width, header height, bottom voice panel height,
+  composer height, icon buttons, and shared surface colors.
+- The app shell now has fixed viewport bounds with hidden global overflow and
+  scrollable inner sidebars/content regions.
+- Stage 8.1 browser QA screenshots:
+  - `docs/qa-artifacts/stage-8-1-desktop.png`
+  - `docs/qa-artifacts/stage-8-1-mobile.png`
+- Verified no document-level horizontal overflow at `1440x900` and `390x844`.
 
 ## Stage 8.2: Sidebar Text Overlap And Channel Creation UI
 

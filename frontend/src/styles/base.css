@@ -1,4 +1,26 @@
 :root {
+  --app-bg: #151517;
+  --surface-base: #1e2026;
+  --surface-panel: #181a1f;
+  --surface-sidebar: #1e2026;
+  --surface-rail: #101114;
+  --border-subtle: rgb(255 255 255 / 8%);
+  --text-primary: #f4f7fb;
+  --text-secondary: #cbd5e1;
+  --text-muted: #9ca3af;
+  --accent-primary: #5865f2;
+  --accent-positive: #5eead4;
+  --server-rail-width: 72px;
+  --server-rail-width-mobile: 64px;
+  --server-rail-width-compact: 56px;
+  --private-sidebar-width: 260px;
+  --channel-sidebar-width: 260px;
+  --member-list-width: 240px;
+  --topbar-height: 50px;
+  --voice-panel-height: 72px;
+  --composer-min-height: 44px;
+  --icon-button-size: 34px;
+  --radius-control: 8px;
   color: #f4f7fb;
   background: #151517;
   font-family:
@@ -16,10 +38,17 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
 }
 
 button,
@@ -177,13 +206,15 @@ select:focus-visible {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 74px 260px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) 70px;
-  min-height: 100vh;
+  grid-template-columns: var(--server-rail-width) var(--channel-sidebar-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) var(--voice-panel-height);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   background:
     linear-gradient(120deg, rgb(28 28 31 / 92%), rgb(22 24 28 / 96%)),
     radial-gradient(circle at top left, rgb(45 212 191 / 18%), transparent 34%),
-    #151517;
+    var(--app-bg);
 }
 
 .app-shell.settings-mode {
@@ -197,12 +228,16 @@ select:focus-visible {
 
 .server-rail {
   grid-row: 1 / 3;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
   padding: 14px 10px;
-  background: #101114;
+  background: var(--surface-rail);
   border-right: 1px solid rgb(255 255 255 / 7%);
 }
 
@@ -335,24 +370,32 @@ select:focus-visible {
 }
 
 .channel-sidebar {
+  grid-row: 1 / 2;
   display: flex;
   flex-direction: column;
   gap: 18px;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 18px 14px;
-  background: rgb(30 32 38 / 78%);
-  border-right: 1px solid rgb(255 255 255 / 8%);
+  background: rgb(30 32 38 / 86%);
+  border-right: 1px solid var(--border-subtle);
   backdrop-filter: blur(18px);
 }
 
 .private-sidebar {
+  grid-row: 1 / 2;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 12px 10px;
-  background: rgb(30 32 38 / 78%);
-  border-right: 1px solid rgb(255 255 255 / 8%);
+  background: rgb(30 32 38 / 86%);
+  border-right: 1px solid var(--border-subtle);
   backdrop-filter: blur(18px);
 }
 
@@ -760,17 +803,22 @@ select:focus-visible {
 
 .workspace {
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   display: grid;
-  grid-template-rows: 58px minmax(0, 1fr);
+  grid-template-rows: var(--topbar-height) minmax(0, 1fr);
 }
 
 .topbar {
+  min-width: 0;
+  min-height: var(--topbar-height);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
   padding: 0 18px;
-  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  border-bottom: 1px solid var(--border-subtle);
   background: rgb(21 22 26 / 72%);
   backdrop-filter: blur(16px);
 }
@@ -812,8 +860,9 @@ select:focus-visible {
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
+  overflow: hidden;
 }
 
 .topbar-search {
@@ -844,13 +893,15 @@ select:focus-visible {
 }
 
 .topbar-actions {
+  min-width: 0;
+  flex: 0 0 auto;
   display: inline-flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .topbar-icon-button {
-  width: 34px;
-  height: 34px;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
   color: #cbd5e1;
   background: rgb(255 255 255 / 7%);
 }
@@ -1198,12 +1249,15 @@ select:focus-visible {
 }
 
 .friends-home {
+  min-width: 0;
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .friends-header {
+  min-width: 0;
   min-height: 58px;
   display: flex;
   align-items: center;
@@ -1213,11 +1267,13 @@ select:focus-visible {
 }
 
 .friends-header h1 {
+  flex: 0 0 auto;
   margin: 0;
   font-size: 1rem;
 }
 
 .friends-tabs {
+  min-width: 0;
   display: inline-flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -1246,6 +1302,8 @@ select:focus-visible {
 }
 
 .friend-search {
+  width: auto;
+  max-width: calc(100% - 36px);
   height: 42px;
   display: flex;
   align-items: center;
@@ -1267,6 +1325,7 @@ select:focus-visible {
 }
 
 .friend-list {
+  min-width: 0;
   min-height: 0;
   overflow: auto;
   padding: 0 18px 20px;
@@ -1897,7 +1956,7 @@ select:focus-visible {
 .composer-shell {
   display: grid;
   gap: 0;
-  padding: 10px 18px 16px;
+  padding: 10px 18px 14px;
 }
 
 .composer-reply-bar {
@@ -1938,7 +1997,7 @@ select:focus-visible {
   gap: 8px;
   align-items: center;
   border: 1px solid rgb(255 255 255 / 9%);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgb(255 255 255 / 8%);
   padding: 0 8px;
 }
@@ -1953,7 +2012,7 @@ select:focus-visible {
 
 .composer input {
   width: 100%;
-  min-height: 44px;
+  min-height: var(--composer-min-height);
   border: 0;
   outline: 0;
   color: #f8fafc;
@@ -1967,8 +2026,8 @@ select:focus-visible {
 }
 
 .composer-actions button {
-  width: 34px;
-  height: 34px;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
   display: grid;
   place-items: center;
   border: 0;
@@ -2001,6 +2060,9 @@ select:focus-visible {
 
 .member-list {
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 18px 14px;
   background: rgb(15 17 20 / 54%);
   border-left: 1px solid rgb(255 255 255 / 8%);
@@ -2161,13 +2223,17 @@ select:focus-visible {
 
 .voice-panel {
   grid-column: 2 / 4;
+  min-width: 0;
+  min-height: var(--voice-panel-height);
+  max-height: var(--voice-panel-height);
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(210px, 260px) minmax(170px, 1fr) minmax(180px, auto) auto;
   align-items: center;
-  gap: 18px;
-  padding: 12px 18px;
+  gap: 14px;
+  padding: 10px 16px;
   background: rgb(16 18 21 / 86%);
-  border-top: 1px solid rgb(255 255 255 / 8%);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .user-panel {
@@ -2401,11 +2467,12 @@ select:focus-visible {
 
 @media (max-width: 900px) {
   .app-shell {
-    grid-template-columns: 64px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) 68px;
+    grid-template-columns: var(--server-rail-width-mobile) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) var(--voice-panel-height);
     width: 100vw;
+    height: 100vh;
     max-width: 100vw;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   .channel-sidebar,
@@ -2415,7 +2482,7 @@ select:focus-visible {
 
   .workspace {
     grid-column: 2;
-    max-width: calc(100vw - 64px);
+    max-width: calc(100vw - var(--server-rail-width-mobile));
     overflow: hidden;
   }
 
@@ -2464,11 +2531,11 @@ select:focus-visible {
 
 @media (max-width: 620px) {
   .app-shell {
-    grid-template-columns: 56px minmax(0, 1fr);
+    grid-template-columns: var(--server-rail-width-compact) minmax(0, 1fr);
   }
 
   .workspace {
-    max-width: calc(100vw - 56px);
+    max-width: calc(100vw - var(--server-rail-width-compact));
   }
 
   .server-button {
@@ -2479,6 +2546,18 @@ select:focus-visible {
 
   .topbar {
     padding: 0 12px;
+  }
+
+  .channel-title {
+    flex: 1 1 auto;
+  }
+
+  .topbar-search {
+    display: none;
+  }
+
+  .topbar-actions {
+    margin-left: auto;
   }
 
   .friends-header {
@@ -2494,6 +2573,15 @@ select:focus-visible {
     flex-wrap: nowrap;
     overflow-x: auto;
     padding-bottom: 2px;
+  }
+
+  .friends-tabs button {
+    flex: 0 0 auto;
+  }
+
+  .friend-search {
+    max-width: none;
+    margin: 18px 12px;
   }
 
   .session-state {
