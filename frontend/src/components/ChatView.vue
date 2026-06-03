@@ -32,7 +32,13 @@ const activeComposerPanel = ref<'upload' | 'templates' | 'emoji' | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFileLabel = ref('')
 const { t } = useI18n()
-const emojiOptions = ['😀', '👍', '✅', '🔥', '🎉', '🙏', '👀', '💡']
+const emojiOptions = [':ok:', ':+1:', ':eyes:', ':smile:', ':fire:', ':target:', ':chat:', ':spark:']
+const demoAttachmentCards = [
+  { title: 'Team Project#1.pdf', meta: '109.22 KB' },
+  { title: '16. Mid-fi prototyping.pdf', meta: '1.38 MB' },
+  { title: '18.0_Evaluation.pdf', meta: '928.06 KB' },
+]
+const reactionOptions = ['OK 3', '+1 1']
 
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
@@ -134,7 +140,8 @@ function submitEdit(message: Message) {
 <template>
   <section class="chat-view" :aria-label="t('chat.aria.messages')">
     <div class="message-list">
-      <article v-for="message in messages" :key="message.id" class="message-row">
+      <div class="date-divider"><span>2026년 5월 18일</span></div>
+      <article v-for="(message, index) in messages" :key="message.id" class="message-row">
         <div class="avatar" aria-hidden="true">
           {{ message.author_name.slice(0, 1).toUpperCase() }}
         </div>
@@ -230,8 +237,24 @@ function submitEdit(message: Message) {
             </button>
           </form>
           <p v-else>{{ message.content }}</p>
+          <div v-if="index === 0 && messages.length < 5" class="demo-attachment-stack" aria-label="Attachment preview">
+            <article v-for="attachment in demoAttachmentCards" :key="attachment.title" class="attachment-card">
+              <span class="attachment-icon">PDF</span>
+              <div>
+                <strong>{{ attachment.title }}</strong>
+                <small>{{ attachment.meta }}</small>
+              </div>
+            </article>
+          </div>
+          <div class="message-reactions" aria-label="Message reactions">
+            <button v-for="reaction in reactionOptions" :key="reaction" type="button">{{ reaction }}</button>
+          </div>
         </div>
       </article>
+      <div v-if="!messages.length" class="channel-empty-density">
+        <strong>{{ channel ? `#${channel.name}` : t('chat.loadingChannel') }}</strong>
+        <span>{{ t('chat.emptyChannelHint') }}</span>
+      </div>
     </div>
 
     <section class="composer-shell" :aria-label="t('chat.aria.composer')">

@@ -249,7 +249,11 @@ function voiceStateStatusLabel(state: VoiceState) {
         v-for="channel in voiceCollapsed ? [] : voiceChannels"
         :key="channel.id"
         class="channel-row"
-        :class="{ active: channel.id === activeChannelId, connected: connectedVoiceChannelId === channel.id }"
+        :class="{
+          active: channel.id === activeChannelId,
+          connected: connectedVoiceChannelId === channel.id,
+          speaking: connectedVoiceChannelId === channel.id && localSpeaking,
+        }"
         :aria-current="channel.id === activeChannelId ? 'page' : undefined"
       >
         <button
@@ -308,7 +312,11 @@ function voiceStateStatusLabel(state: VoiceState) {
           class="voice-sidebar-members"
           :aria-label="t('channel.aria.voiceMembers')"
         >
-          <span v-if="connectedVoiceChannelId === channel.id" class="voice-sidebar-member self">
+          <span
+            v-if="connectedVoiceChannelId === channel.id"
+            class="voice-sidebar-member self"
+            :class="{ speaking: localSpeaking }"
+          >
             <strong>{{ t('channel.you') }}</strong>
             <small :class="{ speaking: localSpeaking }">{{ selfVoiceStatusLabel() }}</small>
           </span>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Info, MessageCircle, Plus, Search } from 'lucide-vue-next'
+import { MessageCircle, Plus, Search } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import type { DirectMessage, UserPresenceStatus } from '../types'
@@ -41,13 +41,6 @@ function statusLabel(status: UserPresenceStatus) {
       >
         <MessageCircle :size="18" aria-hidden="true" />
         <span>{{ t('channel.friends') }}</span>
-      </button>
-      <button type="button" class="private-nav-button scope" @click="$emit('demoNotice', t('channel.cloneScope'))">
-        <Info :size="18" aria-hidden="true" />
-        <span>
-          <strong>{{ t('channel.cloneScope') }}</strong>
-          <small>{{ t('channel.cloneScopeSummary') }}</small>
-        </span>
       </button>
     </nav>
 

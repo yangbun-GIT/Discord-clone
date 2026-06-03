@@ -16,13 +16,59 @@ defineEmits<{
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('online')
 const searchQuery = ref('')
 const addFriendName = ref('')
+const addFriendResult = ref('')
 const moreFriendId = ref<number | null>(null)
 const selectedFriendId = ref<number | null>(null)
 const { t } = useI18n()
 
+const visualFallbackFriends: Friend[] = [
+  {
+    id: 701,
+    username: 'Project Lead',
+    handle: 'project.lead',
+    status: 'online',
+    activity: 'Sprint planning',
+    relationship: 'friend',
+  },
+  {
+    id: 702,
+    username: 'Frontend Pair',
+    handle: 'frontend.pair',
+    status: 'online',
+    activity: 'Building the app shell',
+    relationship: 'friend',
+  },
+  {
+    id: 703,
+    username: 'Backend Pair',
+    handle: 'backend.pair',
+    status: 'idle',
+    activity: 'Checking API logs',
+    relationship: 'friend',
+  },
+  {
+    id: 704,
+    username: 'QA Reviewer',
+    handle: 'qa.reviewer',
+    status: 'offline',
+    activity: null,
+    relationship: 'friend',
+  },
+  {
+    id: 705,
+    username: 'Design Critic',
+    handle: 'design.critic',
+    status: 'offline',
+    activity: null,
+    relationship: 'pending_incoming',
+  },
+]
+
+const visualFriends = computed(() => (props.friends.length ? props.friends : visualFallbackFriends))
+
 const visibleFriends = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
-  return props.friends.filter((friend) => {
+  return visualFriends.value.filter((friend) => {
     if (activeTab.value === 'online' && friend.status === 'offline') return false
     if (activeTab.value === 'pending' && !friend.relationship.startsWith('pending')) return false
     if (activeTab.value === 'blocked' && friend.relationship !== 'blocked') return false
@@ -54,6 +100,13 @@ function relationshipLabel(friend: Friend) {
   if (friend.relationship === 'pending_outgoing') return t('friends.pendingOutgoing')
   if (friend.relationship === 'blocked') return t('friends.blocked')
   return t('friends.friend')
+}
+
+function submitAddFriend() {
+  const handle = addFriendName.value.trim()
+  if (!handle) return
+  addFriendResult.value = t('friends.addResult', { handle })
+  addFriendName.value = ''
 }
 
 watch(
@@ -124,15 +177,37 @@ watch(
       </div>
     </header>
 
-    <div v-if="activeTab === 'add'" class="add-friend-panel">
-      <h2>{{ t('friends.add') }}</h2>
-      <p>{{ t('friends.addDescription') }}</p>
-      <form class="add-friend-form" @submit.prevent="addFriendName = ''">
-        <input v-model="addFriendName" :placeholder="t('friends.addPlaceholder')" autocomplete="off" />
-        <button type="submit" :disabled="!addFriendName.trim()">
-          <Plus :size="17" aria-hidden="true" />
-        </button>
-      </form>
+    <div v-if="activeTab === 'add'" class="add-friend-layout">
+      <section class="add-friend-panel">
+        <div class="add-friend-copy">
+          <h2>{{ t('friends.add') }}</h2>
+          <p>{{ t('friends.addDescription') }}</p>
+        </div>
+        <form class="add-friend-form" @submit.prevent="submitAddFriend">
+          <input v-model="addFriendName" :placeholder="t('friends.addPlaceholder')" autocomplete="off" />
+          <button type="submit" :disabled="!addFriendName.trim()">
+            {{ t('friends.addSubmit') }}
+          </button>
+        </form>
+        <p v-if="addFriendResult" class="add-friend-result" role="status">{{ addFriendResult }}</p>
+        <div class="add-friend-discovery">
+          <span class="add-friend-mark">DC</span>
+          <div>
+            <strong>{{ t('friends.findMoreTitle') }}</strong>
+            <small>{{ t('friends.findMoreDescription') }}</small>
+          </div>
+        </div>
+      </section>
+      <aside class="friend-activity-panel add-mode" aria-label="Friend activity preview">
+        <h2>{{ t('friends.activityNow') }}</h2>
+        <article v-for="friend in visualFriends.slice(0, 3)" :key="friend.id" class="activity-card">
+          <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
+          <div>
+            <strong>{{ friend.username }}</strong>
+            <small>{{ friend.activity ?? statusLabel(friend.status) }}</small>
+          </div>
+        </article>
+      </aside>
     </div>
 
     <template v-else>

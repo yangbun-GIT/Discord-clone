@@ -34,11 +34,13 @@ composer panels, Friends/DM information density, settings reorganization, voice
 workspace clarity, low-frequency feature scope cleanup, responsive/accessibility QA,
 and final command/Docker verification.
 
-Stage 9 Discord visual parity and density remediation is planned from the user's
-side-by-side real Discord versus clone screenshots. The controlling plan is
-`docs/discord-visual-parity-remediation-plan.md`; it lists the current visual,
-functional, density, usability, voice, screen-share, and responsiveness gaps plus
-the staged remediation order from measurement through final visual QA.
+Stage 9 Discord visual parity and density remediation is complete. The controlling
+plan is `docs/discord-visual-parity-remediation-plan.md`; final QA evidence is in
+`docs/stage-9-final-qa.md`. The completed work rebalances FHD 100% zoom layout
+density, hides low-value demo/developer text from primary surfaces, improves Friends
+and Add Friend density, adds message attachment/reaction visual structure, cleans up
+member management visibility, and improves voice/screen-share state clarity with
+Discord-like speaking indicators.
 
 The app boots in two local modes:
 
@@ -108,6 +110,9 @@ The app boots in two local modes:
   - Current controlling Stage 9 plan for real Discord versus clone visual parity.
   - Records screenshot-based problem inventory, staged remediation process,
     verification rules, and additional user reference-data requests.
+- `docs/stage-9-final-qa.md`
+  - Records Stage 9 command verification, browser QA coverage, completed visual
+    parity changes, and residual local-data/capture notes.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Circle, Plus, RefreshCw, UserMinus, X } from 'lucide-vue-next'
+import { Circle, Plus, RefreshCw, Settings, UserMinus, X } from 'lucide-vue-next'
 
 import type { Member, Role } from '../types'
 
@@ -30,6 +30,7 @@ const ROLE_PRESETS = [
 
 const roleName = ref('')
 const rolePermissions = ref(0)
+const showManagement = ref(false)
 const roleOptions = computed(() => props.roles)
 
 function handleCreateRole() {
@@ -59,11 +60,22 @@ function canRemoveMember(member: Member) {
   <aside class="member-list" aria-label="Members">
     <div class="member-list-heading">
       <p>Members</p>
-      <button type="button" aria-label="Refresh members" :disabled="disabled" @click="emit('refresh')">
-        <RefreshCw :size="14" aria-hidden="true" />
-      </button>
+      <span class="member-list-actions">
+        <button type="button" aria-label="Refresh members" :disabled="disabled" @click="emit('refresh')">
+          <RefreshCw :size="14" aria-hidden="true" />
+        </button>
+        <button
+          v-if="canManageRoles"
+          type="button"
+          aria-label="Member management"
+          :aria-pressed="showManagement"
+          @click="showManagement = !showManagement"
+        >
+          <Settings :size="14" aria-hidden="true" />
+        </button>
+      </span>
     </div>
-    <form v-if="canManageRoles" class="role-create-form" @submit.prevent="handleCreateRole">
+    <form v-if="canManageRoles && showManagement" class="role-create-form" @submit.prevent="handleCreateRole">
       <input
         v-model="roleName"
         autocomplete="off"
@@ -93,7 +105,7 @@ function canRemoveMember(member: Member) {
         fill="currentColor"
         aria-hidden="true"
       />
-      <div v-if="canManageRoles && roles.length" class="member-role-controls">
+      <div v-if="canManageRoles && showManagement && roles.length" class="member-role-controls">
         <button
           v-for="role in roles.filter((item) => member.role_ids.includes(item.id))"
           :key="role.id"
@@ -127,7 +139,7 @@ function canRemoveMember(member: Member) {
           <UserMinus :size="13" aria-hidden="true" />
         </button>
       </div>
-      <div v-else-if="canRemoveMember(member)" class="member-role-controls">
+      <div v-else-if="showManagement && canRemoveMember(member)" class="member-role-controls">
         <button
           type="button"
           class="member-remove-button"

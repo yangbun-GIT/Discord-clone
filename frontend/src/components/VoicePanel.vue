@@ -75,7 +75,7 @@ const presenceLabel = computed(() => {
         :aria-label="t('settings.status')"
         @click="$emit('cycleStatus')"
       >
-        <span class="user-panel-avatar" :class="userStatus">
+        <span class="user-panel-avatar" :class="[userStatus, { speaking: localSpeaking }]">
           {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
         </span>
         <span class="user-panel-copy">

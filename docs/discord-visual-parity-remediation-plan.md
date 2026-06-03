@@ -13,6 +13,28 @@ state visibility, and component hierarchy. Do not copy private Discord names,
 messages, server names, avatars, images, or real assets into seed data, fixtures,
 documentation, or UI copy.
 
+## Stage 9 Execution Update
+
+The user confirmed the earlier comparison was affected by browser zoom and 4K display
+scaling. Stage 9 should use the later FHD Chrome 100% screenshots as the visual
+reference. Exact DevTools pixel measurements are not required; choose conservative
+Discord-like proportions from the screenshots and verify by browser QA.
+
+The user also clarified the target:
+
+- Prioritize clean Discord-like box composition, spacing, and visual hierarchy.
+- Hide unnecessary development text and low-value controls from the primary surface.
+- Keep useful high-frequency controls visible and reliable.
+- Voice channel rows should use a compact Discord-like input indicator: when the
+  user is connected, the row is clear; when microphone input is detected, the icon or
+  row edge should glow rather than adding verbose text.
+
+During Stage 9, if implementation or verification exposes an additional issue, add a
+`Stage 9.x.y` corrective note under the relevant stage, fix that issue before moving
+on, then continue the main sequence.
+
+Commit titles for Stage 9 should be Korean so the user can scan Git history quickly.
+
 ## First-Pass Assessment
 
 The clone is functional, but it does not yet match Discord's visual density,
@@ -201,19 +223,24 @@ Goal: turn the comparison into measurable UI targets.
 Tasks:
 
 - Capture current clone screenshots for Friends Online, Add Friend, text channel,
-  voice preview, voice connected, and screen-share states.
-- Record viewport sizes used in the user's comparison, especially half-window
-  desktop width.
-- Define target measurements for rail width, sidebar width, header height, composer
-  height, bottom panel height, member/activity panel width, row height, icon button
-  size, font sizes, and card radius.
-- Record all measurements in this document or a linked QA artifact.
+  voice preview, voice connected, and screen-share states when practical.
+- Use the user's FHD Chrome 100% screenshots as the baseline reference.
+- Define target ratios without requiring DevTools measurements:
+  - rail: compact Discord-like icon column
+  - sidebar: dense channel/DM list width
+  - header: single compact toolbar row
+  - composer: stable bottom input with small icon controls
+  - bottom user/voice panel: compact identity and call state, no duplicated status
+    noise
+  - voice stage: large centered tiles, compact call controls, speaking glow
+- Record deviations and corrective sub-stages in this document.
 
 Verification:
 
 - `git diff --check`.
-- Frontend screenshot artifacts exist for each target surface.
-- No code changes unless needed for measurement tooling.
+- FHD 100% baseline assumptions are documented.
+- Any newly discovered implementation issue is recorded as a corrective sub-stage
+  before later stages depend on it.
 
 ### Stage 9.1: Demo Data And Visual QA Content Density
 
@@ -430,6 +457,12 @@ Tasks:
 - Check visible focus, accessible names, `aria-current`, dialog labeling, and reduced
   motion behavior.
 - Record screenshots and residual manual QA gaps.
+
+#### Stage 9.12.1: Scrollbar Contrast Correction
+
+Browser QA on the FHD baseline showed native light scrollbars inside dense channel
+and message regions. Style scrollbars with dark track/thumb colors before final QA
+so long lists remain visually integrated with the Discord-like shell.
 
 Verification:
 

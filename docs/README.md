@@ -45,6 +45,9 @@ the project prompt and context files before changing code.
     screenshots.
   - Lists visual/design/functionality/usability gaps, staged remediation order,
     verification expectations, and user-provided measurement requests.
+- `docs/stage-9-final-qa.md`
+  - Stage 9 final command verification, browser QA coverage, completed visual parity
+    changes, and residual notes.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -100,6 +103,8 @@ the project prompt and context files before changing code.
 - Update `docs/discord-visual-parity-remediation-plan.md` when Stage 9 screenshot
   observations, visual parity priorities, measurement targets, staged remediation
   steps, requested user reference data, or final QA notes change.
+- Update `docs/stage-9-final-qa.md` when final Stage 9 verification commands,
+  browser QA coverage, or residual visual parity notes change.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

@@ -327,8 +327,9 @@
 
 ## Stage 9: Discord Visual Parity And Density Remediation
 
-- Status: planned from the user's side-by-side real Discord versus clone screenshots.
+- Status: completed through Stage 9.13 final QA.
 - Plan document: `docs/discord-visual-parity-remediation-plan.md`.
+- Final QA document: `docs/stage-9-final-qa.md`.
 - Target: make the existing functional clone read visually and ergonomically like the
   real Discord web app across Friends, Add Friend, server text channels, voice
   preview, voice connected state, and screen sharing.
@@ -340,22 +341,23 @@
   documentation updates, commit, and push to `origin/main`. If verification finds
   overlap, broken behavior, or unacceptable visual drift, add a corrective sub-stage
   before continuing.
-- Planned Stage 9.0: baseline measurement and screenshot matrix for real comparison
+- Completed Stage 9.0: baseline measurement and screenshot matrix for real comparison
   widths and core Discord surface metrics.
-- Planned Stage 9.1: safe demo data/content density so Friends, DM, text channel,
+- Completed Stage 9.1: safe demo data/content density so Friends, DM, text channel,
   member list, activity, and voice views can be judged without private Discord data.
-- Planned Stage 9.2: global shell density, design tokens, typography, color layers,
+- Completed Stage 9.2: global shell density, design tokens, typography, color layers,
   and primary panel proportions.
-- Planned Stage 9.3: server rail parity for active markers, unread/mention badges,
+- Completed Stage 9.3: server rail parity for active markers, unread/mention badges,
   folders, generated safe avatars, and action buttons.
-- Planned Stage 9.4: private sidebar and DM density parity.
-- Planned Stage 9.5: Friends home and Add Friend parity, including right activity
+- Completed Stage 9.4: private sidebar and DM density parity.
+- Completed Stage 9.5: Friends home and Add Friend parity, including right activity
   panel and complete Add Friend form states.
-- Planned Stage 9.6: server sidebar and channel list parity.
-- Planned Stage 9.7: text channel timeline and composer parity.
-- Planned Stage 9.8: channel header panels and right sidebar parity.
-- Planned Stage 9.9: bottom user and voice control parity.
-- Planned Stage 9.10: voice stage and screen-share parity.
-- Planned Stage 9.11: i18n, copy, and demo-scope cleanup across dense surfaces.
-- Planned Stage 9.12: responsive and accessibility regression.
-- Planned Stage 9.13: final visual parity QA, docs, commit, and push.
+- Completed Stage 9.6: server sidebar and channel list parity.
+- Completed Stage 9.7: text channel timeline and composer parity.
+- Completed Stage 9.8: channel header panels and right sidebar parity.
+- Completed Stage 9.9: bottom user and voice control parity.
+- Completed Stage 9.10: voice stage and screen-share parity.
+- Completed Stage 9.11: i18n, copy, and demo-scope cleanup across dense surfaces.
+- Completed Stage 9.12: responsive and accessibility regression, including dark
+  scrollbar correction recorded as Stage 9.12.1.
+- Completed Stage 9.13: final visual parity QA, docs, commit, and push.

@@ -54,6 +54,13 @@ class FakeDmDatabase:
         }
 
     async def fetchrow(self, query: str, *args: object) -> dict[str, object] | None:
+        if "SELECT COUNT(*) AS count FROM relationships" in query:
+            return {"count": 1}
+        if "SELECT COUNT(*) AS count FROM direct_message_members" in query:
+            user_id = int(args[0])
+            return {
+                "count": sum(1 for members in self.members.values() if user_id in members)
+            }
         if "SELECT unread_count" in query:
             dm_id, user_id = int(args[0]), int(args[1])
             return self.members.get(dm_id, {}).get(user_id)

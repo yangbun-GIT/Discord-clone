@@ -15,6 +15,30 @@ from app.schemas.dm import (
 
 id_generator = SnowflakeGenerator(worker_id=3)
 
+DEMO_DM_PROFILES = [
+    (701, "Project Lead", "project.lead", "online", "Sprint planning"),
+    (702, "Frontend Pair", "frontend.pair", "online", "Building the app shell"),
+    (703, "Backend Pair", "backend.pair", "idle", "Checking API logs"),
+    (704, "QA Reviewer", "qa.reviewer", "offline", None),
+    (705, "Design Critic", "design.critic", "offline", None),
+    (706, "Voice Tester", "voice.tester", "online", "Testing microphone input"),
+]
+
+DEMO_RELATIONSHIPS = [
+    (701, "friend"),
+    (702, "friend"),
+    (703, "friend"),
+    (704, "friend"),
+    (705, "pending_incoming"),
+    (706, "friend"),
+]
+
+DEMO_DM_MESSAGES = [
+    (701, "Stage notes are ready for review."),
+    (702, "The app shell is ready for visual parity QA."),
+    (706, "Voice input indicators should feel compact and clear."),
+]
+
 
 def _status_from_row(value: object) -> UserPresenceStatus:
     if value in {"online", "idle", "dnd", "offline"}:
@@ -51,6 +75,7 @@ def _dm_activity(participants: list[DmParticipantRead], user_id: int) -> str | N
 
 class DmRepository:
     async def list_relationships(self, user_id: int) -> list[RelationshipRead]:
+        await self.ensure_demo_workspace_for_user_id(user_id)
         rows = await database.fetch(
             """
             SELECT
@@ -81,6 +106,7 @@ class DmRepository:
         ]
 
     async def list_dms(self, user: UserPublic) -> list[DmRead]:
+        await self.ensure_demo_workspace(user)
         rows = await database.fetch(
             """
             SELECT dm_id
@@ -333,6 +359,96 @@ class DmRepository:
             "dev-session",
             user.status,
         )
+
+    async def ensure_demo_workspace(self, user: UserPublic) -> None:
+        await self._ensure_user(user)
+        await self.ensure_demo_workspace_for_user_id(user.id)
+
+    async def ensure_demo_workspace_for_user_id(self, user_id: int) -> None:
+        for profile_id, username, handle, status, activity in DEMO_DM_PROFILES:
+            await database.execute(
+                """
+                INSERT INTO users (id, username, password_hash, status)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (id) DO NOTHING
+                """,
+                profile_id,
+                username,
+                "dev-session",
+                1 if status == "online" else 0,
+            )
+            await database.execute(
+                """
+                INSERT INTO dm_profiles (user_id, handle, presence_status, activity)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (user_id) DO UPDATE SET
+                    handle = EXCLUDED.handle,
+                    presence_status = EXCLUDED.presence_status,
+                    activity = EXCLUDED.activity
+                """,
+                profile_id,
+                handle,
+                status,
+                activity,
+            )
+
+        relationship_count = await database.fetchrow(
+            "SELECT COUNT(*) AS count FROM relationships WHERE user_id = $1",
+            user_id,
+        )
+        if relationship_count is not None and int(relationship_count["count"]) == 0:
+            for related_user_id, relationship in DEMO_RELATIONSHIPS:
+                await database.execute(
+                    """
+                    INSERT INTO relationships (user_id, related_user_id, relationship)
+                    VALUES ($1, $2, $3)
+                    ON CONFLICT (user_id, related_user_id) DO NOTHING
+                    """,
+                    user_id,
+                    related_user_id,
+                    relationship,
+                )
+
+        dm_count = await database.fetchrow(
+            "SELECT COUNT(*) AS count FROM direct_message_members WHERE user_id = $1",
+            user_id,
+        )
+        if dm_count is None or int(dm_count["count"]) > 0:
+            return
+
+        for related_user_id, message in DEMO_DM_MESSAGES:
+            existing_dm_id = await self._find_existing_dm(sorted([user_id, related_user_id]))
+            dm_id = existing_dm_id or id_generator.generate()
+            if existing_dm_id is None:
+                await database.execute(
+                    """
+                    INSERT INTO direct_message_channels (id, is_group)
+                    VALUES ($1, false)
+                    """,
+                    dm_id,
+                )
+                for participant_id in (user_id, related_user_id):
+                    await database.execute(
+                        """
+                        INSERT INTO direct_message_members (dm_id, user_id, unread_count)
+                        VALUES ($1, $2, $3)
+                        ON CONFLICT (dm_id, user_id) DO NOTHING
+                        """,
+                        dm_id,
+                        participant_id,
+                        1 if participant_id == user_id else 0,
+                    )
+                await database.execute(
+                    """
+                    INSERT INTO direct_messages (id, dm_id, author_id, content)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    id_generator.generate(),
+                    dm_id,
+                    related_user_id,
+                    message,
+                )
 
 
 dm_repository = DmRepository()

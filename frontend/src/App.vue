@@ -903,6 +903,15 @@ async function handleCreateInvite() {
         </header>
 
         <div class="voice-workspace-grid">
+          <article v-if="voiceRtc.isScreenSharing.value" class="voice-tile screen-preview connected">
+            <ScreenShare :size="38" aria-hidden="true" />
+            <div>
+              <strong>{{ t('voice.screenLive') }}</strong>
+              <span>{{ t('voice.screenPreview') }}</span>
+            </div>
+            <small>{{ session.user?.username ?? t('common.demoUser') }}</small>
+          </article>
+
           <article
             class="voice-tile local"
             :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
