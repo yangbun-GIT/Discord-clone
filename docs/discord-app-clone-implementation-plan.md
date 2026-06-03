@@ -310,6 +310,8 @@ Verification:
 
 ## Stage 7.11: Responsive And Accessibility QA
 
+Status: completed.
+
 Goal: make the app usable across desktop and narrow layouts.
 
 Tasks:

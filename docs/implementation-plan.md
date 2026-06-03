@@ -168,7 +168,7 @@
   Friends home, first-class demo-backed Direct Messages, server rail parity, server
   sidebar/header controls, composer/message actions, voice channel UX, and user
   settings shell, server add/discovery flows, and DM persistence/realtime expansion
-  are complete.
+  plus responsive/accessibility QA are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -243,3 +243,8 @@
     dispatches to DM subscribers.
   - `frontend/src/stores/dms.ts` applies DM gateway dispatches alongside the existing
     REST send/create paths.
+- Completed Stage 7.11 Responsive And Accessibility QA:
+  - Mobile CSS now hides sidebars, constrains app/workspace width, hides the gateway
+    pill, and reduces friend-row actions to avoid clipping below 620px.
+  - Desktop/mobile screenshots and DOM overflow metrics are recorded in
+    `docs/stage-7-11-responsive-qa.md`.

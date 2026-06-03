@@ -25,7 +25,8 @@ app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
 demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
 sidebar/header controls, Stage 7.6 composer/message actions, and Stage 7.7 voice
 channel UX, Stage 7.8 user settings shell, and Stage 7.9 server add/discovery flows
-plus Stage 7.10 DM persistence/realtime expansion are complete and pushed to GitHub.
+plus Stage 7.10 DM persistence/realtime expansion and Stage 7.11 responsive QA are
+complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -63,6 +64,9 @@ The app boots in two local modes:
   - Documentation index and task-based reading guide.
   - Lists startup reading order, task-specific docs, update rules, and documentation
     verification commands.
+- `docs/stage-7-11-responsive-qa.md`
+  - Records Stage 7.11 desktop/mobile screenshot paths, viewport metrics, fixes, and
+    residual manual QA notes.
 - `docs/GITHUB_COLLABORATION_WORKFLOW.md`
   - Branch, commit, push, staging, verification, and final-report workflow for the
     current `main`-based GitHub flow.
@@ -746,8 +750,8 @@ npm run docker:down
 Next implementation stage:
 
 - Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.11 Responsive And Accessibility QA: keyboard/focus checks, mobile layout polish,
-  stable dimensions, and desktop/mobile screenshots where tooling is available.
+  7.12 Final Discord App QA And Documentation: final docs, full lint/test/build
+  verification, browser smoke, and final commit/push.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
@@ -824,6 +828,13 @@ Discord app inspection observation:
     support DM subscriptions plus `DM_CREATE`/`DM_MESSAGE_CREATE` dispatch.
   - `frontend/src/stores/dms.ts` applies DM gateway events and `frontend/src/App.vue`
     forwards gateway dispatches to both guild and DM stores.
+- Stage 7.11 completed responsive and accessibility QA:
+  - `frontend/src/styles/base.css` now hides private/channel sidebars below 900px,
+    constrains mobile app/workspace width, hides the gateway status pill below 620px,
+    and reduces friend-row actions to avoid right-edge clipping.
+  - Desktop and mobile screenshots are stored under `docs/qa-artifacts/`.
+  - QA notes and residual manual browser checks are in
+    `docs/stage-7-11-responsive-qa.md`.
 
 Store planning observation:
 

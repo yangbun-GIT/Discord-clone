@@ -43,6 +43,8 @@ the project prompt and context files before changing code.
 - `docs/voice-qa.md`
   - Local two-browser voice smoke test, TURN/NAT test, deployment voice checklist,
     and WebRTC quality signal interpretation.
+- `docs/stage-7-11-responsive-qa.md`
+  - Desktop/mobile responsive QA notes and screenshot artifact paths for Stage 7.11.
 
 ## Update Rules
 
@@ -53,6 +55,8 @@ the project prompt and context files before changing code.
   HTTPS, WebSocket, or TURN assumptions change.
 - Update `docs/voice-qa.md` when voice, screen sharing, TURN, or WebRTC quality QA
   steps change.
+- Update `docs/stage-7-11-responsive-qa.md` when responsive QA viewport coverage or
+  screenshot artifacts change.
 - Update `docs/GITHUB_COLLABORATION_WORKFLOW.md` when branch, PR, commit, staging,
   push, or final-report rules change.
 - Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or

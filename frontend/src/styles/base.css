@@ -2403,14 +2403,20 @@ select:focus-visible {
   .app-shell {
     grid-template-columns: 64px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) 68px;
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
-  .channel-sidebar {
+  .channel-sidebar,
+  .private-sidebar {
     display: none;
   }
 
   .workspace {
     grid-column: 2;
+    max-width: calc(100vw - 64px);
+    overflow: hidden;
   }
 
   .content-grid {
@@ -2461,6 +2467,10 @@ select:focus-visible {
     grid-template-columns: 56px minmax(0, 1fr);
   }
 
+  .workspace {
+    max-width: calc(100vw - 56px);
+  }
+
   .server-button {
     width: 42px;
     height: 42px;
@@ -2471,7 +2481,30 @@ select:focus-visible {
     padding: 0 12px;
   }
 
-  .session-state span {
+  .friends-header {
+    min-height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .friends-tabs {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .session-state {
+    display: none;
+  }
+
+  .friend-row {
+    grid-template-columns: 40px minmax(0, 1fr) 36px;
+  }
+
+  .friend-row button:last-child {
     display: none;
   }
 
