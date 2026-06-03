@@ -23,10 +23,10 @@ Store seed catalog, Stage 6.3 Store backend read APIs, and Stage 6.4 frontend St
 state are complete and pushed to GitHub. Store UI work is now deferred. Stage 7.1
 app destination state, Stage 7.2 `@me` Friends/DM shell, Stage 7.3 first-class
 demo-backed Direct Messages, Stage 7.4 server rail parity, Stage 7.5 server
-sidebar/header controls, Stage 7.6 composer/message actions, and Stage 7.7 voice
-channel UX, Stage 7.8 user settings shell, and Stage 7.9 server add/discovery flows
-plus Stage 7.10 DM persistence/realtime expansion and Stage 7.11 responsive QA are
-complete and pushed to GitHub.
+sidebar/header controls, Stage 7.6 composer/message actions, Stage 7.7 voice
+channel UX, Stage 7.8 user settings shell, Stage 7.9 server add/discovery flows,
+Stage 7.10 DM persistence/realtime expansion, Stage 7.11 responsive QA, and Stage
+7.12 final QA/documentation are complete and pushed to GitHub.
 
 The app boots in two local modes:
 
@@ -67,6 +67,9 @@ The app boots in two local modes:
 - `docs/stage-7-11-responsive-qa.md`
   - Records Stage 7.11 desktop/mobile screenshot paths, viewport metrics, fixes, and
     residual manual QA notes.
+- `docs/stage-7-12-final-qa.md`
+  - Records Stage 7.12 command verification, Docker smoke, browser smoke workflow,
+    and residual external QA notes.
 - `docs/GITHUB_COLLABORATION_WORKFLOW.md`
   - Branch, commit, push, staging, verification, and final-report workflow for the
     current `main`-based GitHub flow.
@@ -749,12 +752,12 @@ npm run docker:down
 
 Next implementation stage:
 
-- Continue Stage 7 from `docs/discord-app-clone-implementation-plan.md` with Stage
-  7.12 Final Discord App QA And Documentation: final docs, full lint/test/build
-  verification, browser smoke, and final commit/push.
+- Stage 7.12 is complete. Choose the next product direction before starting a new
+  implementation stage.
 - Run multi-browser manual voice QA with a real TURN provider configured.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
+- Resume deferred Store UI work only if the user explicitly returns to Store scope.
 
 Discord app inspection observation:
 
@@ -835,6 +838,15 @@ Discord app inspection observation:
   - Desktop and mobile screenshots are stored under `docs/qa-artifacts/`.
   - QA notes and residual manual browser checks are in
     `docs/stage-7-11-responsive-qa.md`.
+- Stage 7.12 completed final Discord app QA and documentation:
+  - Full command verification passed: backend tests, backend lint, frontend lint, and
+    frontend production build.
+  - Docker Compose PostgreSQL smoke passed with backend/frontend services reachable
+    through `localhost`.
+  - Headless Chrome smoke passed for demo login, Friends tabs, DM messaging, server
+    text/voice channel switching, settings, create/join server, and logout reset.
+  - Final QA notes and residual external verification items are in
+    `docs/stage-7-12-final-qa.md`.
 
 Store planning observation:
 

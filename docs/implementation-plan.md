@@ -164,11 +164,11 @@
 
 ## Stage 7: Discord App Parity
 
-- Status: implementation started; app destination model, `@me` private sidebar,
-  Friends home, first-class demo-backed Direct Messages, server rail parity, server
-  sidebar/header controls, composer/message actions, voice channel UX, and user
-  settings shell, server add/discovery flows, and DM persistence/realtime expansion
-  plus responsive/accessibility QA are complete.
+- Status: completed through Stage 7.12 final QA; app destination model, `@me`
+  private sidebar, Friends home, first-class demo-backed Direct Messages, server rail
+  parity, server sidebar/header controls, composer/message actions, voice channel UX,
+  user settings shell, server add/discovery flows, DM persistence/realtime expansion,
+  responsive/accessibility QA, and final documentation are complete.
 - Plan document: `docs/discord-app-clone-implementation-plan.md`.
 - Target: clone the actual Discord web app rooted at `https://discord.com/channels/@me`,
   not a Store-first surface.
@@ -248,3 +248,8 @@
     pill, and reduces friend-row actions to avoid clipping below 620px.
   - Desktop/mobile screenshots and DOM overflow metrics are recorded in
     `docs/stage-7-11-responsive-qa.md`.
+- Completed Stage 7.12 Final Discord App QA And Documentation:
+  - Full backend test, backend lint, frontend lint, and frontend build verification
+    passed.
+  - Docker Compose PostgreSQL smoke and headless Chrome app workflow smoke passed.
+  - Final QA notes are recorded in `docs/stage-7-12-final-qa.md`.

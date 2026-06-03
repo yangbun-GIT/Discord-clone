@@ -333,6 +333,8 @@ Verification:
 
 ## Stage 7.12: Final Discord App QA And Documentation
 
+Status: completed.
+
 Goal: close the Discord app parity slice.
 
 Tasks:
@@ -361,6 +363,16 @@ Deliverables:
 - Completed Discord app shell and core workflows.
 - Updated documentation.
 - Commit and push to `origin/main`.
+
+Verification result:
+
+- Full backend test, backend lint, frontend lint, and frontend production build
+  verification passed.
+- Docker Compose stack smoke passed against PostgreSQL-backed local services.
+- Headless Chrome browser smoke passed for demo login, `@me`, friend tabs, DM
+  messaging, server text/voice navigation, settings, create/join server flow, and
+  logout/reset state.
+- Final QA notes are recorded in `docs/stage-7-12-final-qa.md`.
 
 ## Deferred
 

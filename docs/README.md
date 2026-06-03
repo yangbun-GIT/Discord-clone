@@ -45,6 +45,8 @@ the project prompt and context files before changing code.
     and WebRTC quality signal interpretation.
 - `docs/stage-7-11-responsive-qa.md`
   - Desktop/mobile responsive QA notes and screenshot artifact paths for Stage 7.11.
+- `docs/stage-7-12-final-qa.md`
+  - Final Stage 7.12 command, Docker, and browser smoke verification notes.
 
 ## Update Rules
 
@@ -57,6 +59,8 @@ the project prompt and context files before changing code.
   steps change.
 - Update `docs/stage-7-11-responsive-qa.md` when responsive QA viewport coverage or
   screenshot artifacts change.
+- Update `docs/stage-7-12-final-qa.md` when the final Discord app smoke suite,
+  Docker smoke, or residual QA notes change.
 - Update `docs/GITHUB_COLLABORATION_WORKFLOW.md` when branch, PR, commit, staging,
   push, or final-report rules change.
 - Update `docs/PROMPT_COMPLIANCE.md` after broad policy, structure, documentation, or
