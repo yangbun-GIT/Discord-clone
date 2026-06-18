@@ -138,7 +138,7 @@ const statusLabel = computed(() => {
             </div>
             <div>
               <dt>{{ t('settings.userId') }}</dt>
-              <dd>{{ currentUser?.id ?? 'local-session' }}</dd>
+              <dd>{{ currentUser?.id ?? t('common.status.localDemo') }}</dd>
             </div>
             <div>
               <dt>{{ t('settings.status') }}</dt>
@@ -167,19 +167,6 @@ const statusLabel = computed(() => {
               <dd>{{ t('common.status.savedSession') }}</dd>
             </div>
           </dl>
-        </section>
-        <section class="settings-card settings-demo-note">
-          <h2>{{ t('settings.demoScopeTitle') }}</h2>
-          <p>{{ t('settings.demoScopeDescription') }}</p>
-        </section>
-        <section class="settings-card">
-          <h2>{{ t('settings.cloneScopeTitle') }}</h2>
-          <ul class="settings-scope-list">
-            <li>{{ t('settings.cloneScopeCommerce') }}</li>
-            <li>{{ t('settings.cloneScopeExternalApps') }}</li>
-            <li>{{ t('settings.cloneScopeMediaTransfer') }}</li>
-            <li>{{ t('settings.cloneScopeNotifications') }}</li>
-          </ul>
         </section>
       </div>
 
@@ -260,7 +247,6 @@ const statusLabel = computed(() => {
       <div v-else-if="activePanel === 'accessibility'" class="settings-section-grid">
         <section class="settings-card">
           <h2>{{ t('settings.accessibility') }}</h2>
-          <p>{{ t('settings.demoOnly') }}</p>
           <label class="settings-toggle">
             <span>{{ t('settings.reduceMotion') }}</span>
             <input v-model="reduceMotion" type="checkbox" />
@@ -277,7 +263,6 @@ const statusLabel = computed(() => {
       <div v-else-if="activePanel === 'keybinds'" class="settings-section-grid">
         <section class="settings-card">
           <h2>{{ t('settings.keybinds') }}</h2>
-          <p>{{ t('settings.demoOnly') }}</p>
           <div class="keybind-row"><kbd>Ctrl</kbd><kbd>K</kbd><span>{{ t('settings.keybindQuick') }}</span></div>
           <div class="keybind-row"><kbd>Esc</kbd><span>{{ t('settings.keybindClose') }}</span></div>
           <div class="keybind-row"><kbd>Enter</kbd><span>{{ t('settings.keybindSend') }}</span></div>

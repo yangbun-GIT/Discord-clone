@@ -920,6 +920,37 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R8 - Settings surface polish
+
+- Status: completed.
+- Goal: settings should read as a Discord-like settings panel, not a project
+  documentation page.
+- Findings reviewed:
+  - QA-P2-11 settings surface is too document-like and exposes clone-scope copy.
+- Target files reviewed:
+  - `frontend/src/components/SettingsView.vue`
+  - `frontend/src/styles/base.css`
+  - `frontend/src/i18n/index.ts`
+- Existing state:
+  - Account settings showed large support-scope and clone-scope policy cards in the
+    primary UI.
+  - Some panels used explanatory local-clone copy even where a compact row control
+    was enough.
+  - Settings cards were wide and document-like.
+- Implementation:
+  - Removed support-scope and clone-scope policy cards from the primary account
+    settings panel.
+  - Removed generic local-clone explanatory paragraphs from accessibility and
+    keybind panels.
+  - Replaced the technical `local-session` account fallback with the existing
+    user-facing local-session status label.
+  - Tightened settings card width, padding, gaps, and row separators so controls
+    read as setting rows rather than large explanatory cards.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.
