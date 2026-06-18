@@ -364,7 +364,7 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: completed through Stage 10.26 follow-up interaction polish.
+- Status: completed through Stage 10.27 follow-up interaction polish.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -501,3 +501,9 @@
   effect by rendering date/intro separators above the first message and applying
   message-row top borders only between adjacent messages. Frontend lint/build,
   Docker frontend rebuild, and browser layout checks passed.
+- Completed Stage 10.27: server rail active state is now scoped to the current
+  destination so Friends/DM surfaces cannot leave the previously selected server
+  looking active. Inactive unread, mention, and voice-connected states now use
+  separate rail signals, and private/server sidebars expose a top separator aligned
+  with the workspace header edge. Frontend lint/build, Docker frontend rebuild, and
+  browser layout checks passed.

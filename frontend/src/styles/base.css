@@ -263,6 +263,7 @@ select:focus-visible {
 }
 
 .server-rail {
+  position: relative;
   grid-row: 1 / 3;
   min-width: 0;
   min-height: 0;
@@ -273,7 +274,7 @@ select:focus-visible {
   gap: 6px;
   align-items: center;
   padding: 10px 8px;
-  background: #0b0d12;
+  background: #0f1014;
   border-right: 1px solid rgb(255 255 255 / 9%);
 }
 
@@ -367,8 +368,20 @@ select:focus-visible {
   background: #f2f3f5;
 }
 
-.server-slot.mentioned .server-unread-pill {
-  height: 14px;
+.server-slot.unread:not(.active) .server-unread-pill {
+  height: 8px;
+  background: #b5bac1;
+}
+
+.server-slot.mentioned:not(.active) .server-unread-pill {
+  height: 12px;
+  background: #f2f3f5;
+}
+
+.server-slot.voice-connected:not(.active) .server-button {
+  box-shadow:
+    inset 0 0 0 1px rgb(35 165 89 / 34%),
+    0 0 0 1px rgb(35 165 89 / 10%);
 }
 
 .server-badge {
@@ -446,6 +459,7 @@ select:focus-visible {
 }
 
 .channel-sidebar {
+  position: relative;
   grid-row: 1 / 2;
   display: flex;
   flex-direction: column;
@@ -472,6 +486,19 @@ select:focus-visible {
   padding: 10px 8px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
+}
+
+.channel-sidebar::before,
+.private-sidebar::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--topbar-height) - 1px);
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-subtle);
+  pointer-events: none;
 }
 
 .dm-search-button,
@@ -1403,7 +1430,7 @@ select:focus-visible {
   gap: 10px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border-subtle);
-  background: #313338;
+  background: var(--surface-base);
 }
 
 .channel-title {

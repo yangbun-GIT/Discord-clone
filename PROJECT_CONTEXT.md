@@ -42,7 +42,7 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
-Stage 10 interaction polish is complete through Stage 10.26. The controlling plan is
+Stage 10 interaction polish is complete through Stage 10.27. The controlling plan is
 `docs/discord-interaction-polish-plan.md`; the Stage 10.0 baseline lock is recorded
 in `docs/stage-10-baseline.md`, and QA evidence is recorded in
 `docs/stage-10-final-qa.md`. The completed work covers demo/test data cleanup,
@@ -50,8 +50,9 @@ visual-noise reduction, Discord-like shell hierarchy, text/button spacing, botto
 user panel reconstruction, message/composer polish, timeline divider cleanup,
 voice/screen-share interaction cleanup, app-owned context menus/notices,
 browser-native UI removal for clone workflows, voice-sidebar participant hierarchy,
-server-owned voice session tracking, and the in-app cross-server voice-switch
-dialog. Remaining voice media verification still depends on a browser session with
+server-owned voice session tracking, the in-app cross-server voice-switch dialog,
+message timeline divider cleanup, and server-rail/header seam cleanup. Remaining
+voice media verification still depends on a browser session with
 microphone and screen-capture permissions granted.
 
 The app boots in two local modes:
@@ -1352,6 +1353,14 @@ Completed Stage 2 bridge work:
   between adjacent message rows. The DM intro no longer draws a bottom border that
   can collide with the timeline divider. Frontend lint/build, Docker frontend
   rebuild, and browser layout QA passed for server text and DM timelines.
+- Added Stage 10.27 server rail state and header seam cleanup:
+  `frontend/src/components/ServerRail.vue` now scopes active server state to server
+  destinations so Friends/DM views only mark Direct Messages as active, while
+  inactive unread and mention states keep smaller markers. `frontend/src/styles/base.css`
+  keeps voice-connected servers visually distinct from active servers and aligns
+  private/server sidebar top separators with the workspace header edge. Frontend
+  lint/build, Docker frontend rebuild, and browser layout QA passed for Friends and
+  server surfaces.
 
 After each stage or meaningful feature:
 

@@ -905,3 +905,37 @@ Verification:
 - Browser QA verified the DM view has one date divider after the intro, intro
   `border-bottom: 0px`, first message row `border-top: 0px`, second message row
   retains the thin separator, and no horizontal body overflow.
+
+## Stage 10.27: Server Rail State And Header Seam Cleanup
+
+Status: completed. This follow-up makes the server rail state unambiguous when
+switching between Friends/DMs and servers, and aligns sidebar top separators with
+the workspace header line.
+
+Goal: prevent the previously selected server from reading as active on the Friends
+surface while keeping unread, mention, and voice-connection indicators distinct and
+Discord-like.
+
+Tasks:
+
+- Scope server active state to server destinations only; when Friends or a DM is
+  open, only the Direct Messages rail item can be active.
+- Keep inactive unread servers on a small left marker and reserve the tall left
+  marker for the single active destination.
+- Keep voice-connected server state as a green badge/ring on the owning server
+  rather than as an additional active-looking rail marker.
+- Add matching sidebar top separator lines at the same height as the workspace
+  header bottom border so private and server sidebars visually connect to the
+  header band across screens.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- Docker frontend rebuild passed.
+- Browser QA verified the Friends surface has exactly one active rail slot
+  (`Direct Messages`), previously selected servers no longer keep active classes,
+  unread servers use an 8 px marker, and there is no horizontal body overflow.
+- Browser QA verified a server selection has exactly one active rail slot for that
+  server, the Direct Messages item is inactive, the sidebar separator sits at
+  `47px` to meet the 48 px header edge, and there is no horizontal body overflow.

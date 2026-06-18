@@ -72,6 +72,18 @@ function badgeLabel(count: number | undefined) {
   if (!count) return ''
   return count > 99 ? '99+' : String(count)
 }
+
+function isActiveGuild(guildId: number) {
+  return !props.homeActive && guildId === props.activeGuildId
+}
+
+function hasUnreadGuild(guildId: number) {
+  return Boolean(props.guildMeta[guildId]?.unread_count && !isActiveGuild(guildId))
+}
+
+function hasMentionGuild(guildId: number) {
+  return Boolean(props.guildMeta[guildId]?.mention_count && !isActiveGuild(guildId))
+}
 </script>
 
 <template>
@@ -99,23 +111,24 @@ function badgeLabel(count: number | undefined) {
       <div
         class="server-slot"
         :class="{
-          active: guild.id === activeGuildId,
-          unread: guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId,
-          mentioned: guildMeta[guild.id]?.mention_count,
+          active: isActiveGuild(guild.id),
+          unread: hasUnreadGuild(guild.id),
+          mentioned: hasMentionGuild(guild.id),
+          'voice-connected': guildMeta[guild.id]?.voice_connected,
         }"
       >
         <span
-          v-if="guild.id === activeGuildId || (guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId)"
+          v-if="isActiveGuild(guild.id) || hasUnreadGuild(guild.id)"
           class="server-unread-pill"
           aria-hidden="true"
         ></span>
         <button
           class="server-button"
-          :class="{ active: guild.id === activeGuildId, muted: guildMeta[guild.id]?.muted }"
+          :class="{ active: isActiveGuild(guild.id), muted: guildMeta[guild.id]?.muted }"
           type="button"
           :title="guild.name"
           :aria-label="ariaLabelForGuild(guild)"
-          :aria-current="!homeActive && guild.id === activeGuildId ? 'page' : undefined"
+          :aria-current="isActiveGuild(guild.id) ? 'page' : undefined"
           data-context-kind="server"
           :data-context-label="guild.name"
           @click="$emit('select', guild.id)"
@@ -147,23 +160,24 @@ function badgeLabel(count: number | undefined) {
           :key="guild.id"
           class="server-slot"
           :class="{
-            active: guild.id === activeGuildId,
-            unread: guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId,
-            mentioned: guildMeta[guild.id]?.mention_count,
+            active: isActiveGuild(guild.id),
+            unread: hasUnreadGuild(guild.id),
+            mentioned: hasMentionGuild(guild.id),
+            'voice-connected': guildMeta[guild.id]?.voice_connected,
           }"
         >
           <span
-            v-if="guild.id === activeGuildId || (guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId)"
+            v-if="isActiveGuild(guild.id) || hasUnreadGuild(guild.id)"
             class="server-unread-pill"
             aria-hidden="true"
           ></span>
           <button
             class="server-button"
-            :class="{ active: guild.id === activeGuildId, muted: guildMeta[guild.id]?.muted }"
+            :class="{ active: isActiveGuild(guild.id), muted: guildMeta[guild.id]?.muted }"
             type="button"
             :title="guild.name"
             :aria-label="ariaLabelForGuild(guild)"
-            :aria-current="!homeActive && guild.id === activeGuildId ? 'page' : undefined"
+            :aria-current="isActiveGuild(guild.id) ? 'page' : undefined"
             data-context-kind="server"
             :data-context-label="guild.name"
             @click="$emit('select', guild.id)"

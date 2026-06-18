@@ -275,3 +275,35 @@ Residual manual QA:
 
 - No backend or media behavior changed. Connected voice and screen-share checks
   remain governed by microphone/screen-capture permissions.
+
+## Stage 10.27 Server Rail State And Header Seam QA
+
+Date: 2026-06-18
+
+Scope: server rail active/unread state and global sidebar/header seam alignment.
+
+Command verification:
+
+- `npm run lint:frontend`: passed with 0 warnings and 0 errors.
+- `npm --prefix frontend run build`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- Friends surface: exactly one `.server-slot.active` rendered for Direct Messages.
+  The previously selected server no longer kept an active class or active button
+  class, inactive unread servers used an 8 px marker, and horizontal overflow was
+  `0`.
+- Server surface: exactly one `.server-slot.active` rendered for the selected
+  server. Direct Messages was inactive, the selected server kept the 40 px active
+  marker and `aria-current="page"`, inactive unread servers kept the 8 px marker,
+  and horizontal overflow was `0`.
+- Private and server sidebars expose a top separator at `47px`, matching the
+  workspace topbar's 48 px bottom edge so the header line reads as a continuous
+  shell boundary.
+
+Residual manual QA:
+
+- No backend or media behavior changed. Connected voice and screen-share checks
+  remain governed by microphone/screen-capture permissions.
