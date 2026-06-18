@@ -322,9 +322,10 @@ Partially applied.
   `guildGatewayHandlers.ts`; server message REST mutations moved to
   `channelMessages.ts`; guild invite/channel/role/member REST mutations moved to
   `guildAdmin.ts`. Voice presence remains inside `guilds.ts`.
-- `frontend/src/composables/useVoiceRtc.ts`: WebRTC quality stats moved to
-  `voiceStats.ts`. Media capture, VAD, peer lifecycle, and screen sharing remain
-  in the facade module.
+- `frontend/src/composables/useVoiceRtc.ts`: now acts as the public WebRTC facade.
+  Media capture helpers moved to `voiceMedia.ts`, local VAD moved to
+  `voiceVad.ts`, peer lifecycle/signaling/remote-stream handling moved to
+  `voicePeerConnections.ts`, and quality stats remain in `voiceStats.ts`.
 - `backend/app/services/guild_service.py`: PostgreSQL/demo branching moved behind
   `guild_storage.py`.
 - `backend/app/repositories/guilds.py`: domain-specific repository entry points

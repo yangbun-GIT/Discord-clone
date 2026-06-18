@@ -306,8 +306,15 @@ For ordinary implementation work:
   - WebSocket gateway connection, Identify, heartbeat, dispatch handling, and voice
     signal send/update helpers.
 - `frontend/src/composables/useVoiceRtc.ts`
-  - Browser WebRTC media capture, peer connections, VAD, screen share, and quality
-    stats.
+  - Public WebRTC voice facade used by the app.
+  - Composes media capture, VAD, peer registry, screen share, and stats modules.
+- `frontend/src/composables/voiceMedia.ts`
+  - Browser microphone/display capture helpers and media-track helpers.
+- `frontend/src/composables/voiceVad.ts`
+  - Local AudioContext/analyser voice activity detection and input-level sampling.
+- `frontend/src/composables/voicePeerConnections.ts`
+  - Peer connection registry, offer/answer/ICE handling, remote stream tracking,
+    participant sync, and peer renegotiation.
 - `frontend/src/composables/voiceStats.ts`
   - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`.
 - `frontend/src/composables/useGlobalNotice.ts`

@@ -533,10 +533,18 @@ The app boots in two local modes:
     app store.
   - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
 - `frontend/src/composables/useVoiceRtc.ts`
-  - Owns browser microphone capture, screen capture, `RTCPeerConnection` lifecycle,
-  local VAD/input-level sampling, mute state, offer/answer/ICE handling, remote
-    stream tracking, screen-share renegotiation, WebRTC `getStats()` quality
-    sampling, and cleanup.
+  - Public WebRTC voice facade used by the app and Stage 12.1 voice session
+    controller.
+  - Composes focused modules for media capture, VAD, peer connections, screen-share
+    track management, WebRTC stats, mute state, and cleanup.
+- `frontend/src/composables/voiceMedia.ts`
+  - Browser microphone/display capture helpers plus media-track stop and mute
+    helpers.
+- `frontend/src/composables/voiceVad.ts`
+  - Local AudioContext/analyser voice activity detection and input-level sampling.
+- `frontend/src/composables/voicePeerConnections.ts`
+  - Peer connection registry for offer/answer/ICE handling, remote stream tracking,
+    participant sync, and peer renegotiation.
 - `frontend/src/composables/useVoiceSessionController.ts`
   - Stage 12.1 voice session orchestration boundary.
   - Loads voice metadata, coordinates voice join/leave/switch confirmation, syncs
@@ -1499,6 +1507,15 @@ Completed Stage 2 bridge work:
   while keeping the existing template bindings and UI behavior stable. Frontend
   lint and production build passed; live microphone/screen-capture QA remains
   permission-dependent manual coverage.
+- Completed Stage 12.2 Voice RTC internal modules:
+  `frontend/src/composables/useVoiceRtc.ts` is now a public facade over focused
+  voice modules. `voiceMedia.ts` owns browser media capture helpers,
+  `voiceVad.ts` owns local input-level/speaking detection,
+  `voicePeerConnections.ts` owns peer registry, offer/answer/ICE handling, remote
+  stream tracking, participant sync, and renegotiation, and `voiceStats.ts`
+  continues to own WebRTC quality aggregation. Frontend lint and production build
+  passed; live microphone/screen-capture QA remains permission-dependent manual
+  coverage.
 
 After each stage or meaningful feature:
 

@@ -402,13 +402,39 @@ Browser UI
 
 - `frontend/src/composables/useVoiceRtc.ts`
   - References:
+    - `frontend/src/composables/voiceMedia.ts`
+    - `frontend/src/composables/voicePeerConnections.ts`
     - `frontend/src/composables/voiceStats.ts`
+    - `frontend/src/composables/voiceVad.ts`
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/composables/useVoiceSessionController.ts`
   - Talks to:
     - Browser `navigator.mediaDevices`, `RTCPeerConnection`, and WebRTC APIs.
+
+- `frontend/src/composables/voiceMedia.ts`
+  - Referenced by:
+    - `frontend/src/composables/useVoiceRtc.ts`
+    - `frontend/src/composables/voicePeerConnections.ts`
+  - Talks to:
+    - Browser `navigator.mediaDevices`.
+
+- `frontend/src/composables/voiceVad.ts`
+  - Referenced by:
+    - `frontend/src/composables/useVoiceRtc.ts`
+  - Talks to:
+    - Browser `AudioContext`, analyser nodes, and interval timers.
+
+- `frontend/src/composables/voicePeerConnections.ts`
+  - References:
+    - `frontend/src/composables/voiceMedia.ts`
+    - `frontend/src/types.ts`
+  - Referenced by:
+    - `frontend/src/composables/useVoiceRtc.ts`
+  - Owns:
+    - Peer connection registry, remote stream mutation, offer/answer/ICE handling,
+      screen-share track renegotiation, and participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:

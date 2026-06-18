@@ -48,6 +48,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.2 Voice RTC Internal Modules
 
+- Status: completed.
 - Split `frontend/src/composables/useVoiceRtc.ts` internals into focused modules:
   media capture, local VAD, peer connection lifecycle, and screen-share helpers.
 - Keep `useVoiceRtc.ts` as the public facade used by `App.vue` and Stage 12.1.
