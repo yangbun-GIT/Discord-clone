@@ -271,6 +271,11 @@ Verification:
 Goal: ensure user-facing flows exposed by the frontend have reliable backend or
 demo-store support.
 
+Status: completed. The frontend-exposed local session endpoint now has explicit
+route coverage for successful development-token creation and production
+environment hiding. Backend tests/lint and Docker API smoke evidence are recorded
+in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Audit relationship, DM, guild, channel, invite, message, member, and voice

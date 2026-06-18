@@ -562,3 +562,8 @@
   friend request, settings, and logout copy. Vite was updated to 8.0.16 after the
   Stage 11.9 Docker build surfaced a high-severity Vite audit advisory; frontend
   audit now reports zero vulnerabilities.
+- Completed Stage 11.10: backend API coverage now includes the frontend-exposed
+  `/api/dev/session` route for local session token creation and production
+  environment hiding. Backend tests/lint passed, Docker services were running, and
+  `/api/health` plus `/api/meta/voice` smoke checks returned the expected local
+  configuration.

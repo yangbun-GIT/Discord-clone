@@ -289,3 +289,31 @@ Residual notes:
 - Some internal event names, CSS class names, and dormant i18n keys still contain
   `demo`/commerce terms for compatibility with existing components and backend
   store models. They are not visible on the primary app surfaces verified here.
+
+## Stage 11.10: Backend/API Completion Pass
+
+Date: 2026-06-18
+
+Changes verified:
+
+- The frontend-visible `/api/dev/session` route now has focused backend coverage
+  for local development token creation and user payload shape.
+- The same route now has regression coverage proving it is hidden outside local
+  environments.
+- The route tests decode the returned access token to verify the session contract
+  used by the Vue app.
+
+Verification:
+
+- `npm run test:backend` passed with 105 tests.
+- `npm run lint:backend` passed.
+- Docker services `backend`, `frontend`, and `postgres` were running.
+- `GET http://127.0.0.1:8000/api/health` returned `{"status":"ok","environment":"local"}`.
+- `GET http://127.0.0.1:8000/api/meta/voice` returned one ICE server and
+  `turn_configured: false`, which matches the current local configuration.
+
+Residual notes:
+
+- TURN is not configured for the local stack, so remote-network media quality is
+  still outside the local automated API smoke scope. Browser permission-dependent
+  media behavior remains scheduled for Stage 11.12.

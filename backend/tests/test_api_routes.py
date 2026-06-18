@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
-from app.core.security import create_access_token
+from app.core.config import get_settings
+from app.core.security import create_access_token, decode_access_token
 from app.main import app
 
 
@@ -50,6 +51,37 @@ def test_voice_meta_returns_ice_servers() -> None:
     assert response.json()["ice_servers"][0]["urls"] == "stun:stun.l.google.com:19302"
     assert response.json()["ice_server_count"] == 1
     assert response.json()["turn_configured"] is False
+
+
+def test_dev_session_returns_local_user_token() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/dev/session",
+        json={"username": "stage-user", "user_id": 777},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["token_type"] == "bearer"
+    assert payload["user"] == {"id": 777, "username": "stage-user", "status": 1}
+    decoded = decode_access_token(payload["access_token"])
+    assert decoded["sub"] == "777"
+    assert decoded["username"] == "stage-user"
+
+
+def test_dev_session_is_hidden_outside_local_environments(monkeypatch) -> None:
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    get_settings.cache_clear()
+    client = TestClient(app)
+
+    try:
+        response = client.post("/api/dev/session", json={"username": "stage-user", "user_id": 777})
+    finally:
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        get_settings.cache_clear()
+
+    assert response.status_code == 404
 
 
 def test_register_requires_database() -> None:

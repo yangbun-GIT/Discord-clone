@@ -1410,6 +1410,11 @@ Completed Stage 2 bridge work:
   visible. `frontend/package-lock.json` updates Vite to 8.0.16 via `npm audit fix`;
   frontend audit, lint/build, Docker rebuild, and browser primary-surface text QA
   passed.
+- Added Stage 11.10 backend/API completion pass: `backend/tests/test_api_routes.py`
+  now covers `/api/dev/session` for local development token creation, user payload
+  shape, decoded access-token claims, and production-environment hiding. Backend
+  tests/lint passed, Docker services were running, and `/api/health` plus
+  `/api/meta/voice` smoke checks returned the expected local values.
 
 After each stage or meaningful feature:
 
