@@ -630,3 +630,30 @@
 - Result: no maintenance-only principle or pattern blocker remains before feature
   work. Physical CSS/i18n splitting remains deferred to a focused visual or copy
   feature pass.
+
+## QA Remediation R1-R9: Discord Clone Completion Polish
+
+- Status: completed with documented backend-venv verification blocker.
+- Plan document:
+  `docs/remediation-tasks/discord-clone-qa-remediation-2026-06-19.md`.
+- Completed scope:
+  - R1 visible-control policy and hidden secondary-control accessibility cleanup.
+  - R2 shared shell/layer ownership and Friends topbar ownership cleanup.
+  - R3 message timeline action visibility and focus behavior.
+  - R4 Friends/DM structure and density pass.
+  - R5 voice connection ownership, connected-elsewhere state, and voice workspace
+    density pass.
+  - R6 context-menu/header-popover dismissal on navigation changes.
+  - R7 empty text-channel onboarding copy and layout cleanup.
+  - R8 settings surface document-copy removal and row-density polish.
+  - R9 final frontend, browser responsive/accessibility, API health, and gateway
+    smoke QA.
+- Verification summary:
+  - Frontend lint, typecheck, build, and unit tests passed through local binaries
+    with bundled Node on PATH.
+  - Browser responsive/accessibility smoke passed at FHD, 1280x720, 900x720, and
+    390x844 using Playwright with installed Chrome.
+  - API health and gateway HELLO/READY smoke passed against local services.
+  - Backend tests/lint could not be re-run because the local `.venv` Python
+    executable failed to create a process and the bundled Python lacks backend test
+    dependencies.

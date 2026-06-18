@@ -951,6 +951,48 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R9 - Final responsive/accessibility/realtime QA
+
+- Status: completed with documented backend-venv blocker.
+- Goal: run final frontend command checks, browser responsive/accessibility smoke,
+  API health, and realtime gateway smoke after R1-R8 fixes.
+- Findings reviewed:
+  - QA-P2-10 responsive, keyboard, and multi-session coverage remain incomplete.
+- Verification:
+  - Frontend unit tests: `frontend/node_modules/.bin/vitest.cmd run` passed
+    (`3` files, `11` tests).
+  - Frontend lint: `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled
+    Node on PATH.
+  - Frontend typecheck: `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with
+    bundled Node on PATH.
+  - Frontend production build: `frontend/node_modules/.bin/vite.cmd build` passed.
+  - Frontend HTTP smoke: `GET http://127.0.0.1:5173/` returned `200`.
+  - Backend health smoke:
+    `GET http://127.0.0.1:8000/api/health` returned `status=ok`,
+    `environment=local`, and PostgreSQL `connected=true`.
+  - Browser responsive/accessibility smoke used Playwright with the installed Chrome
+    channel at FHD, 1280x720, 900x720, and 390x844. All four viewports reported:
+    no horizontal overflow, app shell rendered, and `0` visible unnamed buttons.
+  - Realtime/API smoke from the app origin:
+    - `POST /api/dev/session` passed.
+    - `GET /api/guilds/me` passed with `4` guilds.
+    - `GET /api/dms` passed with `4` DMs.
+    - `/gateway` WebSocket emitted `HELLO` then `READY` after Identify.
+- Backend verification blocker:
+  - `backend/.venv` exists, but `.venv/Scripts/python.exe` and
+    `../.venv/Scripts/python.exe` failed to create a process in this shell.
+  - The system `py` launcher and plain `npm` command are not available in the
+    current PowerShell PATH.
+  - Bundled Python 3.12 is available but does not contain this project's backend
+    test dependencies (`pytest`, `ruff`), so backend tests/lint could not be
+    re-run in R9 without repairing the local virtual environment or installing
+    dependencies.
+- Residual manual QA:
+  - Full keyboard traversal and real microphone/screen-capture transitions still
+    require an interactive browser session with media permissions.
+  - Cross-device or external-network realtime/voice QA remains outside this local
+    single-machine smoke pass.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.
