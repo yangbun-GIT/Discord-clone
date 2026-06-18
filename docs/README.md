@@ -56,6 +56,9 @@ the project prompt and context files before changing code.
 - `docs/stage-10-baseline.md`
   - Stage 10.0 baseline lock for the latest FHD 100% real Discord versus clone
     comparison screenshots and problem inventory.
+- `docs/stage-10-17-responsive-qa.md`
+  - Stage 10.17 FHD, side-by-side, tablet, and mobile responsive screenshots,
+    layout measurements, accessibility-label checks, and keyboard QA limitation.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -118,6 +121,9 @@ the project prompt and context files before changing code.
   rules change.
 - Update `docs/stage-10-baseline.md` only when the Stage 10 baseline comparison set
   changes before implementation continues.
+- Update `docs/stage-10-17-responsive-qa.md` when Stage 10 responsive viewport
+  coverage, screenshot artifacts, focus order, accessibility labels, or residual QA
+  notes change.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

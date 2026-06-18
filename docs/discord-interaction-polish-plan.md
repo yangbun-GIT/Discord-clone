@@ -589,6 +589,9 @@ Verification:
 
 ## Stage 10.17: Responsive And Accessibility QA
 
+Status: completed. Responsive screenshots and layout/accessibility measurements are
+recorded in `docs/stage-10-17-responsive-qa.md`.
+
 Goal: make the cleaner UI stable across practical layouts.
 
 Tasks:
@@ -603,6 +606,14 @@ Verification:
 
 - Browser screenshots and notes are recorded.
 - No horizontal scroll remains in primary screens.
+- Browser QA covered 1920 x 1080, 1280 x 720, 900 x 720, and 390 x 844.
+- Text channel QA confirmed channel sidebar, header, chat, composer, member list,
+  and lower-left voice panel dimensions at side-by-side desktop width.
+- Accessibility QA confirmed no visible icon-only button without text, `aria-label`,
+  or `title`; static focusable order follows rail, sidebar, workspace, voice panel.
+- Stage limitation: the in-app browser keypress bridge held repeated `Tab` presses
+  on the first rail button, so dynamic traversal was documented as untrusted and
+  static focus order plus focus-visible styling was used as evidence.
 
 ## Stage 10.18: Final QA, Documentation, Commit, Push
 

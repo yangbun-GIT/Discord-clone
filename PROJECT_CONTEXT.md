@@ -1256,6 +1256,13 @@ Completed Stage 2 bridge work:
   overflow, no visible gateway/STUN/TURN/RTT/Jitter/Nitro/Shop/Quests/smoke/debug
   terms in the primary shell, only the Friends private-nav row, and no
   `.session-state` or `.voice-presence` nodes in the app shell.
+- Added Stage 10.17 responsive/accessibility QA documentation:
+  `docs/stage-10-17-responsive-qa.md` records FHD, side-by-side, tablet, and mobile
+  viewport measurements plus screenshot artifacts under `docs/qa-artifacts/`.
+  Browser QA verified no horizontal body overflow across those widths, text-channel
+  sidebar/header/chat/composer/member dimensions at 1280 px, no visible icon-only
+  controls missing labels, visible focus styling, and the in-app browser limitation
+  for repeated `Tab` key traversal.
 
 After each stage or meaningful feature:
 

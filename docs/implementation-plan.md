@@ -442,5 +442,10 @@
   STUN/TURN, RTT, jitter, commerce, and smoke/debug strings are not exposed in the
   primary shell. Browser QA verified no visible forbidden terms, no horizontal
   overflow, and only the Friends entry in private primary navigation.
-- Planned Stage 10.17: responsive and accessibility QA.
+- Completed Stage 10.17: responsive and accessibility QA recorded viewport
+  screenshots and measurements for 1920 x 1080, 1280 x 720, 900 x 720, and
+  390 x 844 in `docs/stage-10-17-responsive-qa.md`, verified no horizontal body
+  overflow, checked text-channel composer/member/sidebar dimensions, confirmed no
+  visible icon-only buttons lacked a text/aria/title label, and documented the
+  in-app browser `Tab` keypress limitation.
 - Planned Stage 10.18: final QA, documentation, commit, and push.
