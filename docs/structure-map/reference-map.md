@@ -187,18 +187,48 @@ Browser UI
   - References:
     - `backend/app/db/pool.py`
     - `backend/app/domain/permissions.py`
-    - `backend/app/domain/snowflake.py`
+    - `backend/app/repositories/guild_common.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/guild.py`
     - `backend/app/schemas/message.py`
   - Referenced by:
     - `backend/app/services/guild_storage.py`
+    - `backend/app/repositories/guild_invites.py`
+    - `backend/tests/test_guild_repository.py`
+  - Owns:
+    - Guild aggregate list/read/create SQL and compatibility wrapper methods.
+
+- `backend/app/repositories/guild_common.py`
+  - References:
+    - `backend/app/db/pool.py`
+    - `backend/app/domain/permissions.py`
+    - `backend/app/domain/snowflake.py`
+    - `backend/app/schemas/auth.py`
+    - `backend/app/schemas/guild.py`
+  - Referenced by:
+    - `backend/app/repositories/guilds.py`
     - `backend/app/repositories/guild_channels.py`
     - `backend/app/repositories/guild_invites.py`
     - `backend/app/repositories/guild_members.py`
     - `backend/app/repositories/guild_messages.py`
     - `backend/app/repositories/guild_roles.py`
+  - Owns:
+    - Guild snapshot reads, permission calculation, user upsert, member/role
+      validation, role labels, and shared guild ID generation.
+
+- `backend/app/repositories/guild_channels.py`,
+  `guild_invites.py`, `guild_members.py`, `guild_messages.py`, `guild_roles.py`
+  - References:
+    - `backend/app/db/pool.py`
+    - `backend/app/repositories/guild_common.py`
+    - `backend/app/schemas/auth.py`
+    - `backend/app/schemas/guild.py`
+  - Referenced by:
+    - `backend/app/services/guild_storage.py`
+    - compatibility wrapper methods in `backend/app/repositories/guilds.py`
     - `backend/tests/test_guild_repository.py`
+  - Own:
+    - Channel, invite, member, message, and role SQL respectively.
 
 - `backend/app/repositories/dms.py`
   - References:

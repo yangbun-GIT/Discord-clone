@@ -149,13 +149,15 @@ For ordinary implementation work:
 - `backend/app/repositories/users.py`
   - User persistence and password-hash lookup.
 - `backend/app/repositories/guilds.py`
-  - Core guild persistence and legacy implementation for channel/message/invite/
-    role/member operations.
+  - Core guild aggregate list/read/create persistence and compatibility facade for
+    historical broad repository calls.
+- `backend/app/repositories/guild_common.py`
+  - Shared guild repository helpers for aggregate reads, permission calculation,
+    user upsert, role/member validation, and Snowflake IDs.
 - `backend/app/repositories/guild_channels.py`,
   `guild_invites.py`, `guild_members.py`, `guild_messages.py`, `guild_roles.py`
   - Domain-specific repository entry points used by `guild_storage.py`.
-  - Currently delegate to `guilds.py` while providing stable split boundaries for
-    future query movement.
+  - Own channel, invite, member, message, and role SQL respectively.
 - `backend/app/repositories/dms.py`
   - Direct-message persistence.
 

@@ -253,18 +253,15 @@ principle and pattern gaps:
 
 1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
-2. `backend/app/repositories/guilds.py` still contains the actual SQL for channel,
-   message, invite, role, member, and permission-helper workflows; the
-   domain-specific repository files currently provide only entry-point boundaries.
-3. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
+2. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
    exception-to-HTTP mappings.
-4. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
+3. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
    subscription-sync behavior around local gateway fan-out.
-5. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
+4. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
    and view transitions remain scattered across a few frontend modules. Some are
    appropriate at the browser boundary, but high-use clone workflows should be
    wrapped where doing so improves testability.
-6. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+5. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
     single files. They are acceptable for current visual stability, but future
     changes should move toward token/layout/component and domain-copy ownership.
 
@@ -326,10 +323,13 @@ Partially applied.
   `dm_storage.py`.
 - `backend/app/services/dm_storage.py`: owns the direct-message storage protocol
   and PostgreSQL/demo provider selection used by `dm_service.py`.
-- `backend/app/repositories/guilds.py`: domain-specific repository entry points
-  were added for channels, invites, members, messages, and roles. They currently
-  delegate to the legacy implementation so query movement can proceed safely in
-  smaller repository-focused commits.
+- `backend/app/repositories/guilds.py`: now owns guild aggregate list/read/create
+  SQL and retains compatibility wrapper methods for historical broad calls.
+- `backend/app/repositories/guild_common.py`: owns shared guild read, permission,
+  user upsert, role/member validation, and ID helper logic.
+- `backend/app/repositories/guild_channels.py`, `guild_invites.py`,
+  `guild_members.py`, `guild_messages.py`, and `guild_roles.py`: now own their
+  matching domain SQL instead of delegating to `guilds.py`.
 - `backend/app/gateway/manager.py`: split into connection, subscription,
   broadcaster, voice service, and zombie reaper modules while preserving the
   manager facade used by routes, realtime, and tests.

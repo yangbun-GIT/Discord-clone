@@ -72,6 +72,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.5 Guild Repository Query Movement
 
+- Status: completed.
 - Move channel, message, invite, role, and member SQL from
   `backend/app/repositories/guilds.py` into the existing domain-specific
   repository files.

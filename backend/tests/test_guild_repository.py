@@ -1,6 +1,12 @@
 import pytest
 
 from app.domain.permissions import ALL_PERMISSIONS, Permission
+from app.repositories import guild_channels as channels_module
+from app.repositories import guild_common
+from app.repositories import guild_invites as invites_module
+from app.repositories import guild_members as members_module
+from app.repositories import guild_messages as messages_module
+from app.repositories import guild_roles as roles_module
 from app.repositories import guilds as guilds_module
 from app.repositories.guilds import GuildRepository
 from app.schemas.auth import UserPublic
@@ -98,6 +104,37 @@ def owner() -> UserPublic:
     return UserPublic(id=42, username="yangbun", status=1)
 
 
+def patch_guild_repository_database(
+    monkeypatch: pytest.MonkeyPatch,
+    fake_database: FakeGuildDatabase,
+) -> None:
+    for module in (
+        guilds_module,
+        guild_common,
+        channels_module,
+        invites_module,
+        members_module,
+        messages_module,
+        roles_module,
+    ):
+        monkeypatch.setattr(module, "database", fake_database)
+
+
+def patch_guild_repository_id_generator(
+    monkeypatch: pytest.MonkeyPatch,
+    values: list[int],
+) -> None:
+    fake_id_generator = FakeIdGenerator(values)
+    for module in (
+        guilds_module,
+        guild_common,
+        channels_module,
+        messages_module,
+        roles_module,
+    ):
+        monkeypatch.setattr(module, "id_generator", fake_id_generator)
+
+
 async def fake_read_guild(guild_row: object, user_id: int) -> GuildRead:
     return GuildRead(
         id=1001,
@@ -113,10 +150,10 @@ async def fake_read_guild(guild_row: object, user_id: int) -> GuildRead:
 @pytest.mark.asyncio
 async def test_create_guild_writes_owner_membership_and_default_channels(
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+    ) -> None:
     fake_database = FakeGuildDatabase()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(guilds_module, "id_generator", FakeIdGenerator([9001, 9002, 9003]))
+    patch_guild_repository_database(monkeypatch, fake_database)
+    patch_guild_repository_id_generator(monkeypatch, [9001, 9002, 9003])
 
     guild = await GuildRepository().create_guild(GuildCreate(name="Project Room"), owner())
 
@@ -132,7 +169,7 @@ async def test_create_guild_writes_owner_membership_and_default_channels(
 @pytest.mark.asyncio
 async def test_get_for_user_reads_guild_snapshot(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
+    patch_guild_repository_database(monkeypatch, fake_database)
 
     guild = await GuildRepository().get_for_user(1001, 42)
 
@@ -152,8 +189,8 @@ async def test_create_channel_allows_manage_channels_permission(
         next_position=2,
         role_permissions=[Permission.MANAGE_CHANNELS.value],
     )
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(guilds_module, "id_generator", FakeIdGenerator([9101]))
+    patch_guild_repository_database(monkeypatch, fake_database)
+    patch_guild_repository_id_generator(monkeypatch, [9101])
 
     channel = await GuildRepository().create_channel(
         1001,
@@ -169,9 +206,9 @@ async def test_create_channel_allows_manage_channels_permission(
 @pytest.mark.asyncio
 async def test_create_channel_rejects_member_without_permission(
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+    ) -> None:
     fake_database = FakeGuildDatabase(guild_owner_id=42)
-    monkeypatch.setattr(guilds_module, "database", fake_database)
+    patch_guild_repository_database(monkeypatch, fake_database)
 
     with pytest.raises(PermissionError):
         await GuildRepository().create_channel(
@@ -186,8 +223,8 @@ async def test_create_channel_rejects_member_without_permission(
 @pytest.mark.asyncio
 async def test_create_invite_writes_unique_code(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(guilds_module.secrets, "token_urlsafe", lambda size: "invite-code")
+    patch_guild_repository_database(monkeypatch, fake_database)
+    monkeypatch.setattr(invites_module.secrets, "token_urlsafe", lambda size: "invite-code")
 
     invite = await GuildRepository().create_invite(1001, owner())
 
@@ -199,7 +236,7 @@ async def test_create_invite_writes_unique_code(monkeypatch: pytest.MonkeyPatch)
 @pytest.mark.asyncio
 async def test_join_invite_adds_user_to_guild(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
+    patch_guild_repository_database(monkeypatch, fake_database)
 
     guild = await GuildRepository().join_invite(
         "invite-code",
@@ -214,12 +251,15 @@ async def test_join_invite_adds_user_to_guild(monkeypatch: pytest.MonkeyPatch) -
 @pytest.mark.asyncio
 async def test_create_role_writes_next_position(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase(next_position=3)
-    repo = GuildRepository()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(guilds_module, "id_generator", FakeIdGenerator([9201]))
-    monkeypatch.setattr(repo, "_read_guild", fake_read_guild)
+    patch_guild_repository_database(monkeypatch, fake_database)
+    patch_guild_repository_id_generator(monkeypatch, [9201])
+    monkeypatch.setattr(roles_module, "read_guild", fake_read_guild)
 
-    guild = await repo.create_role(1001, RoleCreate(name="Moderator", permissions=16), owner())
+    guild = await GuildRepository().create_role(
+        1001,
+        RoleCreate(name="Moderator", permissions=16),
+        owner(),
+    )
 
     assert guild.id == 1001
     assert "INSERT INTO roles" in fake_database.executed[0][0]
@@ -229,11 +269,10 @@ async def test_create_role_writes_next_position(monkeypatch: pytest.MonkeyPatch)
 @pytest.mark.asyncio
 async def test_assign_member_role_writes_member_role(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    repo = GuildRepository()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(repo, "_read_guild", fake_read_guild)
+    patch_guild_repository_database(monkeypatch, fake_database)
+    monkeypatch.setattr(roles_module, "read_guild", fake_read_guild)
 
-    await repo.assign_member_role(
+    await GuildRepository().assign_member_role(
         1001,
         43,
         MemberRoleUpdate(role_id=9201),
@@ -247,11 +286,10 @@ async def test_assign_member_role_writes_member_role(monkeypatch: pytest.MonkeyP
 @pytest.mark.asyncio
 async def test_remove_member_role_deletes_member_role(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    repo = GuildRepository()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(repo, "_read_guild", fake_read_guild)
+    patch_guild_repository_database(monkeypatch, fake_database)
+    monkeypatch.setattr(roles_module, "read_guild", fake_read_guild)
 
-    await repo.remove_member_role(1001, 43, 9201, owner())
+    await GuildRepository().remove_member_role(1001, 43, 9201, owner())
 
     assert "DELETE FROM member_roles" in fake_database.executed[0][0]
     assert fake_database.executed[0][1] == (1001, 43, 9201)
@@ -260,11 +298,10 @@ async def test_remove_member_role_deletes_member_role(monkeypatch: pytest.Monkey
 @pytest.mark.asyncio
 async def test_remove_member_deletes_non_owner_member(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    repo = GuildRepository()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
-    monkeypatch.setattr(repo, "_read_guild", fake_read_guild)
+    patch_guild_repository_database(monkeypatch, fake_database)
+    monkeypatch.setattr(members_module, "read_guild", fake_read_guild)
 
-    await repo.remove_member(1001, 43, owner())
+    await GuildRepository().remove_member(1001, 43, owner())
 
     assert "DELETE FROM guild_members" in fake_database.executed[0][0]
     assert fake_database.executed[0][1] == (1001, 43)
@@ -273,7 +310,7 @@ async def test_remove_member_deletes_non_owner_member(monkeypatch: pytest.Monkey
 @pytest.mark.asyncio
 async def test_update_message_allows_author(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_database = FakeGuildDatabase()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
+    patch_guild_repository_database(monkeypatch, fake_database)
 
     message = await GuildRepository().update_message(
         channel_id=2001,
@@ -293,7 +330,7 @@ async def test_delete_message_allows_manage_messages_permission(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_database = FakeGuildDatabase(role_permissions=[Permission.MANAGE_MESSAGES.value])
-    monkeypatch.setattr(guilds_module, "database", fake_database)
+    patch_guild_repository_database(monkeypatch, fake_database)
 
     deleted = await GuildRepository().delete_message(
         channel_id=2001,
@@ -312,7 +349,7 @@ async def test_update_message_rejects_non_author_without_permission(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_database = FakeGuildDatabase()
-    monkeypatch.setattr(guilds_module, "database", fake_database)
+    patch_guild_repository_database(monkeypatch, fake_database)
 
     with pytest.raises(PermissionError):
         await GuildRepository().update_message(

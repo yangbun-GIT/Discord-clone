@@ -559,6 +559,10 @@ The app boots in two local modes:
   - Stage 12.4 DM storage provider boundary used by `dm_service.py`.
   - Selects PostgreSQL or demo direct-message storage once and exposes a common
     async interface for relationships, DM lists, DM creation, and DM messages.
+- `backend/app/repositories/guild_common.py`
+  - Stage 12.5 shared guild repository helper boundary.
+  - Owns guild aggregate reads, permission calculation, user upsert, member/role
+    validation, role labels, and shared guild Snowflake ID generation.
 - `frontend/src/components/ServerRail.vue`
   - Discord-like rail with `@me` Direct Messages button, server icons, separators,
     server unread/mention badges, muted indicator, demo folder grouping, create-server
@@ -1536,6 +1540,14 @@ Completed Stage 2 bridge work:
   relationships, DM list/create, and DM message creation through the provider and
   no longer imports `database`, `demo_store`, or `dm_repository` directly.
   Backend lint and DM-focused tests passed.
+- Completed Stage 12.5 Guild repository query movement:
+  channel, invite, member, message, and role SQL moved out of
+  `backend/app/repositories/guilds.py` into `guild_channels.py`,
+  `guild_invites.py`, `guild_members.py`, `guild_messages.py`, and
+  `guild_roles.py`. Shared guild read/permission/helper logic moved into
+  `guild_common.py`. `guilds.py` now owns guild aggregate list/read/create SQL
+  plus compatibility wrapper methods. Backend lint, guild repository tests, and
+  the full backend suite passed.
 
 After each stage or meaningful feature:
 

@@ -134,3 +134,40 @@ Review:
 Residual risk:
 
 - None identified for route contracts; DM API and repository tests passed.
+
+## Stage 12.5 Guild Repository Query Movement
+
+Status: completed.
+
+Changed files:
+
+- `backend/app/repositories/guilds.py`
+- `backend/app/repositories/guild_common.py`
+- `backend/app/repositories/guild_channels.py`
+- `backend/app/repositories/guild_invites.py`
+- `backend/app/repositories/guild_members.py`
+- `backend/app/repositories/guild_messages.py`
+- `backend/app/repositories/guild_roles.py`
+- `backend/tests/test_guild_repository.py`
+
+Verification:
+
+- `npm run lint:backend` passed.
+- `npm run test:backend -- tests/test_guild_repository.py` passed.
+- `npm run test:backend` passed with 107 tests.
+
+Review:
+
+- Channel, invite, member, message, and role SQL moved from `guilds.py` into the
+  matching domain-specific repository files.
+- `guilds.py` now owns guild aggregate list/read/create behavior and keeps
+  compatibility wrapper methods for existing callers.
+- Shared guild snapshot, permission, member/role, and ID helper logic moved to
+  `guild_common.py` so domain repositories do not depend on the broad
+  `GuildRepository` implementation.
+- Guild repository tests now patch the domain modules that own each SQL path.
+
+Residual risk:
+
+- `guilds.py` intentionally retains compatibility wrapper methods until callers
+  no longer need the historical broad repository API.
