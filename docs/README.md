@@ -57,6 +57,10 @@ the project prompt and context files before changing code.
   - Current controlling Stage 11 plan for the completion pass after Stage 10.29.
   - Preserves the Stage 10 process: one stage at a time, verification before moving
     forward, documentation updates, Korean commit title, and push to `origin/main`.
+- `docs/architecture-principles-audit.md`
+  - Current implementation-principle and design-pattern audit.
+  - Lists SRP, OCP, DIP, encapsulation, DRY, and testability gaps plus the
+    previous Stage 10/11 process that should govern future refactor stages.
 - `docs/stage-11-baseline.md`
   - Stage 11.0 baseline and scope lock.
   - Records completed Stage 10.29 behavior, remaining risk areas, stage
@@ -139,6 +143,9 @@ the project prompt and context files before changing code.
   rules change.
 - Update `docs/discord-stage-11-completion-plan.md` when Stage 11 scope, stage
   status, stage order, verification expectations, or final completion priorities
+  change.
+- Update `docs/architecture-principles-audit.md` when broad architecture
+  boundaries, principle gaps, refactor stage order, or design-pattern decisions
   change.
 - Update `docs/stage-11-baseline.md` when Stage 11 baseline assumptions, stage
   classification, or initial risk areas change.

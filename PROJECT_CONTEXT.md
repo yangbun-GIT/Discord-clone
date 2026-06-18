@@ -159,6 +159,14 @@ The app boots in two local modes:
   - Current controlling Stage 10 plan for Discord-like interaction polish.
   - Records latest screenshot-based issues, external Discord behavior references,
     stage-by-stage remediation, feature visibility policy, and verification rules.
+- `docs/architecture-principles-audit.md`
+  - Current architecture-principles and design-pattern audit.
+  - Documents SRP, OCP, DIP, encapsulation, DRY, and testability gaps in
+    `frontend/src/App.vue`, `frontend/src/stores/guilds.ts`,
+    `frontend/src/composables/useVoiceRtc.ts`,
+    `backend/app/repositories/guilds.py`, `backend/app/services/guild_service.py`,
+    and `backend/app/gateway/manager.py`.
+  - Lists the previous Stage 10/11 process to preserve for future refactor stages.
 - `docs/stage-10-baseline.md`
   - Stage 10.0 baseline lock for FHD 100% comparison screenshots, problem inventory,
     and persistent/demo/test data classification.
