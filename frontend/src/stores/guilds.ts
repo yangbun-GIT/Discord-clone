@@ -13,6 +13,8 @@ export const useGuildStore = defineStore('guilds', () => {
   const activeGuildId = ref<number | null>(null)
   const activeChannelId = ref<number | null>(null)
   const voiceConnected = ref(false)
+  const connectedVoiceGuildId = ref<number | null>(null)
+  const connectedVoiceChannelId = ref<number | null>(null)
   const voiceStates = shallowRef<VoiceState[]>([])
   const lastVoiceSignal = ref<VoiceSignal | null>(null)
   const isLoading = ref(false)
@@ -31,9 +33,20 @@ export const useGuildStore = defineStore('guilds', () => {
     if (activeChannel.value?.type === 1) return activeChannel.value
     return activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null
   })
+  const connectedVoiceGuild = computed(
+    () => guilds.value.find((guild) => guild.id === connectedVoiceGuildId.value) ?? null,
+  )
+  const connectedVoiceChannel = computed(() => {
+    if (!connectedVoiceChannelId.value) return null
+    return connectedVoiceGuild.value?.channels.find((channel) => channel.id === connectedVoiceChannelId.value) ?? null
+  })
   const activeVoiceStates = computed(() => {
     if (!voiceChannel.value) return []
     return voiceStates.value.filter((state) => state.channel_id === voiceChannel.value?.id)
+  })
+  const connectedVoiceStates = computed(() => {
+    if (!connectedVoiceChannelId.value) return []
+    return voiceStates.value.filter((state) => state.channel_id === connectedVoiceChannelId.value)
   })
   const canManageRoles = computed(() => Boolean((activeGuild.value?.permissions ?? 0) & ADMINISTRATOR_PERMISSION))
   const canManageMessages = computed(() => {
@@ -184,6 +197,8 @@ export const useGuildStore = defineStore('guilds', () => {
     activeGuildId.value = null
     activeChannelId.value = null
     voiceConnected.value = false
+    connectedVoiceGuildId.value = null
+    connectedVoiceChannelId.value = null
     voiceStates.value = []
     lastVoiceSignal.value = null
     isLoading.value = false
@@ -211,8 +226,10 @@ export const useGuildStore = defineStore('guilds', () => {
     voiceConnected.value = !voiceConnected.value
   }
 
-  function setVoiceConnected(connected: boolean) {
+  function setVoiceConnected(connected: boolean, channel: Channel | null = null) {
     voiceConnected.value = connected
+    connectedVoiceGuildId.value = connected ? channel?.guild_id ?? connectedVoiceGuildId.value : null
+    connectedVoiceChannelId.value = connected ? channel?.id ?? connectedVoiceChannelId.value : null
   }
 
   async function createChannel(token: string | null, name: string, type: 0 | 1 = 0) {
@@ -532,10 +549,15 @@ export const useGuildStore = defineStore('guilds', () => {
     activeChannel,
     activeMessages,
     voiceChannel,
+    connectedVoiceGuild,
+    connectedVoiceChannel,
     activeVoiceStates,
+    connectedVoiceStates,
     canManageRoles,
     canManageMessages,
     voiceConnected,
+    connectedVoiceGuildId,
+    connectedVoiceChannelId,
     voiceStates,
     lastVoiceSignal,
     isLoading,

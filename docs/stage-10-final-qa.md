@@ -160,3 +160,29 @@ Design verification:
   and participant chips still have room.
 - The self status card uses a darker elevated surface, tighter spacing, and separate
   mic/deafen/settings controls in the style of the Discord reference.
+
+## Stage 10.23 Voice Session Ownership And Bottom Panel QA
+
+Date: 2026-06-18
+
+Scope: focused follow-up for lower-left panel sizing, connected voice card order,
+and cross-server voice ownership.
+
+Command verification:
+
+- `npm run lint` in `frontend/`: passed with 0 warnings and 0 errors.
+- `npm run build` in `frontend/`: passed.
+
+Design and state verification:
+
+- The self status card uses a 48 px visible card height, matching the composer box
+  pattern instead of the taller legacy lower panel.
+- The lower panel background now matches the sidebar surface, with the user/voice
+  cards acting as the raised elements.
+- Connected voice renders as a voice card above the self status card and no longer
+  renders lower-left participant chips, removing the clipped self/"나" artifact.
+- Voice connection state is tracked by connected guild/channel rather than the
+  active selected guild/channel, so switching servers does not mark the new server's
+  voice channel as connected.
+- Joining voice from another server now prompts before disconnecting the current
+  session and switching.

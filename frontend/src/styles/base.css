@@ -24,7 +24,7 @@
   --member-list-width: 264px;
   --topbar-height: 48px;
   --voice-panel-height: 64px;
-  --voice-panel-height-connected: 128px;
+  --voice-panel-height-connected: 118px;
   --composer-min-height: 44px;
   --icon-button-size: 32px;
   --row-height: 42px;
@@ -4116,8 +4116,8 @@ select:focus-visible {
   grid-template-rows: auto auto;
   align-content: end;
   gap: 6px;
-  padding: 4px 8px 7px;
-  background: #111214;
+  padding: 7px 6px 8px;
+  background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
   border-top: 1px solid var(--border-subtle);
 }
@@ -4125,11 +4125,9 @@ select:focus-visible {
 .app-shell.voice-connected .voice-panel {
   min-height: var(--voice-panel-height-connected);
   max-height: var(--voice-panel-height-connected);
-  gap: 8px;
-  padding-top: 8px;
-  background:
-    linear-gradient(180deg, rgb(0 0 0 / 5%), transparent 34%),
-    var(--surface-sidebar);
+  gap: 6px;
+  padding: 8px 6px;
+  background: var(--surface-sidebar);
 }
 
 .voice-panel:not(.connected) {
@@ -4144,10 +4142,11 @@ select:focus-visible {
   align-items: center;
   gap: 6px;
   align-self: end;
+  min-height: 48px;
   border: 1px solid rgb(255 255 255 / 7%);
   border-radius: 8px;
   background: #232428;
-  padding: 5px 6px;
+  padding: 0 6px;
   box-shadow:
     0 -1px 0 rgb(255 255 255 / 3%) inset,
     0 10px 22px rgb(0 0 0 / 28%);
@@ -4157,7 +4156,7 @@ select:focus-visible {
   width: 100%;
   height: auto;
   min-width: 0;
-  min-height: 40px;
+  min-height: 44px;
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
@@ -4274,16 +4273,16 @@ select:focus-visible {
   gap: 8px 10px;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 8px;
-  min-height: 46px;
-  padding: 8px;
+  min-height: 48px;
+  padding: 0 8px;
 }
 
 .voice-connection-card {
   color: #bbf7d0;
   border-color: rgb(35 165 89 / 34%);
   background:
-    linear-gradient(90deg, rgb(35 165 89 / 18%), rgb(35 165 89 / 8%)),
-    #202b25;
+    linear-gradient(90deg, rgb(35 165 89 / 14%), rgb(35 165 89 / 6%)),
+    #232428;
   box-shadow: inset 3px 0 0 #23a559;
 }
 
@@ -4318,54 +4317,6 @@ select:focus-visible {
 .voice-connection-card small,
 .voice-connection-idle small {
   color: #9ca3af;
-}
-
-.voice-participant-strip {
-  grid-column: 1 / -1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-}
-
-.voice-participant-chip {
-  min-width: 0;
-  max-width: 112px;
-  display: inline-grid;
-  gap: 1px;
-  border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 999px;
-  color: #e5e7eb;
-  background: rgb(0 0 0 / 18%);
-  padding: 4px 9px;
-}
-
-.voice-participant-chip.self {
-  border-color: rgb(35 165 89 / 28%);
-  background: rgb(35 165 89 / 15%);
-}
-
-.voice-participant-chip.speaking {
-  box-shadow: 0 0 0 1px rgb(35 165 89 / 72%);
-}
-
-.voice-participant-chip strong,
-.voice-participant-chip small {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.voice-participant-chip strong {
-  color: #f2f3f5;
-  font-size: 0.72rem;
-}
-
-.voice-participant-chip small {
-  color: #a5b4fc;
-  font-size: 0.66rem;
 }
 
 .voice-actions {

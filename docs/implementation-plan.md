@@ -479,3 +479,9 @@
 - Completed Stage 10.22: the lower-left self status panel now uses a compact
   Discord-like user card by default, while the taller lower voice panel is reserved
   only for active voice connections. Frontend lint/build passed.
+- Completed Stage 10.23: the bottom panel now keeps the self status card aligned to
+  the composer-height card pattern, preserves the same raised-card style while
+  connected, removes clipped lower-left participant chips, and tracks connected
+  voice guild/channel separately from the selected server so voice state no longer
+  follows server navigation. Cross-server voice joins now ask before switching.
+  Frontend lint/build passed.

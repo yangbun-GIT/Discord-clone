@@ -1315,6 +1315,17 @@ Completed Stage 2 bridge work:
   panel only for active voice connections. The user card now has tighter Discord-like
   elevation, spacing, and separated mic/deafen/settings controls. Frontend lint/build
   passed.
+- Added Stage 10.23 voice session ownership and bottom panel alignment:
+  `frontend/src/stores/guilds.ts` now tracks `connectedVoiceGuildId` and
+  `connectedVoiceChannelId` separately from the selected guild/channel, while
+  `frontend/src/App.vue` uses those values for server rail voice badges, channel
+  sidebar connected state, mute/deafen updates, participant sync, and cross-server
+  voice switching confirmation. `VoicePanel.vue` now keeps the connected voice card
+  above the self status card and removes lower-left participant chips to avoid the
+  clipped self/"나" artifact; participant rows remain in `ChannelSidebar.vue`.
+  `base.css` aligns the self card to the composer-height pattern, narrows panel
+  padding, and keeps the surrounding lower panel background matched to the sidebar.
+  Frontend lint/build passed.
 
 After each stage or meaningful feature:
 

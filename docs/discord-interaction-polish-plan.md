@@ -777,3 +777,31 @@ Verification:
 
 - Frontend lint passed with 0 warnings and 0 errors.
 - Frontend production build passed.
+
+## Stage 10.23: Voice Session Ownership And Bottom Panel Alignment
+
+Status: completed. This follow-up addresses the user's latest screenshots of the
+lower-left status card and cross-server voice behavior.
+
+Goal: make the lower-left status/voice panel match Discord's card hierarchy and
+keep voice sessions owned by the server/channel where the user actually joined.
+
+Tasks:
+
+- Keep the self status card at the same visible height as the message composer box.
+- Extend the self status card closer to the sidebar edge with narrower outer padding.
+- Keep the panel background the same as the server/channel sidebar so only the card
+  reads as a raised surface.
+- Preserve the compact status-card design while connected: voice session card above,
+  self status card below.
+- Remove lower-left participant chips so the clipped self/"나" artifact cannot
+  appear; connected participants remain in the voice-channel sidebar stack.
+- Track connected voice guild and channel separately from the currently selected
+  guild/channel.
+- Show connected voice state only on the owning server's rail/sidebar; when joining
+  voice from another server, ask before leaving the existing session and switching.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.

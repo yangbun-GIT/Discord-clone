@@ -82,7 +82,7 @@ const workspaceSubtitle = computed(() => {
   return `${activeGuild.value.name} / ${channelKind}`
 })
 const voiceLocationSummary = computed(() => {
-  if (!guilds.voiceConnected || !guilds.voiceChannel || !activeGuild.value) return null
+  if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
   const state = isDeafened.value
     ? t('common.status.deafened')
     : voiceRtc.isMuted.value
@@ -90,7 +90,7 @@ const voiceLocationSummary = computed(() => {
       : voiceRtc.localSpeaking.value
         ? t('voice.speaking')
         : t('common.status.connected')
-  return `${activeGuild.value.name} / ${guilds.voiceChannel.name} · ${state}`
+  return `${guilds.connectedVoiceGuild.name} / ${guilds.connectedVoiceChannel.name} · ${state}`
 })
 const isPrivateDestination = computed(() =>
   navigation.destination === 'friends' || navigation.destination === 'dm',
@@ -127,7 +127,13 @@ const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:1
 const voiceTurnConfigured = ref(false)
 const userPresenceStatus = ref<UserPresenceStatus>('online')
 const isDeafened = ref(false)
-const connectedVoiceChannelId = computed(() => (guilds.voiceConnected ? guilds.voiceChannel?.id ?? null : null))
+const connectedVoiceChannelId = computed(() => (guilds.voiceConnected ? guilds.connectedVoiceChannelId : null))
+const activeGuildConnectedVoiceChannelId = computed(() =>
+  guilds.connectedVoiceGuildId === activeGuild.value?.id ? connectedVoiceChannelId.value : null,
+)
+const voicePanelChannel = computed(() =>
+  guilds.voiceConnected ? guilds.connectedVoiceChannel : guilds.voiceChannel,
+)
 const selectedVoiceChannel = computed(() => (activeChannel.value?.type === 1 ? activeChannel.value : null))
 const selectedVoiceParticipants = computed(() =>
   selectedVoiceChannel.value ? voiceParticipantsForChannel(selectedVoiceChannel.value.id) : [],
@@ -158,7 +164,7 @@ const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
         unread_count: unreadCount,
         mention_count: index === 0 && !isPrivateDestination.value ? 0 : Number(index === 0 && unreadCount > 0),
         muted: index % 3 === 2,
-        voice_connected: guilds.voiceConnected && guilds.voiceChannel?.guild_id === guild.id,
+        voice_connected: guilds.voiceConnected && guilds.connectedVoiceGuildId === guild.id,
         folder_name: index < 2 ? 'Project' : null,
         folder_color: index < 2 ? '#5eead4' : null,
       },
@@ -538,13 +544,14 @@ function handleRemoveMember(memberId: number) {
 }
 
 function disconnectVoice() {
-  if (!activeGuild.value) return
-  updateVoiceState({
-    guild_id: activeGuild.value.id,
-    channel_id: null,
-    self_mute: false,
-    self_deaf: false,
-  })
+  if (guilds.connectedVoiceGuildId) {
+    updateVoiceState({
+      guild_id: guilds.connectedVoiceGuildId,
+      channel_id: null,
+      self_mute: false,
+      self_deaf: false,
+    })
+  }
   voiceRtc.disconnect()
   guilds.setVoiceConnected(false)
 }
@@ -571,7 +578,7 @@ async function connectVoiceToChannel(channelId: number) {
     return
   }
 
-  guilds.setVoiceConnected(true)
+  guilds.setVoiceConnected(true, targetChannel)
   updateVoiceState({
     guild_id: activeGuild.value.id,
     channel_id: targetChannel.id,
@@ -595,6 +602,10 @@ async function handleJoinVoiceChannel(channelId: number) {
   guilds.selectChannel(channelId)
   if (connectedVoiceChannelId.value === channelId) return
   if (guilds.voiceConnected) {
+    if (guilds.connectedVoiceGuildId !== activeGuild.value?.id) {
+      const confirmed = window.confirm(t('voice.switchConfirm'))
+      if (!confirmed) return
+    }
     disconnectVoice()
   }
   await connectVoiceToChannel(channelId)
@@ -614,10 +625,10 @@ function cycleUserPresence() {
 
 function handleToggleDeafen() {
   isDeafened.value = !isDeafened.value
-  if (!activeGuild.value || !guilds.voiceConnected || !guilds.voiceChannel) return
+  if (!guilds.voiceConnected || !guilds.connectedVoiceGuildId || !guilds.connectedVoiceChannelId) return
   updateVoiceState({
-    guild_id: activeGuild.value.id,
-    channel_id: guilds.voiceChannel.id,
+    guild_id: guilds.connectedVoiceGuildId,
+    channel_id: guilds.connectedVoiceChannelId,
     self_mute: voiceRtc.isMuted.value,
     self_deaf: isDeafened.value,
   })
@@ -631,10 +642,10 @@ function handleOpenUserSettings() {
 
 function handleToggleMute() {
   voiceRtc.toggleMute()
-  if (!activeGuild.value || !guilds.voiceConnected || !guilds.voiceChannel) return
+  if (!guilds.voiceConnected || !guilds.connectedVoiceGuildId || !guilds.connectedVoiceChannelId) return
   updateVoiceState({
-    guild_id: activeGuild.value.id,
-    channel_id: guilds.voiceChannel.id,
+    guild_id: guilds.connectedVoiceGuildId,
+    channel_id: guilds.connectedVoiceChannelId,
     self_mute: voiceRtc.isMuted.value,
     self_deaf: isDeafened.value,
   })
@@ -649,10 +660,10 @@ function handleToggleScreenShare() {
 }
 
 watch(
-  () => guilds.activeVoiceStates.map((state) => `${state.user_id}:${state.channel_id}`).join('|'),
+  () => guilds.connectedVoiceStates.map((state) => `${state.user_id}:${state.channel_id}`).join('|'),
   () => {
     if (!voiceRtc.isCapturing.value || !session.user) return
-    void voiceRtc.syncParticipants(guilds.activeVoiceStates).catch((error) => {
+    void voiceRtc.syncParticipants(guilds.connectedVoiceStates).catch((error) => {
       workspaceError.value = error instanceof Error ? error.message : t('app.error.voicePeerSyncFailed')
     })
   },
@@ -772,7 +783,7 @@ async function copyInviteCode() {
       :guild="activeGuild"
       :active-channel-id="guilds.activeChannelId"
       :voice-states="guilds.voiceStates"
-      :connected-voice-channel-id="connectedVoiceChannelId"
+      :connected-voice-channel-id="activeGuildConnectedVoiceChannelId"
       :current-user-id="session.user?.id ?? null"
       :local-speaking="voiceRtc.localSpeaking.value"
       :muted="voiceRtc.isMuted.value"
@@ -1144,11 +1155,10 @@ async function copyInviteCode() {
 
     <VoicePanel
       v-if="navigation.destination !== 'settings'"
-      :channel="guilds.voiceChannel"
+      :channel="voicePanelChannel"
       :current-user="session.user"
       :user-status="userPresenceStatus"
       :connected="guilds.voiceConnected"
-      :participants="guilds.activeVoiceStates"
       :signaling-ready="gatewayStatus === 'connected'"
       :local-speaking="voiceRtc.localSpeaking.value"
       :input-level="voiceRtc.inputLevel.value"
