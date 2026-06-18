@@ -2936,8 +2936,8 @@ select:focus-visible {
 
 .composer-shell {
   display: grid;
-  gap: 8px;
-  padding: 8px 16px 12px;
+  gap: 6px;
+  padding: 8px 16px 14px;
 }
 
 .composer-reply-bar {
@@ -2974,8 +2974,9 @@ select:focus-visible {
 
 .composer {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto 44px;
-  gap: 8px;
+  grid-template-columns: 36px minmax(0, 1fr) auto 36px;
+  min-height: 48px;
+  gap: 4px;
   align-items: center;
   border: 1px solid rgb(255 255 255 / 6%);
   border-radius: var(--radius-control);
@@ -2988,33 +2989,59 @@ select:focus-visible {
 }
 
 .dm-composer {
-  grid-template-columns: minmax(0, 1fr) auto 44px;
+  grid-template-columns: minmax(0, 1fr) auto 36px;
 }
 
 .composer input {
   width: 100%;
-  min-height: var(--composer-min-height);
+  min-height: 44px;
+  line-height: 44px;
   border: 0;
   outline: 0;
   color: #f8fafc;
   background: transparent;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .composer-actions {
   display: inline-flex;
-  gap: 4px;
+  gap: 2px;
+}
+
+.composer-secondary-actions {
+  justify-content: flex-end;
 }
 
 .composer-actions button {
-  width: var(--icon-button-size);
-  height: var(--icon-button-size);
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 8px;
   color: #b5bac1;
   background: transparent;
+  transition:
+    width 120ms ease,
+    opacity 120ms ease,
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.composer-actions .composer-optional-action {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.composer-shell:hover .composer-optional-action,
+.composer-shell:focus-within .composer-optional-action,
+.composer-optional-action[aria-expanded='true'] {
+  width: 34px;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .composer-actions button:hover,
@@ -3025,8 +3052,8 @@ select:focus-visible {
 
 .composer-send-button,
 .voice-panel button {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border: 0;
   border-radius: 8px;
   color: #101827;

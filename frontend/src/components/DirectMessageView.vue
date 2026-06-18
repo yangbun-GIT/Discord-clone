@@ -124,7 +124,7 @@ watch(
           maxlength="2000"
           :disabled="disabled || !dm"
         />
-        <div class="composer-actions" :aria-label="t('chat.aria.expressionActions')">
+        <div class="composer-actions composer-secondary-actions" :aria-label="t('chat.aria.expressionActions')">
           <button
             type="button"
             :title="t('chat.emoji')"
@@ -136,7 +136,12 @@ watch(
             <Laugh :size="18" aria-hidden="true" />
           </button>
         </div>
-        <button type="submit" :title="t('chat.sendMessage')" :disabled="disabled || !dm || !draft.trim()">
+        <button
+          class="composer-send-button"
+          type="submit"
+          :title="t('chat.sendMessage')"
+          :disabled="disabled || !dm || !draft.trim()"
+        >
           <Send :size="18" aria-hidden="true" />
         </button>
       </form>

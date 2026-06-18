@@ -414,7 +414,11 @@
   locale-aware demo time labels, cleaned the date divider, converted reactions into
   compact pills, stabilized attachment card columns, and browser-verified text/DM
   message panels for horizontal overflow.
-- Planned Stage 10.11: composer rebuild.
+- Completed Stage 10.11: composer rebuild tightened server and DM message entry
+  controls with fixed compact action columns, a 36 px send button, vertically
+  centered 44 px input text, and a deferred template action. Browser QA verified no
+  horizontal overflow, no voice-panel overlap, and a corrective fix for optional
+  action width specificity.
 - Planned Stage 10.12: member list simplification.
 - Planned Stage 10.13: bottom user panel rebuild.
 - Planned Stage 10.14: voice channel workspace rebuild.

@@ -414,6 +414,10 @@ Verification:
 
 ## Stage 10.11: Composer Rebuild
 
+Status: completed. Server and DM composers now use compact fixed action columns,
+a 36 px send button, vertically centered input text, and a deferred template action
+that stays out of layout until composer hover/focus or active state.
+
 Goal: make message entry feel polished and low-friction.
 
 Tasks:
@@ -427,6 +431,13 @@ Verification:
 
 - Composer is readable, stable, and not covered by voice controls.
 - Keyboard send behavior remains unchanged.
+- Stage feedback: browser QA found the optional template button was visually hidden
+  but still reserved 34 px because the generic composer button selector had higher
+  specificity. The Stage 10.11 corrective patch made the optional-action selector
+  stronger so its default width is actually `0px`.
+- Browser QA confirmed no horizontal body overflow, a 48 px composer, 44 px input
+  height and line-height, 36 px send button, optional template action hidden at
+  `0px` width by default, and no overlap with the lower-left voice controls.
 
 ## Stage 10.12: Member List Simplification
 

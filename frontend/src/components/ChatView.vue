@@ -299,8 +299,9 @@ function messageTime(index: number) {
           :placeholder="channel ? t('chat.messageChannel', { channel: `#${channel.name}` }) : t('chat.loadingChannel')"
           maxlength="2000"
         />
-        <div class="composer-actions" :aria-label="t('chat.aria.expressionActions')">
+        <div class="composer-actions composer-secondary-actions" :aria-label="t('chat.aria.expressionActions')">
           <button
+            class="composer-optional-action"
             type="button"
             :title="t('chat.templates')"
             :aria-label="t('chat.templates')"

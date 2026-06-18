@@ -1215,6 +1215,13 @@ Completed Stage 2 bridge work:
   message hover actions are compact floating toolbars, reaction buttons are compact
   structured pills, and attachment cards have stable icon/content columns. Browser
   QA verified text/DM message lists for horizontal overflow and metadata cleanup.
+- Added Stage 10.11 composer rebuild: `ChatView.vue`,
+  `DirectMessageView.vue`, and `frontend/src/styles/base.css` now share compact
+  composer sizing, a 36 px send button, 44 px vertically centered input text, and a
+  hidden-by-default template action that appears only on composer hover/focus or
+  active state. Browser QA verified no horizontal overflow, no voice-panel overlap,
+  and the Stage 10.11 specificity fix that reduced the optional action's default
+  width to `0px`.
 
 After each stage or meaningful feature:
 
