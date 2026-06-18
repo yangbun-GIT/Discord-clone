@@ -151,6 +151,11 @@ Verification:
 
 Goal: make message reading and writing feel clean in server text channels.
 
+Status: completed. The primary text timeline no longer injects fake attachment
+cards, date dividers are hidden for empty channels, composer helper panels no
+longer use demo wording, and composer/timeline spacing was tightened. QA evidence
+is in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Review message grouping, hover actions, attachments, reactions, and date dividers.

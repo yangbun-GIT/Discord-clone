@@ -72,7 +72,10 @@ choices were tightened in `frontend/src/components/DirectMessageView.vue`,
 sidebar and channel navigation polish is complete in `frontend/src/styles/base.css`,
 covering rail contrast, voice-connected rail state, guild heading layering, category
 create-button discoverability, channel-row height, stable active/connected borders,
-and voice-detail spacing.
+and voice-detail spacing. Stage 11.5 text-channel timeline/composer polish is
+complete in `frontend/src/components/ChatView.vue`, `frontend/src/styles/base.css`,
+and `frontend/src/i18n/index.ts`, removing fake attachment cards, code-like emoji
+options, empty-channel date dividers, and demo wording from composer helper panels.
 `docs/stage-11-final-qa.md` records the running Stage 11 QA evidence. Stage 11
 preserves the Stage 10 process: each stage is documented, implemented separately,
 verified before advancing, and then committed with a Korean commit title before

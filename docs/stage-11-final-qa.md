@@ -133,3 +133,34 @@ Residual notes:
   browser synthetic-event restriction observed in Stage 11.3. The server/channel
   interaction code path was not changed in this stage; visual and state styling
   changes are compile-verified and will be covered again in final manual/browser QA.
+
+## Stage 11.5: Text Channel Timeline And Composer
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Removed fake PDF attachment cards from the primary text-channel timeline so
+  messages no longer show unrelated demo files.
+- Replaced `:ok:`/`:+1:` style composer emoji entries with common emoji choices.
+- Date dividers now render only when the channel has messages.
+- File selection labels use an ASCII separator for stable display.
+- Composer helper panels no longer use "demo" wording and now use the neutral
+  raised panel surface.
+- Message row spacing and empty-channel spacing were tightened.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- Browser static QA on `http://localhost:5173/` confirmed horizontal overflow is
+  `0` and no visible `Team Project#1.pdf`, `Mid-fi prototyping`, `18.0_Evaluation`,
+  `:ok:`, or `:+1:` text is present in the current DOM.
+
+Residual notes:
+
+- Direct server text-channel click/send automation remains limited by the in-app
+  browser synthetic-event restriction noted in Stage 11.3 and 11.4. The text
+  timeline and composer code paths are compile-verified.

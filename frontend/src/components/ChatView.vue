@@ -32,12 +32,7 @@ const activeComposerPanel = ref<'upload' | 'templates' | 'emoji' | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFileLabel = ref('')
 const { t } = useI18n()
-const emojiOptions = [':ok:', ':+1:', ':eyes:', ':smile:', ':fire:', ':target:', ':chat:', ':spark:']
-const demoAttachmentCards = [
-  { title: 'Team Project#1.pdf', meta: '109.22 KB' },
-  { title: '16. Mid-fi prototyping.pdf', meta: '1.38 MB' },
-  { title: '18.0_Evaluation.pdf', meta: '928.06 KB' },
-]
+const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '🙌']
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
 )
@@ -111,7 +106,7 @@ function openFilePicker() {
 function handleFileSelected(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
-  selectedFileLabel.value = file ? `${file.name} · ${Math.ceil(file.size / 1024)} KB` : ''
+  selectedFileLabel.value = file ? `${file.name} - ${Math.ceil(file.size / 1024)} KB` : ''
 }
 
 function insertAppAction(action: 'poll' | 'todo') {
@@ -149,7 +144,7 @@ function messageTime(index: number) {
 <template>
   <section class="chat-view" :aria-label="t('chat.aria.messages')">
     <div class="message-list">
-      <div class="date-divider"><span>{{ timelineDate }}</span></div>
+      <div v-if="messages.length" class="date-divider"><span>{{ timelineDate }}</span></div>
       <article
         v-for="(message, index) in messages"
         :key="message.id"
@@ -252,15 +247,6 @@ function messageTime(index: number) {
             </button>
           </form>
           <p v-else>{{ message.content }}</p>
-          <div v-if="index === 0 && messages.length < 5" class="demo-attachment-stack" aria-label="Attachment preview">
-            <article v-for="attachment in demoAttachmentCards" :key="attachment.title" class="attachment-card">
-              <span class="attachment-icon">PDF</span>
-              <div>
-                <strong>{{ attachment.title }}</strong>
-                <small>{{ attachment.meta }}</small>
-              </div>
-            </article>
-          </div>
         </div>
       </article>
       <div v-if="!messages.length" class="channel-empty-density">

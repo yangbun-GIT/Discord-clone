@@ -540,3 +540,7 @@
   tightened with clearer rail contrast, voice-connected rail state, guild heading
   layering, discoverable category create buttons, 36 px channel rows, stable
   active/connected borders, and cleaner voice-detail spacing.
+- Completed Stage 11.5: text-channel timeline and composer polish removed fake
+  attachment cards, replaced code-like emoji options, hid date dividers in empty
+  channels, removed demo wording from composer helper panels, and tightened message
+  row/empty-channel spacing.
