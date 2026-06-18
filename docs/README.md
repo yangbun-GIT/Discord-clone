@@ -65,6 +65,17 @@ the project prompt and context files before changing code.
   - Current implementation-principle and design-pattern audit.
   - Lists SRP, OCP, DIP, encapsulation, DRY, and testability gaps plus the
     previous Stage 10/11 process that should govern future refactor stages.
+- `docs/architecture-refactor-stage-12-plan.md`
+  - Current controlling Stage 12 plan for turning the architecture-principles audit
+    into behavior-preserving refactor stages.
+  - Covers App voice orchestration, voice RTC module boundaries, guild voice
+    presence, DM storage provider, guild repository query movement, API exception
+    mapping, realtime fan-out DRY cleanup, browser API adapters, and CSS/i18n
+    split planning.
+- `docs/stage-12-architecture-qa.md`
+  - Running Stage 12 QA log.
+  - Records command checks, review notes, changed files, and residual risks for
+    each architecture refactor sub-stage.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
@@ -160,6 +171,10 @@ the project prompt and context files before changing code.
 - Update `docs/architecture-principles-audit.md` when broad architecture
   boundaries, principle gaps, refactor stage order, or design-pattern decisions
   change.
+- Update `docs/architecture-refactor-stage-12-plan.md` when Stage 12 scope, stage
+  status, verification expectations, or active refactor order changes.
+- Update `docs/stage-12-architecture-qa.md` after each Stage 12 implementation
+  stage with command checks, review notes, and residual risks.
 - Update `docs/project-file-map.md` when a project folder or important source file
   is added, removed, renamed, or assigned a meaningfully different responsibility.
 - Update `docs/structure-map/README.md` and

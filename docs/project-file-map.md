@@ -57,6 +57,10 @@ For ordinary implementation work:
   - This quick file/folder ownership map.
 - `docs/architecture-principles-audit.md`
   - Current SRP/OCP/DIP/encapsulation/testability gap list and refactor candidates.
+- `docs/architecture-refactor-stage-12-plan.md`
+  - Stage 12 behavior-preserving architecture refactor plan and process.
+- `docs/stage-12-architecture-qa.md`
+  - Running Stage 12 architecture refactor verification log.
 - `docs/deployment.md`
   - Runtime, Docker, Redis, HTTPS/WebSocket, TURN, and deployment hardening.
 - `docs/voice-qa.md`
@@ -314,6 +318,11 @@ For ordinary implementation work:
   - Invite modal state, search query, copy state, and filtered invite targets.
 - `frontend/src/composables/useWorkspaceController.ts`
   - Workspace title/subtitle and voice-location derived state.
+- `frontend/src/composables/useVoiceSessionController.ts`
+  - Voice session orchestration facade.
+  - Owns voice config loading, join/leave/switch flow, mute/deafen gateway sync,
+    screen-share toggling, and voice participant/signal synchronization while
+    composing the guild store, gateway composable, and WebRTC facade.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
 - `frontend/src/styles/base.css`

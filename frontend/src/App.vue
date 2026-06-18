@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   Bell,
   Hash,
@@ -16,7 +16,6 @@ import {
   X,
 } from 'lucide-vue-next'
 
-import { apiGet } from './services/api'
 import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
 import ChatView from './components/ChatView.vue'
@@ -36,6 +35,7 @@ import { useGateway } from './composables/useGateway'
 import { useGlobalNotice } from './composables/useGlobalNotice'
 import { useInviteController } from './composables/useInviteController'
 import { useVoiceRtc } from './composables/useVoiceRtc'
+import { useVoiceSessionController } from './composables/useVoiceSessionController'
 import { useWorkspaceController } from './composables/useWorkspaceController'
 import { useI18n } from './i18n'
 import { useDmStore } from './stores/dms'
@@ -44,7 +44,7 @@ import { useNavigationStore } from './stores/navigation'
 import { usePreferencesStore } from './stores/preferences'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
-import type { ServerRailGuildMeta, UserPresenceStatus, VoiceConfig, VoiceIceServer } from './types'
+import type { ServerRailGuildMeta, UserPresenceStatus } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
@@ -118,18 +118,47 @@ const {
   openInvite,
   closeInvite,
 } = useInviteController(() => dms.relationships)
-const pendingVoiceSwitchChannelId = ref<number | null>(null)
-const skipVoiceSwitchConfirm = ref(localStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
-const rememberVoiceSwitchChoice = ref(false)
 const {
   menu: globalContextMenu,
   openMenu: openContextMenu,
   closeMenu: closeGlobalContextMenu,
 } = useContextMenuController()
-const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
-const voiceTurnConfigured = ref(false)
 const userPresenceStatus = ref<UserPresenceStatus>('online')
-const isDeafened = ref(false)
+const {
+  isDeafened,
+  pendingVoiceSwitchChannelId,
+  rememberVoiceSwitchChoice,
+  voiceTurnConfigured,
+  connectedVoiceChannelId,
+  activeGuildConnectedVoiceChannelId,
+  voicePanelChannel,
+  selectedVoiceChannel,
+  selectedVoicePeers,
+  selectedVoiceConnected,
+  voiceWorkspaceStatus,
+  loadVoiceConfig,
+  disconnectVoice,
+  handleToggleVoice,
+  handleJoinVoiceChannel,
+  confirmVoiceSwitch,
+  cancelVoiceSwitch,
+  handleLeaveVoiceChannel,
+  handleToggleDeafen,
+  handleToggleMute,
+  handleToggleScreenShare,
+} = useVoiceSessionController({
+  guilds,
+  session,
+  voiceRtc,
+  activeGuild: () => activeGuild.value,
+  activeChannel: () => activeChannel.value,
+  updateVoiceState,
+  sendVoiceSignal,
+  setError: (message) => {
+    workspaceError.value = message
+  },
+  t,
+})
 const { workspaceTitle, workspaceSubtitle } = useWorkspaceController({
   destination: () => navigation.destination,
   activeGuild: () => activeGuild.value ?? null,
@@ -142,34 +171,6 @@ const { workspaceTitle, workspaceSubtitle } = useWorkspaceController({
   isMuted: () => voiceRtc.isMuted.value,
   localSpeaking: () => voiceRtc.localSpeaking.value,
   t,
-})
-const connectedVoiceChannelId = computed(() => (guilds.voiceConnected ? guilds.connectedVoiceChannelId : null))
-const activeGuildConnectedVoiceChannelId = computed(() =>
-  guilds.connectedVoiceGuildId === activeGuild.value?.id ? connectedVoiceChannelId.value : null,
-)
-const voicePanelChannel = computed(() =>
-  guilds.voiceConnected ? guilds.connectedVoiceChannel : guilds.voiceChannel,
-)
-const selectedVoiceChannel = computed(() => (activeChannel.value?.type === 1 ? activeChannel.value : null))
-const selectedVoiceParticipants = computed(() =>
-  selectedVoiceChannel.value ? voiceParticipantsForChannel(selectedVoiceChannel.value.id) : [],
-)
-const selectedVoicePeers = computed(() =>
-  selectedVoiceParticipants.value.filter((state) => state.user_id !== session.user?.id),
-)
-const selectedVoiceConnected = computed(() =>
-  selectedVoiceChannel.value?.id === connectedVoiceChannelId.value,
-)
-const voiceWorkspaceStatus = computed(() => {
-  if (!selectedVoiceChannel.value) return t('voice.selectToPreview')
-  if (selectedVoiceConnected.value) {
-    if (voiceRtc.isScreenSharing.value) return t('voice.screenLive')
-    if (isDeafened.value) return t('common.status.deafened')
-    if (voiceRtc.isMuted.value) return t('common.status.muted')
-    if (voiceRtc.localSpeaking.value) return t('voice.speaking')
-    return t('common.status.connected')
-  }
-  return t('voice.selectToPreview')
 })
 const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
   const entries = guilds.guilds.map((guild, index) => {
@@ -210,12 +211,6 @@ async function openWorkspace() {
       dms.handleGatewayDispatch(event, data)
     },
   })
-}
-
-async function loadVoiceConfig() {
-  const config = await apiGet<VoiceConfig>('/api/meta/voice')
-  voiceIceServers.value = config.ice_servers
-  voiceTurnConfigured.value = config.turn_configured
 }
 
 onMounted(async () => {
@@ -561,124 +556,10 @@ function handleRemoveMember(memberId: number) {
   })
 }
 
-function disconnectVoice() {
-  if (guilds.connectedVoiceGuildId) {
-    updateVoiceState({
-      guild_id: guilds.connectedVoiceGuildId,
-      channel_id: null,
-      self_mute: false,
-      self_deaf: false,
-    })
-  }
-  voiceRtc.disconnect()
-  guilds.setVoiceConnected(false)
-}
-
-function voiceParticipantsForChannel(channelId: number) {
-  return guilds.voiceStates.filter((state) => state.channel_id === channelId)
-}
-
-function findVoiceChannel(channelId: number) {
-  for (const guild of guilds.guilds) {
-    const channel = guild.channels.find((item) => item.id === channelId && item.type === 1)
-    if (channel) return { guild, channel }
-  }
-  return null
-}
-
-async function connectVoiceToChannel(channelId: number) {
-  if (!session.user) return
-  const target = findVoiceChannel(channelId)
-  if (!target) return
-
-  try {
-    await voiceRtc.connect({
-      channelId: target.channel.id,
-      currentUserId: session.user.id,
-      participants: voiceParticipantsForChannel(target.channel.id),
-      iceServers: voiceIceServers.value,
-      sendSignal: sendVoiceSignal,
-    })
-  } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : t('app.error.voiceConnectFailed')
-    return
-  }
-
-  guilds.setVoiceConnected(true, target.channel)
-  updateVoiceState({
-    guild_id: target.guild.id,
-    channel_id: target.channel.id,
-    self_mute: voiceRtc.isMuted.value,
-    self_deaf: isDeafened.value,
-  })
-}
-
-async function handleToggleVoice() {
-  if (!activeGuild.value || !guilds.voiceChannel || !session.user) return
-  if (guilds.voiceConnected) {
-    disconnectVoice()
-    return
-  }
-
-  await connectVoiceToChannel(guilds.voiceChannel.id)
-}
-
-async function handleJoinVoiceChannel(channelId: number) {
-  workspaceError.value = null
-  guilds.selectChannel(channelId)
-  if (connectedVoiceChannelId.value === channelId) return
-  if (guilds.voiceConnected) {
-    if (guilds.connectedVoiceGuildId !== activeGuild.value?.id && !skipVoiceSwitchConfirm.value) {
-      rememberVoiceSwitchChoice.value = false
-      pendingVoiceSwitchChannelId.value = channelId
-      return
-    }
-    disconnectVoice()
-  }
-  await connectVoiceToChannel(channelId)
-}
-
-async function confirmVoiceSwitch() {
-  const channelId = pendingVoiceSwitchChannelId.value
-  pendingVoiceSwitchChannelId.value = null
-  if (!channelId) return
-  if (rememberVoiceSwitchChoice.value) {
-    skipVoiceSwitchConfirm.value = true
-    localStorage.setItem('discord_clone_skip_voice_switch_confirm', 'true')
-  } else {
-    localStorage.removeItem('discord_clone_skip_voice_switch_confirm')
-  }
-  rememberVoiceSwitchChoice.value = false
-  disconnectVoice()
-  await connectVoiceToChannel(channelId)
-}
-
-function cancelVoiceSwitch() {
-  rememberVoiceSwitchChoice.value = false
-  pendingVoiceSwitchChannelId.value = null
-}
-
-function handleLeaveVoiceChannel(channelId: number) {
-  workspaceError.value = null
-  if (connectedVoiceChannelId.value !== channelId) return
-  disconnectVoice()
-}
-
 function cycleUserPresence() {
   const statuses: UserPresenceStatus[] = ['online', 'idle', 'dnd', 'offline']
   const currentIndex = statuses.indexOf(userPresenceStatus.value)
   userPresenceStatus.value = statuses[(currentIndex + 1) % statuses.length]
-}
-
-function handleToggleDeafen() {
-  isDeafened.value = !isDeafened.value
-  if (!guilds.voiceConnected || !guilds.connectedVoiceGuildId || !guilds.connectedVoiceChannelId) return
-  updateVoiceState({
-    guild_id: guilds.connectedVoiceGuildId,
-    channel_id: guilds.connectedVoiceChannelId,
-    self_mute: voiceRtc.isMuted.value,
-    self_deaf: isDeafened.value,
-  })
 }
 
 function handleOpenUserSettings() {
@@ -686,45 +567,6 @@ function handleOpenUserSettings() {
   clearWorkspaceNotice()
   navigation.openSettings()
 }
-
-function handleToggleMute() {
-  voiceRtc.toggleMute()
-  if (!guilds.voiceConnected || !guilds.connectedVoiceGuildId || !guilds.connectedVoiceChannelId) return
-  updateVoiceState({
-    guild_id: guilds.connectedVoiceGuildId,
-    channel_id: guilds.connectedVoiceChannelId,
-    self_mute: voiceRtc.isMuted.value,
-    self_deaf: isDeafened.value,
-  })
-}
-
-function handleToggleScreenShare() {
-  workspaceError.value = null
-  if (!guilds.voiceConnected) return
-  void voiceRtc.toggleScreenShare().catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : t('app.error.screenShareFailed')
-  })
-}
-
-watch(
-  () => guilds.connectedVoiceStates.map((state) => `${state.user_id}:${state.channel_id}`).join('|'),
-  () => {
-    if (!voiceRtc.isCapturing.value || !session.user) return
-    void voiceRtc.syncParticipants(guilds.connectedVoiceStates).catch((error) => {
-      workspaceError.value = error instanceof Error ? error.message : t('app.error.voicePeerSyncFailed')
-    })
-  },
-)
-
-watch(
-  () => guilds.lastVoiceSignal,
-  (signal) => {
-    if (!signal) return
-    void voiceRtc.handleSignal(signal).catch((error) => {
-      workspaceError.value = error instanceof Error ? error.message : t('app.error.voiceSignalFailed')
-    })
-  },
-)
 
 function openJoinGuild() {
   workspaceError.value = null

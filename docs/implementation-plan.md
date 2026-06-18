@@ -586,3 +586,27 @@
   server text, and settings. The only remaining Stage 11 risks are manual
   microphone/screen-capture permission QA and TURN/NAT validation documented in
   `docs/voice-qa.md`.
+
+## Stage 12: Architecture Principle Refactor
+
+- Status: started.
+- Plan document: `docs/architecture-refactor-stage-12-plan.md`.
+- Audit document: `docs/architecture-principles-audit.md`.
+- Target: reduce remaining SRP, DIP, DRY, encapsulation, and testability gaps
+  without changing user-facing Discord clone behavior.
+- Stage execution rule: preserve the Stage 10/11 process. Work one stage at a
+  time, verify the touched surface before advancing, update documentation and
+  structure maps when responsibilities move, commit with a Korean title, and push
+  completed stages to `origin/main`.
+- Planned order:
+  - Stage 12.0 audit and plan lock: completed.
+  - Stage 12.1 App voice session controller: completed.
+  - Stage 12.2 Voice RTC internal modules.
+  - Stage 12.3 Guild voice presence store boundary.
+  - Stage 12.4 DM storage provider boundary.
+  - Stage 12.5 Guild repository query movement.
+  - Stage 12.6 API exception mapping.
+  - Stage 12.7 Realtime fan-out DRY pass.
+  - Stage 12.8 Browser API adapter pass.
+  - Stage 12.9 CSS and i18n split plan.
+  - Stage 12.10 final architecture regression.

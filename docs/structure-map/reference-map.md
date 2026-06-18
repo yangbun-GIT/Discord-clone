@@ -323,6 +323,7 @@ Browser UI
     - `frontend/src/composables/useGlobalNotice.ts`
     - `frontend/src/composables/useInviteController.ts`
     - `frontend/src/composables/useVoiceRtc.ts`
+    - `frontend/src/composables/useVoiceSessionController.ts`
     - `frontend/src/composables/useWorkspaceController.ts`
     - `frontend/src/i18n/index.ts`
     - `frontend/src/stores/dms.ts`
@@ -405,8 +406,25 @@ Browser UI
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
+    - `frontend/src/composables/useVoiceSessionController.ts`
   - Talks to:
     - Browser `navigator.mediaDevices`, `RTCPeerConnection`, and WebRTC APIs.
+
+- `frontend/src/composables/useVoiceSessionController.ts`
+  - References:
+    - `frontend/src/services/api.ts`
+    - `frontend/src/composables/useGateway.ts`
+    - `frontend/src/composables/useVoiceRtc.ts`
+    - `frontend/src/stores/guilds.ts`
+    - `frontend/src/stores/session.ts`
+    - `frontend/src/i18n/index.ts`
+    - `frontend/src/types.ts`
+  - Referenced by:
+    - `frontend/src/App.vue`
+  - Owns:
+    - Voice config loading, voice join/leave/switch orchestration, mute/deafen
+      gateway updates, screen-share toggle orchestration, voice participant sync,
+      and incoming voice-signal handling.
 
 - `frontend/src/i18n/index.ts`
   - References:

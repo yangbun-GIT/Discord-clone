@@ -245,6 +245,41 @@ Use this process when turning the gaps above into implementation stages:
 12. Report changed files, verification, residual risks, and the next recommended
     stage.
 
+## Latest Whole-Project Re-Audit
+
+The 2026-06-19 whole-project re-audit found that the first remediation pass
+reduced several broad risks, but the project still has the following remaining
+principle and pattern gaps:
+
+1. `frontend/src/App.vue` still owns voice session orchestration, cross-server
+   voice-switch confirmation, voice config loading, mute/deafen synchronization,
+   and screen-share toggling.
+2. `frontend/src/composables/useVoiceRtc.ts` still combines browser media capture,
+   local VAD, peer lifecycle, signaling, screen sharing, and RTC facade behavior.
+3. `frontend/src/stores/guilds.ts` still owns voice presence and connected voice
+   guild/channel state alongside guild/channel selection.
+4. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
+   gateway event application.
+5. `backend/app/services/dm_service.py` still directly branches between
+   PostgreSQL and demo storage based on `database.is_connected`.
+6. `backend/app/repositories/guilds.py` still contains the actual SQL for channel,
+   message, invite, role, member, and permission-helper workflows; the
+   domain-specific repository files currently provide only entry-point boundaries.
+7. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
+   exception-to-HTTP mappings.
+8. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
+   subscription-sync behavior around local gateway fan-out.
+9. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
+   and view transitions remain scattered across a few frontend modules. Some are
+   appropriate at the browser boundary, but high-use clone workflows should be
+   wrapped where doing so improves testability.
+10. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+    single files. They are acceptable for current visual stability, but future
+    changes should move toward token/layout/component and domain-copy ownership.
+
+The active implementation plan for these gaps is
+`docs/architecture-refactor-stage-12-plan.md`.
+
 ## Suggested Refactor Stage Order
 
 These are planning candidates, not completed stages.
@@ -267,13 +302,22 @@ These are planning candidates, not completed stages.
 10. Architecture Stage J: split gateway manager registries and broadcasters when
     gateway behavior next expands.
 
+For active work, use the more current Stage 12 plan in
+`docs/architecture-refactor-stage-12-plan.md`.
+
 ## Current Status
 
 Partially applied.
 
 - `frontend/src/App.vue`: global notice, app context-menu state, invite modal
-  state, and workspace title/subtitle calculation were moved into focused
-  composables. Voice session orchestration still remains in `App.vue`.
+  state, workspace title/subtitle calculation, and voice session orchestration
+  were moved into focused composables. The remaining `App.vue` risk is now broad
+  layout composition and event wiring rather than owning voice join/leave/switch
+  behavior directly.
+- `frontend/src/composables/useVoiceSessionController.ts`: owns voice config
+  loading, voice join/leave/switch orchestration, mute/deafen gateway sync,
+  screen-share toggle orchestration, voice participant synchronization, and
+  incoming voice-signal handling.
 - `frontend/src/stores/guilds.ts`: gateway event validation moved to
   `guildGatewayHandlers.ts`; server message REST mutations moved to
   `channelMessages.ts`; guild invite/channel/role/member REST mutations moved to

@@ -86,6 +86,17 @@ preserves the Stage 10 process: each stage is documented, implemented separately
 verified before advancing, and then committed with a Korean commit title before
 pushing to `origin/main`.
 
+Stage 12 architecture-principle refactoring has started. The controlling plan is
+`docs/architecture-refactor-stage-12-plan.md`, and the refreshed audit is recorded
+in `docs/architecture-principles-audit.md`. Stage 12 is behavior-preserving refactor
+work focused on remaining SRP, DIP, DRY, encapsulation, and testability gaps: App
+voice orchestration, WebRTC module boundaries, guild voice presence, DM storage
+provider selection, guild repository query movement, API exception mapping,
+realtime fan-out duplication, browser API adapters, and CSS/i18n ownership
+planning. Stage 12 preserves the Stage 10/11 process: one stage at a time,
+verification before advancing, documentation and structure-map updates, Korean
+commit titles, and push to `origin/main`.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
@@ -526,6 +537,12 @@ The app boots in two local modes:
   local VAD/input-level sampling, mute state, offer/answer/ICE handling, remote
     stream tracking, screen-share renegotiation, WebRTC `getStats()` quality
     sampling, and cleanup.
+- `frontend/src/composables/useVoiceSessionController.ts`
+  - Stage 12.1 voice session orchestration boundary.
+  - Loads voice metadata, coordinates voice join/leave/switch confirmation, syncs
+    mute/deafen state through gateway opcode 4, toggles screen sharing through
+    `useVoiceRtc()`, synchronizes connected participants, and applies incoming
+    voice signals while keeping `App.vue` focused on layout/event wiring.
 - `frontend/src/components/ServerRail.vue`
   - Discord-like rail with `@me` Direct Messages button, server icons, separators,
     server unread/mention badges, muted indicator, demo folder grouping, create-server
@@ -1469,6 +1486,19 @@ Completed Stage 2 bridge work:
   `channelMessages.ts`, and admin REST calls to `guildAdmin.ts`. `useVoiceRtc.ts`
   now delegates WebRTC quality-stat aggregation to `voiceStats.ts`. Verification
   passed frontend build/lint, backend lint, and full backend tests.
+- Added Stage 12 architecture refactor planning:
+  `docs/architecture-refactor-stage-12-plan.md` now controls the remaining
+  behavior-preserving principle work. `docs/architecture-principles-audit.md`,
+  `docs/implementation-plan.md`, and `docs/README.md` link the refreshed
+  whole-project audit and Stage 12 order.
+- Completed Stage 12.1 App voice session controller:
+  `frontend/src/composables/useVoiceSessionController.ts` now owns voice config
+  loading, join/leave/switch orchestration, mute/deafen gateway synchronization,
+  screen-share toggling, voice participant sync, and incoming voice signal
+  handling. `frontend/src/App.vue` delegates those behaviors to the controller
+  while keeping the existing template bindings and UI behavior stable. Frontend
+  lint and production build passed; live microphone/screen-capture QA remains
+  permission-dependent manual coverage.
 
 After each stage or meaningful feature:
 
