@@ -2110,8 +2110,9 @@ select:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  overflow: auto;
 }
 
 .add-friend-panel,
@@ -2123,6 +2124,10 @@ select:focus-visible {
   justify-items: start;
   gap: 12px;
   padding: 28px 32px;
+}
+
+.add-friend-panel {
+  width: min(760px, 100%);
 }
 
 .add-friend-panel h2,
@@ -2193,35 +2198,37 @@ select:focus-visible {
 }
 
 .add-friend-form {
-  width: min(100%, 620px);
+  width: min(100%, 680px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  border: 1px solid rgb(255 255 255 / 8%);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  background: #202127;
-  padding: 10px;
+  background: var(--surface-panel);
+  padding: 8px;
 }
 
 .add-friend-form input {
   min-width: 0;
-  min-height: 40px;
+  min-height: 42px;
   border: 0;
   border-radius: 8px;
   color: #f8fafc;
-  background: #16171b;
-  padding: 0 12px;
+  background: var(--surface-input);
+  padding: 0 14px;
 }
 
 .add-friend-form button,
 .dm-placeholder button {
-  min-height: 40px;
+  min-height: 42px;
   border: 0;
   border-radius: 8px;
   color: #111827;
   background: #5865f2;
-  padding: 0 12px;
+  padding: 0 16px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .add-friend-form button {
@@ -2235,11 +2242,14 @@ select:focus-visible {
 }
 
 .add-friend-result {
+  border: 1px solid rgb(35 165 89 / 28%);
+  border-radius: 8px;
   color: #86efac;
+  background: rgb(35 165 89 / 10%);
+  padding: 9px 11px;
   font-size: 0.86rem;
 }
 
-.add-friend-discovery,
 .activity-card {
   min-width: 0;
   display: grid;
@@ -2248,34 +2258,12 @@ select:focus-visible {
   background: #202127;
 }
 
-.add-friend-discovery {
-  width: min(100%, 360px);
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 12px;
-  border: 1px solid rgb(255 255 255 / 7%);
-  padding: 12px;
-}
-
-.add-friend-mark {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  color: #ffffff;
-  background: #3ba55d;
-  font-weight: 900;
-}
-
-.add-friend-discovery div,
 .activity-card div {
   min-width: 0;
   display: grid;
   gap: 3px;
 }
 
-.add-friend-discovery strong,
-.add-friend-discovery small,
 .activity-card strong,
 .activity-card small {
   min-width: 0;
@@ -2284,7 +2272,6 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-.add-friend-discovery small,
 .activity-card small {
   color: #a6a9ad;
 }

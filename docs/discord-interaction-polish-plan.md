@@ -318,6 +318,9 @@ Verification:
 
 ## Stage 10.7: Add Friend Workflow Polish
 
+Status: completed. Add Friend is now a single-column, one-step form without the
+extra discovery/activity preview clutter.
+
 Goal: make Add Friend simple and less dashboard-like.
 
 Tasks:
@@ -331,6 +334,9 @@ Verification:
 
 - Input text and button text never touch borders.
 - Disabled and success states are visible.
+- Browser QA confirmed no horizontal overflow, no add-mode activity panel or
+  discovery card, 14 px input padding, 16 px button padding, a 10 px input/button
+  gap, visible disabled state before typing, and visible success state after submit.
 
 ## Stage 10.8: Server Sidebar Polish
 

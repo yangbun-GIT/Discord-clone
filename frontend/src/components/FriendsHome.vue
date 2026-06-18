@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { MoreHorizontal, Plus, Search, Send } from 'lucide-vue-next'
+import { MoreHorizontal, Search, Send } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import type { Friend, UserPresenceStatus } from '../types'
@@ -190,24 +190,7 @@ watch(
           </button>
         </form>
         <p v-if="addFriendResult" class="add-friend-result" role="status">{{ addFriendResult }}</p>
-        <div class="add-friend-discovery">
-          <span class="add-friend-mark">DC</span>
-          <div>
-            <strong>{{ t('friends.findMoreTitle') }}</strong>
-            <small>{{ t('friends.findMoreDescription') }}</small>
-          </div>
-        </div>
       </section>
-      <aside class="friend-activity-panel add-mode" aria-label="Friend activity preview">
-        <h2>{{ t('friends.activityNow') }}</h2>
-        <article v-for="friend in visualFriends.slice(0, 3)" :key="friend.id" class="activity-card">
-          <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
-          <div>
-            <strong>{{ friend.username }}</strong>
-            <small>{{ friend.activity ?? statusLabel(friend.status) }}</small>
-          </div>
-        </article>
-      </aside>
     </div>
 
     <template v-else>

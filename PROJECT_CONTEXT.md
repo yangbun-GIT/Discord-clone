@@ -1199,6 +1199,10 @@ Completed Stage 2 bridge work:
   hover/focus/active, noisy fallback activity copy is removed, and the right panel is
   a compact activity card instead of a profile table. Browser QA verified row
   density, action visibility, no horizontal overflow, and Add Friend tab integrity.
+- Added Stage 10.7 Add Friend workflow polish: the add-friend tab is now a
+  single-column one-step form without discovery/activity preview clutter, with
+  verified input/button spacing, disabled state, success result, and no horizontal
+  overflow.
 
 After each stage or meaningful feature:
 
