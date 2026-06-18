@@ -1229,6 +1229,7 @@ select:focus-visible {
   gap: 2px;
   padding-right: 4px;
   opacity: 0;
+  visibility: hidden;
   transition: opacity 140ms ease;
 }
 
@@ -1237,6 +1238,7 @@ select:focus-visible {
 .channel-row.active .channel-row-actions,
 .channel-row.connected .channel-row-actions {
   opacity: 1;
+  visibility: visible;
 }
 
 .channel-row-actions button {
@@ -2410,6 +2412,7 @@ select:focus-visible {
   color: #cbd5e1;
   background: rgb(255 255 255 / 8%);
   opacity: 0;
+  visibility: hidden;
   transition:
     opacity 140ms ease,
     background 140ms ease,
@@ -2420,6 +2423,7 @@ select:focus-visible {
 .friend-row:focus-within button,
 .friend-row.active button {
   opacity: 1;
+  visibility: visible;
 }
 
 .friend-row button:hover {
