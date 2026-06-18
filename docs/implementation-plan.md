@@ -512,3 +512,9 @@
   header band connected to the workspace `# Friends` header, while the conversation
   search and DM navigation move below that band into the secondary content layer.
   Frontend lint/build, Docker frontend rebuild, and browser layout checks passed.
+- Completed Stage 10.29: the Friends surface now uses an overlay-style layer model
+  instead of the extra private-sidebar header band from Stage 10.28. Friends mode
+  hides the workspace `# Friends` topbar, lets `FriendsHome` own the top tab row,
+  restores the private search control to the top sidebar layer, removes the
+  private-sidebar pseudo border, and browser-verifies the topbar is hidden, the
+  pseudo header is gone, and horizontal overflow remains zero.

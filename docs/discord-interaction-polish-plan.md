@@ -969,3 +969,35 @@ Verification:
 - Browser QA verified the private sidebar starts at `y=0`, its header layer is
   48 px tall, the workspace topbar is 48 px tall, the search button moved to
   `y=56`, and horizontal body overflow remains `0`.
+
+## Stage 10.29: Friends Surface Overlay Header Rebuild
+
+Status: completed. This follow-up removes the extra private-sidebar header band
+introduced during Stage 10.28 because it still read as a visible leftover line in
+the Friends shell.
+
+Goal: treat the Friends screen as a Discord-like stacked layout: the app shell is
+the base layer, while the private search/navigation and Friends tab row are the
+second layer sitting directly on top of it.
+
+Tasks:
+
+- Add a `friends-mode` shell class so the Friends destination can use a different
+  layer model from server and voice destinations.
+- Remove the private-sidebar pseudo header layer and its bottom border so no empty
+  48 px band remains beside the `# Friends` region.
+- Hide the workspace `topbar` only for the Friends destination and let
+  `FriendsHome` occupy the full workspace height.
+- Move the private search control back to the top of the private sidebar so it
+  aligns with the Friends tab row rather than with a separate title row.
+- Keep the quick-switcher popover aligned below the relocated search control.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- Docker frontend rebuild passed.
+- Browser QA verified `app-shell friends-mode`, `.topbar` is `display: none`,
+  `.private-sidebar::before` is `none`, the DM search control starts at `y=10`,
+  the Friends tab header starts at `y=0`, and horizontal body overflow remains
+  `0`.

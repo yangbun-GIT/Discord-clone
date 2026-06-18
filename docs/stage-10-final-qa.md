@@ -337,3 +337,33 @@ Residual manual QA:
 
 - No backend or media behavior changed. Connected voice and screen-share checks
   remain governed by microphone/screen-capture permissions.
+
+## Stage 10.29 Friends Surface Overlay Header QA
+
+Date: 2026-06-18
+
+Scope: follow-up correction for the Friends screen header/sidebar layer model.
+
+Command verification:
+
+- `npm run lint:frontend`: passed with 0 warnings and 0 errors.
+- `npm --prefix frontend run build`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- Friends surface rendered with `app-shell friends-mode`.
+- The workspace `.topbar` measured `display: none`, so the separate `# Friends`
+  title row no longer leaves an extra top box or line.
+- The `.private-sidebar::before` content measured `none`, confirming the previous
+  48 px pseudo header layer and border are removed.
+- The private search control measured `y=10`, and the Friends tabs header measured
+  `y=0`, putting both surfaces in the same visible top content layer.
+- The Friends content begins at `y=48`, below the Friends tab header, and
+  horizontal body overflow remained `0`.
+
+Residual manual QA:
+
+- No backend or media behavior changed. Connected voice and screen-share checks
+  remain governed by microphone/screen-capture permissions.

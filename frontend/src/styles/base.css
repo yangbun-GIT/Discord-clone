@@ -483,27 +483,9 @@ select:focus-visible {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: calc(var(--topbar-height) + 8px) 8px 10px;
+  padding: 10px 8px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
-}
-
-.private-sidebar::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--topbar-height);
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-base);
-  pointer-events: none;
-}
-
-.private-sidebar > * {
-  position: relative;
-  z-index: 1;
 }
 
 .dm-search-button,
@@ -529,7 +511,7 @@ select:focus-visible {
 .quick-switcher-popover {
   position: absolute;
   z-index: 45;
-  top: calc(var(--topbar-height) + 48px);
+  top: 52px;
   left: 8px;
   right: 8px;
   display: grid;
@@ -1425,6 +1407,14 @@ select:focus-visible {
   overflow: hidden;
   display: grid;
   grid-template-rows: var(--topbar-height) minmax(0, 1fr);
+}
+
+.app-shell.friends-mode .workspace {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.app-shell.friends-mode .topbar {
+  display: none;
 }
 
 .topbar {

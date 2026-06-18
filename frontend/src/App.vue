@@ -800,6 +800,7 @@ async function copyInviteCode() {
     :class="{
       'settings-mode': navigation.destination === 'settings',
       'voice-connected': guilds.voiceConnected,
+      'friends-mode': navigation.destination === 'friends',
     }"
     :aria-label="t('app.aria.workspace')"
     @mousedown="handleWorkspacePointerDown"
