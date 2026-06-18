@@ -61,6 +61,11 @@ the project prompt and context files before changing code.
   - Current implementation-principle and design-pattern audit.
   - Lists SRP, OCP, DIP, encapsulation, DRY, and testability gaps plus the
     previous Stage 10/11 process that should govern future refactor stages.
+- `docs/project-file-map.md`
+  - Quick project folder/file ownership map for faster path lookup before
+    implementation.
+  - Lists root files, backend/frontend ownership, tests, common task routing, and
+    efficient lookup commands.
 - `docs/stage-11-baseline.md`
   - Stage 11.0 baseline and scope lock.
   - Records completed Stage 10.29 behavior, remaining risk areas, stage
@@ -147,6 +152,8 @@ the project prompt and context files before changing code.
 - Update `docs/architecture-principles-audit.md` when broad architecture
   boundaries, principle gaps, refactor stage order, or design-pattern decisions
   change.
+- Update `docs/project-file-map.md` when a project folder or important source file
+  is added, removed, renamed, or assigned a meaningfully different responsibility.
 - Update `docs/stage-11-baseline.md` when Stage 11 baseline assumptions, stage
   classification, or initial risk areas change.
 - Update `docs/stage-11-final-qa.md` after each Stage 11 implementation stage with

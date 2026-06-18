@@ -167,6 +167,11 @@ The app boots in two local modes:
     `backend/app/repositories/guilds.py`, `backend/app/services/guild_service.py`,
     and `backend/app/gateway/manager.py`.
   - Lists the previous Stage 10/11 process to preserve for future refactor stages.
+- `docs/project-file-map.md`
+  - Quick project folder/file ownership map for faster path lookup before
+    implementation.
+  - Must be updated when a project folder or important source file is added,
+    removed, renamed, or assigned a meaningfully different responsibility.
 - `docs/stage-10-baseline.md`
   - Stage 10.0 baseline lock for FHD 100% comparison screenshots, problem inventory,
     and persistent/demo/test data classification.

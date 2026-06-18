@@ -21,8 +21,12 @@
   repository structure still reflects `DEVELOPMENT_PROMPT.md`.
 - Treat `PROJECT_CONTEXT.md` as the current implementation map: file ownership,
   integration points, commands, known decisions, and next work.
+- Use `docs/project-file-map.md` as the quick path map for locating likely owner
+  files before broad code exploration.
 - After meaningful code or policy changes, update `PROJECT_CONTEXT.md` and any
   relevant files in `docs/` before committing.
+- When folders or important source-file responsibilities change, update
+  `docs/project-file-map.md` before committing.
 - Keep documentation factual and concise. Prefer concrete file paths and live
   integration details over broad summaries.
 - Continue committing and pushing completed stages to `origin/main` unless the user
