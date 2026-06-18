@@ -1269,6 +1269,21 @@ Completed Stage 2 bridge work:
   preview, and screen-share disabled state. Browser media permission returned
   `Permission denied` on voice join, so connected voice and real screen-share
   start/stop remain manual checks with microphone/screen-capture permissions.
+- Added Stage 10.19 user feedback interaction polish: `FriendsHome.vue` now uses the
+  All/Online/Pending/Add Friend tab order, stronger friend-row separation, and
+  fixed-position more/right-click menus with outside-click and Escape dismissal;
+  `PrivateChannelSidebar.vue` replaces the demo-disabled search action with a quick
+  conversation switcher; `ChannelSidebar.vue` adds a server context menu and makes
+  voice-channel row click attempt direct voice join; `VoicePanel.vue` hides the
+  disconnected voice-room card; `App.vue` removes the disconnected voice join button
+  from the voice workspace, adds closable notices, and replaces the invite-code-only
+  dialog with a searchable friend invite modal. CSS updates in
+  `frontend/src/styles/base.css` cover rail contrast, selected server-add state,
+  menu/popover/modal layering, friend row spacing, and tighter voice workspace
+  layout. Verification passed frontend build/lint plus Docker frontend rebuild and
+  browser QA for menu dismissal, tab order, hidden disconnected voice card, and voice
+  row direct-join attempt; microphone permission denial remains the manual connected
+  media QA blocker.
 
 After each stage or meaningful feature:
 

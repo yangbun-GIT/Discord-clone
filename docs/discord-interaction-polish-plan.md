@@ -47,6 +47,53 @@ The priority is:
    proportions.
 5. Keep only useful high-frequency functionality visible by default.
 
+## Stage 10.19: User Feedback Interaction Polish
+
+Status: completed after the user's screen-by-screen critique of Friends, server,
+voice, invite, popover, and bottom-panel behavior.
+
+Goal: treat the reported issues as global UI patterns, not isolated screen bugs, and
+remove repeated causes of visual clutter or dead-feeling controls.
+
+Completed changes:
+
+- Friends home primary tabs now use the order All, Online, Pending, Add Friend; the
+  lower-frequency Blocked view is removed from the default tab row.
+- Friend rows have stronger row spacing and separation, with a fixed-position
+  more/context menu that closes on outside click or Escape.
+- Friend right-click now opens a Discord-like menu with message, call, profile,
+  mute, and block actions. Message opens a DM; local-only actions close cleanly
+  instead of leaving stuck demo notices.
+- The private sidebar search button now opens a quick conversation switcher instead
+  of a demo-disabled notice.
+- Server heading menu now opens a real contextual menu for invite, text-channel
+  creation, voice-channel creation, and server settings entry.
+- Voice channel rows now join/select directly on click; disconnected voice channels
+  no longer show a separate join button or voice-level invite icon.
+- The lower-left voice panel hides disconnected voice-room cards and only shows voice
+  connection cards/actions while connected.
+- The voice workspace no longer exposes a separate disconnected join button in the
+  header; screen sharing stays disabled until connected.
+- Server invite creation now opens a Discord-like invite modal with friend search,
+  invite buttons, and invite-code copy behavior.
+- Server rail and server-add selected states received clearer contrast so rail groups
+  and create/join selection are easier to distinguish.
+- Global notice boxes now include a close button to prevent stuck "demo" notices.
+
+Verification:
+
+- `npm --prefix frontend run build`: passed.
+- `npm run lint:frontend`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the local
+  `http://localhost:5173/` container.
+- Browser QA verified Friends tab order, no disconnected voice card, quick switcher
+  outside-click close, friend menu outside-click close, and server menu outside-click
+  close.
+- Browser QA verified clicking the voice channel switches to the voice workspace and
+  attempts connection directly. The in-app browser returned `Permission denied` for
+  microphone access, so connected WebRTC media remains manual QA with permission
+  granted.
+
 ## Current Problem Inventory
 
 ### Global UI

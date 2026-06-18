@@ -1,16 +1,17 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { MessageCircle, Plus, Search } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import type { DirectMessage, UserPresenceStatus } from '../types'
 
-defineProps<{
+const props = defineProps<{
   dms: DirectMessage[]
   activeDmId: number | null
   activeDestination: 'friends' | 'dm' | 'settings' | 'server_channel' | 'voice_channel'
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   openFriends: []
   openDm: [dmId: number]
   createDm: []
@@ -18,6 +19,21 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+const root = ref<HTMLElement | null>(null)
+const searchOpen = ref(false)
+const searchQuery = ref('')
+
+const filteredDms = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return props.dms.slice(0, 8)
+  return props.dms.filter((dm) =>
+    dm.display_name.toLowerCase().includes(query)
+    || dm.participants.some((participant) =>
+      participant.username.toLowerCase().includes(query)
+      || participant.handle.toLowerCase().includes(query),
+    ),
+  ).slice(0, 8)
+})
 
 function statusLabel(status: UserPresenceStatus) {
   return t(`common.status.${status}`)
@@ -26,14 +42,76 @@ function statusLabel(status: UserPresenceStatus) {
 function unreadLabel(count: number) {
   return count > 99 ? '99+' : String(count)
 }
+
+function openDmFromSearch(dmId: number) {
+  emit('openDm', dmId)
+  searchOpen.value = false
+  searchQuery.value = ''
+}
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!searchOpen.value) return
+  const target = event.target
+  if (target instanceof Node && root.value?.contains(target)) return
+  searchOpen.value = false
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') searchOpen.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleDocumentPointerDown)
+  document.addEventListener('keydown', handleDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleDocumentPointerDown)
+  document.removeEventListener('keydown', handleDocumentKeyDown)
+})
 </script>
 
 <template>
-  <aside class="private-sidebar" :aria-label="t('channel.aria.privateChannels')">
-    <button class="dm-search-button" type="button" @click="$emit('demoNotice', t('channel.findConversation'))">
+  <aside ref="root" class="private-sidebar" :aria-label="t('channel.aria.privateChannels')">
+    <button
+      class="dm-search-button"
+      type="button"
+      :aria-expanded="searchOpen"
+      @click="searchOpen = !searchOpen"
+    >
       <Search :size="15" aria-hidden="true" />
       <span>{{ t('channel.findConversation') }}</span>
     </button>
+
+    <section v-if="searchOpen" class="quick-switcher-popover" role="dialog" :aria-label="t('channel.findConversation')">
+      <label>
+        <Search :size="15" aria-hidden="true" />
+        <input
+          v-model="searchQuery"
+          :placeholder="t('channel.findConversation')"
+          autocomplete="off"
+          autofocus
+        />
+      </label>
+      <div class="quick-switcher-list">
+        <button
+          v-for="dm in filteredDms"
+          :key="dm.id"
+          type="button"
+          @click="openDmFromSearch(dm.id)"
+        >
+          <span class="dm-avatar" :class="dm.status">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
+          <span>
+            <strong>{{ dm.display_name }}</strong>
+            <small>{{ dm.activity ?? statusLabel(dm.status) }}</small>
+          </span>
+        </button>
+        <button type="button" class="quick-create" @click="$emit('createDm'); searchOpen = false">
+          <Plus :size="15" aria-hidden="true" />
+          <span>{{ t('channel.startNewDm') }}</span>
+        </button>
+      </div>
+    </section>
 
     <nav class="private-nav" :aria-label="t('channel.aria.privateNavigation')">
       <button

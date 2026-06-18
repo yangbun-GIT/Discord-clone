@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { MoreHorizontal, Search, Send } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  BellOff,
+  MoreHorizontal,
+  Phone,
+  Search,
+  Send,
+  UserRound,
+  UserX,
+  X,
+} from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import type { Friend, UserPresenceStatus } from '../types'
@@ -9,7 +18,7 @@ const props = defineProps<{
   friends: Friend[]
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   messageFriend: [friendId: number]
 }>()
 
@@ -17,8 +26,13 @@ const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('online'
 const searchQuery = ref('')
 const addFriendName = ref('')
 const addFriendResult = ref('')
-const moreFriendId = ref<number | null>(null)
 const selectedFriendId = ref<number | null>(null)
+const friendMenu = ref<{
+  friendId: number
+  mode: 'button' | 'context'
+  x: number
+  y: number
+} | null>(null)
 const { t } = useI18n()
 
 const visualFallbackFriends: Friend[] = [
@@ -91,6 +105,10 @@ const selectedFriend = computed(
   () => visibleFriends.value.find((friend) => friend.id === selectedFriendId.value) ?? visibleFriends.value[0] ?? null,
 )
 
+const openMenuFriend = computed(() =>
+  friendMenu.value ? visualFriends.value.find((friend) => friend.id === friendMenu.value?.friendId) ?? null : null,
+)
+
 function statusLabel(status: UserPresenceStatus) {
   return t(`common.status.${status}`)
 }
@@ -108,6 +126,55 @@ function submitAddFriend() {
   addFriendResult.value = t('friends.addResult', { handle })
   addFriendName.value = ''
 }
+
+function openFriendMenu(event: MouseEvent, friend: Friend, mode: 'button' | 'context') {
+  selectedFriendId.value = friend.id
+  const target = event.currentTarget instanceof HTMLElement ? event.currentTarget : null
+  const rect = target?.getBoundingClientRect()
+  friendMenu.value = {
+    friendId: friend.id,
+    mode,
+    x: mode === 'context' ? event.clientX : rect ? Math.max(12, rect.right - 280) : event.clientX,
+    y: mode === 'context' ? event.clientY : rect ? rect.bottom + 6 : event.clientY,
+  }
+}
+
+function closeFriendMenu() {
+  friendMenu.value = null
+}
+
+function handleMenuAction(action: 'message' | 'local') {
+  if (action === 'message' && openMenuFriend.value) {
+    emit('messageFriend', openMenuFriend.value.id)
+  }
+  closeFriendMenu()
+}
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!friendMenu.value) return
+  const target = event.target
+  if (
+    target instanceof HTMLElement
+    && target.closest('.friend-local-menu, .friend-menu-trigger')
+  ) {
+    return
+  }
+  closeFriendMenu()
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') closeFriendMenu()
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleDocumentPointerDown)
+  document.addEventListener('keydown', handleDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleDocumentPointerDown)
+  document.removeEventListener('keydown', handleDocumentKeyDown)
+})
 
 watch(
   visibleFriends,
@@ -132,20 +199,20 @@ watch(
         <button
           type="button"
           role="tab"
-          :aria-selected="activeTab === 'online'"
-          :class="{ active: activeTab === 'online' }"
-          @click="activeTab = 'online'"
-        >
-          {{ t('friends.online') }}
-        </button>
-        <button
-          type="button"
-          role="tab"
           :aria-selected="activeTab === 'all'"
           :class="{ active: activeTab === 'all' }"
           @click="activeTab = 'all'"
         >
           {{ t('friends.all') }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'online'"
+          :class="{ active: activeTab === 'online' }"
+          @click="activeTab = 'online'"
+        >
+          {{ t('friends.online') }}
         </button>
         <button
           type="button"
@@ -159,15 +226,7 @@ watch(
         <button
           type="button"
           role="tab"
-          :aria-selected="activeTab === 'blocked'"
-          :class="{ active: activeTab === 'blocked' }"
-          @click="activeTab = 'blocked'"
-        >
-          {{ t('friends.blocked') }}
-        </button>
-        <button
-          type="button"
-          role="tab"
+          class="add-tab"
           :aria-selected="activeTab === 'add'"
           :class="{ active: activeTab === 'add' }"
           @click="activeTab = 'add'"
@@ -216,6 +275,7 @@ watch(
               class="friend-row"
               :class="{ active: selectedFriend?.id === friend.id }"
               @click="selectedFriendId = friend.id"
+              @contextmenu.prevent="openFriendMenu($event, friend, 'context')"
             >
               <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
               <span class="friend-copy">
@@ -234,6 +294,7 @@ watch(
               </span>
               <button
                 type="button"
+                class="friend-action-button"
                 :aria-label="t('friends.sendMessage')"
                 @click.stop="$emit('messageFriend', friend.id)"
               >
@@ -241,21 +302,13 @@ watch(
               </button>
               <button
                 type="button"
+                class="friend-action-button friend-menu-trigger"
                 :aria-label="t('friends.more')"
-                :aria-expanded="moreFriendId === friend.id"
-                @click.stop="moreFriendId = moreFriendId === friend.id ? null : friend.id"
+                :aria-expanded="friendMenu?.friendId === friend.id"
+                @click.stop="openFriendMenu($event, friend, 'button')"
               >
                 <MoreHorizontal :size="18" aria-hidden="true" />
               </button>
-              <div v-if="moreFriendId === friend.id" class="friend-local-menu" role="menu">
-                <strong>{{ t('friends.profileSummary') }}</strong>
-                <span>{{ friend.handle }}</span>
-                <small>{{ t('friends.currentActivity') }}: {{ friend.activity ?? t('friends.noActivity') }}</small>
-                <button type="button" role="menuitem" @click="$emit('messageFriend', friend.id)">
-                  <Send :size="15" aria-hidden="true" />
-                  <span>{{ t('friends.sendMessage') }}</span>
-                </button>
-              </div>
             </article>
           </section>
         </div>
@@ -279,5 +332,44 @@ watch(
         </aside>
       </div>
     </template>
+
+    <div
+      v-if="friendMenu && openMenuFriend"
+      class="friend-local-menu"
+      :class="{ context: friendMenu.mode === 'context' }"
+      :style="{ left: `${friendMenu.x}px`, top: `${friendMenu.y}px` }"
+      role="menu"
+      @click.stop
+    >
+      <header>
+        <div>
+          <strong>{{ openMenuFriend.username }}</strong>
+          <small>{{ openMenuFriend.handle }}</small>
+        </div>
+        <button type="button" :aria-label="t('common.close')" @click="closeFriendMenu">
+          <X :size="15" aria-hidden="true" />
+        </button>
+      </header>
+      <button type="button" role="menuitem" @click="handleMenuAction('message')">
+        <Send :size="15" aria-hidden="true" />
+        <span>{{ t('friends.sendMessage') }}</span>
+      </button>
+      <button type="button" role="menuitem" @click="handleMenuAction('local')">
+        <Phone :size="15" aria-hidden="true" />
+        <span>{{ t('friends.startCall') }}</span>
+      </button>
+      <button type="button" role="menuitem" @click="handleMenuAction('local')">
+        <UserRound :size="15" aria-hidden="true" />
+        <span>{{ t('friends.viewProfile') }}</span>
+      </button>
+      <button type="button" role="menuitem" @click="handleMenuAction('local')">
+        <BellOff :size="15" aria-hidden="true" />
+        <span>{{ t('friends.muteConversation') }}</span>
+      </button>
+      <button type="button" role="menuitem" class="danger" @click="handleMenuAction('local')">
+        <UserX :size="15" aria-hidden="true" />
+        <span>{{ t('friends.blockUser') }}</span>
+      </button>
+    </div>
   </section>
 </template>

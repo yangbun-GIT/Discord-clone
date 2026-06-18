@@ -43,3 +43,33 @@ Viewport: default in-app browser size after Stage 10.17 viewport reset.
   screen-capture permissions granted.
 - Real multi-browser WebRTC quality and TURN/NAT verification remains external QA
   per `docs/voice-qa.md`.
+
+## Stage 10.19 Follow-Up QA
+
+Date: 2026-06-18
+
+Scope: user feedback polish for Friends, private sidebar quick search, server menu,
+voice row click behavior, disconnected voice panel visibility, invite modal, and
+stuck notices.
+
+Command verification:
+
+- `npm --prefix frontend run build`: passed.
+- `npm run lint:frontend`: passed.
+- `npm run test:backend`: passed, 103 tests.
+- `npm run lint:backend`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running
+  frontend at `http://localhost:5173/`.
+
+Browser QA:
+
+- Friends home rendered primary tabs in the order All, Online, Pending, Add Friend;
+  Blocked is no longer in the default tab row.
+- Disconnected lower-left voice panel no longer renders the `voice-room` idle card.
+- Private sidebar quick switcher opens from "Find or start a conversation" and closes
+  on outside click.
+- Friend more menu opens and closes on outside click.
+- Server menu opens from the guild heading and closes on outside click.
+- Voice channel row click moved to the voice workspace and attempted voice connection
+  directly. The browser returned `Permission denied` for microphone access, so full
+  connected media verification remains manual with microphone permission granted.

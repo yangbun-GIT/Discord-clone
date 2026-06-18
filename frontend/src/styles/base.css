@@ -268,8 +268,8 @@ select:focus-visible {
   gap: 6px;
   align-items: center;
   padding: 10px 8px;
-  background: var(--surface-rail);
-  border-right: 1px solid rgb(255 255 255 / 7%);
+  background: #0b0d12;
+  border-right: 1px solid rgb(255 255 255 / 9%);
 }
 
 .server-slot {
@@ -287,7 +287,8 @@ select:focus-visible {
   border: 0;
   border-radius: 50%;
   color: #eef2ff;
-  background: var(--surface-panel);
+  background: #20232b;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
   font-weight: 800;
   transition:
     border-radius 160ms ease,
@@ -299,6 +300,7 @@ select:focus-visible {
 .server-button.active {
   border-radius: 16px;
   background: var(--accent-primary);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
 }
 
 .server-button[aria-current="page"] {
@@ -438,6 +440,7 @@ select:focus-visible {
 }
 
 .private-sidebar {
+  position: relative;
   grid-row: 1 / 2;
   display: flex;
   flex-direction: column;
@@ -469,6 +472,94 @@ select:focus-visible {
   padding: 0 9px;
   color: #9ca3af;
   background: rgb(255 255 255 / 7%);
+}
+
+.quick-switcher-popover {
+  position: absolute;
+  z-index: 45;
+  top: 50px;
+  left: 8px;
+  right: 8px;
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 11%);
+  border-radius: 10px;
+  background: #1f2128;
+  padding: 10px;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 42%);
+}
+
+.quick-switcher-popover label {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgb(88 101 242 / 58%);
+  border-radius: 8px;
+  color: #9ca3af;
+  background: #15171d;
+  padding: 0 10px;
+}
+
+.quick-switcher-popover input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #f8fafc;
+  background: transparent;
+}
+
+.quick-switcher-list {
+  display: grid;
+  gap: 4px;
+}
+
+.quick-switcher-list button {
+  min-width: 0;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 8px;
+  color: #d7dee8;
+  background: transparent;
+  padding: 5px 7px;
+  text-align: left;
+}
+
+.quick-switcher-list button:hover,
+.quick-switcher-list button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.quick-switcher-list button span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.quick-switcher-list strong,
+.quick-switcher-list small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-switcher-list small {
+  color: #9ca3af;
+}
+
+.quick-switcher-list .quick-create {
+  grid-template-columns: 18px minmax(0, 1fr);
+  border-top: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 0;
+  color: #86efac;
+  margin-top: 4px;
 }
 
 .dm-search-button span,
@@ -712,6 +803,7 @@ select:focus-visible {
 }
 
 .guild-heading {
+  position: relative;
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -751,6 +843,43 @@ select:focus-visible {
   color: #ffffff;
   background: var(--surface-hover);
   opacity: 1;
+}
+
+.server-context-menu {
+  position: absolute;
+  z-index: 44;
+  top: 42px;
+  left: 8px;
+  right: 8px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgb(255 255 255 / 11%);
+  border-radius: 10px;
+  background: #1f2128;
+  padding: 8px;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 42%);
+}
+
+.server-context-menu button {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  border: 0;
+  border-radius: 8px;
+  color: #d7dee8;
+  background: transparent;
+  padding: 0 9px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.server-context-menu button:hover,
+.server-context-menu button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 9%);
 }
 
 .events-entry {
@@ -1357,12 +1486,38 @@ select:focus-visible {
 }
 
 .app-notice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
   border: 1px solid rgb(96 165 250 / 24%);
   border-radius: 8px;
   padding: 10px 12px;
   color: #dbeafe;
   background: rgb(31 41 55 / 94%);
   box-shadow: 0 16px 42px rgb(0 0 0 / 32%);
+  pointer-events: auto;
+}
+
+.app-notice span {
+  min-width: 0;
+}
+
+.app-notice button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.app-notice button:hover,
+.app-notice button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
 }
 
 .content-grid {
@@ -1758,7 +1913,7 @@ select:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
   overflow: hidden;
 }
 
@@ -1775,15 +1930,19 @@ select:focus-visible {
   min-height: 48px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 0 16px;
+  gap: 12px;
+  padding: 0 18px;
+  background: #15171d;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
 }
 
 .friends-header h1 {
   flex: 0 0 auto;
   margin: 0;
+  border-right: 1px solid rgb(255 255 255 / 10%);
+  padding-right: 14px;
   font-size: 1rem;
+  font-weight: 900;
 }
 
 .friends-tabs {
@@ -1795,7 +1954,7 @@ select:focus-visible {
 
 .friends-tabs button {
   min-height: 28px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 8px;
   color: #cbd5e1;
   background: transparent;
@@ -1806,11 +1965,17 @@ select:focus-visible {
 .friends-tabs button:hover,
 .friends-tabs button.active {
   color: #ffffff;
+  border-color: rgb(255 255 255 / 10%);
   background: rgb(255 255 255 / 10%);
 }
 
-.friends-tabs button:last-child.active,
-.friends-tabs button:last-child:hover {
+.friends-tabs button.add-tab {
+  color: #86efac;
+  background: rgb(34 197 94 / 10%);
+}
+
+.friends-tabs button.add-tab.active,
+.friends-tabs button.add-tab:hover {
   color: #111827;
   background: #86efac;
 }
@@ -1858,21 +2023,22 @@ select:focus-visible {
   grid-template-columns: 42px minmax(0, 1fr) 34px 34px;
   align-items: center;
   gap: 12px;
-  min-height: 58px;
+  min-height: 66px;
   border-top: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 8px;
-  padding: 0 8px;
+  border-radius: 0;
+  padding: 0 10px;
   cursor: default;
 }
 
 .friend-row:hover,
 .friend-row.active,
 .friend-row:focus-within {
+  border-radius: 8px;
   background: rgb(255 255 255 / 6%);
 }
 
 .friend-row.active {
-  box-shadow: inset 3px 0 0 #ffffff;
+  box-shadow: inset 3px 0 0 #5865f2;
 }
 
 .friend-avatar,
@@ -1965,20 +2131,34 @@ select:focus-visible {
 }
 
 .friend-local-menu {
-  position: absolute;
-  z-index: 20;
-  top: 48px;
-  right: 0;
+  position: fixed;
+  z-index: 55;
   width: min(280px, calc(100vw - 120px));
   min-width: 0;
   display: grid;
   gap: 6px;
   border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 8px;
+  border-radius: 10px;
   color: #d7dee8;
-  background: #272932;
+  background: #1f2128;
   padding: 12px;
   box-shadow: 0 18px 44px rgb(0 0 0 / 34%);
+}
+
+.friend-local-menu header {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  align-items: start;
+  gap: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  padding-bottom: 8px;
+}
+
+.friend-local-menu header > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
 .friend-local-menu strong,
@@ -1998,10 +2178,32 @@ select:focus-visible {
   width: 100%;
   height: 34px;
   display: flex;
+  align-items: center;
   justify-content: flex-start;
   gap: 8px;
+  border: 0;
   border-radius: 8px;
+  color: #d7dee8;
+  background: transparent;
   padding: 0 10px;
+}
+
+.friend-local-menu button:hover,
+.friend-local-menu button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.friend-local-menu button.danger {
+  color: #fca5a5;
+}
+
+.friend-local-menu header button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
 }
 
 .friend-activity-panel {
@@ -2012,7 +2214,7 @@ select:focus-visible {
   gap: 12px;
   border-left: 1px solid rgb(255 255 255 / 8%);
   background: #1e1f22;
-  padding: 18px 14px;
+  padding: 16px 12px;
   overflow: auto;
 }
 
@@ -2389,6 +2591,13 @@ select:focus-visible {
   background: rgb(255 255 255 / 13%);
 }
 
+.server-add-tabs button.active {
+  border: 1px solid rgb(88 101 242 / 70%);
+  color: #ffffff;
+  background: rgb(88 101 242 / 22%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%);
+}
+
 .server-add-dialog label {
   display: grid;
   gap: 7px;
@@ -2545,25 +2754,159 @@ select:focus-visible {
   background: rgb(255 255 255 / 9%);
 }
 
-.invite-output {
+.invite-dialog {
+  width: min(100%, 460px);
   display: grid;
+  gap: 14px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 10px;
+  background: #1f2128;
+  padding: 18px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 42%);
+}
+
+.invite-dialog-header {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.invite-dialog-header h2,
+.invite-dialog-header p {
+  margin: 0;
+}
+
+.invite-dialog-header h2 {
+  font-size: 1rem;
+}
+
+.invite-dialog-header p {
+  color: #9ca3af;
+  font-size: 0.82rem;
+}
+
+.invite-dialog-header > button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.invite-dialog-header > button:hover,
+.invite-dialog-header > button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.invite-search {
+  height: 38px;
+  display: flex;
+  align-items: center;
   gap: 8px;
+  border: 1px solid rgb(88 101 242 / 48%);
+  border-radius: 8px;
+  color: #9ca3af;
+  background: #15171d;
+  padding: 0 11px;
+}
+
+.invite-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #f8fafc;
+  background: transparent;
+}
+
+.invite-friend-list {
+  max-height: 260px;
+  overflow: auto;
+  display: grid;
+  gap: 4px;
+}
+
+.invite-friend-row {
+  min-width: 0;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.invite-friend-row:hover {
+  background: rgb(255 255 255 / 6%);
+}
+
+.invite-friend-row > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.invite-friend-row strong,
+.invite-friend-row small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invite-friend-row small,
+.invite-empty {
+  color: #9ca3af;
+}
+
+.invite-empty {
+  margin: 4px 0;
+}
+
+.invite-output {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 18%);
+  padding: 10px;
 }
 
 .invite-output span {
+  grid-column: 1 / -1;
   color: #9ca3af;
   font-size: 0.82rem;
   font-weight: 800;
 }
 
 .invite-output strong {
-  display: block;
-  overflow-wrap: anywhere;
-  border-radius: 8px;
+  min-width: 0;
+  overflow: hidden;
   color: #f8fafc;
-  background: rgb(255 255 255 / 8%);
-  padding: 12px;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invite-output button,
+.invite-friend-row button {
+  min-height: 32px;
+  border: 0;
+  border-radius: 8px;
+  color: #111827;
+  background: #86efac;
+  padding: 0 12px;
+  font-weight: 900;
 }
 
 .discovery-dialog {
@@ -3364,7 +3707,7 @@ select:focus-visible {
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 12px;
   overflow: hidden;
-  padding: 16px clamp(16px, 2.6vw, 28px) 16px;
+  padding: 18px clamp(18px, 3vw, 34px) 16px;
   background: #101114;
 }
 
@@ -3459,16 +3802,16 @@ select:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  width: min(100%, 980px);
-  justify-self: center;
+  width: min(100%, 1120px);
+  justify-self: start;
   align-content: start;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .voice-tile {
   min-width: 0;
-  min-height: clamp(142px, 22vh, 240px);
+  min-height: clamp(160px, 24vh, 260px);
   display: grid;
   align-content: center;
   justify-items: center;
@@ -3584,6 +3927,11 @@ select:focus-visible {
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
   border-top: 1px solid var(--border-subtle);
+}
+
+.voice-panel:not(.connected) {
+  grid-template-rows: minmax(0, 1fr);
+  align-content: end;
 }
 
 .user-panel {

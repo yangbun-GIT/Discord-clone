@@ -364,8 +364,7 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: in progress; Stage 10.0 through Stage 10.10 are complete and implementation
-  continues at Stage 10.11.
+- Status: completed through Stage 10.19 follow-up interaction polish.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -454,3 +453,11 @@
   preview, and screen-share disabled state passed. Voice join returned browser
   `Permission denied`, so connected voice and real screen-share start/stop remain
   manual media-permission QA.
+- Completed Stage 10.19: user feedback interaction polish updated Friends tab order
+  and right-click/more menus, private sidebar quick conversation search, server
+  context menu, direct voice-channel row join behavior, disconnected lower-left
+  voice panel visibility, invite modal flow, closable notices, rail contrast, and
+  server-add selected state. Frontend build/lint, Docker frontend rebuild, and
+  browser QA for menu dismissal, hidden disconnected voice card, and voice direct
+  join attempt passed. Backend tests and lint also passed; microphone permission
+  denial remains manual connected media QA.

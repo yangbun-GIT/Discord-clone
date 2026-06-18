@@ -4,7 +4,6 @@ import {
   Bell,
   Hash,
   Link,
-  Mic,
   Pin,
   Radio,
   Search,
@@ -14,6 +13,7 @@ import {
   ScreenShareOff,
   UserRound,
   Users,
+  X,
 } from 'lucide-vue-next'
 
 import { apiGet } from './services/api'
@@ -115,6 +115,8 @@ const showDiscovery = ref(false)
 const showInvite = ref(false)
 const showMemberList = ref(true)
 const inviteCode = ref<string | null>(null)
+const inviteSearchQuery = ref('')
+const inviteCopied = ref(false)
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 const voiceTurnConfigured = ref(false)
 const userPresenceStatus = ref<UserPresenceStatus>('online')
@@ -164,6 +166,16 @@ const channelSearchResults = computed(() => {
     message.content.toLowerCase().includes(query)
     || message.author_name.toLowerCase().includes(query),
   )
+})
+const inviteFriends = computed(() => {
+  const query = inviteSearchQuery.value.trim().toLowerCase()
+  return dms.relationships
+    .filter((friend) => friend.relationship === 'friend')
+    .filter((friend) => {
+      if (!query) return true
+      return friend.username.toLowerCase().includes(query) || friend.handle.toLowerCase().includes(query)
+    })
+    .slice(0, 8)
 })
 
 async function openWorkspace() {
@@ -316,6 +328,17 @@ function handleCreateChannel(name: string, type: 0 | 1 = 0) {
   void guilds.createChannel(session.token, name, type).catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.channelCreateFailed')
   })
+}
+
+function handleSelectChannel(channelId: number) {
+  workspaceNotice.value = null
+  activeHeaderPanel.value = null
+  const channel = activeGuild.value?.channels.find((item) => item.id === channelId)
+  if (channel?.type === 1) {
+    void handleJoinVoiceChannel(channelId)
+    return
+  }
+  guilds.selectChannel(channelId)
 }
 
 function showHeaderPlaceholder(label: string) {
@@ -556,6 +579,8 @@ async function handleJoinGuild(code: string) {
 function closeInvite() {
   showInvite.value = false
   inviteCode.value = null
+  inviteSearchQuery.value = ''
+  inviteCopied.value = false
 }
 
 async function handleCreateInvite() {
@@ -569,6 +594,16 @@ async function handleCreateInvite() {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.inviteCreateFailed')
   } finally {
     isInviteWorking.value = false
+  }
+}
+
+async function copyInviteCode() {
+  if (!inviteCode.value) return
+  try {
+    await navigator.clipboard?.writeText(inviteCode.value)
+    inviteCopied.value = true
+  } catch {
+    inviteCopied.value = true
   }
 }
 </script>
@@ -625,7 +660,7 @@ async function handleCreateInvite() {
       :local-speaking="voiceRtc.localSpeaking.value"
       :muted="voiceRtc.isMuted.value"
       :deafened="isDeafened"
-      @select="guilds.selectChannel"
+      @select="handleSelectChannel"
       @create-channel="handleCreateChannel"
       @create-invite="handleCreateInvite"
       @channel-settings="handleChannelSettings"
@@ -773,7 +808,10 @@ async function handleCreateInvite() {
           {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
         </div>
         <div v-else-if="workspaceNotice" class="app-notice" role="status">
-          {{ workspaceNotice }}
+          <span>{{ workspaceNotice }}</span>
+          <button type="button" :aria-label="t('common.close')" @click="workspaceNotice = null">
+            <X :size="14" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
@@ -831,16 +869,6 @@ async function handleCreateInvite() {
             >
               <PhoneOff :size="17" aria-hidden="true" />
               <span>{{ t('voice.leaveSelected') }}</span>
-            </button>
-            <button
-              v-else
-              type="button"
-              class="primary"
-              :aria-label="t('voice.joinSelected')"
-              @click="handleJoinVoiceChannel(selectedVoiceChannel.id)"
-            >
-              <Mic :size="17" aria-hidden="true" />
-              <span>{{ t('voice.joinSelected') }}</span>
             </button>
             <button
               type="button"
@@ -955,15 +983,45 @@ async function handleCreateInvite() {
       @create-server="handleCreateGuild"
     />
 
-    <section v-if="showInvite" class="modal-layer" aria-label="Server invite">
-      <div class="server-create-dialog">
-        <div class="auth-mark">DC</div>
-        <div class="invite-output">
-          <span>Invite code</span>
-          <strong>{{ inviteCode }}</strong>
+    <section
+      v-if="showInvite"
+      class="modal-layer"
+      :aria-label="t('invite.title')"
+      @click.self="closeInvite"
+    >
+      <div class="invite-dialog" role="dialog" :aria-label="t('invite.title')">
+        <header class="invite-dialog-header">
+          <div>
+            <h2>{{ t('invite.title') }}</h2>
+            <p>{{ activeGuild?.name }}</p>
+          </div>
+          <button type="button" :aria-label="t('common.close')" @click="closeInvite">
+            <X :size="18" aria-hidden="true" />
+          </button>
+        </header>
+        <label class="invite-search">
+          <Search :size="16" aria-hidden="true" />
+          <input v-model="inviteSearchQuery" :placeholder="t('invite.search')" autocomplete="off" autofocus />
+        </label>
+        <div class="invite-friend-list">
+          <article v-for="friend in inviteFriends" :key="friend.id" class="invite-friend-row">
+            <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
+            <span>
+              <strong>{{ friend.username }}</strong>
+              <small>{{ friend.activity ?? friend.handle }}</small>
+            </span>
+            <button type="button" @click="copyInviteCode">
+              {{ inviteCopied ? t('invite.copied') : t('invite.send') }}
+            </button>
+          </article>
+          <p v-if="!inviteFriends.length" class="invite-empty">{{ t('friends.empty') }}</p>
         </div>
-        <div class="dialog-actions single">
-          <button type="button" @click="closeInvite">Done</button>
+        <div class="invite-output">
+          <span>{{ t('invite.linkLabel') }}</span>
+          <strong>{{ inviteCode }}</strong>
+          <button type="button" @click="copyInviteCode">
+            {{ inviteCopied ? t('invite.copied') : t('invite.copy') }}
+          </button>
         </div>
       </div>
     </section>

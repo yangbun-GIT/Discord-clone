@@ -110,14 +110,7 @@ const presenceLabel = computed(() => {
         <small>{{ screenSharing ? t('voice.screenLive') : t('common.status.connected') }}</small>
       </div>
     </div>
-    <div v-else class="voice-connection-idle">
-      <Radio :size="16" aria-hidden="true" />
-      <div>
-        <span>{{ channel?.name ?? 'voice-room' }}</span>
-        <small>{{ t('voice.selectToPreview') }}</small>
-      </div>
-    </div>
-    <div class="voice-actions">
+    <div v-if="connected" class="voice-actions">
       <button
         type="button"
         class="screen-button"

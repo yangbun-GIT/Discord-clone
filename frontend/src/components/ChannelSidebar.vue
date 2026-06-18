@@ -4,7 +4,6 @@ import {
   ChevronDown,
   ChevronRight,
   Hash,
-  LogIn,
   LogOut,
   MoreHorizontal,
   Plus,
@@ -12,7 +11,7 @@ import {
   Settings,
   UserPlus,
 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useI18n } from '../i18n'
 import type { Channel, Guild, VoiceState } from '../types'
@@ -42,6 +41,7 @@ const createChannelType = ref<0 | 1 | null>(null)
 const textCollapsed = ref(false)
 const voiceCollapsed = ref(false)
 const channelDraft = ref('')
+const serverMenuOpen = ref(false)
 const { t } = useI18n()
 
 const textChannels = computed(() => propsChannels(0))
@@ -93,6 +93,61 @@ function voiceStateStatusLabel(state: VoiceState) {
   if (state.self_mute) return t('common.status.muted')
   return t('common.status.listening')
 }
+
+function toggleServerMenu() {
+  serverMenuOpen.value = !serverMenuOpen.value
+}
+
+function runServerMenuAction(action: 'invite' | 'text' | 'voice' | 'settings') {
+  serverMenuOpen.value = false
+  if (action === 'invite') {
+    emit('createInvite')
+    return
+  }
+  if (action === 'text') {
+    openChannelForm(0)
+    return
+  }
+  if (action === 'voice') {
+    openChannelForm(1)
+    return
+  }
+  emit('demoNotice', t('channel.aria.serverMenu'))
+}
+
+function selectVoiceChannel(channelId: number) {
+  if (props.connectedVoiceChannelId === channelId) {
+    emit('select', channelId)
+    return
+  }
+  emit('joinVoice', channelId)
+}
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!serverMenuOpen.value) return
+  const target = event.target
+  if (
+    target instanceof HTMLElement
+    && target.closest('.server-context-menu, .guild-heading > button')
+  ) {
+    return
+  }
+  serverMenuOpen.value = false
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') serverMenuOpen.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleDocumentPointerDown)
+  document.addEventListener('keydown', handleDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleDocumentPointerDown)
+  document.removeEventListener('keydown', handleDocumentKeyDown)
+})
 </script>
 
 <template>
@@ -103,10 +158,29 @@ function voiceStateStatusLabel(state: VoiceState) {
         type="button"
         :title="t('channel.aria.serverMenu')"
         :aria-label="t('channel.aria.serverMenu')"
-        @click="$emit('demoNotice', t('channel.aria.serverMenu'))"
+        :aria-expanded="serverMenuOpen"
+        @click.stop="toggleServerMenu"
       >
         <MoreHorizontal :size="18" aria-hidden="true" />
       </button>
+      <div v-if="serverMenuOpen" class="server-context-menu" role="menu" @click.stop>
+        <button type="button" role="menuitem" @click="runServerMenuAction('invite')">
+          <UserPlus :size="15" aria-hidden="true" />
+          <span>{{ t('channel.menu.invitePeople') }}</span>
+        </button>
+        <button type="button" role="menuitem" @click="runServerMenuAction('text')">
+          <Hash :size="15" aria-hidden="true" />
+          <span>{{ t('channel.menu.createText') }}</span>
+        </button>
+        <button type="button" role="menuitem" @click="runServerMenuAction('voice')">
+          <Radio :size="15" aria-hidden="true" />
+          <span>{{ t('channel.menu.createVoice') }}</span>
+        </button>
+        <button type="button" role="menuitem" @click="runServerMenuAction('settings')">
+          <Settings :size="15" aria-hidden="true" />
+          <span>{{ t('channel.menu.serverSettings') }}</span>
+        </button>
+      </div>
     </div>
 
     <button type="button" class="events-entry" @click="$emit('demoNotice', t('channel.events'))">
@@ -260,7 +334,7 @@ function voiceStateStatusLabel(state: VoiceState) {
           class="channel-button"
           type="button"
           :aria-label="channelIconLabel(channel)"
-          @click="$emit('select', channel.id)"
+          @click="selectVoiceChannel(channel.id)"
         >
           <Radio :size="17" aria-hidden="true" />
           <span>{{ channel.name }}</span>
@@ -280,23 +354,6 @@ function voiceStateStatusLabel(state: VoiceState) {
             @click.stop="$emit('leaveVoice', channel.id)"
           >
             <LogOut :size="14" aria-hidden="true" />
-          </button>
-          <button
-            v-else
-            type="button"
-            :title="t('channel.aria.joinVoice')"
-            :aria-label="t('channel.aria.joinVoice')"
-            @click.stop="$emit('joinVoice', channel.id)"
-          >
-            <LogIn :size="14" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            :title="t('channel.aria.createInvite')"
-            :aria-label="t('channel.aria.createInvite')"
-            @click.stop="$emit('createInvite')"
-          >
-            <UserPlus :size="14" aria-hidden="true" />
           </button>
           <button
             type="button"
