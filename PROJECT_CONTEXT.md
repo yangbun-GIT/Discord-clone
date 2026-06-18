@@ -160,6 +160,14 @@ The app boots in two local modes:
 - `docs/PROMPT_COMPLIANCE.md`
   - Maps `DEVELOPMENT_PROMPT.md` policies to concrete repository files and documents.
   - Records prompt-alignment status plus external gaps that cannot be closed locally.
+- `docs/prompts/`
+  - Task-specific prompt library for future specialized work.
+  - `discord-clone-qa-test-prompt.md` defines the multi-role QA audit process for
+    finding missing, broken, inconsistent, and visually weak clone behavior.
+  - `realtime-communication-implementation-prompt.md` defines the communication
+    implementation process for WebSocket gateway, realtime text, WebRTC voice,
+    screen sharing, cross-PC access, technology selection, and noise-reduction
+    review.
 - `docs/store-clone-implementation-plan.md`
   - Detailed staged plan for implementing a Discord Store-like in-app shop.
   - Covers Store catalog, browse/search/filter, item detail preview, demo purchase,

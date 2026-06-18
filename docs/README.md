@@ -85,6 +85,13 @@ the project prompt and context files before changing code.
   - Covers DM store boundary splitting, guild/DM visibility policies, frontend
     unit tests, backend DM seed extraction, storage protocol review, and the final
     CSS/i18n boundary decision.
+- `docs/prompts/`
+  - Task-specific prompt library for future specialized work.
+  - `discord-clone-qa-test-prompt.md` is the QA audit prompt for broad/deep clone
+    testing and defect documentation.
+  - `realtime-communication-implementation-prompt.md` is the communication-stack
+    prompt for realtime text, WebSocket gateway, WebRTC voice, screen sharing,
+    cross-PC access, and technology selection.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
@@ -188,6 +195,8 @@ the project prompt and context files before changing code.
   ownership changes, especially if `base.css` or `i18n/index.ts` is split.
 - Update `docs/architecture-refactor-stage-13-plan.md` if the final
   maintenance-pass scope or completion status is corrected after regression.
+- Update `docs/prompts/` when task-specific prompt behavior, required roles,
+  output format, or source/verification expectations change.
 - Update `docs/project-file-map.md` when a project folder or important source file
   is added, removed, renamed, or assigned a meaningfully different responsibility.
 - Update `docs/structure-map/README.md` and

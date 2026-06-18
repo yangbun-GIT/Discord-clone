@@ -53,6 +53,11 @@ For ordinary implementation work:
   - Git staging, commit, push, and final-report workflow.
 - `docs/PROMPT_COMPLIANCE.md`
   - Prompt-to-repository compliance map.
+- `docs/prompts/`
+  - Task-specific prompt library.
+  - Use `discord-clone-qa-test-prompt.md` for future broad/deep QA audits.
+  - Use `realtime-communication-implementation-prompt.md` for future realtime,
+    WebSocket, WebRTC, voice, screen-share, and cross-PC communication work.
 - `docs/project-file-map.md`
   - This quick file/folder ownership map.
 - `docs/architecture-principles-audit.md`
