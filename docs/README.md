@@ -48,6 +48,11 @@ the project prompt and context files before changing code.
 - `docs/stage-9-final-qa.md`
   - Stage 9 final command verification, browser QA coverage, completed visual parity
     changes, and residual notes.
+- `docs/discord-interaction-polish-plan.md`
+  - Current controlling Stage 10 plan for Discord-like interaction polish after the
+    latest real Discord versus clone comparison.
+  - Lists remaining visual-noise, spacing, bottom-panel, message/composer, voice,
+    screen-share, data-cleanup, and feature-visibility work.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -105,6 +110,9 @@ the project prompt and context files before changing code.
   steps, requested user reference data, or final QA notes change.
 - Update `docs/stage-9-final-qa.md` when final Stage 9 verification commands,
   browser QA coverage, or residual visual parity notes change.
+- Update `docs/discord-interaction-polish-plan.md` when Stage 10 interaction polish
+  scope, reference observations, stage order, feature visibility decisions, or QA
+  rules change.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

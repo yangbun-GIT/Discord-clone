@@ -42,6 +42,12 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
+Stage 10 interaction polish is planned from the user's latest real Discord versus
+clone screenshots. The controlling plan is `docs/discord-interaction-polish-plan.md`.
+It targets the remaining quality gap: test/demo data cleanup, visual noise reduction,
+Discord-like shell hierarchy, text/button spacing, bottom user panel reconstruction,
+message/composer polish, and voice/screen-share interaction cleanup.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
@@ -113,6 +119,10 @@ The app boots in two local modes:
 - `docs/stage-9-final-qa.md`
   - Records Stage 9 command verification, browser QA coverage, completed visual
     parity changes, and residual local-data/capture notes.
+- `docs/discord-interaction-polish-plan.md`
+  - Current controlling Stage 10 plan for Discord-like interaction polish.
+  - Records latest screenshot-based issues, external Discord behavior references,
+    stage-by-stage remediation, feature visibility policy, and verification rules.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.

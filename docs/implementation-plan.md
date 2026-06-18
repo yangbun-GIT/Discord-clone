@@ -361,3 +361,42 @@
 - Completed Stage 9.12: responsive and accessibility regression, including dark
   scrollbar correction recorded as Stage 9.12.1.
 - Completed Stage 9.13: final visual parity QA, docs, commit, and push.
+
+## Stage 10: Discord Interaction Polish And Noise Reduction
+
+- Status: planned; implementation has not started.
+- Plan document: `docs/discord-interaction-polish-plan.md`.
+- Target: make the existing clone feel cleaner, quieter, and more Discord-like by
+  removing visual noise, development/test artifacts, oversized bottom controls, and
+  dashboard-like component styling from high-frequency screens.
+- Privacy note: reference screenshots may contain private Discord names, messages,
+  avatars, images, and server content. Use only layout, density, proportions,
+  hierarchy, and interaction behavior; do not copy private content into repository
+  data or documentation.
+- Stage execution rule: complete each Stage 10 sub-stage with verification,
+  documentation updates, Korean commit titles, and push to `origin/main`. If
+  verification finds overlap, broken behavior, or unacceptable visual drift, add a
+  corrective `Stage 10.x.y` note before continuing.
+- Planned Stage 10.0: baseline lock for current Friends, Add Friend, text channel,
+  voice, and screen-share views.
+- Planned Stage 10.1: demo and test data cleanup so `QA Smoke`, `stage8-*`, generated
+  IDs, and template messages do not dominate primary UI.
+- Planned Stage 10.2: design token reset for quieter Discord-like colors, surfaces,
+  row heights, icon sizes, text sizes, and focus states.
+- Planned Stage 10.3: shell layout recomposition for rail/sidebar/main/member/bottom
+  rhythm and overflow control.
+- Planned Stage 10.4: server rail polish.
+- Planned Stage 10.5: private sidebar simplification.
+- Planned Stage 10.6: Friends home rework.
+- Planned Stage 10.7: Add Friend workflow polish.
+- Planned Stage 10.8: server sidebar polish.
+- Planned Stage 10.9: header action reduction.
+- Planned Stage 10.10: text timeline rebuild.
+- Planned Stage 10.11: composer rebuild.
+- Planned Stage 10.12: member list simplification.
+- Planned Stage 10.13: bottom user panel rebuild.
+- Planned Stage 10.14: voice channel workspace rebuild.
+- Planned Stage 10.15: screen-share flow rework.
+- Planned Stage 10.16: feature visibility policy.
+- Planned Stage 10.17: responsive and accessibility QA.
+- Planned Stage 10.18: final QA, documentation, commit, and push.
