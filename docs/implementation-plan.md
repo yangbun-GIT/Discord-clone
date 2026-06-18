@@ -419,7 +419,10 @@
   centered 44 px input text, and a deferred template action. Browser QA verified no
   horizontal overflow, no voice-panel overlap, and a corrective fix for optional
   action width specificity.
-- Planned Stage 10.12: member list simplification.
+- Completed Stage 10.12: member list simplification moved refresh, role creation,
+  role assignment/removal, and member removal behind an explicit low-contrast
+  management toggle, added localized member-list labels, and browser-verified the
+  default panel remains clean while admin controls remain reachable.
 - Planned Stage 10.13: bottom user panel rebuild.
 - Planned Stage 10.14: voice channel workspace rebuild.
 - Planned Stage 10.15: screen-share flow rework.

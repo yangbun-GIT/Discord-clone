@@ -1222,6 +1222,12 @@ Completed Stage 2 bridge work:
   active state. Browser QA verified no horizontal overflow, no voice-panel overlap,
   and the Stage 10.11 specificity fix that reduced the optional action's default
   width to `0px`.
+- Added Stage 10.12 member list simplification: `MemberList.vue`,
+  `frontend/src/i18n/index.ts`, and `frontend/src/styles/base.css` now render a
+  quieter localized member panel by default, hide refresh/role/member management
+  inside an explicit management mode, and keep the admin toggle visible at low
+  contrast. Browser QA verified the default member panel has no role controls and
+  the management toggle opens role creation, refresh, and per-member controls.
 
 After each stage or meaningful feature:
 

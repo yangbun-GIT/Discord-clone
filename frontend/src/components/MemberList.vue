@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { Circle, Plus, RefreshCw, Settings, UserMinus, X } from 'lucide-vue-next'
 
+import { useI18n } from '../i18n'
 import type { Member, Role } from '../types'
 
 const props = defineProps<{
@@ -32,6 +33,7 @@ const roleName = ref('')
 const rolePermissions = ref(0)
 const showManagement = ref(false)
 const roleOptions = computed(() => props.roles)
+const { t } = useI18n()
 
 function handleCreateRole() {
   const name = roleName.value.trim()
@@ -54,20 +56,25 @@ function assignFirstRole(member: Member) {
 function canRemoveMember(member: Member) {
   return props.canManageRoles && member.id !== props.ownerId && member.id !== props.currentUserId
 }
+
+function memberStatus(member: Member) {
+  return member.status === 1 ? t('members.status.online') : t('members.status.offline')
+}
 </script>
 
 <template>
-  <aside class="member-list" aria-label="Members">
+  <aside class="member-list" :aria-label="t('members.aria.list')">
     <div class="member-list-heading">
-      <p>Members</p>
+      <p>
+        {{ t('members.heading') }}
+        <span>{{ t('members.count', { count: members.length }) }}</span>
+      </p>
       <span class="member-list-actions">
-        <button type="button" aria-label="Refresh members" :disabled="disabled" @click="emit('refresh')">
-          <RefreshCw :size="14" aria-hidden="true" />
-        </button>
         <button
           v-if="canManageRoles"
           type="button"
-          aria-label="Member management"
+          class="member-management-toggle"
+          :aria-label="t('members.manage')"
           :aria-pressed="showManagement"
           @click="showManagement = !showManagement"
         >
@@ -75,26 +82,36 @@ function canRemoveMember(member: Member) {
         </button>
       </span>
     </div>
-    <form v-if="canManageRoles && showManagement" class="role-create-form" @submit.prevent="handleCreateRole">
-      <input
-        v-model="roleName"
-        autocomplete="off"
-        maxlength="100"
-        placeholder="New role"
-        aria-label="New role name"
-        :disabled="disabled"
-      />
-      <select v-model.number="rolePermissions" aria-label="Role permission preset" :disabled="disabled">
-        <option v-for="preset in ROLE_PRESETS" :key="preset.value" :value="preset.value">
-          {{ preset.label }}
-        </option>
-      </select>
-      <button type="submit" aria-label="Create role" :disabled="!roleName.trim() || disabled">
-        <Plus :size="15" aria-hidden="true" />
-      </button>
-    </form>
+    <section v-if="canManageRoles && showManagement" class="member-management-panel" :aria-label="t('members.manage')">
+      <div class="member-management-toolbar">
+        <span>{{ t('members.manage') }}</span>
+        <button type="button" :aria-label="t('members.refresh')" :disabled="disabled" @click="emit('refresh')">
+          <RefreshCw :size="14" aria-hidden="true" />
+        </button>
+      </div>
+      <form class="role-create-form" @submit.prevent="handleCreateRole">
+        <input
+          v-model="roleName"
+          autocomplete="off"
+          maxlength="100"
+          :placeholder="t('members.newRole')"
+          :aria-label="t('members.newRole')"
+          :disabled="disabled"
+        />
+        <select v-model.number="rolePermissions" :aria-label="t('members.permissionPreset')" :disabled="disabled">
+          <option v-for="preset in ROLE_PRESETS" :key="preset.value" :value="preset.value">
+            {{ preset.label }}
+          </option>
+        </select>
+        <button type="submit" :aria-label="t('members.createRole')" :disabled="!roleName.trim() || disabled">
+          <Plus :size="15" aria-hidden="true" />
+        </button>
+      </form>
+    </section>
     <div v-for="member in members" :key="member.id" class="member-row">
-      <span class="member-avatar">{{ member.username.slice(0, 1).toUpperCase() }}</span>
+      <span class="member-avatar" :class="{ online: member.status === 1 }">
+        {{ member.username.slice(0, 1).toUpperCase() }}
+      </span>
       <span class="member-copy">
         <span class="member-name">{{ member.username }}</span>
         <span class="member-role">{{ member.role }}</span>
@@ -103,7 +120,7 @@ function canRemoveMember(member: Member) {
         :size="10"
         :class="member.status === 1 ? 'online-dot' : 'offline-dot'"
         fill="currentColor"
-        aria-hidden="true"
+        :aria-label="memberStatus(member)"
       />
       <div v-if="canManageRoles && showManagement && roles.length" class="member-role-controls">
         <button
@@ -111,7 +128,7 @@ function canRemoveMember(member: Member) {
           :key="role.id"
           type="button"
           class="role-chip"
-          :aria-label="`Remove ${role.name} from ${member.username}`"
+          :aria-label="t('members.removeRole', { role: role.name, user: member.username })"
           :disabled="disabled"
           @click="emit('removeRole', member.id, role.id)"
         >
@@ -122,7 +139,7 @@ function canRemoveMember(member: Member) {
           v-if="firstAssignableRole(member)"
           type="button"
           class="role-add-button"
-          :aria-label="`Assign role to ${member.username}`"
+          :aria-label="t('members.assignRole', { user: member.username })"
           :disabled="disabled"
           @click="assignFirstRole(member)"
         >
@@ -132,7 +149,7 @@ function canRemoveMember(member: Member) {
           v-if="canRemoveMember(member)"
           type="button"
           class="member-remove-button"
-          :aria-label="`Remove ${member.username}`"
+          :aria-label="t('members.removeMember', { user: member.username })"
           :disabled="disabled"
           @click="emit('removeMember', member.id)"
         >
@@ -143,7 +160,7 @@ function canRemoveMember(member: Member) {
         <button
           type="button"
           class="member-remove-button"
-          :aria-label="`Remove ${member.username}`"
+          :aria-label="t('members.removeMember', { user: member.username })"
           :disabled="disabled"
           @click="emit('removeMember', member.id)"
         >

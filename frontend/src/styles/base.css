@@ -3146,9 +3146,10 @@ select:focus-visible {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 18px 14px;
-  background: var(--surface-sidebar);
-  border-left: 1px solid rgb(255 255 255 / 8%);
+  padding: 16px 12px;
+  color: #c9ced6;
+  background: var(--surface-app);
+  border-left: 1px solid rgb(255 255 255 / 6%);
 }
 
 .member-list-heading {
@@ -3156,15 +3157,41 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 28px;
+  margin-bottom: 10px;
+}
+
+.member-list-heading p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: #949ba4;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.member-list-heading span {
+  color: #80848e;
+  font-size: 0.68rem;
+  text-transform: none;
 }
 
 .member-list-actions {
   display: inline-flex;
   gap: 4px;
+  opacity: 0.4;
+  transition: opacity 120ms ease;
+}
+
+.member-list:hover .member-list-actions,
+.member-list:focus-within .member-list-actions {
+  opacity: 1;
 }
 
 .member-list-heading button,
-.member-list-actions button {
+.member-list-actions button,
+.member-management-toolbar button {
   width: 26px;
   height: 26px;
   display: grid;
@@ -3180,11 +3207,30 @@ select:focus-visible {
   background: rgb(255 255 255 / 10%);
 }
 
+.member-management-panel {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 3%);
+  padding: 8px;
+}
+
+.member-management-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #aeb4be;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .role-create-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 92px 30px;
   gap: 6px;
-  margin-bottom: 12px;
 }
 
 .role-create-form input,
@@ -3230,14 +3276,29 @@ select:focus-visible {
   align-items: center;
   gap: 10px;
   min-height: 44px;
-  padding: 5px 0;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.member-row:hover,
+.member-row:focus-within {
+  background: rgb(255 255 255 / 4%);
 }
 
 .member-avatar {
   width: 32px;
   height: 32px;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
-  background: #fde68a;
+  color: #101214;
+  background: #7dd3fc;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.member-avatar.online {
+  background: #86efac;
 }
 
 .member-copy {

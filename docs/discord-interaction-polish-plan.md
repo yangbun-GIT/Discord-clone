@@ -441,6 +441,10 @@ Verification:
 
 ## Stage 10.12: Member List Simplification
 
+Status: completed. The right member panel now shows a quiet member count and
+compact member rows by default, while role creation, refresh, assignment, removal,
+and member removal stay inside an explicit management mode.
+
 Goal: reduce admin noise in the right panel.
 
 Tasks:
@@ -455,6 +459,13 @@ Verification:
 
 - Normal users see a clean member list.
 - Admin controls remain reachable for authorized users.
+- Stage feedback: browser QA found the management toggle was too hidden at `0`
+  opacity. The corrective patch keeps it visible at low contrast by default and
+  raises it on hover/focus.
+- Browser QA confirmed no horizontal overflow, a 264 px member panel, three compact
+  51 px rows in the seeded guild, no role controls or management panel in the
+  default state, and a single accessible management toggle that reveals the role
+  form, refresh control, and per-member role controls.
 
 ## Stage 10.13: Bottom User Panel Rebuild
 
