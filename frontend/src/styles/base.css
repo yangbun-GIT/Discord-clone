@@ -4286,14 +4286,14 @@ select:focus-visible {
   width: 100%;
   justify-self: stretch;
   align-content: start;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 10px;
 }
 
 .voice-tile {
   position: relative;
   min-width: 0;
-  min-height: clamp(164px, 22vh, 236px);
+  min-height: clamp(128px, 18vh, 184px);
   display: grid;
   align-content: center;
   justify-items: center;
@@ -4350,7 +4350,7 @@ select:focus-visible {
 }
 
 .voice-tile.empty {
-  min-height: clamp(132px, 18vh, 180px);
+  min-height: clamp(104px, 14vh, 144px);
   color: #9ca3af;
   border-style: dashed;
   background: rgb(255 255 255 / 2.5%);
@@ -4596,6 +4596,15 @@ select:focus-visible {
     linear-gradient(90deg, rgb(35 165 89 / 14%), rgb(35 165 89 / 6%)),
     #232428;
   box-shadow: inset 3px 0 0 #23a559;
+}
+
+.voice-connection-card.elsewhere {
+  color: #dbeafe;
+  border-color: rgb(88 101 242 / 34%);
+  background:
+    linear-gradient(90deg, rgb(88 101 242 / 14%), rgb(88 101 242 / 5%)),
+    #232428;
+  box-shadow: inset 3px 0 0 #5865f2;
 }
 
 .voice-connection-idle {

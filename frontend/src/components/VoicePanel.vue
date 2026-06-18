@@ -21,6 +21,8 @@ const props = defineProps<{
   currentUser: User | null
   userStatus: UserPresenceStatus
   connected: boolean
+  connectedGuildName: string | null
+  connectedElsewhere: boolean
   signalingReady: boolean
   localSpeaking: boolean
   inputLevel: number
@@ -54,12 +56,20 @@ const presenceLabel = computed(() => {
 
 <template>
   <section class="voice-panel" :class="{ connected, speaking: localSpeaking }" :aria-label="t('voice.aria.controls')">
-    <div v-if="connected" class="voice-connection-card" data-context-kind="voice-session">
+    <div
+      v-if="connected"
+      class="voice-connection-card"
+      :class="{ elsewhere: connectedElsewhere }"
+      data-context-kind="voice-session"
+      :data-context-label="`${connectedGuildName ?? ''} ${channel?.name ?? ''}`.trim()"
+    >
       <div class="voice-connection-main">
         <Radio :size="18" aria-hidden="true" />
         <div>
-          <span>{{ channel?.name ?? 'voice-room' }}</span>
-          <small>{{ screenSharing ? t('voice.screenLive') : t('common.status.connected') }}</small>
+          <span>{{ connectedGuildName ? `${connectedGuildName} / ${channel?.name ?? 'voice-room'}` : channel?.name ?? 'voice-room' }}</span>
+          <small>
+            {{ connectedElsewhere ? t('voice.connectedElsewhere') : screenSharing ? t('voice.screenLive') : t('common.status.connected') }}
+          </small>
         </div>
       </div>
       <div class="voice-actions">

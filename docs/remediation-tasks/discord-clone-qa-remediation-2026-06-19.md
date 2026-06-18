@@ -827,6 +827,41 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R5 - Voice state and workspace pass
+
+- Status: completed.
+- Goal: make connected voice ownership explicit, prevent cross-server ambiguity,
+  and reduce excessive one-person/empty voice workspace space.
+- Findings reviewed:
+  - QA-P1-02 cross-server voice connection state is ambiguous.
+  - QA-P2-09 voice workspace has too much empty space and weak participant density.
+- Target files reviewed:
+  - `frontend/src/App.vue`
+  - `frontend/src/components/ChannelSidebar.vue`
+  - `frontend/src/components/VoicePanel.vue`
+  - `frontend/src/composables/useVoiceSessionController.ts`
+  - `frontend/src/stores/voicePresence.ts`
+  - `frontend/src/styles/base.css`
+  - `frontend/src/i18n/index.ts`
+- Existing state:
+  - Voice ownership was already tracked separately by connected guild/channel.
+  - The bottom voice card showed the connected channel but did not always show the
+    owning guild, so another server could still appear connected at a glance.
+  - One-person and empty voice workspace tiles still used a large vertical
+    footprint.
+- Implementation:
+  - `VoicePanel.vue` now receives `connectedGuildName` and `connectedElsewhere`.
+  - `App.vue` computes whether the active guild differs from the connected guild and
+    passes that state to the bottom voice card.
+  - The bottom voice card now always renders `guild / channel` when connected and
+    uses a distinct "connected elsewhere" state when browsing another server.
+  - Voice workspace tile minimum heights and grid width were reduced for denser
+    one-person and empty states.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.

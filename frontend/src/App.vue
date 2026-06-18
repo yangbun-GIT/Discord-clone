@@ -93,6 +93,9 @@ const isServerDestination = computed(() =>
   navigation.destination === 'server_channel' || navigation.destination === 'voice_channel',
 )
 const showWorkspaceTopbar = computed(() => navigation.destination !== 'friends')
+const voiceConnectedElsewhere = computed(() =>
+  Boolean(guilds.voiceConnected && activeGuild.value && guilds.connectedVoiceGuildId !== activeGuild.value.id),
+)
 const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
@@ -1080,6 +1083,8 @@ async function copyInviteCode() {
       :current-user="session.user"
       :user-status="userPresenceStatus"
       :connected="guilds.voiceConnected"
+      :connected-guild-name="guilds.connectedVoiceGuild?.name ?? null"
+      :connected-elsewhere="voiceConnectedElsewhere"
       :signaling-ready="gatewayStatus === 'connected'"
       :local-speaking="voiceRtc.localSpeaking.value"
       :input-level="voiceRtc.inputLevel.value"
