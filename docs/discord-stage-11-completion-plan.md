@@ -57,6 +57,10 @@ Verification:
 Goal: make server rail, sidebars, workspace headers, content panes, popovers, and
 bottom panels use one consistent layer model.
 
+Status: completed. The global CSS layer tokens now own inline menus, popovers,
+backdrops, modals, sticky overlays, reusable borders, and floating shadows. Stage
+11.1 QA is recorded in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Audit current z-index, border, background, and grid-row usage in

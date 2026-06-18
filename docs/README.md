@@ -61,6 +61,10 @@ the project prompt and context files before changing code.
   - Stage 11.0 baseline and scope lock.
   - Records completed Stage 10.29 behavior, remaining risk areas, stage
     classification, and Stage 11 verification expectations.
+- `docs/stage-11-final-qa.md`
+  - Running Stage 11 QA log.
+  - Records command checks, browser checks, fixes, and residual risks for each
+    Stage 11 implementation stage before commit.
 - `docs/stage-10-baseline.md`
   - Stage 10.0 baseline lock for the latest FHD 100% real Discord versus clone
     comparison screenshots and problem inventory.
@@ -138,6 +142,8 @@ the project prompt and context files before changing code.
   change.
 - Update `docs/stage-11-baseline.md` when Stage 11 baseline assumptions, stage
   classification, or initial risk areas change.
+- Update `docs/stage-11-final-qa.md` after each Stage 11 implementation stage with
+  command checks, browser checks, fixes, and residual risks.
 - Update `docs/stage-10-baseline.md` only when the Stage 10 baseline comparison set
   changes before implementation continues.
 - Update `docs/stage-10-17-responsive-qa.md` when Stage 10 responsive viewport

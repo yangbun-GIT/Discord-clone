@@ -59,9 +59,13 @@ microphone and screen-capture permissions granted.
 
 Stage 11 completion work has started. The controlling plan is
 `docs/discord-stage-11-completion-plan.md`, and the Stage 11.0 baseline/scope lock
-is `docs/stage-11-baseline.md`. Stage 11 preserves the Stage 10 process: each
-stage is documented, implemented separately, verified before advancing, and then
-committed with a Korean commit title before pushing to `origin/main`.
+is `docs/stage-11-baseline.md`. Stage 11.1 global layer consolidation is complete:
+`frontend/src/styles/base.css` now defines the shared layer, border, surface, and
+shadow tokens used by popovers, menus, modals, notices, and sticky overlays, and
+`docs/stage-11-final-qa.md` records the running Stage 11 QA evidence. Stage 11
+preserves the Stage 10 process: each stage is documented, implemented separately,
+verified before advancing, and then committed with a Korean commit title before
+pushing to `origin/main`.
 
 The app boots in two local modes:
 

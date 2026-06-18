@@ -523,3 +523,7 @@
   `docs/stage-11-baseline.md`. Stage 11 keeps the Stage 10 workflow: one stage at a
   time, verify before advancing, add new defects as current-stage subtasks, update
   docs, commit with a Korean title, and push to `origin/main`.
+- Completed Stage 11.1: global layer, border, shadow, and app-surface tokens were
+  consolidated in `frontend/src/styles/base.css`, remaining numeric `z-index`
+  declarations were replaced with semantic layer variables, and QA evidence was
+  recorded in `docs/stage-11-final-qa.md`.
