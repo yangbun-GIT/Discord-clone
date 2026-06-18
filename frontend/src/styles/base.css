@@ -4158,10 +4158,12 @@ select:focus-visible {
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: 14px;
   overflow: hidden;
-  padding: 18px clamp(18px, 3vw, 34px) 16px;
-  background: #101114;
+  padding: 18px clamp(18px, 2.4vw, 30px) 16px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 2.5%), transparent 110px),
+    #111214;
 }
 
 .voice-workspace-header {
@@ -4170,9 +4172,9 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
-  min-height: 52px;
-  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-muted);
+  min-height: 58px;
+  padding: 0 0 14px;
 }
 
 .voice-workspace-header > div:first-child {
@@ -4183,13 +4185,26 @@ select:focus-visible {
 }
 
 .voice-workspace-icon {
-  width: 36px;
-  height: 36px;
+  position: relative;
+  width: 42px;
+  height: 42px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   color: #bbf7d0;
   background: rgb(34 197 94 / 14%);
+}
+
+.voice-workspace-icon::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #111214;
+  border-radius: 50%;
+  background: #22c55e;
 }
 
 .voice-workspace-header h2,
@@ -4255,43 +4270,48 @@ select:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  width: min(100%, 1120px);
-  justify-self: start;
+  width: 100%;
+  justify-self: stretch;
   align-content: start;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
 }
 
 .voice-tile {
+  position: relative;
   min-width: 0;
-  min-height: clamp(160px, 24vh, 260px);
+  min-height: clamp(164px, 22vh, 236px);
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 10px;
-  border: 1px solid rgb(255 255 255 / 7%);
+  border: 1px solid var(--border-muted);
   border-radius: 8px;
-  background: #17181c;
-  padding: 16px;
+  background:
+    radial-gradient(circle at 50% 12%, rgb(255 255 255 / 6%), transparent 34%),
+    #17181c;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
+  padding: 18px;
   text-align: center;
 }
 
 .voice-tile.local {
   background:
-    radial-gradient(circle at 50% 38%, rgb(94 234 212 / 12%), transparent 34%),
-    #111827;
+    radial-gradient(circle at 50% 30%, rgb(94 234 212 / 13%), transparent 36%),
+    linear-gradient(180deg, rgb(15 23 42 / 96%), #111827);
 }
 
 .voice-tile.screen-preview {
   grid-column: 1 / -1;
-  min-height: 110px;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
+  min-height: 132px;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
   align-content: center;
   justify-items: start;
+  gap: 14px;
   text-align: left;
   color: #dbeafe;
   background:
-    linear-gradient(135deg, rgb(88 101 242 / 12%), rgb(35 165 89 / 8%)),
+    linear-gradient(135deg, rgb(88 101 242 / 16%), rgb(35 165 89 / 10%)),
     #151821;
 }
 
@@ -4300,21 +4320,32 @@ select:focus-visible {
 }
 
 .voice-tile.speaking {
+  border-color: rgb(34 197 94 / 72%);
   box-shadow:
-    0 0 0 2px rgb(34 197 94 / 44%),
-    0 0 24px rgb(34 197 94 / 16%);
+    inset 0 0 0 1px rgb(34 197 94 / 36%),
+    0 0 0 1px rgb(34 197 94 / 32%),
+    0 0 28px rgb(34 197 94 / 18%);
+}
+
+.voice-tile.speaking::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  border: 1px solid rgb(34 197 94 / 28%);
+  border-radius: 7px;
 }
 
 .voice-tile.empty {
-  min-height: 104px;
+  min-height: clamp(132px, 18vh, 180px);
   color: #9ca3af;
   border-style: dashed;
   background: rgb(255 255 255 / 2.5%);
 }
 
 .voice-tile-avatar {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -4327,7 +4358,8 @@ select:focus-visible {
 .voice-tile.speaking .voice-tile-avatar {
   box-shadow:
     0 0 0 3px rgb(59 165 93 / 72%),
-    0 0 20px rgb(59 165 93 / 42%);
+    0 0 0 7px rgb(59 165 93 / 14%),
+    0 0 22px rgb(59 165 93 / 42%);
 }
 
 .voice-tile-avatar.remote {

@@ -547,3 +547,8 @@
 - Completed Stage 11.6: lower-left user and voice panels gained steadier
   disconnected/connected padding, darker raised-card styling, clearer disabled
   action states, and matching connected voice-card composition.
+- Completed Stage 11.7: voice workspace cards now use tighter responsive columns,
+  clearer layered surfaces, stronger connected/speaking state borders, a visible
+  speaking ring around active participants, and a cleaner screen-share preview
+  composition. Live microphone/screen-capture behavior remains scheduled for the
+  Stage 11.12 media QA pass.

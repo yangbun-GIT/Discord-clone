@@ -194,3 +194,34 @@ Residual notes:
 - Connected media-state QA still depends on a browser session with microphone
   permission granted. The connected panel styling is compile-verified and will be
   covered again in Stage 11.7 and final media QA.
+
+## Stage 11.7: Voice Channel Workspace
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Voice workspace now uses a layered dark surface with a clearer header/status
+  divider and a live-status dot on the channel icon.
+- Participant tiles use tighter responsive columns, steadier card elevation, and
+  less empty vertical space.
+- Connected and speaking states now have stronger borders and a visible speaking
+  ring around both the card and avatar.
+- Screen-share preview cards use the same card family with clearer icon/text
+  alignment.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- Browser static QA on `http://localhost:5173/` confirmed horizontal overflow is
+  `0` and the bundled `.voice-workspace-grid` CSS is present after reload.
+
+Residual notes:
+
+- The active browser view was not already inside a voice workspace, so the
+  workspace DOM was not visible during this static pass. Interactive voice entry
+  and screen-share transitions still require the final media QA pass with browser
+  microphone/screen-capture permission granted.

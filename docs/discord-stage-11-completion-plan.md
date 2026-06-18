@@ -200,6 +200,12 @@ Verification:
 Goal: make voice preview, connected voice, participant cards, speaking indicators,
 and screen-share states feel coherent.
 
+Status: completed. Voice workspace density, participant card surfaces, connected
+state borders, speaking ring visibility, and screen-share preview composition were
+tightened. Compile/Docker/static browser evidence is recorded in
+`docs/stage-11-final-qa.md`; live microphone and screen-capture transitions remain
+manual media QA for Stage 11.12.
+
 Tasks:
 
 - Refine idle voice preview cards and connected participant layout.

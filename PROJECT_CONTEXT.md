@@ -1390,6 +1390,12 @@ Completed Stage 2 bridge work:
   private/server sidebar top separators with the workspace header edge. Frontend
   lint/build, Docker frontend rebuild, and browser layout QA passed for Friends and
   server surfaces.
+- Added Stage 11.7 voice workspace polish: `frontend/src/styles/base.css` tightens
+  the voice workspace surface, header divider, participant grid, tile elevation,
+  connected-state borders, speaking card/avatar rings, and screen-share preview
+  composition. Frontend lint/build, Docker frontend rebuild, and browser static QA
+  passed for CSS presence and zero horizontal overflow; live microphone and
+  screen-capture transitions remain manual media QA in Stage 11.12.
 
 After each stage or meaningful feature:
 
