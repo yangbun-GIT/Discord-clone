@@ -1396,6 +1396,12 @@ Completed Stage 2 bridge work:
   composition. Frontend lint/build, Docker frontend rebuild, and browser static QA
   passed for CSS presence and zero horizontal overflow; live microphone and
   screen-capture transitions remain manual media QA in Stage 11.12.
+- Added Stage 11.8 app-owned menu/modal polish: `frontend/src/App.vue` now routes
+  deferred global context-menu actions through localized app notices, centralizes
+  notice close/auto-dismiss behavior, and prevents nested browser context menus
+  inside the app menu. A source audit found no clone UI `alert`, `confirm`, or
+  `prompt` calls outside sanitizer test payloads; frontend lint/build, Docker
+  frontend rebuild, and browser static QA passed.
 
 After each stage or meaningful feature:
 

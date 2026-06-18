@@ -104,6 +104,7 @@ const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
 const workspaceNotice = ref<string | null>(null)
 const workspaceNoticeTone = ref<'info' | 'success' | 'warning'>('info')
+const workspaceNoticeTimer = ref<number | null>(null)
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
@@ -229,6 +230,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleDocumentKeyDown)
+  clearWorkspaceNotice()
 })
 
 function contextMenuItems(kind: string) {
@@ -302,6 +304,7 @@ function closeGlobalContextMenu() {
 }
 
 function runGlobalContextAction(id: string) {
+  const actionLabel = globalContextMenu.value?.items.find((item) => item.id === id)?.label ?? globalContextMenu.value?.title ?? ''
   if (id === 'invite') {
     void handleCreateInvite()
   } else if (id === 'settings' || id === 'open-settings') {
@@ -311,8 +314,32 @@ function runGlobalContextAction(id: string) {
   } else if (id === 'copy-message' || id === 'copy-link') {
     const value = id === 'copy-link' ? window.location.href : globalContextMenu.value?.title ?? ''
     void copyToClipboard(value, t('app.notice.copySuccess'), t('app.notice.copyFailed'))
+  } else {
+    setWorkspaceNotice(t('app.notice.localControl', { label: actionLabel }))
   }
   closeGlobalContextMenu()
+}
+
+function clearWorkspaceNotice() {
+  if (workspaceNoticeTimer.value) {
+    window.clearTimeout(workspaceNoticeTimer.value)
+    workspaceNoticeTimer.value = null
+  }
+  workspaceNotice.value = null
+}
+
+function setWorkspaceNotice(message: string, tone: 'info' | 'success' | 'warning' = 'info') {
+  if (workspaceNoticeTimer.value) {
+    window.clearTimeout(workspaceNoticeTimer.value)
+    workspaceNoticeTimer.value = null
+  }
+  workspaceError.value = null
+  workspaceNoticeTone.value = tone
+  workspaceNotice.value = message
+  workspaceNoticeTimer.value = window.setTimeout(() => {
+    workspaceNotice.value = null
+    workspaceNoticeTimer.value = null
+  }, 3600)
 }
 
 function handleWorkspacePointerDown(event: MouseEvent) {
@@ -322,7 +349,7 @@ function handleWorkspacePointerDown(event: MouseEvent) {
     closeGlobalContextMenu()
   }
   if (workspaceNotice.value && !target.closest('.app-notice')) {
-    workspaceNotice.value = null
+    clearWorkspaceNotice()
   }
 }
 
@@ -330,7 +357,7 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return
   if (pendingVoiceSwitchChannelId.value) cancelVoiceSwitch()
   closeGlobalContextMenu()
-  if (workspaceNotice.value) workspaceNotice.value = null
+  if (workspaceNotice.value) clearWorkspaceNotice()
 }
 
 async function runAuth(action: () => Promise<void>) {
@@ -466,9 +493,7 @@ function handleSelectChannel(channelId: number) {
 }
 
 function showHeaderPlaceholder(label: string) {
-  workspaceError.value = null
-  workspaceNoticeTone.value = 'info'
-  workspaceNotice.value = t('app.notice.localControl', { label })
+  setWorkspaceNotice(t('app.notice.localControl', { label }))
 }
 
 function toggleHeaderPanel(panel: 'threads' | 'notifications' | 'pins' | 'search') {
@@ -478,9 +503,7 @@ function toggleHeaderPanel(panel: 'threads' | 'notifications' | 'pins' | 'search
 }
 
 function showDemoNotice(label: string) {
-  workspaceError.value = null
-  workspaceNoticeTone.value = 'info'
-  workspaceNotice.value = t('app.notice.demoDisabled', { label })
+  setWorkspaceNotice(t('app.notice.demoDisabled', { label }))
 }
 
 async function copyToClipboard(value: string, successMessage: string, failureMessage: string) {
@@ -488,12 +511,10 @@ async function copyToClipboard(value: string, successMessage: string, failureMes
   try {
     if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable')
     await navigator.clipboard.writeText(value)
-    workspaceNoticeTone.value = 'success'
-    workspaceNotice.value = successMessage
+    setWorkspaceNotice(successMessage, 'success')
     return true
   } catch {
-    workspaceNoticeTone.value = 'warning'
-    workspaceNotice.value = failureMessage
+    setWorkspaceNotice(failureMessage, 'warning')
     return false
   }
 }
@@ -988,7 +1009,7 @@ async function copyInviteCode() {
         </div>
         <div v-else-if="workspaceNotice" class="app-notice" :class="workspaceNoticeTone" role="status">
           <span>{{ workspaceNotice }}</span>
-          <button type="button" :aria-label="t('common.close')" @click="workspaceNotice = null">
+          <button type="button" :aria-label="t('common.close')" @click="clearWorkspaceNotice">
             <X :size="14" aria-hidden="true" />
           </button>
         </div>
@@ -1285,6 +1306,7 @@ async function copyInviteCode() {
       role="menu"
       @mousedown.stop
       @click.stop
+      @contextmenu.stop.prevent
     >
       <strong>{{ globalContextMenu.title }}</strong>
       <button

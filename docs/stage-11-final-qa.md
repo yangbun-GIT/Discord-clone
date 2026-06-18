@@ -225,3 +225,35 @@ Residual notes:
   workspace DOM was not visible during this static pass. Interactive voice entry
   and screen-share transitions still require the final media QA pass with browser
   microphone/screen-capture permission granted.
+
+## Stage 11.8: App-Owned Menus, Popovers, And Modals
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Global context-menu actions that do not have a direct backend operation now
+  surface an app-owned notice instead of closing silently.
+- Workspace notices now use a shared helper, close through the app close button,
+  close on outside click/Escape, and auto-dismiss after a short delay.
+- The global context menu suppresses nested browser context-menu behavior while it
+  is open.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- `rg -n "\b(alert|confirm|prompt)\s*\(" frontend\src backend\app backend\tests`
+  found no clone UI native-dialog calls; the only matches are sanitizer test
+  payload strings containing `alert(1)`.
+- Browser static QA on `http://localhost:5173/` confirmed the app shell is
+  rendered, horizontal overflow is `0`, and no JavaScript dialog appeared during
+  the right-click attempt.
+
+Residual notes:
+
+- The in-app browser coordinate right-click did not open the app context menu in
+  this pass, so target-menu interaction remains a final manual/browser QA item.
+  The code path is compile-verified and native dialog usage is source-audited.

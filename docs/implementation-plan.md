@@ -552,3 +552,8 @@
   speaking ring around active participants, and a cleaner screen-share preview
   composition. Live microphone/screen-capture behavior remains scheduled for the
   Stage 11.12 media QA pass.
+- Completed Stage 11.8: app-owned interaction surfaces were re-audited. Global
+  context-menu actions now provide app notices for local/deferred actions, notices
+  auto-dismiss and close through outside click/Escape, nested browser context-menu
+  behavior is suppressed inside the app menu, and source search found no clone UI
+  `alert`, `confirm`, or `prompt` calls.

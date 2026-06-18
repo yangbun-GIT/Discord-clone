@@ -223,6 +223,11 @@ Verification:
 
 Goal: remove remaining browser-native or inconsistent interaction surfaces.
 
+Status: completed. Native dialog usage was re-audited, global context-menu actions
+now return app-owned notices for local/deferred actions, notices auto-dismiss,
+and context menus suppress nested browser context-menu behavior. QA evidence and
+automation limits are recorded in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Re-audit `alert`, `confirm`, `prompt`, browser context menus, and hidden dead
