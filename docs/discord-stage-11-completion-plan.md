@@ -296,6 +296,10 @@ Verification:
 Goal: ensure the polished UI holds up across common viewport widths and keyboard
 navigation.
 
+Status: completed. FHD, 1280 x 720, 900 px, and mobile-width viewport metrics
+showed no horizontal overflow, no clipped core text controls, and no visible
+unnamed buttons. QA evidence is recorded in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Verify FHD 100%, 1280 x 720, 900 px, and mobile-width layouts.

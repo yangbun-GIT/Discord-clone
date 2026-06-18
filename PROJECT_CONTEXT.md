@@ -1415,6 +1415,10 @@ Completed Stage 2 bridge work:
   shape, decoded access-token claims, and production-environment hiding. Backend
   tests/lint passed, Docker services were running, and `/api/health` plus
   `/api/meta/voice` smoke checks returned the expected local values.
+- Added Stage 11.11 responsive/accessibility QA: browser metrics at 1920 x 936,
+  1280 x 720, 900 x 720, and 390 x 844 showed zero horizontal overflow, zero
+  clipped core controls, and zero visible unnamed buttons. Frontend lint/build
+  passed; visual screenshot comparison remains part of Stage 11.13.
 
 After each stage or meaningful feature:
 

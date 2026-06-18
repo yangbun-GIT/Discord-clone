@@ -567,3 +567,7 @@
   environment hiding. Backend tests/lint passed, Docker services were running, and
   `/api/health` plus `/api/meta/voice` smoke checks returned the expected local
   configuration.
+- Completed Stage 11.11: responsive and accessibility QA measured the app at FHD,
+  1280 x 720, 900 px, and mobile widths. Browser metrics showed no horizontal
+  overflow, no clipped core controls, and no visible unnamed buttons; frontend
+  lint/build passed.

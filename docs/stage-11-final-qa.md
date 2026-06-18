@@ -317,3 +317,38 @@ Residual notes:
 - TURN is not configured for the local stack, so remote-network media quality is
   still outside the local automated API smoke scope. Browser permission-dependent
   media behavior remains scheduled for Stage 11.12.
+
+## Stage 11.11: Responsive And Accessibility QA
+
+Date: 2026-06-18
+
+Changes verified:
+
+- The polished app shell was measured at 1920 x 936, 1280 x 720, 900 x 720, and
+  390 x 844.
+- The server rail, private sidebar, workspace, lower user panel, and primary
+  control surfaces keep stable dimensions at desktop and collapse cleanly at
+  narrow widths.
+- Visible buttons expose text, title, or `aria-label` names, and the shared
+  `:focus-visible` style remains present for global buttons, inputs, selects,
+  channel rows, menus, composer actions, settings, and lower-panel controls.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed with Vite 8.0.16.
+- Browser metrics:
+  - 1920 x 936: horizontal overflow `0`, clipped core controls `0`, unnamed
+    visible buttons `0`.
+  - 1280 x 720: horizontal overflow `0`, clipped core controls `0`, unnamed
+    visible buttons `0`.
+  - 900 x 720: horizontal overflow `0`, clipped core controls `0`, unnamed
+    visible buttons `0`.
+  - 390 x 844: horizontal overflow `0`, clipped core controls `0`, unnamed
+    visible buttons `0`.
+
+Residual notes:
+
+- The responsive pass was metric-based in the in-app browser. Final visual review
+  screenshots across Friends, DM, server, voice, settings, modal, and context menu
+  surfaces remain scheduled for Stage 11.13.
