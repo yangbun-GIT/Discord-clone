@@ -364,7 +364,7 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: completed through Stage 10.24 follow-up interaction polish.
+- Status: completed through Stage 10.25 follow-up interaction polish.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -492,3 +492,8 @@
   extends closer to the sidebar edge. Frontend lint/build, Docker frontend rebuild,
   and browser layout checks passed; microphone permission still blocks connected
   media-path verification in the in-app browser.
+- Completed Stage 10.25: clone-owned workflows were audited for browser-native
+  `alert`, `confirm`, and `prompt` usage, clipboard copy feedback now appears as
+  localized app notices, and the lower-left self status card gained panel breathing
+  room while staying aligned to the composer frame. Frontend lint/build, Docker
+  frontend rebuild, and browser layout checks passed.

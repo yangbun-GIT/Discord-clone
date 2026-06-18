@@ -103,6 +103,7 @@ const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
 const workspaceNotice = ref<string | null>(null)
+const workspaceNoticeTone = ref<'info' | 'success' | 'warning'>('info')
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
@@ -308,7 +309,8 @@ function runGlobalContextAction(id: string) {
   } else if (id === 'voice-disconnect') {
     disconnectVoice()
   } else if (id === 'copy-message' || id === 'copy-link') {
-    void navigator.clipboard?.writeText(id === 'copy-link' ? window.location.href : globalContextMenu.value?.title ?? '')
+    const value = id === 'copy-link' ? window.location.href : globalContextMenu.value?.title ?? ''
+    void copyToClipboard(value, t('app.notice.copySuccess'), t('app.notice.copyFailed'))
   }
   closeGlobalContextMenu()
 }
@@ -465,6 +467,7 @@ function handleSelectChannel(channelId: number) {
 
 function showHeaderPlaceholder(label: string) {
   workspaceError.value = null
+  workspaceNoticeTone.value = 'info'
   workspaceNotice.value = t('app.notice.localControl', { label })
 }
 
@@ -476,7 +479,23 @@ function toggleHeaderPanel(panel: 'threads' | 'notifications' | 'pins' | 'search
 
 function showDemoNotice(label: string) {
   workspaceError.value = null
+  workspaceNoticeTone.value = 'info'
   workspaceNotice.value = t('app.notice.demoDisabled', { label })
+}
+
+async function copyToClipboard(value: string, successMessage: string, failureMessage: string) {
+  workspaceError.value = null
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable')
+    await navigator.clipboard.writeText(value)
+    workspaceNoticeTone.value = 'success'
+    workspaceNotice.value = successMessage
+    return true
+  } catch {
+    workspaceNoticeTone.value = 'warning'
+    workspaceNotice.value = failureMessage
+    return false
+  }
 }
 
 function handleChannelSettings() {
@@ -755,12 +774,11 @@ async function handleCreateInvite() {
 
 async function copyInviteCode() {
   if (!inviteCode.value) return
-  try {
-    await navigator.clipboard?.writeText(inviteCode.value)
-    inviteCopied.value = true
-  } catch {
-    inviteCopied.value = true
-  }
+  inviteCopied.value = await copyToClipboard(
+    inviteCode.value,
+    t('app.notice.inviteCopySuccess'),
+    t('app.notice.copyFailed'),
+  )
 }
 </script>
 
@@ -967,7 +985,7 @@ async function copyInviteCode() {
         <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
           {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
         </div>
-        <div v-else-if="workspaceNotice" class="app-notice" role="status">
+        <div v-else-if="workspaceNotice" class="app-notice" :class="workspaceNoticeTone" role="status">
           <span>{{ workspaceNotice }}</span>
           <button type="button" :aria-label="t('common.close')" @click="workspaceNotice = null">
             <X :size="14" aria-hidden="true" />

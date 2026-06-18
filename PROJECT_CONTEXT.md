@@ -42,16 +42,17 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
-Stage 10 interaction polish is complete through Stage 10.24. The controlling plan is
+Stage 10 interaction polish is complete through Stage 10.25. The controlling plan is
 `docs/discord-interaction-polish-plan.md`; the Stage 10.0 baseline lock is recorded
 in `docs/stage-10-baseline.md`, and QA evidence is recorded in
 `docs/stage-10-final-qa.md`. The completed work covers demo/test data cleanup,
 visual-noise reduction, Discord-like shell hierarchy, text/button spacing, bottom
 user panel reconstruction, message/composer polish, voice/screen-share interaction
-cleanup, app-owned context menus/notices, voice-sidebar participant hierarchy,
-server-owned voice session tracking, and the in-app cross-server voice-switch
-dialog. Remaining voice media verification still depends on a browser session with
-microphone and screen-capture permissions granted.
+cleanup, app-owned context menus/notices, browser-native UI removal for clone
+workflows, voice-sidebar participant hierarchy, server-owned voice session
+tracking, and the in-app cross-server voice-switch dialog. Remaining voice media
+verification still depends on a browser session with microphone and screen-capture
+permissions granted.
 
 The app boots in two local modes:
 
@@ -1336,6 +1337,14 @@ Completed Stage 2 bridge work:
   with narrower sidebar padding. Frontend lint/build, Docker frontend rebuild, and
   browser layout QA passed; the in-app browser still denied microphone permission,
   so the successful connected voice switch remains manual media-permission QA.
+- Added Stage 10.25 browser-native UI audit and status-card spacing:
+  `frontend/src/App.vue` now routes clipboard copy success/failure through localized
+  app notices instead of silent browser-API outcomes, `frontend/src/i18n/index.ts`
+  adds Korean/English copy feedback, and `frontend/src/styles/base.css` gives the
+  lower-left status panel more top breathing room while preserving composer-frame
+  alignment. A project search found no clone UI `alert`, `confirm`, or `prompt`
+  usage outside sanitizer test payload strings. Frontend lint/build, Docker frontend
+  rebuild, and browser layout QA passed.
 
 After each stage or meaningful feature:
 

@@ -840,3 +840,38 @@ Verification:
   dialog. The in-app browser still returned `Permission denied` for microphone
   access, so the successful connected cross-server switch modal remains a manual
   media-permission check in Chrome.
+
+## Stage 10.25: Browser-Native UI Audit And Status Card Breathing Room
+
+Status: completed. This follow-up audits clone-owned interactions for browser-native
+dialogs and adjusts the lower-left status card panel spacing after the latest user
+screenshot review.
+
+Goal: keep clone interactions inside the app UI and prevent the lower-left self
+status card from visually sticking to the panel separator while preserving composer
+alignment.
+
+Tasks:
+
+- Search frontend/backend app code for browser-native `alert`, `confirm`, and
+  `prompt` usage and verify clone workflows do not depend on them.
+- Keep browser APIs only where unavoidable for browser-owned capabilities, such as
+  clipboard access, and surface success/failure through app-owned notices.
+- Replace silent clipboard copy failure paths with localized success/warning
+  notices rendered by the clone shell.
+- Increase the lower-left voice/status panel's top breathing room while keeping the
+  self status card at the same visible top, bottom, and height as the message
+  composer box.
+
+Verification:
+
+- `rg` found no app-code `alert`, `confirm`, or `prompt` usage; only sanitizer test
+  payload strings contain `alert(1)`.
+- Browser API audit found only clipboard writes and URL readback for the app copy
+  action; both now report through app notices rather than browser dialogs.
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- Docker frontend rebuild passed.
+- Browser QA verified no native JavaScript dialog is open, no horizontal body
+  overflow exists, and the status card keeps the same visible frame as the composer
+  while gaining a 6 px gap from the voice-panel top border.

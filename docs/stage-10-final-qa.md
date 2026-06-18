@@ -212,3 +212,38 @@ Browser QA:
 - The in-app browser returned `Permission denied` for microphone access before a
   successful voice connection, so the full cross-server switch modal path remains a
   manual Chrome check with microphone permission granted.
+
+## Stage 10.25 Browser-Native UI Audit And Status Card Spacing QA
+
+Date: 2026-06-18
+
+Scope: project-wide browser-native dialog audit, clipboard notice fallback, and
+lower-left status card breathing-room adjustment.
+
+Command verification:
+
+- `rg` for `alert`, `confirm`, and `prompt` across frontend/backend app code found
+  no clone UI usage. The only matches are sanitizer test payload strings containing
+  `<script>alert(1)</script>`.
+- `rg` for browser-owned APIs found clipboard writes and current URL readback in
+  `frontend/src/App.vue`; clipboard success/failure now routes through localized
+  app notices.
+- `npm run lint:frontend`: passed with 0 warnings and 0 errors.
+- `npm --prefix frontend run build`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- The app rendered at `http://localhost:5173/` without a native JavaScript dialog.
+- Text-channel bottom layout measured `.user-panel` and `.composer` at the same
+  visible frame: `y=658`, `bottom=706`, and `height=48`.
+- The `.voice-panel` top gap before the self status card measured 6 px, giving the
+  status card breathing room from the upper separator while preserving composer
+  alignment.
+- The document had no horizontal body overflow.
+
+Residual manual QA:
+
+- Successful connected voice and screen-share flows still require a browser session
+  with microphone and screen-capture permissions granted.
