@@ -862,6 +862,35 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R6 - Context-menu and popover closure pass
+
+- Status: completed.
+- Goal: app-owned context menus and popovers must not remain stuck after outside
+  click, Escape, or route/server/channel/DM changes.
+- Findings reviewed:
+  - QA-P2-08 context menu coverage is incomplete until proven global.
+- Target files reviewed:
+  - `frontend/src/App.vue`
+  - `frontend/src/composables/useContextMenuController.ts`
+  - `frontend/src/components/ServerRail.vue`
+  - `frontend/src/components/ChannelSidebar.vue`
+  - `frontend/src/components/ChatView.vue`
+  - `frontend/src/components/MemberList.vue`
+- Existing state:
+  - App-owned context menus already replaced the browser context menu on the clone
+    shell and closed on outside click and Escape.
+  - Route/server/channel/DM changes did not explicitly close the global menu or
+    header panel.
+- Implementation:
+  - `App.vue` now watches destination, active DM, active guild, and active channel
+    changes and closes the global context menu plus any active header panel.
+  - Existing outside-click, Escape, and menu-open replacement behavior remains
+    intact.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.

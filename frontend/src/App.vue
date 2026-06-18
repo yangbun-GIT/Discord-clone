@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   Bell,
   Hash,
@@ -208,6 +208,20 @@ const channelSearchResults = computed(() => {
     || message.author_name.toLowerCase().includes(query),
   )
 })
+
+watch(
+  () => [
+    navigation.destination,
+    navigation.activeDmId,
+    guilds.activeGuildId,
+    guilds.activeChannelId,
+  ],
+  () => {
+    closeGlobalContextMenu()
+    activeHeaderPanel.value = null
+  },
+)
+
 async function openWorkspace() {
   if (!session.token) return
   await Promise.all([
