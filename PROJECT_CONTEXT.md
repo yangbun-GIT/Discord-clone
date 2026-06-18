@@ -42,9 +42,10 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
-Stage 10 interaction polish is planned from the user's latest real Discord versus
-clone screenshots. The controlling plan is `docs/discord-interaction-polish-plan.md`.
-It targets the remaining quality gap: test/demo data cleanup, visual noise reduction,
+Stage 10 interaction polish is in progress from the user's latest real Discord versus
+clone screenshots. The controlling plan is `docs/discord-interaction-polish-plan.md`;
+the Stage 10.0 baseline lock is recorded in `docs/stage-10-baseline.md`. It targets
+the remaining quality gap: test/demo data cleanup, visual noise reduction,
 Discord-like shell hierarchy, text/button spacing, bottom user panel reconstruction,
 message/composer polish, and voice/screen-share interaction cleanup.
 
@@ -123,6 +124,9 @@ The app boots in two local modes:
   - Current controlling Stage 10 plan for Discord-like interaction polish.
   - Records latest screenshot-based issues, external Discord behavior references,
     stage-by-stage remediation, feature visibility policy, and verification rules.
+- `docs/stage-10-baseline.md`
+  - Stage 10.0 baseline lock for FHD 100% comparison screenshots, problem inventory,
+    and persistent/demo/test data classification.
 - `.env.example`
   - Non-secret environment variable template.
   - Real `.env` files must stay untracked.

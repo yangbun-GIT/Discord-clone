@@ -53,6 +53,9 @@ the project prompt and context files before changing code.
     latest real Discord versus clone comparison.
   - Lists remaining visual-noise, spacing, bottom-panel, message/composer, voice,
     screen-share, data-cleanup, and feature-visibility work.
+- `docs/stage-10-baseline.md`
+  - Stage 10.0 baseline lock for the latest FHD 100% real Discord versus clone
+    comparison screenshots and problem inventory.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -113,6 +116,8 @@ the project prompt and context files before changing code.
 - Update `docs/discord-interaction-polish-plan.md` when Stage 10 interaction polish
   scope, reference observations, stage order, feature visibility decisions, or QA
   rules change.
+- Update `docs/stage-10-baseline.md` only when the Stage 10 baseline comparison set
+  changes before implementation continues.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 

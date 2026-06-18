@@ -129,6 +129,8 @@ The priority is:
 
 ## Stage 10.0: Baseline Lock
 
+Status: completed. Baseline notes are recorded in `docs/stage-10-baseline.md`.
+
 Goal: freeze the current visual baseline before implementation.
 
 Tasks:

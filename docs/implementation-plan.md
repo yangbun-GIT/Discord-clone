@@ -364,7 +364,8 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: planned; implementation has not started.
+- Status: in progress; Stage 10.0 baseline lock is complete and implementation work
+  starts at Stage 10.1.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -377,8 +378,8 @@
   documentation updates, Korean commit titles, and push to `origin/main`. If
   verification finds overlap, broken behavior, or unacceptable visual drift, add a
   corrective `Stage 10.x.y` note before continuing.
-- Planned Stage 10.0: baseline lock for current Friends, Add Friend, text channel,
-  voice, and screen-share views.
+- Completed Stage 10.0: baseline lock for current Friends, Add Friend, text channel,
+  voice, and screen-share views in `docs/stage-10-baseline.md`.
 - Planned Stage 10.1: demo and test data cleanup so `QA Smoke`, `stage8-*`, generated
   IDs, and template messages do not dominate primary UI.
 - Planned Stage 10.2: design token reset for quieter Discord-like colors, surfaces,
