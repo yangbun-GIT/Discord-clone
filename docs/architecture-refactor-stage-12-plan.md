@@ -89,6 +89,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.7 Realtime Fan-Out DRY Pass
 
+- Status: completed.
 - Extract common Redis/local gateway subscription-sync behavior shared by
   `backend/app/realtime/publisher.py` and `backend/app/realtime/subscriber.py`.
 - Keep `gateway_manager` facade behavior unchanged unless a later explicit stage

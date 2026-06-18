@@ -210,6 +210,9 @@ For ordinary implementation work:
   - Redis-backed gateway event publishing.
 - `backend/app/realtime/subscriber.py`
   - Redis-backed gateway event consumption.
+- `backend/app/realtime/fanout.py`
+  - Shared realtime gateway-event fan-out and local subscription synchronization.
+  - Used by publisher native fallback and Redis subscriber dispatch.
 - `backend/app/realtime/redis_bus.py`
   - Optional Redis Pub/Sub wrapper.
 - `backend/app/realtime/events.py`
@@ -231,6 +234,8 @@ For ordinary implementation work:
   - DM storage provider selection behavior.
 - `backend/tests/test_gateway_manager.py`
   - Gateway manager behavior.
+- `backend/tests/test_realtime_fanout.py`
+  - Shared realtime fan-out and local subscription synchronization behavior.
 - `backend/tests/test_guild_repository.py`
   - PostgreSQL guild/message/channel/role/member repository behavior.
 - `backend/tests/test_message_schema.py`

@@ -200,3 +200,32 @@ Review:
 Residual risk:
 
 - None identified for REST contracts; full backend tests passed.
+
+## Stage 12.7 Realtime Fan-Out DRY Pass
+
+Status: completed.
+
+Changed files:
+
+- `backend/app/realtime/fanout.py`
+- `backend/app/realtime/publisher.py`
+- `backend/app/realtime/subscriber.py`
+- `backend/tests/test_realtime_fanout.py`
+
+Verification:
+
+- `npm run lint:backend` passed.
+- `npm run test:backend` passed with 110 tests.
+
+Review:
+
+- Local fallback publishing and Redis subscriber dispatch now share
+  `fanout_gateway_event()`.
+- DM create, channel create, and guild update subscription synchronization moved
+  out of both publisher and subscriber modules into `fanout.py`.
+- Focused tests cover DM subscriber sync, channel subscriber sync, guild member
+  and channel sync, and the resulting broadcast target.
+
+Residual risk:
+
+- None identified for local/Redis dispatch contracts; full backend tests passed.

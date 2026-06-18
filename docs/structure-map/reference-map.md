@@ -306,8 +306,7 @@ Browser UI
   - Referenced by:
     - `backend/app/gateway/router.py`
     - `backend/app/gateway/reaper.py`
-    - `backend/app/realtime/publisher.py`
-    - `backend/app/realtime/subscriber.py`
+    - `backend/app/realtime/fanout.py`
     - `backend/tests/test_gateway_manager.py`
 
 - `backend/app/gateway/connection.py`
@@ -327,8 +326,8 @@ Browser UI
 
 - `backend/app/realtime/publisher.py`
   - References:
-    - `backend/app/gateway/manager.py`
     - `backend/app/realtime/events.py`
+    - `backend/app/realtime/fanout.py`
     - `backend/app/realtime/redis_bus.py`
     - `backend/app/schemas/dm.py`
     - `backend/app/schemas/guild.py`
@@ -340,11 +339,24 @@ Browser UI
 
 - `backend/app/realtime/subscriber.py`
   - References:
-    - `backend/app/gateway/manager.py`
     - `backend/app/realtime/events.py`
+    - `backend/app/realtime/fanout.py`
     - `backend/app/realtime/redis_bus.py`
   - Referenced by:
     - `backend/app/main.py`
+
+- `backend/app/realtime/fanout.py`
+  - References:
+    - `backend/app/gateway/manager.py`
+    - `backend/app/realtime/events.py`
+  - Referenced by:
+    - `backend/app/realtime/publisher.py`
+    - `backend/app/realtime/subscriber.py`
+    - `backend/tests/test_realtime_fanout.py`
+  - Owns:
+    - Gateway-event fan-out to channel/guild/DM subscribers.
+    - Local subscription synchronization for DM create, channel create, and guild
+      update events.
 
 ## Frontend References
 

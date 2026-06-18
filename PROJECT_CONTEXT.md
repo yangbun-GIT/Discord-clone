@@ -298,18 +298,15 @@ The app boots in two local modes:
   - Publishes `MESSAGE_CREATE`, `MESSAGE_UPDATE`, `MESSAGE_DELETE`, `CHANNEL_CREATE`,
     `GUILD_UPDATE`, `DM_CREATE`, and `DM_MESSAGE_CREATE` payloads to Redis when
     configured.
-  - Falls back to local `gateway_manager.broadcast_channel()` when Redis is absent.
-  - Updates local gateway subscriptions for channel creation and guild membership
-    changes before fallback broadcasts.
-  - Updates local DM subscriptions from `DM_CREATE` participants before broadcasting
-    new DM events.
+  - Falls back to the shared local realtime fan-out helper when Redis is absent.
 - `backend/app/realtime/subscriber.py`
   - Consumes Redis gateway-event Pub/Sub messages and fans them out to local WebSocket
-    subscribers.
-  - Updates local gateway subscriptions for channel creation and guild membership
-    changes before broadcasting Redis-sourced events.
-  - Updates local DM subscriptions for Redis-sourced `DM_CREATE` events and broadcasts
-    DM events by `dm_id`.
+    subscribers through the shared realtime fan-out helper.
+- `backend/app/realtime/fanout.py`
+  - Shared realtime gateway-event fan-out and local subscription synchronization.
+  - Updates local gateway subscriptions for channel creation, guild membership
+    changes, and `DM_CREATE` participants before broadcasting to channel, guild, or
+    DM subscribers.
 - `backend/app/api/routes/health.py`
   - `/api/health` reports service status and whether DB/Redis are configured/connected.
   - Empty `DATABASE_URL` and `REDIS_URL` values are reported as not configured.
@@ -1557,6 +1554,11 @@ Completed Stage 2 bridge work:
   `KeyError`, `PermissionError`, and `ValueError`; guild, channel, and DM routes
   preserve route-specific messages while delegating status mapping to the helper.
   Backend lint and the full backend suite passed.
+- Completed Stage 12.7 Realtime fan-out DRY pass:
+  `backend/app/realtime/fanout.py` now owns shared local gateway fan-out and
+  subscription synchronization used by both Redis subscriber dispatch and native
+  publisher fallback. Focused realtime fan-out tests were added, and backend lint
+  plus the full backend suite passed.
 
 After each stage or meaningful feature:
 

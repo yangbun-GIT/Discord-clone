@@ -253,13 +253,11 @@ principle and pattern gaps:
 
 1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
-2. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
-   subscription-sync behavior around local gateway fan-out.
-3. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
+2. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
    and view transitions remain scattered across a few frontend modules. Some are
    appropriate at the browser boundary, but high-use clone workflows should be
    wrapped where doing so improves testability.
-4. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+3. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
     single files. They are acceptable for current visual stability, but future
     changes should move toward token/layout/component and domain-copy ownership.
 
@@ -332,6 +330,9 @@ Partially applied.
   for `KeyError`, `PermissionError`, and `ValueError`; guild, channel, and DM
   routes now keep route-specific detail text while delegating status-code mapping
   to this helper.
+- `backend/app/realtime/fanout.py`: owns shared realtime fan-out and local
+  subscription-sync behavior used by both Redis subscriber dispatch and native
+  local publisher fallback.
 - `backend/app/gateway/manager.py`: split into connection, subscription,
   broadcaster, voice service, and zombie reaper modules while preserving the
   manager facade used by routes, realtime, and tests.
