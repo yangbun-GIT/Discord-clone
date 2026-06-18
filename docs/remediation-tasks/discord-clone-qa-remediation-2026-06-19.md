@@ -795,6 +795,38 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R4 - Friends and DM parity pass
+
+- Status: completed.
+- Goal: make Friends and DM surfaces feel like one private-channel product area
+  with clear tab order, roomier rows, and a less document-like DM intro.
+- Findings reviewed:
+  - QA-P1-05 Friends and DM surfaces still feel less structured than Discord.
+- Target files reviewed:
+  - `frontend/src/components/FriendsHome.vue`
+  - `frontend/src/components/PrivateChannelSidebar.vue`
+  - `frontend/src/components/DirectMessageView.vue`
+  - `frontend/src/styles/base.css`
+- Existing state:
+  - Friends tabs were rendered in the right visual order, but the default tab was
+    `online`, making the `All` tab less prominent than the remediation target.
+  - Friend rows had action hiding and row separation, but the status/activity line
+    still read cramped at a glance.
+  - DM conversation intro exposed status, message count, and participants as a
+    large metadata block, which made the chat surface feel more like a profile
+    document.
+- Implementation:
+  - Friends now opens on the `All` tab while preserving the visual order of All,
+    Online, Pending, and Add Friend.
+  - Friend rows gained slightly more vertical rhythm and clearer spacing around
+    secondary activity text.
+  - DM intro removed the large metadata definition list and keeps only the identity
+    start block plus compact participant chips.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.

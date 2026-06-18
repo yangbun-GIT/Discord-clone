@@ -23,7 +23,7 @@ const emit = defineEmits<{
   messageFriend: [friendId: number]
 }>()
 
-const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('online')
+const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('all')
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
 const searchQuery = ref('')

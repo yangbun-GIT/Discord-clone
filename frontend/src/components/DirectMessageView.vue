@@ -75,23 +75,6 @@ watch(
             <p v-else>{{ dm.activity ?? t('dm.beginning') }}</p>
           </div>
         </div>
-        <dl class="dm-intro-meta">
-          <div>
-            <dt>{{ t('dm.status') }}</dt>
-            <dd>
-              <span class="presence-dot" :class="dm.status" aria-hidden="true"></span>
-              {{ statusLabel(dm.status) }}
-            </dd>
-          </div>
-          <div>
-            <dt>{{ t('dm.messages') }}</dt>
-            <dd>{{ t('dm.messageCount', { count: dm.messages.length }) }}</dd>
-          </div>
-          <div>
-            <dt>{{ t('dm.participants') }}</dt>
-            <dd>{{ dm.participants.map((participant) => participant.username).join(', ') }}</dd>
-          </div>
-        </dl>
         <div v-if="otherParticipants.length" class="dm-participant-strip" :aria-label="t('dm.participants')">
           <span v-for="participant in otherParticipants" :key="participant.id">
             <span class="presence-dot" :class="participant.status" aria-hidden="true"></span>
