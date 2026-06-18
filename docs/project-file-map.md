@@ -61,6 +61,10 @@ For ordinary implementation work:
   - Stage 12 behavior-preserving architecture refactor plan and process.
 - `docs/stage-12-architecture-qa.md`
   - Running Stage 12 architecture refactor verification log.
+- `docs/frontend-css-i18n-ownership.md`
+  - Future frontend CSS and i18n split ownership plan.
+  - Defines safe extraction order and verification rules for `base.css` and
+    `i18n/index.ts`.
 - `docs/deployment.md`
   - Runtime, Docker, Redis, HTTPS/WebSocket, TURN, and deployment hardening.
 - `docs/voice-qa.md`
@@ -356,8 +360,12 @@ For ordinary implementation work:
     composing the guild store, gateway composable, and WebRTC facade.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
+  - Keep as the public i18n facade until the split plan in
+    `docs/frontend-css-i18n-ownership.md` is implemented.
 - `frontend/src/styles/base.css`
   - Global layout, Discord-like visual system, component surfaces, responsive rules.
+  - Keep as the current visual baseline until the split plan in
+    `docs/frontend-css-i18n-ownership.md` is implemented.
 - `frontend/src/utils/visualNoise.ts`
   - Helpers for filtering visual-test/demo names and messages from primary surfaces.
 

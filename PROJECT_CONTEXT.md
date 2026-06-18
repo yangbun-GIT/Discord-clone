@@ -185,6 +185,10 @@ The app boots in two local modes:
     implementation.
   - Must be updated when a project folder or important source file is added,
     removed, renamed, or assigned a meaningfully different responsibility.
+- `docs/frontend-css-i18n-ownership.md`
+  - Stage 12.9 frontend CSS and i18n ownership plan.
+  - Defines future split order and verification rules for `base.css` and
+    `i18n/index.ts`.
 - `docs/structure-map/`
   - Fast-navigation structure folder.
   - `README.md` defines usage and update rules.
@@ -1571,6 +1575,10 @@ Completed Stage 2 bridge work:
   clipboard, document listeners, viewport/location reads, gateway URL construction,
   navigator platform, and view transitions. Frontend lint and production build
   passed; WebRTC permission APIs intentionally remain in the voice media boundary.
+- Completed Stage 12.9 CSS and i18n split plan:
+  `docs/frontend-css-i18n-ownership.md` now defines safe future ownership for
+  `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts`. No CSS or
+  translation code was moved in Stage 12.9 to preserve current visual parity.
 
 After each stage or meaningful feature:
 

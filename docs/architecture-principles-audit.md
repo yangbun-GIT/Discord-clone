@@ -254,8 +254,9 @@ principle and pattern gaps:
 1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
 2. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
-    single files. They are acceptable for current visual stability, but future
-    changes should move toward token/layout/component and domain-copy ownership.
+    single files. They are acceptable for current visual stability, and
+    `docs/frontend-css-i18n-ownership.md` now defines the next safe extraction
+    order for token/layout/component CSS and domain-copy ownership.
 
 The active implementation plan for these gaps is
 `docs/architecture-refactor-stage-12-plan.md`.

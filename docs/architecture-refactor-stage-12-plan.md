@@ -107,6 +107,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.9 CSS And I18n Split Plan
 
+- Status: completed.
 - Prepare the next visual-maintenance split by documenting concrete ownership for
   `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts`.
 - Only perform low-risk mechanical extraction when it does not threaten visual

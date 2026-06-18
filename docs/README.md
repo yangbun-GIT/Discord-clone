@@ -76,6 +76,9 @@ the project prompt and context files before changing code.
   - Running Stage 12 QA log.
   - Records command checks, review notes, changed files, and residual risks for
     each architecture refactor sub-stage.
+- `docs/frontend-css-i18n-ownership.md`
+  - Stage 12.9 ownership plan for future `base.css` and i18n module splits.
+  - Defines safe extraction order, verification rules, and deferred risks.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
@@ -175,6 +178,8 @@ the project prompt and context files before changing code.
   status, verification expectations, or active refactor order changes.
 - Update `docs/stage-12-architecture-qa.md` after each Stage 12 implementation
   stage with command checks, review notes, and residual risks.
+- Update `docs/frontend-css-i18n-ownership.md` when frontend style or translation
+  ownership changes, especially if `base.css` or `i18n/index.ts` is split.
 - Update `docs/project-file-map.md` when a project folder or important source file
   is added, removed, renamed, or assigned a meaningfully different responsibility.
 - Update `docs/structure-map/README.md` and

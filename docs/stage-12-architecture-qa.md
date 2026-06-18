@@ -266,3 +266,34 @@ Residual risk:
 
 - Live browser permission prompts for microphone and display capture remain manual
   QA items, consistent with `docs/voice-qa.md`.
+
+## Stage 12.9 CSS And I18n Split Plan
+
+Status: completed.
+
+Changed files:
+
+- `docs/frontend-css-i18n-ownership.md`
+- `docs/README.md`
+- `docs/project-file-map.md`
+- `docs/architecture-principles-audit.md`
+- `docs/architecture-refactor-stage-12-plan.md`
+- `docs/implementation-plan.md`
+
+Verification:
+
+- Documentation paths and update rules reviewed during edit.
+- `git diff --check` must pass before commit.
+
+Review:
+
+- `docs/frontend-css-i18n-ownership.md` now defines the future extraction order
+  for CSS tokens, layout, overlays, chat, voice, settings, Store, and domain i18n
+  modules.
+- The current decision is to keep `base.css` and `i18n/index.ts` intact during
+  Stage 12 to avoid risking visual parity through broad mechanical movement.
+
+Residual risk:
+
+- `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+  files until a future focused split can be visually verified.
