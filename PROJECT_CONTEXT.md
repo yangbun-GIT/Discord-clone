@@ -1424,6 +1424,12 @@ Completed Stage 2 bridge work:
   controls and no native JS dialogs, but automated permission-state/capture
   execution remains blocked by browser runtime permission access; `docs/voice-qa.md`
   records the required manual microphone/screen-share pass and TURN/NAT scope.
+- Added Stage 11.13 final visual pass: `frontend/src/styles/base.css` now keeps
+  optional composer actions out of layout until hover/focus/open state, removing a
+  hidden zero-width clipped control found during server text QA. Frontend
+  lint/build, Docker frontend rebuild, and browser metrics for Friends, DM, server
+  text, and settings all passed with zero horizontal overflow and zero clipped core
+  controls.
 
 After each stage or meaningful feature:
 

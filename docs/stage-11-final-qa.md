@@ -386,3 +386,34 @@ Residual notes:
   `docs/voice-qa.md`.
 - Local ICE metadata remains STUN-only. TURN/NAT validation requires
   `WEBRTC_ICE_SERVERS_JSON` with a TURN server and a two-network manual test.
+
+## Stage 11.13: Final Visual Pass
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Final browser surface QA covered Friends, DM, server text, and settings views.
+- A hidden optional composer action was found with a zero-width visible box during
+  server text QA. `frontend/src/styles/base.css` now removes that action from
+  layout until hover, focus, or open state, matching the intended progressive
+  disclosure behavior.
+- The frontend Docker container was rebuilt after CSS changes so browser QA used
+  the active served stylesheet.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed with Vite 8.0.16.
+- `docker compose up -d --build frontend` rebuilt and restarted the frontend stack.
+- Browser QA after rebuild:
+  - Friends: horizontal overflow `0`, clipped core controls `0`.
+  - DM: horizontal overflow `0`, clipped core controls `0`.
+  - Server text: horizontal overflow `0`, clipped core controls `0`.
+  - Settings: horizontal overflow `0`, clipped core controls `0`.
+
+Residual notes:
+
+- The repository reference screenshot folders currently contain only placeholders,
+  so this pass used live browser measurements and the user-provided Discord
+  screenshots already discussed in Stage 10/11 planning.

@@ -342,6 +342,11 @@ Verification:
 
 Goal: remove the remaining visual roughness after the functional passes.
 
+Status: completed. Final surface QA covered Friends, DM, server text, and
+settings surfaces. A clipped hidden composer action found during QA was added as a
+Stage 11.13 subtask and fixed before completion. Final browser metrics showed no
+horizontal overflow or clipped core text controls.
+
 Tasks:
 
 - Review colors, borders, shadows, radius, icon sizing, typography, density, and
@@ -349,6 +354,8 @@ Tasks:
 - Compare against stored Discord reference screenshots and new user screenshots.
 - Remove one-off CSS where tokens can express the same design.
 - Confirm surfaces no longer read as wireframes.
+- Subtask 11.13.a: hide optional composer actions with `display: none` until
+  hover/focus/open state so hidden icons do not create clipped zero-width controls.
 
 Verification:
 

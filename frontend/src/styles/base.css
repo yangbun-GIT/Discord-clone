@@ -3812,7 +3812,8 @@ select:focus-visible {
 }
 
 .composer-actions .composer-optional-action {
-  width: 0;
+  display: none;
+  width: 34px;
   padding: 0;
   opacity: 0;
   pointer-events: none;
@@ -3822,7 +3823,7 @@ select:focus-visible {
 .composer-shell:hover .composer-optional-action,
 .composer-shell:focus-within .composer-optional-action,
 .composer-optional-action[aria-expanded='true'] {
-  width: 34px;
+  display: grid;
   opacity: 1;
   pointer-events: auto;
 }

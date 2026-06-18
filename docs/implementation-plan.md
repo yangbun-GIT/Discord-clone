@@ -576,3 +576,7 @@
   `/gateway` HELLO smoke checks passed, browser DOM checks found visible voice
   controls and no native JS dialogs, and the remaining microphone/screen-capture
   validation is documented as a user-permission manual pass in `docs/voice-qa.md`.
+- Completed Stage 11.13: final visual QA covered Friends, DM, server text, and
+  settings surfaces. A clipped hidden composer action was fixed by removing the
+  optional action from layout until hover/focus/open state; frontend lint/build,
+  Docker frontend rebuild, and browser visual metrics passed.
