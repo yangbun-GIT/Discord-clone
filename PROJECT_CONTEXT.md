@@ -68,7 +68,11 @@ Friends tabs, friend-row separation, activity-card hierarchy, and less demo-orie
 Add Friend copy. Stage 11.3 DM finalization is complete: DM sidebar rows, DM intro
 spacing, timeline divider spacing, composer surface color, group-DM copy, and emoji
 choices were tightened in `frontend/src/components/DirectMessageView.vue`,
-`frontend/src/styles/base.css`, and `frontend/src/i18n/index.ts`.
+`frontend/src/styles/base.css`, and `frontend/src/i18n/index.ts`. Stage 11.4 server
+sidebar and channel navigation polish is complete in `frontend/src/styles/base.css`,
+covering rail contrast, voice-connected rail state, guild heading layering, category
+create-button discoverability, channel-row height, stable active/connected borders,
+and voice-detail spacing.
 `docs/stage-11-final-qa.md` records the running Stage 11 QA evidence. Stage 11
 preserves the Stage 10 process: each stage is documented, implemented separately,
 verified before advancing, and then committed with a Korean commit title before

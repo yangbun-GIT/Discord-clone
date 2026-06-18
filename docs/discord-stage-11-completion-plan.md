@@ -127,6 +127,11 @@ Verification:
 
 Goal: make server/channel navigation predictable and visually aligned with Discord.
 
+Status: completed. Server rail contrast, voice-connected rail state, guild heading,
+category action discoverability, text/voice channel row height, active/connected
+state borders, and voice detail spacing were tightened. QA evidence is in
+`docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Refine server heading, events row, text/voice category headers, and channel rows.

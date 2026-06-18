@@ -285,7 +285,7 @@ select:focus-visible {
   gap: 6px;
   align-items: center;
   padding: 10px 8px;
-  background: #0f1014;
+  background: var(--surface-rail);
   border-right: 1px solid rgb(255 255 255 / 9%);
 }
 
@@ -390,6 +390,7 @@ select:focus-visible {
 }
 
 .server-slot.voice-connected:not(.active) .server-button {
+  background: #1a2b22;
   box-shadow:
     inset 0 0 0 1px rgb(35 165 89 / 34%),
     0 0 0 1px rgb(35 165 89 / 10%);
@@ -863,7 +864,8 @@ select:focus-visible {
   margin: 0 -8px;
   padding: 0 16px;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
-  background: var(--surface-base);
+  background: var(--surface-sidebar);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 4%);
   font-weight: 800;
 }
 
@@ -940,14 +942,14 @@ select:focus-visible {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 0 8px;
+  padding: 0 10px;
   text-align: left;
 }
 
 .channel-group {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 
 .channel-group-heading {
@@ -1011,7 +1013,7 @@ select:focus-visible {
 }
 
 .channel-group-heading > button:not(.channel-collapse-button) {
-  opacity: 0;
+  opacity: 0.55;
   transition: opacity 140ms ease;
 }
 
@@ -1117,20 +1119,23 @@ select:focus-visible {
 
 .channel-row {
   width: 100%;
-  min-height: 32px;
+  min-height: 36px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  border: 1px solid transparent;
   border-radius: 6px;
+  margin: 1px 0;
 }
 
 .channel-row:hover,
 .channel-row.active {
+  border-color: var(--border-muted);
   background: var(--surface-selected);
 }
 
 .channel-row[aria-current="page"] {
-  box-shadow: inset 3px 0 0 #ffffff;
+  box-shadow: inset 3px 0 0 #f2f3f5;
 }
 
 .channel-row.connected {
@@ -1174,7 +1179,7 @@ select:focus-visible {
 
 .channel-button {
   min-width: 0;
-  min-height: 32px;
+  min-height: 34px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1182,7 +1187,7 @@ select:focus-visible {
   border-radius: 6px;
   color: #cbd5e1;
   background: transparent;
-  padding: 0 7px;
+  padding: 0 8px;
   text-align: left;
 }
 
@@ -1228,7 +1233,9 @@ select:focus-visible {
 }
 
 .channel-row:hover .channel-row-actions,
-.channel-row:focus-within .channel-row-actions {
+.channel-row:focus-within .channel-row-actions,
+.channel-row.active .channel-row-actions,
+.channel-row.connected .channel-row-actions {
   opacity: 1;
 }
 
@@ -1252,8 +1259,8 @@ select:focus-visible {
 .voice-channel-details {
   grid-column: 1 / -1;
   display: grid;
-  gap: 6px;
-  padding: 3px 6px 8px 28px;
+  gap: 7px;
+  padding: 5px 6px 9px 30px;
 }
 
 .voice-status-link,

@@ -536,3 +536,7 @@
   static QA confirmed no horizontal overflow and 56 px DM rows; synthetic DM click
   automation was blocked by the in-app browser execution context and is logged as a
   residual QA limitation.
+- Completed Stage 11.4: server rail/sidebar/channel navigation styling was
+  tightened with clearer rail contrast, voice-connected rail state, guild heading
+  layering, discoverable category create buttons, 36 px channel rows, stable
+  active/connected borders, and cleaner voice-detail spacing.

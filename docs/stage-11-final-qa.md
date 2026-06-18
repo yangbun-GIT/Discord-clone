@@ -100,3 +100,36 @@ Residual notes:
   creation during this run, so automatic DM-open/send interaction QA could not be
   completed. The affected code paths remain compile-verified and are scheduled for
   broader menu/composer verification in later Stage 11 QA.
+
+## Stage 11.4: Server Sidebar And Channel Navigation
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Server rail now uses the shared rail surface color and a clearer non-active
+  voice-connected background.
+- Guild heading uses the sidebar surface with a subtle bottom shadow so it reads as
+  part of the layered sidebar rather than a disconnected strip.
+- Events and channel rows gained more stable padding and row height.
+- Category create buttons remain discoverable at reduced opacity instead of being
+  fully hidden until hover.
+- Text/voice channel rows now reserve a transparent border for stable hover/active
+  states, show active/connected actions without layout shift, and use cleaner
+  voice-detail spacing.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- Browser static QA on `http://localhost:5173/` confirmed horizontal overflow is
+  `0`, the server rail is 72 px wide, and the visible rail slots remain 56 x 48 px.
+
+Residual notes:
+
+- Automated server-switch and channel-click QA was limited by the same in-app
+  browser synthetic-event restriction observed in Stage 11.3. The server/channel
+  interaction code path was not changed in this stage; visual and state styling
+  changes are compile-verified and will be covered again in final manual/browser QA.
