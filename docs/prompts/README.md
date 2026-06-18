@@ -20,3 +20,10 @@ required startup documents and before changing code or running a broad audit.
 Keep prompt outputs as project documentation, and update `PROJECT_CONTEXT.md`,
 `docs/README.md`, and `docs/project-file-map.md` if the prompt creates durable
 plans, QA reports, or changes project workflow.
+
+## Prompt Review Rule
+
+When changing these prompts, review them as if they are incomplete by default.
+Check that each prompt defines role coverage, startup context, scope boundaries,
+evidence requirements, output format, verification, documentation updates, and
+explicit residual-risk handling.

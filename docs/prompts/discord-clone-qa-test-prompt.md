@@ -39,6 +39,21 @@ Before testing, read:
 Use the project file map to identify likely owner files for each defect, but do
 not over-investigate code unless it is necessary to classify a finding.
 
+## Scope Baseline
+
+Before opening the app, establish what "should work" means for this audit:
+
+- Read the current roadmap/stage docs and extract the expected supported feature
+  set.
+- Mark features that are explicitly deferred, such as low-frequency paid or
+  commercial Discord surfaces, so they are not incorrectly reported as defects.
+- If a deferred feature is still visible as a usable control, audit it as "out of
+  scope but exposed" unless the UI clearly communicates that it is unavailable.
+- Treat server deletion, channel deletion, friend/DM actions, invite flows,
+  message operations, voice join/leave/switch, and settings changes as likely
+  expected clone behaviors unless current docs explicitly say otherwise.
+- Record the baseline feature matrix in the QA document before listing findings.
+
 ## Roles
 
 Run the audit with these five roles. Keep findings separated by role first, then
@@ -121,6 +136,23 @@ Focus on:
   reduced-motion/accessibility concerns.
 - FHD 100 percent zoom, 1280 x 720, tablet width, and mobile/narrow layouts.
 
+## Cross-Cutting Security, Privacy, And Data-Safety Checklist
+
+This is not a sixth role. Apply this checklist across the five required QA roles
+whenever a visible user-generated input or communication flow is tested.
+
+Focus on:
+
+- XSS and HTML/script escaping in messages, names, channel names, server names, and
+  status/activity copy.
+- Authorization leaks between servers, channels, DMs, and voice rooms.
+- Whether private user data or real Discord screenshots could be committed by
+  accident.
+- Browser-native dialogs or context menus appearing where clone-owned UI is
+  expected.
+- Rate-limit or spam behavior for repeated message/send/create actions.
+- Whether test data can be safely reset without deleting user work unexpectedly.
+
 ## Discord Reference Collection
 
 When Discord comparison is needed:
@@ -133,6 +165,26 @@ When Discord comparison is needed:
   references and record the source links in the QA document.
 - Do not copy private Discord messages or personal identifiers into committed
   documents. Redact user-specific data.
+- If screenshots are needed, store only clone screenshots in commit-safe QA
+  folders unless the user explicitly approves committing reference images. Real
+  Discord screenshots should stay in the private reference screenshot area.
+
+## Environment And Data Matrix
+
+At minimum, try to cover or explicitly mark as not covered:
+
+- Browser: Chrome or the browser currently used by the user.
+- Zoom: 100 percent first, then any user-reported zoom level if relevant.
+- Viewports: FHD desktop, 1280 x 720, one tablet/narrow width, and one mobile width.
+- Runtime: Docker mode if the user is currently using Docker, otherwise native dev
+  mode. If both are relevant, test both smoke paths.
+- Data state: fresh demo state, existing user-created data, and at least one
+  newly-created server/channel/DM.
+- Sessions: one session for UI smoke, two sessions for realtime text/DM/voice
+  behavior when possible.
+- Locale: Korean and English for visible core screens.
+- Permissions: microphone and screen-share granted, denied, and unavailable where
+  browser support allows.
 
 ## Test Method
 
@@ -155,6 +207,41 @@ When Discord comparison is needed:
    - Accessibility/responsive.
    - Documentation/QA gap.
 6. Record likely owner files using `docs/project-file-map.md`.
+7. For each visible dead or unclear control, classify whether it should be:
+   - Fully implemented now.
+   - Hidden until implemented.
+   - Converted into a clear disabled/unavailable state.
+   - Kept as local/demo-only with explicit copy.
+8. For recurring visual issues, identify the shared component/style pattern instead
+   of only listing one screen.
+9. For every realtime or persistence finding, retest after page refresh and, when
+   possible, in a second session.
+
+## Finding Template
+
+Use this structure for each actionable finding:
+
+```text
+ID:
+Title:
+Severity:
+Category:
+Surface:
+Global or screen-specific:
+Supported/deferred/exposed-out-of-scope:
+Steps to reproduce:
+Expected:
+Actual:
+Evidence:
+Likely owner files:
+Suggested fix direction:
+Regression checks after fix:
+```
+
+Evidence should include screenshots, browser console errors, network/API
+observations, command output summaries, or exact DOM/UI state when available. Do
+not file vague issues such as "looks bad" without describing the visual rule being
+violated.
 
 ## Required Output Document
 
@@ -169,6 +256,7 @@ docs/qa-audits/discord-clone-qa-YYYY-MM-DD.md
 The document must include:
 
 - Scope, date, browser/device/viewport, app URL, and run mode.
+- Baseline feature matrix: supported, deferred, exposed but unavailable, unknown.
 - Reference material used.
 - Role-by-role raw observations.
 - Deduplicated prioritized findings.
@@ -178,6 +266,8 @@ The document must include:
 - Whether the issue appears global or screen-specific.
 - Screenshots or artifact paths when available.
 - A final implementation backlog grouped into logical stages.
+- A must-fix-before-feature-work list, if any P0/P1 issues are found.
+- A hide/disable/implement decision list for visible incomplete controls.
 - Explicit residual risks and manual checks not completed.
 
 ## Rules
@@ -192,6 +282,11 @@ The document must include:
   implementation.
 - If the QA creates or updates documents, update `PROJECT_CONTEXT.md`,
   `docs/README.md`, and `docs/project-file-map.md` when appropriate.
+- Do not silently skip a major screen. If a screen cannot be tested, record the
+  blocker and the exact next action needed.
+- If a finding requires current Discord behavior confirmation and live Discord
+  cannot be inspected, mark it as "Discord reference pending" rather than treating
+  the assumption as verified.
 
 ## Final Response
 
