@@ -427,12 +427,12 @@ select:focus-visible {
   grid-row: 1 / 2;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 10px;
+  padding: 10px 8px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
 }
@@ -717,7 +717,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 10px;
+  padding: 0 8px;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
   font-weight: 800;
 }
@@ -743,32 +743,34 @@ select:focus-visible {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  opacity: 0.72;
 }
 
 .guild-heading button:hover,
 .events-entry:hover {
   color: #ffffff;
   background: var(--surface-hover);
+  opacity: 1;
 }
 
 .events-entry {
-  min-height: 40px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 0 10px;
+  padding: 0 8px;
   text-align: left;
 }
 
 .channel-group {
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .channel-group-heading {
   min-width: 0;
-  min-height: 30px;
+  min-height: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -826,9 +828,19 @@ select:focus-visible {
   background: transparent;
 }
 
+.channel-group-heading > button:not(.channel-collapse-button) {
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
 .channel-group-heading button:hover {
   color: #ffffff;
   background: rgb(255 255 255 / 10%);
+}
+
+.channel-group:hover .channel-group-heading > button,
+.channel-group:focus-within .channel-group-heading > button {
+  opacity: 1;
 }
 
 .channel-group-heading .channel-collapse-button {
@@ -923,11 +935,11 @@ select:focus-visible {
 
 .channel-row {
   width: 100%;
-  min-height: 34px;
+  min-height: 32px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .channel-row:hover,
@@ -955,15 +967,15 @@ select:focus-visible {
 
 .channel-button {
   min-width: 0;
-  min-height: 34px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   gap: 8px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 6px;
   color: #cbd5e1;
   background: transparent;
-  padding: 0 8px;
+  padding: 0 7px;
   text-align: left;
 }
 
@@ -1014,8 +1026,8 @@ select:focus-visible {
 }
 
 .channel-row-actions button {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
   border: 0;
@@ -1033,17 +1045,17 @@ select:focus-visible {
 .voice-sidebar-members {
   grid-column: 1 / -1;
   display: grid;
-  gap: 3px;
-  padding: 0 8px 8px 36px;
+  gap: 2px;
+  padding: 0 8px 7px 34px;
 }
 
 .voice-sidebar-member {
-  min-height: 22px;
+  min-height: 20px;
   overflow: hidden;
   border-radius: 7px;
   color: #aeb7c8;
-  padding: 2px 7px;
-  font-size: 0.78rem;
+  padding: 2px 6px;
+  font-size: 0.75rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;

@@ -1203,6 +1203,9 @@ Completed Stage 2 bridge work:
   single-column one-step form without discovery/activity preview clutter, with
   verified input/button spacing, disabled state, success result, and no horizontal
   overflow.
+- Added Stage 10.8 server sidebar polish: channel rows are compact, category create
+  buttons and channel management actions are hidden until hover/focus, and browser
+  QA verified no horizontal overflow plus active/text/voice channel scan quality.
 
 After each stage or meaningful feature:
 

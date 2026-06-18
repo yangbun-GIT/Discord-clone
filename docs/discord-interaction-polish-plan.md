@@ -340,6 +340,10 @@ Verification:
 
 ## Stage 10.8: Server Sidebar Polish
 
+Status: completed. Server channel navigation is more compact, category create
+buttons and channel management actions stay hidden until hover/focus, and active
+text/voice rows share quieter selected states.
+
 Goal: make channel navigation quiet and compact.
 
 Tasks:
@@ -354,6 +358,10 @@ Verification:
 
 - Channel list does not look like an admin panel.
 - Active channel and connected voice state are scannable.
+- Browser QA confirmed no horizontal overflow, 32 px compact channel rows, hidden
+  category create buttons by default, hidden channel actions by default, an active
+  channel row, and a visible voice channel row. No voice members were connected in
+  the current demo state, so compact member styling remains code-verified here.
 
 ## Stage 10.9: Header Action Reduction
 
