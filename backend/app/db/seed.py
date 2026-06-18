@@ -124,7 +124,9 @@ async def seed_dm_workspace() -> None:
             """
             INSERT INTO users (id, username, password_hash, status)
             VALUES ($1, $2, $3, $4)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                username = EXCLUDED.username,
+                status = EXCLUDED.status
             """,
             user_id,
             username,

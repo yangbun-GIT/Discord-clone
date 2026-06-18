@@ -1177,6 +1177,12 @@ Completed Stage 2 bridge work:
 - Added Stage 7.6 Composer And Message Actions: composer upload/gift/apps/emoji
   buttons, local reply target banner, message row reply/options menu, preserved
   edit/delete controls, and browser/backend verification for the message surface.
+- Added Stage 10.0 baseline documentation for the latest FHD Discord comparison,
+  Stage 10.1 visual-noise cleanup for demo/test names and stale seeded DM users, and
+  Stage 10.2 global dark-shell token reset across surfaces, selected/hover states,
+  focus rings, scrollbars, composer, member, and voice-panel surfaces. Stage 10.2
+  browser QA confirmed token application, no horizontal body overflow at 1280 px,
+  and old development-style DM names hidden from the primary shell.
 
 After each stage or meaningful feature:
 

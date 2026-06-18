@@ -370,7 +370,9 @@ class DmRepository:
                 """
                 INSERT INTO users (id, username, password_hash, status)
                 VALUES ($1, $2, $3, $4)
-                ON CONFLICT (id) DO NOTHING
+                ON CONFLICT (id) DO UPDATE SET
+                    username = EXCLUDED.username,
+                    status = EXCLUDED.status
                 """,
                 profile_id,
                 username,

@@ -167,6 +167,12 @@ repository tests still using the old development-style DM fixture names. The fix
 data and expectations were updated to the same safe sample names used by runtime
 seed data.
 
+Corrective Stage 10.1.4: Stage 10.2 browser QA found that existing Docker
+PostgreSQL volumes still retained old development-style DM usernames because user
+rows were inserted with `ON CONFLICT DO NOTHING`. Seed/repository upserts now refresh
+seeded demo usernames/statuses, and the frontend visual-noise filter also hides the
+old fixture names while the existing session refreshes.
+
 Goal: remove development artifacts from primary UI.
 
 Tasks:
@@ -187,6 +193,10 @@ Verification:
 
 ## Stage 10.2: Design Token Reset
 
+Status: completed. Global dark shell tokens, surface layers, selected/hover states,
+focus ring, scrollbar colors, and high-use icon/composer/member/voice surfaces now
+share a quieter Discord-like palette and sizing baseline.
+
 Goal: make the visual language quieter and more Discord-like.
 
 Tasks:
@@ -203,6 +213,9 @@ Verification:
 
 - FHD browser screenshot shows one coherent dark shell, not separate dashboard cards.
 - Focus styles remain visible.
+- Browser QA confirmed the live app shell uses the updated `#313338` app background
+  and `#404249` selected surface tokens, has no horizontal body overflow at 1280 px,
+  and no longer exposes old development-style DM names in the primary shell.
 
 ## Stage 10.3: Shell Layout Recomposition
 

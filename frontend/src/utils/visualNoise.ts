@@ -6,6 +6,11 @@ const TEST_NAME_PATTERNS = [
   /\bowner[-_\s]?perm[-_\s]?smoke\b/i,
   /\blive[-_\s]?channel\b/i,
   /\btest[-_\s]?(guild|server|channel|room)\b/i,
+  /\bproject\s+lead\b/i,
+  /\bfrontend\s+pair\b/i,
+  /\bbackend\s+pair\b/i,
+  /\bqa\s+reviewer\b/i,
+  /\bdesign\s+critic\b/i,
   /\b\d{10,}\b/,
 ]
 

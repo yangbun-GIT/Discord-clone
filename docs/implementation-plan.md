@@ -364,8 +364,8 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: in progress; Stage 10.0 baseline lock is complete and implementation work
-  starts at Stage 10.1.
+- Status: in progress; Stage 10.0 through Stage 10.2 are complete and implementation
+  continues at Stage 10.3.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -383,8 +383,10 @@
 - Completed Stage 10.1: demo and test data cleanup so smoke-test names, generated QA
   labels, old development-style DM users, and template messages do not dominate
   primary UI.
-- Planned Stage 10.2: design token reset for quieter Discord-like colors, surfaces,
-  row heights, icon sizes, text sizes, and focus states.
+- Completed Stage 10.2: design token reset for quieter Discord-like colors, surface
+  layers, hover/selected states, focus styles, scrollbars, and high-use shell
+  controls; browser QA confirmed token application, no horizontal overflow, and old
+  development-style names hidden.
 - Planned Stage 10.3: shell layout recomposition for rail/sidebar/main/member/bottom
   rhythm and overflow control.
 - Planned Stage 10.4: server rail polish.
