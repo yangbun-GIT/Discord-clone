@@ -67,3 +67,15 @@ to voice. The voice panel shows:
 Use these values as diagnostics, not strict pass/fail thresholds. Typical follow-up
 work is to collect stats over longer sessions and adapt screen-share frame rate or
 resolution when packet loss and jitter stay high.
+
+## Stage 11.12 QA Note
+
+The 2026-06-18 Stage 11.12 pass verified backend health, `/api/meta/voice`, and the
+gateway HELLO handshake in the local Docker stack. Browser DOM checks also confirmed
+that the clone page exposes voice controls without native JavaScript dialogs.
+
+Direct automated microphone and screen-capture execution was not completed because
+the browser automation runtime did not expose `navigator.mediaDevices` permission or
+capture APIs. Treat microphone join, same-server/cross-server voice switching, and
+screen-share start/stop as manual browser-permission checks using the checklist
+above. TURN/NAT behavior remains unverified until a real TURN server is supplied.

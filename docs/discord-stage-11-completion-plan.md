@@ -319,6 +319,12 @@ Verification:
 
 Goal: separate browser-permission limitations from actual WebRTC issues.
 
+Status: completed with explicit permission limitation. Backend health, voice
+metadata, and gateway HELLO smoke checks passed; browser DOM checks confirmed
+voice controls are present without native JS dialogs. Direct automated
+microphone/screen-capture execution remains blocked by browser permission/runtime
+access and is documented in `docs/voice-qa.md`.
+
 Tasks:
 
 - Run Chrome microphone-permission voice join QA.

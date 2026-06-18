@@ -1419,6 +1419,11 @@ Completed Stage 2 bridge work:
   1280 x 720, 900 x 720, and 390 x 844 showed zero horizontal overflow, zero
   clipped core controls, and zero visible unnamed buttons. Frontend lint/build
   passed; visual screenshot comparison remains part of Stage 11.13.
+- Added Stage 11.12 real-media QA: backend health, voice metadata, and WebSocket
+  gateway HELLO smoke checks passed. Browser DOM checks found visible voice
+  controls and no native JS dialogs, but automated permission-state/capture
+  execution remains blocked by browser runtime permission access; `docs/voice-qa.md`
+  records the required manual microphone/screen-share pass and TURN/NAT scope.
 
 After each stage or meaningful feature:
 

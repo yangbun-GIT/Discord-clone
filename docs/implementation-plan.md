@@ -571,3 +571,8 @@
   1280 x 720, 900 px, and mobile widths. Browser metrics showed no horizontal
   overflow, no clipped core controls, and no visible unnamed buttons; frontend
   lint/build passed.
+- Completed Stage 11.12: real-media QA separated automated backend/browser checks
+  from permission-dependent capture. `/api/health`, `/api/meta/voice`, and
+  `/gateway` HELLO smoke checks passed, browser DOM checks found visible voice
+  controls and no native JS dialogs, and the remaining microphone/screen-capture
+  validation is documented as a user-permission manual pass in `docs/voice-qa.md`.

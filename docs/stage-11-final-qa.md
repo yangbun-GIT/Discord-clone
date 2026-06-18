@@ -352,3 +352,37 @@ Residual notes:
 - The responsive pass was metric-based in the in-app browser. Final visual review
   screenshots across Friends, DM, server, voice, settings, modal, and context menu
   surfaces remain scheduled for Stage 11.13.
+
+## Stage 11.12: Real Media QA
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Voice implementation still uses `navigator.mediaDevices.getUserMedia`,
+  `navigator.mediaDevices.getDisplayMedia`, `RTCPeerConnection`, and the existing
+  stats loop for peer count, RTT, jitter, packet loss, and bitrate diagnostics.
+- Browser DOM checks confirmed the primary voice controls are visible and no
+  native JavaScript dialog is active on the local clone page.
+- Gateway and voice metadata checks confirm the backend side of the media flow is
+  reachable in the Docker/local stack.
+
+Verification:
+
+- `GET http://127.0.0.1:8000/api/health` returned `{"status":"ok","environment":"local"}`.
+- `GET http://127.0.0.1:8000/api/meta/voice` returned one ICE server and
+  `turn_configured: false`.
+- WebSocket `ws://127.0.0.1:8000/gateway` opened and returned gateway HELLO
+  opcode `10` with a `30000` ms heartbeat interval.
+- In-app browser DOM QA found visible voice controls and no native JS dialog.
+- Chrome tab DOM QA found the local clone page, visible voice controls, and no
+  active native JS dialog.
+
+Residual notes:
+
+- The browser automation runtime did not expose `navigator.mediaDevices` for
+  direct permission-state or capture invocation. Actual microphone and screen
+  capture still require a user-driven browser permission pass following
+  `docs/voice-qa.md`.
+- Local ICE metadata remains STUN-only. TURN/NAT validation requires
+  `WEBRTC_ICE_SERVERS_JSON` with a TURN server and a two-network manual test.
