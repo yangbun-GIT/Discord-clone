@@ -875,3 +875,33 @@ Verification:
 - Browser QA verified no native JavaScript dialog is open, no horizontal body
   overflow exists, and the status card keeps the same visible frame as the composer
   while gaining a 6 px gap from the voice-panel top border.
+
+## Stage 10.26: Message Timeline Divider Cleanup
+
+Status: completed. This follow-up removes the double-line effect around date
+dividers and conversation intros in server text channels and direct messages.
+
+Goal: make timeline separation read like Discord: intro or date divider first, then
+messages below it, without a second message-row line immediately under the divider.
+
+Tasks:
+
+- Remove the default top border from the first message row after a date divider or
+  DM intro.
+- Keep message-to-message separation by applying the thin top border only to
+  adjacent message rows.
+- Add a date divider before DM messages so the DM intro flows into the timeline in
+  the same pattern as server text channels.
+- Remove the DM intro bottom border so it cannot stack with the new date divider.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- Docker frontend rebuild passed.
+- Browser QA verified the server text channel has one date divider, first message
+  row `border-top: 0px`, second message row retains the thin separator, and no
+  horizontal body overflow.
+- Browser QA verified the DM view has one date divider after the intro, intro
+  `border-bottom: 0px`, first message row `border-top: 0px`, second message row
+  retains the thin separator, and no horizontal body overflow.

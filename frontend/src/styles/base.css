@@ -2582,9 +2582,8 @@ select:focus-visible {
 
 .dm-chat-intro {
   align-content: start;
-  border-bottom: 1px solid rgb(255 255 255 / 7%);
-  margin-bottom: 10px;
-  padding: 4px 0 20px;
+  margin-bottom: 4px;
+  padding: 4px 0 12px;
 }
 
 .dm-intro-heading {
@@ -3351,12 +3350,13 @@ select:focus-visible {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr);
   gap: 13px;
-  border-top: 1px solid rgb(255 255 255 / 6%);
+  border-top: 0;
   border-radius: 7px;
   padding: 13px 12px;
 }
 
 .message-row + .message-row {
+  border-top: 1px solid rgb(255 255 255 / 6%);
   margin-top: 2px;
 }
 
@@ -3417,10 +3417,14 @@ select:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  margin: 8px 0 14px;
+  margin: 8px 0 12px;
   color: #949ba4;
   font-size: 0.74rem;
   font-weight: 700;
+}
+
+.dm-date-divider {
+  margin-top: 0;
 }
 
 .date-divider::before,

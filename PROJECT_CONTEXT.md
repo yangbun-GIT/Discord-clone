@@ -42,17 +42,17 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
-Stage 10 interaction polish is complete through Stage 10.25. The controlling plan is
+Stage 10 interaction polish is complete through Stage 10.26. The controlling plan is
 `docs/discord-interaction-polish-plan.md`; the Stage 10.0 baseline lock is recorded
 in `docs/stage-10-baseline.md`, and QA evidence is recorded in
 `docs/stage-10-final-qa.md`. The completed work covers demo/test data cleanup,
 visual-noise reduction, Discord-like shell hierarchy, text/button spacing, bottom
-user panel reconstruction, message/composer polish, voice/screen-share interaction
-cleanup, app-owned context menus/notices, browser-native UI removal for clone
-workflows, voice-sidebar participant hierarchy, server-owned voice session
-tracking, and the in-app cross-server voice-switch dialog. Remaining voice media
-verification still depends on a browser session with microphone and screen-capture
-permissions granted.
+user panel reconstruction, message/composer polish, timeline divider cleanup,
+voice/screen-share interaction cleanup, app-owned context menus/notices,
+browser-native UI removal for clone workflows, voice-sidebar participant hierarchy,
+server-owned voice session tracking, and the in-app cross-server voice-switch
+dialog. Remaining voice media verification still depends on a browser session with
+microphone and screen-capture permissions granted.
 
 The app boots in two local modes:
 
@@ -1345,6 +1345,13 @@ Completed Stage 2 bridge work:
   alignment. A project search found no clone UI `alert`, `confirm`, or `prompt`
   usage outside sanitizer test payload strings. Frontend lint/build, Docker frontend
   rebuild, and browser layout QA passed.
+- Added Stage 10.26 message timeline divider cleanup:
+  `frontend/src/components/DirectMessageView.vue` now renders a date divider before
+  DM messages, and `frontend/src/styles/base.css` removes stacked borders by
+  clearing the first message row's top border and applying the thin separator only
+  between adjacent message rows. The DM intro no longer draws a bottom border that
+  can collide with the timeline divider. Frontend lint/build, Docker frontend
+  rebuild, and browser layout QA passed for server text and DM timelines.
 
 After each stage or meaningful feature:
 

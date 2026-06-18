@@ -364,7 +364,7 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: completed through Stage 10.25 follow-up interaction polish.
+- Status: completed through Stage 10.26 follow-up interaction polish.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -497,3 +497,7 @@
   localized app notices, and the lower-left self status card gained panel breathing
   room while staying aligned to the composer frame. Frontend lint/build, Docker
   frontend rebuild, and browser layout checks passed.
+- Completed Stage 10.26: server text and DM timelines now avoid the double-line
+  effect by rendering date/intro separators above the first message and applying
+  message-row top borders only between adjacent messages. Frontend lint/build,
+  Docker frontend rebuild, and browser layout checks passed.

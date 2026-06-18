@@ -46,6 +46,12 @@ function messageTime(index: number) {
   )
 }
 
+const timelineDate = computed(() =>
+  new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(
+    new Date(2026, 4, 18),
+  ),
+)
+
 watch(
   () => props.dm?.id,
   () => {
@@ -99,6 +105,8 @@ watch(
         <h2>{{ t('app.status.directMessage') }}</h2>
         <p>{{ t('dm.selectConversation') }}</p>
       </section>
+
+      <div v-if="dm?.messages.length" class="date-divider dm-date-divider"><span>{{ timelineDate }}</span></div>
 
       <article
         v-for="(message, index) in dm?.messages ?? []"

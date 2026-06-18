@@ -247,3 +247,31 @@ Residual manual QA:
 
 - Successful connected voice and screen-share flows still require a browser session
   with microphone and screen-capture permissions granted.
+
+## Stage 10.26 Message Timeline Divider Cleanup QA
+
+Date: 2026-06-18
+
+Scope: server text channel and direct-message timeline separators.
+
+Command verification:
+
+- `npm run lint:frontend`: passed with 0 warnings and 0 errors.
+- `npm --prefix frontend run build`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- Server text channel `SRS Lab / #architecture`: one date divider rendered before
+  messages, first `.message-row` measured `border-top: 0px`, second `.message-row`
+  retained the thin message-to-message separator, and horizontal overflow was `0`.
+- Direct message `Mina`: one date divider rendered after the DM intro, the intro
+  measured `border-bottom: 0px`, first `.message-row` measured `border-top: 0px`,
+  second `.message-row` retained the thin message-to-message separator, and
+  horizontal overflow was `0`.
+
+Residual manual QA:
+
+- No backend or media behavior changed. Connected voice and screen-share checks
+  remain governed by microphone/screen-capture permissions.
