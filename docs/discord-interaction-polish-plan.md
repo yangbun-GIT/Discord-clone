@@ -388,6 +388,11 @@ Verification:
 
 ## Stage 10.10: Text Timeline Rebuild
 
+Status: completed. Message metadata now uses locale-aware time labels instead of raw
+IDs, date text is rendered from a date formatter, hover actions float as a compact
+toolbar, reaction buttons are structured as compact pills, and attachment cards use
+stable icon/content columns.
+
 Goal: make chat content feel like Discord.
 
 Tasks:
@@ -402,6 +407,10 @@ Verification:
 
 - No horizontal scroll in the message panel.
 - Text and attachments align to one message column.
+- Browser QA confirmed no horizontal overflow in text and DM message lists, no
+  broken date text, no raw message IDs in metadata, compact structured reaction
+  pills, and absolute hover actions. The active seeded channel did not show an
+  attachment card during browser QA, so attachment alignment was code/build verified.
 
 ## Stage 10.11: Composer Rebuild
 

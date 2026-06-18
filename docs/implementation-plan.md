@@ -364,8 +364,8 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: in progress; Stage 10.0 through Stage 10.9 are complete and implementation
-  continues at Stage 10.10.
+- Status: in progress; Stage 10.0 through Stage 10.10 are complete and implementation
+  continues at Stage 10.11.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -410,7 +410,10 @@
 - Completed Stage 10.9: header action reduction removed low-frequency/crowding
   buttons from the primary header and browser-verified remaining search/member/pin/
   notification/invite controls do not wrap.
-- Planned Stage 10.10: text timeline rebuild.
+- Completed Stage 10.10: text timeline rebuild replaced raw message IDs with
+  locale-aware demo time labels, cleaned the date divider, converted reactions into
+  compact pills, stabilized attachment card columns, and browser-verified text/DM
+  message panels for horizontal overflow.
 - Planned Stage 10.11: composer rebuild.
 - Planned Stage 10.12: member list simplification.
 - Planned Stage 10.13: bottom user panel rebuild.

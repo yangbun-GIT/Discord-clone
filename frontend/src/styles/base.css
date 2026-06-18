@@ -2621,8 +2621,9 @@ select:focus-visible {
 
 .message-list {
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding: 18px 16px 8px;
+  padding: 18px 18px 10px;
 }
 
 .message-row {
@@ -2631,7 +2632,7 @@ select:focus-visible {
   grid-template-columns: 40px minmax(0, 1fr);
   gap: 12px;
   border-radius: 4px;
-  padding: 6px 8px;
+  padding: 5px 8px;
 }
 
 .message-row:hover {
@@ -2640,6 +2641,7 @@ select:focus-visible {
 
 .message-main {
   min-width: 0;
+  max-width: min(760px, 100%);
 }
 
 .avatar,
@@ -2658,9 +2660,18 @@ select:focus-visible {
 }
 
 .message-meta {
+  min-width: 0;
   display: flex;
   align-items: baseline;
   gap: 8px;
+  padding-right: 116px;
+}
+
+.message-meta strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .message-meta span {
@@ -2673,6 +2684,7 @@ select:focus-visible {
   color: #d7dee8;
   line-height: 1.45;
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .date-divider {
@@ -2694,27 +2706,27 @@ select:focus-visible {
 }
 
 .demo-attachment-stack {
-  width: min(100%, 440px);
+  width: min(100%, 420px);
   display: grid;
-  gap: 8px;
+  gap: 7px;
   margin-top: 10px;
 }
 
 .attachment-card {
   min-width: 0;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 8px;
   background: #24252b;
-  padding: 12px;
+  padding: 10px;
 }
 
 .attachment-icon {
-  width: 36px;
-  height: 42px;
+  width: 34px;
+  height: 38px;
   display: grid;
   place-items: center;
   border-radius: 5px;
@@ -2749,18 +2761,26 @@ select:focus-visible {
 .message-reactions {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   margin-top: 8px;
 }
 
 .message-reactions button {
-  min-height: 26px;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
+  border-radius: 999px;
   color: #dbdee1;
   background: #24252b;
-  padding: 0 8px;
+  padding: 0 9px;
   font-weight: 800;
+}
+
+.message-reactions button strong {
+  color: #b5bac1;
+  font-size: 0.78rem;
 }
 
 .message-reactions button:hover,
@@ -2782,11 +2802,18 @@ select:focus-visible {
 }
 
 .message-actions {
-  position: relative;
+  position: absolute;
+  top: -8px;
+  right: 10px;
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: #2b2d31;
+  padding: 2px;
   opacity: 0;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 24%);
   transition: opacity 140ms ease;
 }
 

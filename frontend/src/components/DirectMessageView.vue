@@ -40,6 +40,12 @@ function statusLabel(status: UserPresenceStatus) {
   return t(`common.status.${status}`)
 }
 
+function messageTime(index: number) {
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
+    new Date(2026, 4, 18, 8, 54 + index),
+  )
+}
+
 watch(
   () => props.dm?.id,
   () => {
@@ -94,14 +100,14 @@ watch(
         <p>{{ t('dm.selectConversation') }}</p>
       </section>
 
-      <article v-for="message in dm?.messages ?? []" :key="message.id" class="message-row">
+      <article v-for="(message, index) in dm?.messages ?? []" :key="message.id" class="message-row">
         <div class="avatar" aria-hidden="true">
           {{ message.author_name.slice(0, 1).toUpperCase() }}
         </div>
         <div class="message-main">
           <div class="message-meta">
             <strong>{{ message.author_name }}</strong>
-            <span>#{{ message.id }}</span>
+            <span>{{ messageTime(index) }}</span>
             <span v-if="currentUser?.id === message.author_id">{{ t('channel.you') }}</span>
           </div>
           <p>{{ message.content }}</p>

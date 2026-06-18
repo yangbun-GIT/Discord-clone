@@ -1210,6 +1210,11 @@ Completed Stage 2 bridge work:
   notifications, pins, member list, search, and invite creation while removing
   threads, inbox, help, join-server, and logout from the primary header. Browser QA
   verified no wrapping or horizontal overflow.
+- Added Stage 10.10 text timeline rebuild: server and DM message metadata now use
+  locale-aware demo time labels instead of raw IDs, date dividers are formatted,
+  message hover actions are compact floating toolbars, reaction buttons are compact
+  structured pills, and attachment cards have stable icon/content columns. Browser
+  QA verified text/DM message lists for horizontal overflow and metadata cleanup.
 
 After each stage or meaningful feature:
 

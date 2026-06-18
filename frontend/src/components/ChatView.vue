@@ -38,10 +38,18 @@ const demoAttachmentCards = [
   { title: '16. Mid-fi prototyping.pdf', meta: '1.38 MB' },
   { title: '18.0_Evaluation.pdf', meta: '928.06 KB' },
 ]
-const reactionOptions = ['OK 3', '+1 1']
+const reactionOptions = [
+  { label: 'OK', count: 3 },
+  { label: '+1', count: 1 },
+]
 
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
+)
+const timelineDate = computed(() =>
+  new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(
+    new Date(2026, 4, 18),
+  ),
 )
 const activeComposerPanelLabel = computed(() => {
   if (activeComposerPanel.value === 'upload') return t('chat.uploadFile')
@@ -135,12 +143,18 @@ function submitEdit(message: Message) {
   emit('edit', message.id, content)
   cancelEdit()
 }
+
+function messageTime(index: number) {
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
+    new Date(2026, 4, 18, 8, 54 + index),
+  )
+}
 </script>
 
 <template>
   <section class="chat-view" :aria-label="t('chat.aria.messages')">
     <div class="message-list">
-      <div class="date-divider"><span>2026년 5월 18일</span></div>
+      <div class="date-divider"><span>{{ timelineDate }}</span></div>
       <article v-for="(message, index) in messages" :key="message.id" class="message-row">
         <div class="avatar" aria-hidden="true">
           {{ message.author_name.slice(0, 1).toUpperCase() }}
@@ -148,7 +162,7 @@ function submitEdit(message: Message) {
         <div class="message-main">
           <div class="message-meta">
             <strong>{{ message.author_name }}</strong>
-            <span>#{{ message.id }}</span>
+            <span>{{ messageTime(index) }}</span>
             <div
               class="message-actions"
               :aria-label="t('chat.aria.messageActions')"
@@ -247,7 +261,10 @@ function submitEdit(message: Message) {
             </article>
           </div>
           <div class="message-reactions" aria-label="Message reactions">
-            <button v-for="reaction in reactionOptions" :key="reaction" type="button">{{ reaction }}</button>
+            <button v-for="reaction in reactionOptions" :key="reaction.label" type="button">
+              <span>{{ reaction.label }}</span>
+              <strong>{{ reaction.count }}</strong>
+            </button>
           </div>
         </div>
       </article>
