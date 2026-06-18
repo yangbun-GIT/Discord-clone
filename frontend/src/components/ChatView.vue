@@ -252,7 +252,7 @@ function messageTime(index: number) {
           <p v-else>{{ message.content }}</p>
         </div>
       </article>
-      <div v-if="!messages.length" class="channel-empty-density">
+      <div v-if="!messages.length" class="channel-empty-intro">
         <strong>{{ channel ? `#${channel.name}` : t('chat.loadingChannel') }}</strong>
         <span>{{ t('chat.emptyChannelHint') }}</span>
       </div>

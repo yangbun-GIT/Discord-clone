@@ -891,6 +891,35 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R7 - Empty/onboarding and invite/search flows
+
+- Status: completed.
+- Goal: empty/new text channels should show a concise Discord-like start state,
+  while invite/search/start-conversation flows remain either implemented or hidden.
+- Findings reviewed:
+  - QA-P2-07 text-channel empty/onboarding state is not Discord-like enough.
+  - QA-P1-04 visible controls exceed confirmed behavior.
+- Target files reviewed:
+  - `frontend/src/components/ChatView.vue`
+  - `frontend/src/components/PrivateChannelSidebar.vue`
+  - `frontend/src/App.vue`
+  - `frontend/src/i18n/index.ts`
+  - `frontend/src/styles/base.css`
+- Existing state:
+  - DM search/start conversation and server invite modal flows were already wired.
+  - Text-channel empty copy mentioned file previews and used a separator-like top
+    border, which made empty channels feel like a generic demo panel.
+- Implementation:
+  - `ChatView.vue` now renders empty text channels with `channel-empty-intro`.
+  - Empty-channel styling removes the divider-like top border and uses a compact
+    channel-start layout.
+  - Korean and English empty-channel copy now state that this is the start of the
+    channel and prompt the first message, without file-preview or debug wording.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.

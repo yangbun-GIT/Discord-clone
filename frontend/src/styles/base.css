@@ -3578,18 +3578,24 @@ select:focus-visible {
   color: #a6a9ad;
 }
 
-.channel-empty-density {
-  width: min(100%, 520px);
+.channel-empty-intro {
+  width: min(100%, 560px);
   display: grid;
-  gap: 6px;
-  margin: 4px 0 0 52px;
-  border-top: 1px solid var(--border-muted);
+  gap: 8px;
+  margin: 8px 0 0 52px;
   color: #a6a9ad;
-  padding-top: 18px;
+  padding: 18px 0 8px;
 }
 
-.channel-empty-density strong {
+.channel-empty-intro strong {
   color: #f2f3f5;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.channel-empty-intro span {
+  max-width: 460px;
+  line-height: 1.45;
 }
 
 .message-actions {
