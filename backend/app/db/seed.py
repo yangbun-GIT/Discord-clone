@@ -3,11 +3,11 @@ from app.demo.data import create_initial_guilds
 
 DM_PROFILES = [
     (42, "yangbun", "yangbun", "online", None),
-    (701, "Project Lead", "project.lead", "online", "Reviewing the sprint board"),
-    (702, "Frontend Pair", "frontend.pair", "online", "Building components"),
-    (703, "Backend Pair", "backend.pair", "idle", "Reading API logs"),
-    (704, "QA Reviewer", "qa.reviewer", "offline", None),
-    (705, "Design Critic", "design.critic", "offline", None),
+    (701, "Mina", "mina.study", "online", "Reading in voice"),
+    (702, "Joon", "joon.dev", "online", "Working on layout"),
+    (703, "Rina", "rina.notes", "idle", "Reviewing notes"),
+    (704, "Haru", "haru.music", "offline", None),
+    (705, "Nora", "nora.design", "offline", None),
 ]
 
 RELATIONSHIPS = [
@@ -24,21 +24,21 @@ DM_SEEDS = [
         [42, 701],
         2,
         [
-            (8101, 701, "Stage notes are ready for review."),
-            (8102, 42, "I'll wire the next slice through the app shell."),
+            (8101, 701, "오늘 자료방 정리는 끝났어."),
+            (8102, 42, "좋아. 채널 목록도 더 깔끔하게 맞춰볼게."),
         ],
     ),
     (
         802,
         [42, 702],
         0,
-        [(8201, 702, "The private sidebar is ready for API data.")],
+        [(8201, 702, "저녁에 음성 채널에서 다시 얘기하자.")],
     ),
     (
         803,
         [42, 701, 702, 703],
         1,
-        [(8301, 703, "DM persistence can move to PostgreSQL in Stage 7.10.")],
+        [(8301, 703, "회의 전에 공유할 파일만 정리해둘게.")],
     ),
 ]
 

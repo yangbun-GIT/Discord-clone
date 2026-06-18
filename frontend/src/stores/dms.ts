@@ -8,6 +8,7 @@ import {
   fetchRelationships,
 } from '../services/api'
 import type { DirectMessage, DmMessage, Friend } from '../types'
+import { isVisualTestMessage, isVisualTestName } from '../utils/visualNoise'
 
 export const useDmStore = defineStore('dms', () => {
   const relationships = shallowRef<Friend[]>([])
@@ -28,7 +29,7 @@ export const useDmStore = defineStore('dms', () => {
     isLoading.value = true
     error.value = null
     try {
-      relationships.value = await fetchRelationships(token)
+      relationships.value = cleanRelationships(await fetchRelationships(token))
     } catch (cause) {
       setError(cause, 'Failed to load relationships')
       throw cause
@@ -41,7 +42,7 @@ export const useDmStore = defineStore('dms', () => {
     isLoading.value = true
     error.value = null
     try {
-      dms.value = await fetchDirectMessages(token)
+      dms.value = cleanDms(await fetchDirectMessages(token))
     } catch (cause) {
       setError(cause, 'Failed to load direct messages')
       throw cause
@@ -58,8 +59,8 @@ export const useDmStore = defineStore('dms', () => {
         fetchRelationships(token),
         fetchDirectMessages(token),
       ])
-      relationships.value = nextRelationships
-      dms.value = nextDms
+      relationships.value = cleanRelationships(nextRelationships)
+      dms.value = cleanDms(nextDms)
     } catch (cause) {
       setError(cause, 'Failed to load direct messages')
       throw cause
@@ -74,13 +75,16 @@ export const useDmStore = defineStore('dms', () => {
   }
 
   function upsertDm(dm: DirectMessage) {
-    const exists = dms.value.some((item) => item.id === dm.id)
+    const cleanedDm = cleanDmForVisualQa(dm)
+    if (!cleanedDm) return
+    const exists = dms.value.some((item) => item.id === cleanedDm.id)
     dms.value = exists
-      ? dms.value.map((item) => (item.id === dm.id ? dm : item))
-      : [dm, ...dms.value]
+      ? dms.value.map((item) => (item.id === cleanedDm.id ? cleanedDm : item))
+      : [cleanedDm, ...dms.value]
   }
 
   function appendMessage(dmId: number, message: DmMessage) {
+    if (isVisualTestMessage(message.content) || isVisualTestName(message.author_name)) return
     dms.value = dms.value.map((dm) => {
       if (dm.id !== dmId) return dm
       if (dm.messages.some((existingMessage) => existingMessage.id === message.id)) return dm
@@ -89,6 +93,38 @@ export const useDmStore = defineStore('dms', () => {
         unread_count: 0,
         messages: [...dm.messages, message],
       }
+    })
+  }
+
+  function cleanRelationships(nextRelationships: Friend[]) {
+    return nextRelationships.filter(
+      (friend) =>
+        !isVisualTestName(friend.username)
+        && !isVisualTestName(friend.handle)
+        && !isVisualTestMessage(friend.activity),
+    )
+  }
+
+  function cleanDmForVisualQa(dm: DirectMessage) {
+    if (isVisualTestName(dm.display_name) || isVisualTestMessage(dm.activity)) return null
+    return {
+      ...dm,
+      participants: dm.participants.filter(
+        (participant) =>
+          !isVisualTestName(participant.username)
+          && !isVisualTestName(participant.handle)
+          && !isVisualTestMessage(participant.activity),
+      ),
+      messages: dm.messages.filter(
+        (message) => !isVisualTestName(message.author_name) && !isVisualTestMessage(message.content),
+      ),
+    }
+  }
+
+  function cleanDms(nextDms: DirectMessage[]) {
+    return nextDms.flatMap((dm) => {
+      const clean = cleanDmForVisualQa(dm)
+      return clean ? [clean] : []
     })
   }
 

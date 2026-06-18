@@ -48,6 +48,10 @@ the Stage 10.0 baseline lock is recorded in `docs/stage-10-baseline.md`. It targ
 the remaining quality gap: test/demo data cleanup, visual noise reduction,
 Discord-like shell hierarchy, text/button spacing, bottom user panel reconstruction,
 message/composer polish, and voice/screen-share interaction cleanup.
+Stage 10.1 is complete: fresh demo seed and native fallback data now use natural safe
+sample users/messages, frontend stores filter obvious smoke-test names/messages from
+default visual surfaces without deleting database rows, and backend/frontend
+verification passed after fixture updates.
 
 The app boots in two local modes:
 

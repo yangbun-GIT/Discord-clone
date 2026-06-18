@@ -64,7 +64,7 @@ def test_create_dm_returns_existing_or_new_thread() -> None:
     assert response.status_code == 201
     payload = response.json()
     assert payload["recipient_ids"] == [704]
-    assert payload["display_name"] == "QA Reviewer"
+    assert payload["display_name"] == "Haru"
     assert payload["member_count"] == 2
 
 

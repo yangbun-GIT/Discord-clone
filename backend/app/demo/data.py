@@ -14,7 +14,7 @@ def create_initial_guilds() -> list[GuildRead]:
     return [
         GuildRead(
             id=1001,
-            name="SRS Lab",
+            name="Study Hall",
             owner_id=42,
             permissions=permissions,
             channels=[
@@ -36,37 +36,35 @@ def create_initial_guilds() -> list[GuildRead]:
                     channel_id=2001,
                     author_id=43,
                     author_name="codex",
-                    content=(
-                        "The app shell needs to stay compact before we add more features."
-                    ),
+                    content="자료방에는 과제 파일과 회의 기록만 모아두자.",
                 ),
                 MessageRead(
                     id=3002,
                     channel_id=2001,
                     author_id=42,
                     author_name="yangbun",
-                    content="Focus on clean Discord-like spacing and hide development-only text.",
+                    content="좋아. 채팅 화면은 최대한 조용하고 읽기 쉽게 맞춰볼게.",
                 ),
                 MessageRead(
                     id=3003,
                     channel_id=2001,
                     author_id=45,
                     author_name="designer",
-                    content="The voice channel should show a subtle glow when microphone input is active.",
+                    content="음성 채널은 말할 때 아바타 테두리만 자연스럽게 빛나면 충분해.",
                 ),
                 MessageRead(
                     id=3004,
                     channel_id=2001,
                     author_id=44,
                     author_name="reviewer",
-                    content="Composer icons, member list, and channel rows should align to one compact rhythm.",
+                    content="채널 목록, 멤버 목록, 입력창 높이를 한 리듬으로 맞추면 훨씬 깔끔해져.",
                 ),
                 MessageRead(
                     id=3005,
                     channel_id=2002,
                     author_id=43,
                     author_name="codex",
-                    content="Safe demo attachments are rendered locally for visual QA.",
+                    content="자료 미리보기는 작은 카드로만 보여주면 될 것 같아.",
                 ),
             ],
         )

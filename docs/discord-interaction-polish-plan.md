@@ -148,6 +148,25 @@ Verification:
 
 ## Stage 10.1: Demo And Test Data Cleanup
 
+Status: completed. Fresh demo seed copy now uses natural safe sample users/messages,
+and the frontend filters obvious smoke-test names/messages from default visual
+surfaces without deleting persistent database rows.
+
+Corrective Stage 10.1.1: implementation review found that hidden QA guilds could
+leave the active guild/channel selection pointing at filtered data, and one DM
+cleanup helper name collided with a local variable. Both issues were corrected before
+moving to Stage 10.2.
+
+Corrective Stage 10.1.2: backend verification found one test still expected the old
+`SRS Lab` seed name, and the native demo-store fallback still used development-style
+DM names/messages. The test expectation and native fallback seed data were updated
+before moving to Stage 10.2.
+
+Corrective Stage 10.1.3: repeat backend verification found DM API, demo-store, and
+repository tests still using the old development-style DM fixture names. The fixture
+data and expectations were updated to the same safe sample names used by runtime
+seed data.
+
 Goal: remove development artifacts from primary UI.
 
 Tasks:

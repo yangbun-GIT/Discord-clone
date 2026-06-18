@@ -80,7 +80,7 @@ def test_list_my_guilds_returns_authenticated_user_memberships() -> None:
     response = client.get("/api/guilds/me", headers=auth_headers())
 
     assert response.status_code == 200
-    assert response.json()[0]["name"] == "SRS Lab"
+    assert response.json()[0]["name"] == "Study Hall"
 
 
 def test_list_my_guilds_filters_non_members() -> None:

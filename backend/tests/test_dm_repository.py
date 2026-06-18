@@ -19,17 +19,17 @@ class FakeDmDatabase:
         self.executed: list[tuple[str, tuple[object, ...]]] = []
         self.users = {
             42: {"id": 42, "username": "yangbun", "status": 1},
-            701: {"id": 701, "username": "Project Lead", "status": 1},
-            704: {"id": 704, "username": "QA Reviewer", "status": 0},
+            701: {"id": 701, "username": "Mina", "status": 1},
+            704: {"id": 704, "username": "Haru", "status": 0},
         }
         self.profiles = {
             701: {
-                "handle": "project.lead",
+                "handle": "mina.study",
                 "presence_status": "online",
-                "activity": "Reviewing",
+                "activity": "Reading in voice",
             },
             704: {
-                "handle": "qa.reviewer",
+                "handle": "haru.music",
                 "presence_status": "offline",
                 "activity": None,
             },
@@ -47,8 +47,8 @@ class FakeDmDatabase:
                     "id": 8101,
                     "dm_id": 801,
                     "author_id": 701,
-                    "author_name": "Project Lead",
-                    "content": "Stage notes are ready.",
+                    "author_name": "Mina",
+                    "content": "오늘 자료방 정리는 끝났어.",
                 }
             ]
         }
@@ -79,10 +79,10 @@ class FakeDmDatabase:
             return [
                 {
                     "id": 701,
-                    "username": "Project Lead",
-                    "handle": "project.lead",
+                    "username": "Mina",
+                    "handle": "mina.study",
                     "presence_status": "online",
-                    "activity": "Reviewing",
+                    "activity": "Reading in voice",
                     "relationship": "friend",
                 }
             ]
@@ -153,7 +153,7 @@ async def test_list_relationships_reads_postgres_rows(monkeypatch: pytest.Monkey
     relationships = await DmRepository().list_relationships(42)
 
     assert relationships[0].id == 701
-    assert relationships[0].handle == "project.lead"
+    assert relationships[0].handle == "mina.study"
     assert relationships[0].status == "online"
 
 
@@ -166,7 +166,7 @@ async def test_create_dm_returns_existing_exact_membership(
     dm = await DmRepository().create_dm(DmCreate(recipient_ids=[701]), user())
 
     assert dm.id == 801
-    assert dm.display_name == "Project Lead"
+    assert dm.display_name == "Mina"
     assert dm.unread_count == 2
 
 

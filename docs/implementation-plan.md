@@ -380,8 +380,9 @@
   corrective `Stage 10.x.y` note before continuing.
 - Completed Stage 10.0: baseline lock for current Friends, Add Friend, text channel,
   voice, and screen-share views in `docs/stage-10-baseline.md`.
-- Planned Stage 10.1: demo and test data cleanup so `QA Smoke`, `stage8-*`, generated
-  IDs, and template messages do not dominate primary UI.
+- Completed Stage 10.1: demo and test data cleanup so smoke-test names, generated QA
+  labels, old development-style DM users, and template messages do not dominate
+  primary UI.
 - Planned Stage 10.2: design token reset for quieter Discord-like colors, surfaces,
   row heights, icon sizes, text sizes, and focus states.
 - Planned Stage 10.3: shell layout recomposition for rail/sidebar/main/member/bottom

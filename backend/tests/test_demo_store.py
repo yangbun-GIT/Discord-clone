@@ -59,5 +59,5 @@ def test_demo_store_creates_dm_for_known_recipient() -> None:
         UserPublic(id=42, username="yangbun", status=1),
     )
 
-    assert dm.display_name == "QA Reviewer"
+    assert dm.display_name == "Haru"
     assert dm.recipient_ids == [704]

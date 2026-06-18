@@ -16,12 +16,12 @@ from app.schemas.dm import (
 id_generator = SnowflakeGenerator(worker_id=3)
 
 DEMO_DM_PROFILES = [
-    (701, "Project Lead", "project.lead", "online", "Sprint planning"),
-    (702, "Frontend Pair", "frontend.pair", "online", "Building the app shell"),
-    (703, "Backend Pair", "backend.pair", "idle", "Checking API logs"),
-    (704, "QA Reviewer", "qa.reviewer", "offline", None),
-    (705, "Design Critic", "design.critic", "offline", None),
-    (706, "Voice Tester", "voice.tester", "online", "Testing microphone input"),
+    (701, "Mina", "mina.study", "online", "Reading in voice"),
+    (702, "Joon", "joon.dev", "online", "Working on layout"),
+    (703, "Rina", "rina.notes", "idle", "Reviewing notes"),
+    (704, "Haru", "haru.music", "offline", None),
+    (705, "Nora", "nora.design", "offline", None),
+    (706, "Tae", "tae.voice", "online", "In a voice channel"),
 ]
 
 DEMO_RELATIONSHIPS = [
@@ -34,9 +34,9 @@ DEMO_RELATIONSHIPS = [
 ]
 
 DEMO_DM_MESSAGES = [
-    (701, "Stage notes are ready for review."),
-    (702, "The app shell is ready for visual parity QA."),
-    (706, "Voice input indicators should feel compact and clear."),
+    (701, "오늘 자료방 정리는 끝났어."),
+    (702, "저녁에 음성 채널에서 다시 얘기하자."),
+    (706, "마이크 들어오면 테두리로만 표시되면 좋겠어."),
 ]
 
 
