@@ -138,7 +138,7 @@ const statusLabel = computed(() => {
             </div>
             <div>
               <dt>{{ t('settings.userId') }}</dt>
-              <dd>{{ currentUser?.id ?? 'local-demo' }}</dd>
+              <dd>{{ currentUser?.id ?? 'local-session' }}</dd>
             </div>
             <div>
               <dt>{{ t('settings.status') }}</dt>

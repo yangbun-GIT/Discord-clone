@@ -9,7 +9,7 @@ const emit = defineEmits<{
 
 const search = ref('')
 
-const demoServers = [
+const suggestedServers = [
   {
     name: 'Study Hall',
     category: 'Education',
@@ -42,8 +42,8 @@ const demoServers = [
 
 const filteredServers = computed(() => {
   const query = search.value.trim().toLowerCase()
-  if (!query) return demoServers
-  return demoServers.filter((server) =>
+  if (!query) return suggestedServers
+  return suggestedServers.filter((server) =>
     [server.name, server.category, server.channels].some((value) => value.toLowerCase().includes(query)),
   )
 })
@@ -67,7 +67,7 @@ const filteredServers = computed(() => {
         <input v-model="search" type="search" placeholder="Search communities" aria-label="Search communities" />
       </label>
 
-      <div class="discovery-server-grid" aria-label="Public demo servers">
+      <div class="discovery-server-grid" aria-label="Suggested public servers">
         <article v-for="server in filteredServers" :key="server.name" class="discovery-server-card">
           <div class="discovery-server-mark" :style="{ background: server.accent }">
             {{ server.name.slice(0, 2).toUpperCase() }}
@@ -76,7 +76,7 @@ const filteredServers = computed(() => {
             <span>{{ server.category }}</span>
             <h3>{{ server.name }}</h3>
             <p><Hash :size="14" aria-hidden="true" />{{ server.channels }}</p>
-            <p><Users :size="14" aria-hidden="true" />{{ server.members }} demo members</p>
+            <p><Users :size="14" aria-hidden="true" />{{ server.members }} members</p>
           </div>
           <button type="button" @click="$emit('createServer', server.name)">
             <Sparkles :size="16" aria-hidden="true" />

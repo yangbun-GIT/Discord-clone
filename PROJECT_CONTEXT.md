@@ -1402,6 +1402,14 @@ Completed Stage 2 bridge work:
   inside the app menu. A source audit found no clone UI `alert`, `confirm`, or
   `prompt` calls outside sanitizer test payloads; frontend lint/build, Docker
   frontend rebuild, and browser static QA passed.
+- Added Stage 11.9 feature exposure cleanup: `frontend/src/i18n/index.ts`,
+  `frontend/src/components/ServerAddDialog.vue`,
+  `frontend/src/components/ServerDiscoveryDialog.vue`, and
+  `frontend/src/components/SettingsView.vue` now remove user-visible demo wording
+  from primary flows while keeping common DM/server/message/voice/settings actions
+  visible. `frontend/package-lock.json` updates Vite to 8.0.16 via `npm audit fix`;
+  frontend audit, lint/build, Docker rebuild, and browser primary-surface text QA
+  passed.
 
 After each stage or meaningful feature:
 

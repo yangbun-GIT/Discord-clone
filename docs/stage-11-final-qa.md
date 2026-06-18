@@ -257,3 +257,35 @@ Residual notes:
 - The in-app browser coordinate right-click did not open the app context menu in
   this pass, so target-menu interaction remains a final manual/browser QA item.
   The code path is compile-verified and native dialog usage is source-audited.
+
+## Stage 11.9: Feature Exposure Policy
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Public server discovery no longer uses "demo server/member" wording.
+- Primary user-facing copy now uses "local clone", "local session", "development
+  user", or "supported scope" instead of demo-oriented wording.
+- Friend request, settings safety, and logout copy were neutralized.
+- Vite was updated from 8.0.13 to 8.0.16 through `npm audit fix` after Docker
+  verification reported a high-severity Vite advisory.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed with Vite 8.0.16.
+- `npm --prefix frontend audit --audit-level=high` passed with `found 0 vulnerabilities`.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully, and `npm ci` inside the container reported
+  `found 0 vulnerabilities`.
+- Browser static QA on `http://localhost:5173/` confirmed horizontal overflow is
+  `0`, Friends and "Find or start a conversation" remain visible, and the primary
+  surface did not contain `Nitro`, `Shop`, `Quests`, `상점`, `퀘스트`,
+  `demo members`, `Demo user`, or `데모 사용자`.
+
+Residual notes:
+
+- Some internal event names, CSS class names, and dormant i18n keys still contain
+  `demo`/commerce terms for compatibility with existing components and backend
+  store models. They are not visible on the primary app surfaces verified here.

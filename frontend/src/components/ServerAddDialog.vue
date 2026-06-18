@@ -85,7 +85,7 @@ function submit() {
 
       <button type="button" class="server-discovery-link" @click="$emit('discover')">
         <Compass :size="17" aria-hidden="true" />
-        <span>Explore public demo servers</span>
+        <span>Explore public servers</span>
       </button>
 
       <div class="dialog-actions">

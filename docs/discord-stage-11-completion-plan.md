@@ -247,6 +247,11 @@ Verification:
 
 Goal: make primary navigation show only useful clone features.
 
+Status: completed. Primary surfaces now avoid user-visible demo wording, public
+server discovery copy is neutral, low-priority commerce/app surfaces remain hidden
+or scope-explained, and Vite was updated to clear the high-severity audit finding
+discovered during verification.
+
 Tasks:
 
 - Hide or clearly defer Nitro, Shop, Quests, commerce, app launcher, and other

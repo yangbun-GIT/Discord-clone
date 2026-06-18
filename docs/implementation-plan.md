@@ -557,3 +557,8 @@
   auto-dismiss and close through outside click/Escape, nested browser context-menu
   behavior is suppressed inside the app menu, and source search found no clone UI
   `alert`, `confirm`, or `prompt` calls.
+- Completed Stage 11.9: primary feature exposure now keeps common clone actions
+  visible while removing user-facing demo wording from public server discovery,
+  friend request, settings, and logout copy. Vite was updated to 8.0.16 after the
+  Stage 11.9 Docker build surfaced a high-severity Vite audit advisory; frontend
+  audit now reports zero vulnerabilities.
