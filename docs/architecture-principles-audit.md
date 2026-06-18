@@ -251,27 +251,20 @@ The 2026-06-19 whole-project re-audit found that the first remediation pass
 reduced several broad risks, but the project still has the following remaining
 principle and pattern gaps:
 
-1. `frontend/src/App.vue` still owns voice session orchestration, cross-server
-   voice-switch confirmation, voice config loading, mute/deafen synchronization,
-   and screen-share toggling.
-2. `frontend/src/composables/useVoiceRtc.ts` still combines browser media capture,
-   local VAD, peer lifecycle, signaling, screen sharing, and RTC facade behavior.
-3. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
+1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
-4. `backend/app/services/dm_service.py` still directly branches between
-   PostgreSQL and demo storage based on `database.is_connected`.
-5. `backend/app/repositories/guilds.py` still contains the actual SQL for channel,
+2. `backend/app/repositories/guilds.py` still contains the actual SQL for channel,
    message, invite, role, member, and permission-helper workflows; the
    domain-specific repository files currently provide only entry-point boundaries.
-6. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
+3. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
    exception-to-HTTP mappings.
-7. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
+4. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
    subscription-sync behavior around local gateway fan-out.
-8. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
+5. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
    and view transitions remain scattered across a few frontend modules. Some are
    appropriate at the browser boundary, but high-use clone workflows should be
    wrapped where doing so improves testability.
-9. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+6. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
     single files. They are acceptable for current visual stability, but future
     changes should move toward token/layout/component and domain-copy ownership.
 
@@ -329,6 +322,10 @@ Partially applied.
   `voicePeerConnections.ts`, and quality stats remain in `voiceStats.ts`.
 - `backend/app/services/guild_service.py`: PostgreSQL/demo branching moved behind
   `guild_storage.py`.
+- `backend/app/services/dm_service.py`: PostgreSQL/demo branching moved behind
+  `dm_storage.py`.
+- `backend/app/services/dm_storage.py`: owns the direct-message storage protocol
+  and PostgreSQL/demo provider selection used by `dm_service.py`.
 - `backend/app/repositories/guilds.py`: domain-specific repository entry points
   were added for channels, invites, members, messages, and roles. They currently
   delegate to the legacy implementation so query movement can proceed safely in

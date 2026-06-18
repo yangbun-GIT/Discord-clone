@@ -1,0 +1,73 @@
+from __future__ import annotations
+
+from typing import Protocol
+
+from app.db.pool import database
+from app.demo.store import demo_store
+from app.repositories.dms import dm_repository
+from app.schemas.auth import UserPublic
+from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageRead, DmRead, RelationshipRead
+
+
+class DmStorage(Protocol):
+    async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]: ...
+
+    async def list_dms(self, user: UserPublic) -> list[DmRead]: ...
+
+    async def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead: ...
+
+    async def create_dm_message(
+        self,
+        *,
+        dm_id: int,
+        payload: DmMessageCreate,
+        author: UserPublic,
+    ) -> DmMessageRead: ...
+
+
+class PostgresDmStorage:
+    async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
+        return await dm_repository.list_relationships(user.id)
+
+    async def list_dms(self, user: UserPublic) -> list[DmRead]:
+        return await dm_repository.list_dms(user)
+
+    async def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead:
+        return await dm_repository.create_dm(payload, user)
+
+    async def create_dm_message(
+        self,
+        *,
+        dm_id: int,
+        payload: DmMessageCreate,
+        author: UserPublic,
+    ) -> DmMessageRead:
+        return await dm_repository.create_dm_message(dm_id=dm_id, payload=payload, author=author)
+
+
+class DemoDmStorage:
+    async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
+        return demo_store.list_relationships(user.id)
+
+    async def list_dms(self, user: UserPublic) -> list[DmRead]:
+        return demo_store.list_dms(user)
+
+    async def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead:
+        return demo_store.create_dm(payload, user)
+
+    async def create_dm_message(
+        self,
+        *,
+        dm_id: int,
+        payload: DmMessageCreate,
+        author: UserPublic,
+    ) -> DmMessageRead:
+        return demo_store.create_dm_message(dm_id=dm_id, payload=payload, author=author)
+
+
+postgres_dm_storage = PostgresDmStorage()
+demo_dm_storage = DemoDmStorage()
+
+
+def get_dm_storage() -> DmStorage:
+    return postgres_dm_storage if database.is_connected else demo_dm_storage

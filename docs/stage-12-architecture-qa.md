@@ -107,3 +107,30 @@ Residual risk:
 
 - Live cross-server voice switching and peer presence updates remain
   browser/gateway-dependent manual QA, consistent with `docs/voice-qa.md`.
+
+## Stage 12.4 DM Storage Provider Boundary
+
+Status: completed.
+
+Changed files:
+
+- `backend/app/services/dm_service.py`
+- `backend/app/services/dm_storage.py`
+- `backend/tests/test_dm_storage.py`
+
+Verification:
+
+- `npm run lint:backend` passed.
+- `npm run test:backend -- tests/test_dm_api.py tests/test_dm_repository.py tests/test_dm_storage.py tests/test_demo_store.py` passed.
+
+Review:
+
+- `dm_service.py` no longer imports `database`, `demo_store`, or
+  `dm_repository`.
+- `dm_storage.py` mirrors the guild storage provider pattern with a `DmStorage`
+  protocol plus PostgreSQL and demo implementations.
+- New provider-selection tests cover connected and disconnected database modes.
+
+Residual risk:
+
+- None identified for route contracts; DM API and repository tests passed.

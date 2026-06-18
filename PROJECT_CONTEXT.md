@@ -555,6 +555,10 @@ The app boots in two local modes:
   - Stage 12.3 voice-presence store boundary used by `guilds.ts`.
   - Owns connected voice guild/channel refs, voice states, latest voice signal,
     active/connected voice-state derived lists, and voice-presence mutation helpers.
+- `backend/app/services/dm_storage.py`
+  - Stage 12.4 DM storage provider boundary used by `dm_service.py`.
+  - Selects PostgreSQL or demo direct-message storage once and exposes a common
+    async interface for relationships, DM lists, DM creation, and DM messages.
 - `frontend/src/components/ServerRail.vue`
   - Discord-like rail with `@me` Direct Messages button, server icons, separators,
     server unread/mention badges, muted indicator, demo folder grouping, create-server
@@ -1526,6 +1530,12 @@ Completed Stage 2 bridge work:
   lists, and voice-presence mutation helpers. `frontend/src/stores/guilds.ts`
   keeps the public Pinia API stable while delegating those voice responsibilities.
   Frontend lint and production build passed.
+- Completed Stage 12.4 DM storage provider boundary:
+  `backend/app/services/dm_storage.py` now mirrors the guild storage provider
+  pattern for direct messages. `backend/app/services/dm_service.py` delegates
+  relationships, DM list/create, and DM message creation through the provider and
+  no longer imports `database`, `demo_store`, or `dm_repository` directly.
+  Backend lint and DM-focused tests passed.
 
 After each stage or meaningful feature:
 

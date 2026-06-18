@@ -151,15 +151,27 @@ Browser UI
 
 - `backend/app/services/dm_service.py`
   - References:
+    - `backend/app/schemas/auth.py`
+    - `backend/app/schemas/dm.py`
+    - `backend/app/services/dm_storage.py`
+  - Referenced by:
+    - `backend/app/api/routes/dms.py`
+    - `backend/app/api/routes/users.py`
+    - `backend/app/gateway/router.py`
+
+- `backend/app/services/dm_storage.py`
+  - References:
     - `backend/app/db/pool.py`
     - `backend/app/demo/store.py`
     - `backend/app/repositories/dms.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`
   - Referenced by:
-    - `backend/app/api/routes/dms.py`
-    - `backend/app/api/routes/users.py`
-    - `backend/app/gateway/router.py`
+    - `backend/app/services/dm_service.py`
+    - `backend/tests/test_dm_storage.py`
+  - Owns:
+    - DM PostgreSQL/demo storage provider selection and common async DM storage
+      protocol.
 
 - `backend/app/services/store_service.py`
   - References:
@@ -195,7 +207,7 @@ Browser UI
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`
   - Referenced by:
-    - `backend/app/services/dm_service.py`
+    - `backend/app/services/dm_storage.py`
     - `backend/tests/test_dm_repository.py`
 
 - `backend/app/repositories/users.py`

@@ -64,6 +64,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.4 DM Storage Provider Boundary
 
+- Status: completed.
 - Mirror the guild storage provider pattern for direct messages.
 - Move PostgreSQL/demo branching out of `backend/app/services/dm_service.py`.
 - Keep route contracts and demo fallback behavior unchanged.

@@ -131,6 +131,10 @@ For ordinary implementation work:
     interface to `guild_service.py`.
 - `backend/app/services/dm_service.py`
   - Direct-message service facade.
+- `backend/app/services/dm_storage.py`
+  - Service-facing DM storage provider boundary.
+  - Selects PostgreSQL or demo DM storage once and exposes a common async
+    interface to `dm_service.py`.
 - `backend/app/services/store_service.py`
   - Demo Store service facade.
 
@@ -217,6 +221,8 @@ For ordinary implementation work:
   - DM API behavior.
 - `backend/tests/test_dm_repository.py`
   - PostgreSQL DM repository behavior.
+- `backend/tests/test_dm_storage.py`
+  - DM storage provider selection behavior.
 - `backend/tests/test_gateway_manager.py`
   - Gateway manager behavior.
 - `backend/tests/test_guild_repository.py`
