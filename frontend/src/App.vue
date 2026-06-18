@@ -92,6 +92,7 @@ const isPrivateDestination = computed(() =>
 const isServerDestination = computed(() =>
   navigation.destination === 'server_channel' || navigation.destination === 'voice_channel',
 )
+const showWorkspaceTopbar = computed(() => navigation.destination !== 'friends')
 const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
@@ -687,7 +688,7 @@ async function copyInviteCode() {
     />
 
     <section class="workspace">
-      <header class="topbar">
+      <header v-if="showWorkspaceTopbar" class="topbar">
         <div class="channel-title">
           <Settings v-if="navigation.destination === 'settings'" :size="19" aria-hidden="true" />
           <Radio v-else-if="isServerDestination && activeChannel?.type === 1" :size="19" aria-hidden="true" />

@@ -6,6 +6,8 @@
   --surface-panel-raised: #383a40;
   --surface-sidebar: #2b2d31;
   --surface-rail: #1e1f22;
+  --surface-header: #313338;
+  --surface-secondary-layer: #2b2d31;
   --surface-input: #1e1f22;
   --surface-hover: #35373c;
   --surface-selected: #404249;
@@ -481,7 +483,7 @@ select:focus-visible {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 8px 10px;
-  background: var(--surface-sidebar);
+  background: var(--surface-secondary-layer);
   border-right: 1px solid var(--border-subtle);
 }
 
@@ -496,7 +498,7 @@ select:focus-visible {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 10px 8px;
-  background: var(--surface-sidebar);
+  background: var(--surface-secondary-layer);
   border-right: 1px solid var(--border-subtle);
 }
 
@@ -1439,10 +1441,6 @@ select:focus-visible {
   grid-template-rows: minmax(0, 1fr);
 }
 
-.app-shell.friends-mode .topbar {
-  display: none;
-}
-
 .topbar {
   min-width: 0;
   min-height: var(--topbar-height);
@@ -1453,7 +1451,7 @@ select:focus-visible {
   gap: 10px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-base);
+  background: var(--surface-header);
 }
 
 .channel-title {

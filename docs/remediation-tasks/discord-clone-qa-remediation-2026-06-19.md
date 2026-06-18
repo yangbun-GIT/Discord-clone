@@ -728,6 +728,39 @@
     current PowerShell PATH; direct local binary execution was used for equivalent
     frontend lint/type/build verification.
 
+### R2 - Shared shell/layer system
+
+- Status: completed.
+- Goal: make rail/sidebar/header/content ownership explicit and remove hidden
+  replacement headers from active screens.
+- Findings reviewed:
+  - QA-P1-03 header, sidebar, and content layers still lack real Discord layering.
+  - QA-P1-04 hidden controls and hidden header remnants must not stay reachable.
+- Target files reviewed:
+  - `frontend/src/App.vue`
+  - `frontend/src/components/ServerRail.vue`
+  - `frontend/src/components/PrivateChannelSidebar.vue`
+  - `frontend/src/components/ChannelSidebar.vue`
+  - `frontend/src/components/FriendsHome.vue`
+  - `frontend/src/styles/base.css`
+- Existing state:
+  - The global `.topbar` was always rendered and then hidden by
+    `.app-shell.friends-mode .topbar { display: none; }` while `FriendsHome` owned
+    the visible Friends tab/header layer.
+  - Rail/sidebar/header colors were already close to Discord but used fewer
+    explicit ownership tokens than the remediation plan required.
+- Implementation:
+  - `frontend/src/App.vue` now uses `showWorkspaceTopbar` so the shared topbar is
+    not rendered at all on the Friends home surface. This removes the hidden
+    replacement-header remnant instead of relying on CSS.
+  - `frontend/src/styles/base.css` now defines `--surface-header` and
+    `--surface-secondary-layer` and applies them to the topbar and sidebars.
+  - The obsolete Friends-only topbar hiding rule was removed.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.
