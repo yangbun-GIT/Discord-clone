@@ -527,3 +527,7 @@
   consolidated in `frontend/src/styles/base.css`, remaining numeric `z-index`
   declarations were replaced with semantic layer variables, and QA evidence was
   recorded in `docs/stage-11-final-qa.md`.
+- Completed Stage 11.2: Friends home was tightened with clearer header/tab
+  separation, default tab ordering, hidden low-frequency Blocked tab exposure,
+  roomier friend rows, stronger selected-row emphasis, a cleaner activity card,
+  and less demo-oriented Add Friend copy.

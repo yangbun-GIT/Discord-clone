@@ -36,3 +36,36 @@ Residual notes:
 
 - Stage 11.1 intentionally did not redesign screen composition. Friends, DM,
   server text, and voice surface finishing continues in later Stage 11 tasks.
+
+## Stage 11.2: Friends Surface Finalization
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Friends header title now reads as a clear header item with an icon, while the
+  tabs remain visually distinct buttons.
+- Friends tab order is `All`, `Online`, `Pending`, and `Add Friend`; the low-value
+  `Blocked` tab remains hidden from the default primary tab row.
+- Friend rows use stronger card-like spacing, 78 px row height, larger avatar/action
+  columns, clearer selected-row emphasis, and additional vertical separation for
+  status/activity text.
+- The right activity panel uses a clearer card hierarchy and primary message action.
+- Add Friend removes demo wording from the primary user-facing copy and uses a
+  raised panel with one focused input flow.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- Browser QA on `http://localhost:5173/` measured horizontal overflow as `0`,
+  confirmed visible tab labels are `모두`, `온라인`, `대기 중`, `친구 추가`, confirmed
+  the `차단됨` tab is not visible, and measured the first three friend rows at
+  78 px height.
+
+Residual notes:
+
+- The Friends local more/context menu behavior was not intentionally changed in
+  this stage. The global menu/popover audit remains assigned to Stage 11.8.

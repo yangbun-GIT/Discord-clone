@@ -81,6 +81,10 @@ Verification:
 Goal: make Friends home, Add Friend, friend rows, and activity panel feel complete
 and Discord-like.
 
+Status: completed. Friends tabs, row density, selected-row emphasis, right-side
+activity card hierarchy, Add Friend copy, and hidden low-frequency Blocked tab
+behavior were verified in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Re-check tab order, active states, search placement, row density, and right panel

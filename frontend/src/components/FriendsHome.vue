@@ -194,7 +194,10 @@ watch(
 <template>
   <section class="friends-home" :aria-label="t('friends.title')">
     <header class="friends-header">
-      <h1>{{ t('friends.title') }}</h1>
+      <h1>
+        <UserRound :size="18" aria-hidden="true" />
+        <span>{{ t('friends.title') }}</span>
+      </h1>
       <div class="friends-tabs" role="tablist" :aria-label="t('friends.title')">
         <button
           type="button"
@@ -203,7 +206,7 @@ watch(
           :class="{ active: activeTab === 'all' }"
           @click="activeTab = 'all'"
         >
-          {{ t('friends.all') }}
+          <span>{{ t('friends.all') }}</span>
         </button>
         <button
           type="button"
@@ -212,7 +215,7 @@ watch(
           :class="{ active: activeTab === 'online' }"
           @click="activeTab = 'online'"
         >
-          {{ t('friends.online') }}
+          <span>{{ t('friends.online') }}</span>
         </button>
         <button
           type="button"
@@ -221,7 +224,7 @@ watch(
           :class="{ active: activeTab === 'pending' }"
           @click="activeTab = 'pending'"
         >
-          {{ t('friends.pending') }}
+          <span>{{ t('friends.pending') }}</span>
         </button>
         <button
           type="button"
@@ -231,7 +234,7 @@ watch(
           :class="{ active: activeTab === 'add' }"
           @click="activeTab = 'add'"
         >
-          {{ t('friends.add') }}
+          <span>{{ t('friends.add') }}</span>
         </button>
       </div>
     </header>
@@ -261,7 +264,7 @@ watch(
           </label>
 
           <section class="friend-list" :aria-label="t('friends.listLabel', { tab: activeTabLabel })">
-            <h2>
+            <h2 class="friend-list-heading">
               {{
                 activeTab === 'online'
                   ? t('friends.onlineCount', { count: visibleFriends.length })
