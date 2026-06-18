@@ -57,6 +57,12 @@ Remaining
 voice media verification still depends on a browser session with
 microphone and screen-capture permissions granted.
 
+Stage 11 completion work has started. The controlling plan is
+`docs/discord-stage-11-completion-plan.md`, and the Stage 11.0 baseline/scope lock
+is `docs/stage-11-baseline.md`. Stage 11 preserves the Stage 10 process: each
+stage is documented, implemented separately, verified before advancing, and then
+committed with a Korean commit title before pushing to `origin/main`.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
@@ -119,7 +125,7 @@ The app boots in two local modes:
     persistence expansion, responsive QA, and documentation.
 - `docs/discord-ui-remediation-plan.md`
   - Current controlling Stage 8 plan for Discord UI polish, layout overlap fixes,
-    Korean/English i18n, voice/status clarity, placeholder-button reliability,
+  Korean/English i18n, voice/status clarity, placeholder-button reliability,
     responsive/accessibility QA, and final verification.
 - `docs/discord-visual-parity-remediation-plan.md`
   - Current controlling Stage 9 plan for real Discord versus clone visual parity.

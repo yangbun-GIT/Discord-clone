@@ -53,6 +53,14 @@ the project prompt and context files before changing code.
     latest real Discord versus clone comparison.
   - Lists remaining visual-noise, spacing, bottom-panel, message/composer, voice,
     screen-share, data-cleanup, and feature-visibility work.
+- `docs/discord-stage-11-completion-plan.md`
+  - Current controlling Stage 11 plan for the completion pass after Stage 10.29.
+  - Preserves the Stage 10 process: one stage at a time, verification before moving
+    forward, documentation updates, Korean commit title, and push to `origin/main`.
+- `docs/stage-11-baseline.md`
+  - Stage 11.0 baseline and scope lock.
+  - Records completed Stage 10.29 behavior, remaining risk areas, stage
+    classification, and Stage 11 verification expectations.
 - `docs/stage-10-baseline.md`
   - Stage 10.0 baseline lock for the latest FHD 100% real Discord versus clone
     comparison screenshots and problem inventory.
@@ -125,6 +133,11 @@ the project prompt and context files before changing code.
 - Update `docs/discord-interaction-polish-plan.md` when Stage 10 interaction polish
   scope, reference observations, stage order, feature visibility decisions, or QA
   rules change.
+- Update `docs/discord-stage-11-completion-plan.md` when Stage 11 scope, stage
+  status, stage order, verification expectations, or final completion priorities
+  change.
+- Update `docs/stage-11-baseline.md` when Stage 11 baseline assumptions, stage
+  classification, or initial risk areas change.
 - Update `docs/stage-10-baseline.md` only when the Stage 10 baseline comparison set
   changes before implementation continues.
 - Update `docs/stage-10-17-responsive-qa.md` when Stage 10 responsive viewport

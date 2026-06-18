@@ -518,3 +518,8 @@
   restores the private search control to the top sidebar layer, removes the
   private-sidebar pseudo border, and browser-verifies the topbar is hidden, the
   pseudo header is gone, and horizontal overflow remains zero.
+- Started Stage 11.0: the completion pass is now controlled by
+  `docs/discord-stage-11-completion-plan.md`, with the baseline and scope lock in
+  `docs/stage-11-baseline.md`. Stage 11 keeps the Stage 10 workflow: one stage at a
+  time, verify before advancing, add new defects as current-stage subtasks, update
+  docs, commit with a Korean title, and push to `origin/main`.
