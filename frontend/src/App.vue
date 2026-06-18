@@ -510,6 +510,7 @@ function handleToggleMute() {
 
 function handleToggleScreenShare() {
   workspaceError.value = null
+  if (!guilds.voiceConnected) return
   void voiceRtc.toggleScreenShare().catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.screenShareFailed')
   })
@@ -833,12 +834,19 @@ async function handleCreateInvite() {
               v-if="selectedVoiceConnected"
               type="button"
               class="danger"
+              :aria-label="t('voice.leaveSelected')"
               @click="handleLeaveVoiceChannel(selectedVoiceChannel.id)"
             >
               <PhoneOff :size="17" aria-hidden="true" />
               <span>{{ t('voice.leaveSelected') }}</span>
             </button>
-            <button v-else type="button" class="primary" @click="handleJoinVoiceChannel(selectedVoiceChannel.id)">
+            <button
+              v-else
+              type="button"
+              class="primary"
+              :aria-label="t('voice.joinSelected')"
+              @click="handleJoinVoiceChannel(selectedVoiceChannel.id)"
+            >
               <Mic :size="17" aria-hidden="true" />
               <span>{{ t('voice.joinSelected') }}</span>
             </button>
@@ -846,6 +854,7 @@ async function handleCreateInvite() {
               type="button"
               class="screen"
               :class="{ active: voiceRtc.isScreenSharing.value }"
+              :aria-label="voiceRtc.isScreenSharing.value ? t('voice.stopScreenShare') : t('voice.screenShare')"
               :aria-pressed="voiceRtc.isScreenSharing.value"
               :disabled="!selectedVoiceConnected"
               @click="handleToggleScreenShare"
@@ -991,7 +1000,7 @@ async function handleCreateInvite() {
       @open-settings="handleOpenUserSettings"
     />
     <div
-      v-if="navigation.destination !== 'settings' && remoteScreenStreams.length"
+      v-if="navigation.destination === 'voice_channel' && remoteScreenStreams.length"
       class="screen-share-stage"
       aria-label="Screen shares"
     >

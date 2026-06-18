@@ -21,11 +21,10 @@ watch(
 </script>
 
 <template>
-  <article class="screen-share-tile">
+  <article class="screen-share-tile" :data-state="state">
     <video ref="video" autoplay playsinline />
     <div>
       <strong>{{ label }}</strong>
-      <span>{{ state }}</span>
     </div>
   </article>
 </template>

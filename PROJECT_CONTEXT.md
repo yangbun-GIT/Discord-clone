@@ -1241,6 +1241,13 @@ Completed Stage 2 bridge work:
   a dashed quiet empty state, compact speaking rings, and a full-width compact
   screen-share preview row. Browser QA verified the idle voice channel workspace
   layout without triggering microphone permission.
+- Added Stage 10.15 screen-share flow rework: `frontend/src/App.vue` now guards
+  screen-share toggling behind an active voice connection, limits remote
+  screen-share preview cards to the `voice_channel` workspace, and labels voice
+  action buttons; `VoiceVideoSink.vue` no longer displays raw connection state;
+  `frontend/src/styles/base.css` shrinks the remote preview PiP. Browser QA verified
+  disconnected screen-share controls are disabled and no remote preview layer covers
+  text-channel composer or member-list surfaces.
 
 After each stage or meaningful feature:
 

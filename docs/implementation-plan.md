@@ -432,7 +432,11 @@
   density, made the no-participant state quieter, converted the screen-share preview
   into a compact full-width row style, and browser-verified the idle voice channel
   workspace layout without triggering microphone permission.
-- Planned Stage 10.15: screen-share flow rework.
+- Completed Stage 10.15: screen-share flow rework added a voice-connected guard
+  before toggling screen share, constrained remote screen-share preview cards to the
+  voice-channel workspace, removed visible low-level stream state text, added
+  action labels, and browser-verified disconnected screen-share controls remain
+  disabled without covering composer or member-list surfaces.
 - Planned Stage 10.16: feature visibility policy.
 - Planned Stage 10.17: responsive and accessibility QA.
 - Planned Stage 10.18: final QA, documentation, commit, and push.

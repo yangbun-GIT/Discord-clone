@@ -3844,12 +3844,12 @@ select:focus-visible {
 
 .screen-share-stage {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  right: 18px;
+  bottom: 18px;
   z-index: 30;
   display: grid;
-  gap: 10px;
-  width: min(520px, calc(100vw - 36px));
+  gap: 8px;
+  width: min(360px, calc(100vw - 32px));
   pointer-events: none;
 }
 
@@ -3874,7 +3874,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 9px 11px;
+  padding: 8px 10px;
 }
 
 .screen-share-tile strong {

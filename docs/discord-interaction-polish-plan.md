@@ -526,6 +526,10 @@ Verification:
 
 ## Stage 10.15: Screen Share Flow Rework
 
+Status: completed. Screen sharing is now guarded behind voice connection, remote
+screen-share previews only render on the voice-channel screen, and low-level stream
+state text is removed from the visible preview card.
+
 Goal: follow Discord's screen-share flow and reduce clutter.
 
 Tasks:
@@ -540,6 +544,13 @@ Verification:
 
 - Screen share can be started/stopped from the expected voice controls.
 - Preview does not cover composer or member list.
+- Stage feedback: build validation caught the wrong route literal (`voice` instead
+  of `voice_channel`) while restricting the remote preview layer. This was corrected
+  before browser QA.
+- Browser QA confirmed no horizontal overflow, screen-share controls are disabled
+  before voice connection, voice action buttons have accessible labels, no remote
+  screen-share stage renders over text-channel composer/member-list surfaces, and
+  remote preview cards no longer expose raw connection-state text.
 
 ## Stage 10.16: Feature Visibility Policy
 
