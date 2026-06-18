@@ -754,3 +754,26 @@ Verification:
 - Residual manual QA: in-app browser microphone permission can still deny voice
   join, so the successful connected state should be visually checked in Chrome with
   microphone permission granted.
+
+## Stage 10.22: Bottom User Status Card Density
+
+Status: completed. This focused follow-up addresses the user's reference for the
+lower-left self status card.
+
+Goal: make the disconnected lower-left user status area read like Discord's compact
+floating card instead of a tall reserved panel.
+
+Tasks:
+
+- Reduce the default app-shell lower row to a compact user-card height.
+- Keep the larger lower panel height only while voice is connected so the voice
+  session card still has room.
+- Restyle the self status card with tighter padding, Discord-like dark elevation,
+  stable avatar/name/status columns, and separated mic/deafen/settings controls.
+- Preserve mobile behavior by keeping the compact lower row even when voice is
+  connected, since connected details are hidden on narrow layouts.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.

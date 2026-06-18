@@ -23,7 +23,8 @@
   --channel-sidebar-width: 300px;
   --member-list-width: 264px;
   --topbar-height: 48px;
-  --voice-panel-height: 128px;
+  --voice-panel-height: 64px;
+  --voice-panel-height-connected: 128px;
   --composer-min-height: 44px;
   --icon-button-size: 32px;
   --row-height: 42px;
@@ -245,6 +246,10 @@ select:focus-visible {
   height: 100vh;
   overflow: hidden;
   background: var(--app-bg);
+}
+
+.app-shell.voice-connected {
+  grid-template-rows: minmax(0, 1fr) var(--voice-panel-height-connected);
 }
 
 .app-shell.settings-mode {
@@ -4110,13 +4115,21 @@ select:focus-visible {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto;
   align-content: end;
+  gap: 6px;
+  padding: 4px 8px 7px;
+  background: #111214;
+  border-right: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.app-shell.voice-connected .voice-panel {
+  min-height: var(--voice-panel-height-connected);
+  max-height: var(--voice-panel-height-connected);
   gap: 8px;
-  padding: 8px;
+  padding-top: 8px;
   background:
     linear-gradient(180deg, rgb(0 0 0 / 5%), transparent 34%),
     var(--surface-sidebar);
-  border-right: 1px solid var(--border-subtle);
-  border-top: 1px solid var(--border-subtle);
 }
 
 .voice-panel:not(.connected) {
@@ -4131,18 +4144,20 @@ select:focus-visible {
   align-items: center;
   gap: 6px;
   align-self: end;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 8px;
   background: #232428;
-  padding: 6px;
-  box-shadow: 0 8px 18px rgb(0 0 0 / 22%);
+  padding: 5px 6px;
+  box-shadow:
+    0 -1px 0 rgb(255 255 255 / 3%) inset,
+    0 10px 22px rgb(0 0 0 / 28%);
 }
 
 .user-identity {
   width: 100%;
   height: auto;
   min-width: 0;
-  min-height: 36px;
+  min-height: 40px;
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
@@ -4151,7 +4166,7 @@ select:focus-visible {
   border-radius: 8px;
   color: #f8fafc;
   background: transparent;
-  padding: 0 6px;
+  padding: 0 5px;
   text-align: left;
 }
 
@@ -4215,7 +4230,8 @@ select:focus-visible {
 
 .user-panel-actions {
   display: inline-flex;
-  gap: 2px;
+  gap: 4px;
+  padding-right: 2px;
 }
 
 .user-panel-actions button,
@@ -4463,6 +4479,10 @@ select:focus-visible {
     overflow: hidden;
   }
 
+  .app-shell.voice-connected {
+    grid-template-rows: minmax(0, 1fr) var(--voice-panel-height);
+  }
+
   .channel-sidebar,
   .private-sidebar {
     display: none;
@@ -4488,7 +4508,13 @@ select:focus-visible {
     grid-row: 2;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 6px 10px;
+  }
+
+  .app-shell.voice-connected .voice-panel {
+    min-height: var(--voice-panel-height);
+    max-height: var(--voice-panel-height);
+    padding: 6px 10px;
   }
 
   .voice-actions {

@@ -735,7 +735,10 @@ async function copyInviteCode() {
   <main
     v-else
     class="app-shell"
-    :class="{ 'settings-mode': navigation.destination === 'settings' }"
+    :class="{
+      'settings-mode': navigation.destination === 'settings',
+      'voice-connected': guilds.voiceConnected,
+    }"
     :aria-label="t('app.aria.workspace')"
     @mousedown="handleWorkspacePointerDown"
     @contextmenu.prevent="openGlobalContextMenu"

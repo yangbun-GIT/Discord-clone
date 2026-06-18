@@ -1309,6 +1309,12 @@ Completed Stage 2 bridge work:
   the full expanded block, and `frontend/src/i18n/index.ts` localizes the new Korean
   and English labels. Frontend lint/build passed; successful connected-state visual
   QA still requires microphone permission in the browser.
+- Added Stage 10.22 bottom user status card density: `frontend/src/App.vue` now tags
+  the shell with `voice-connected`, and `frontend/src/styles/base.css` uses a compact
+  64 px lower row for the default self status card while reserving the 128 px lower
+  panel only for active voice connections. The user card now has tighter Discord-like
+  elevation, spacing, and separated mic/deafen/settings controls. Frontend lint/build
+  passed.
 
 After each stage or meaningful feature:
 

@@ -140,3 +140,23 @@ Residual manual QA:
 
 - Successful voice-join visual QA still requires microphone permission in Chrome or
   another browser session where media permissions are granted.
+
+## Stage 10.22 Bottom User Status Card QA
+
+Date: 2026-06-18
+
+Scope: focused follow-up for the lower-left self status panel.
+
+Command verification:
+
+- `npm run lint` in `frontend/`: passed with 0 warnings and 0 errors.
+- `npm run build` in `frontend/`: passed.
+
+Design verification:
+
+- The default disconnected app shell now reserves a compact 64 px lower row for the
+  self status card instead of the previous tall voice-panel area.
+- Active voice sessions keep the taller 128 px lower row so the connected voice card
+  and participant chips still have room.
+- The self status card uses a darker elevated surface, tighter spacing, and separate
+  mic/deafen/settings controls in the style of the Discord reference.

@@ -476,3 +476,6 @@
   status shortcut, mood prompt, connected participant rows, and invite-to-voice
   action. Frontend lint/build passed; successful connected-state visual QA still
   needs a browser session with microphone permission granted.
+- Completed Stage 10.22: the lower-left self status panel now uses a compact
+  Discord-like user card by default, while the taller lower voice panel is reserved
+  only for active voice connections. Frontend lint/build passed.
