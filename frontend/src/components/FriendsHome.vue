@@ -243,9 +243,11 @@ watch(
                 <span class="friend-status-line">
                   <span class="presence-dot" :class="friend.status" aria-hidden="true"></span>
                   <small>{{ statusLabel(friend.status) }}</small>
-                  <small class="friend-relationship">{{ relationshipLabel(friend) }}</small>
+                  <small v-if="friend.relationship !== 'friend'" class="friend-relationship">
+                    {{ relationshipLabel(friend) }}
+                  </small>
                 </span>
-                <small class="friend-activity">{{ friend.activity ?? t('friends.noActivity') }}</small>
+                <small v-if="friend.activity" class="friend-activity">{{ friend.activity }}</small>
               </span>
               <button
                 type="button"
@@ -276,34 +278,21 @@ watch(
         </div>
 
         <aside v-if="selectedFriend" class="friend-activity-panel" :aria-label="t('friends.selectedProfile')">
-          <span class="friend-avatar large" :class="selectedFriend.status">
-            {{ selectedFriend.username.slice(0, 1).toUpperCase() }}
-          </span>
-          <div class="friend-activity-copy">
-            <h2>{{ selectedFriend.username }}</h2>
-            <p>{{ selectedFriend.handle }}</p>
-          </div>
-          <dl>
+          <h2>{{ t('friends.activityNow') }}</h2>
+          <article class="activity-card selected">
+            <span class="friend-avatar" :class="selectedFriend.status">
+              {{ selectedFriend.username.slice(0, 1).toUpperCase() }}
+            </span>
             <div>
-              <dt>{{ t('friends.statusLabel') }}</dt>
-              <dd>
-                <span class="presence-dot" :class="selectedFriend.status" aria-hidden="true"></span>
-                {{ statusLabel(selectedFriend.status) }}
-              </dd>
+              <strong>{{ selectedFriend.username }}</strong>
+              <small>{{ selectedFriend.activity ?? statusLabel(selectedFriend.status) }}</small>
+              <small>{{ selectedFriend.handle }}</small>
             </div>
-            <div>
-              <dt>{{ t('friends.relationship') }}</dt>
-              <dd>{{ relationshipLabel(selectedFriend) }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('friends.currentActivity') }}</dt>
-              <dd>{{ selectedFriend.activity ?? t('friends.noActivity') }}</dd>
-            </div>
-          </dl>
-          <button type="button" @click="$emit('messageFriend', selectedFriend.id)">
-            <Send :size="16" aria-hidden="true" />
-            <span>{{ t('friends.sendMessage') }}</span>
-          </button>
+            <button type="button" @click="$emit('messageFriend', selectedFriend.id)">
+              <Send :size="16" aria-hidden="true" />
+              <span>{{ t('friends.sendMessage') }}</span>
+            </button>
+          </article>
         </aside>
       </div>
     </template>

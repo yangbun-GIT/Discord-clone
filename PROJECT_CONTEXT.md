@@ -1195,6 +1195,10 @@ Completed Stage 2 bridge work:
   entries, repeated inactive fallback text is hidden, unread badges are clamped, and
   browser QA verified the sidebar stays at 300 px with no row wrapping or scope/test
   text in primary navigation.
+- Added Stage 10.6 Friends home rework: friend rows now hide secondary actions until
+  hover/focus/active, noisy fallback activity copy is removed, and the right panel is
+  a compact activity card instead of a profile table. Browser QA verified row
+  density, action visibility, no horizontal overflow, and Add Friend tab integrity.
 
 After each stage or meaningful feature:
 

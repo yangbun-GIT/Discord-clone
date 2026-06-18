@@ -1759,7 +1759,7 @@ select:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
   overflow: hidden;
 }
 
@@ -1823,7 +1823,7 @@ select:focus-visible {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin: 16px;
+  margin: 14px 16px;
   border-radius: 8px;
   color: #9ca3af;
   background: rgb(255 255 255 / 8%);
@@ -1859,7 +1859,7 @@ select:focus-visible {
   grid-template-columns: 42px minmax(0, 1fr) 34px 34px;
   align-items: center;
   gap: 12px;
-  min-height: 66px;
+  min-height: 58px;
   border-top: 1px solid rgb(255 255 255 / 7%);
   border-radius: 8px;
   padding: 0 8px;
@@ -1867,7 +1867,8 @@ select:focus-visible {
 }
 
 .friend-row:hover,
-.friend-row.active {
+.friend-row.active,
+.friend-row:focus-within {
   background: rgb(255 255 255 / 6%);
 }
 
@@ -1885,7 +1886,7 @@ select:focus-visible {
 .friend-copy {
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .friend-name-line,
@@ -1926,6 +1927,8 @@ select:focus-visible {
 
 .friend-activity {
   display: block;
+  color: #949ba4;
+  font-size: 0.74rem;
 }
 
 .friend-copy small,
@@ -1944,6 +1947,17 @@ select:focus-visible {
   border-radius: 999px;
   color: #cbd5e1;
   background: rgb(255 255 255 / 8%);
+  opacity: 0;
+  transition:
+    opacity 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.friend-row:hover button,
+.friend-row:focus-within button,
+.friend-row.active button {
+  opacity: 1;
 }
 
 .friend-row button:hover {
@@ -1996,11 +2010,16 @@ select:focus-visible {
   min-height: 0;
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 12px;
   border-left: 1px solid rgb(255 255 255 / 8%);
-  background: #17181c;
-  padding: 18px 16px;
+  background: #1e1f22;
+  padding: 18px 14px;
   overflow: auto;
+}
+
+.friend-activity-panel > h2 {
+  margin: 0;
+  font-size: 1rem;
 }
 
 .friend-avatar.large {
@@ -2073,6 +2092,18 @@ select:focus-visible {
   background: #86efac;
   padding: 0 12px;
   font-weight: 900;
+}
+
+.activity-card.selected {
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+}
+
+.activity-card.selected button {
+  grid-column: 1 / -1;
+  width: 100%;
+  color: #f2f3f5;
+  background: var(--surface-panel-raised);
 }
 
 .add-friend-layout {

@@ -293,6 +293,10 @@ Verification:
 
 ## Stage 10.6: Friends Home Rework
 
+Status: completed. Friends rows now hide secondary actions until hover/focus/active,
+fallback `no activity` copy is removed from the primary list, and the right panel is
+a quieter activity card instead of a profile metadata table.
+
 Goal: make Friends feel like a native Discord screen.
 
 Tasks:
@@ -307,6 +311,10 @@ Verification:
 - Friends Online and Add Friend screenshots match the real Discord hierarchy more
   closely.
 - Message/open actions are discoverable without permanent visual clutter.
+- Browser QA confirmed Friends has no horizontal overflow, friend rows stay at or
+  under 60 px, non-active row actions are hidden until interaction, no fallback
+  `no activity` text appears, the right activity panel no longer renders a metadata
+  table, and the Add Friend tab still opens with its input/button intact.
 
 ## Stage 10.7: Add Friend Workflow Polish
 

@@ -364,8 +364,8 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: in progress; Stage 10.0 through Stage 10.5 are complete and implementation
-  continues at Stage 10.6.
+- Status: in progress; Stage 10.0 through Stage 10.6 are complete and implementation
+  continues at Stage 10.7.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -397,7 +397,10 @@
 - Completed Stage 10.5: private sidebar simplification hid repeated inactive
   fallback copy, tightened DM rows to compact single-line layouts, clamped unread
   badges, and browser-verified sidebar density/noise.
-- Planned Stage 10.6: Friends home rework.
+- Completed Stage 10.6: Friends home rework tightened friend rows, hid secondary
+  actions until interaction, removed noisy fallback activity copy, converted the
+  right panel into a quieter activity card, and browser-verified Friends/Add Friend
+  shell behavior.
 - Planned Stage 10.7: Add Friend workflow polish.
 - Planned Stage 10.8: server sidebar polish.
 - Planned Stage 10.9: header action reduction.
