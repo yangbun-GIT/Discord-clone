@@ -617,6 +617,9 @@ Verification:
 
 ## Stage 10.18: Final QA, Documentation, Commit, Push
 
+Status: completed. Final command, Docker, API, and browser QA results are recorded
+in `docs/stage-10-final-qa.md`.
+
 Goal: finish Stage 10 with repeatable evidence.
 
 Tasks:
@@ -633,3 +636,8 @@ Verification:
 
 - Required commands pass or residual risks are explicitly documented.
 - Working tree is clean after commit and push.
+- Frontend build/lint, backend tests/lint, Docker service checks, backend health,
+  frontend HTTP smoke, and browser workflow QA passed.
+- Residual manual QA: the in-app browser denied microphone permission during voice
+  join, so connected voice and real screen-share start/stop remain manual checks in
+  a browser session with media permissions granted.

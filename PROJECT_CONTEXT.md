@@ -1263,6 +1263,12 @@ Completed Stage 2 bridge work:
   sidebar/header/chat/composer/member dimensions at 1280 px, no visible icon-only
   controls missing labels, visible focus styling, and the in-app browser limitation
   for repeated `Tab` key traversal.
+- Added Stage 10.18 final QA documentation: `docs/stage-10-final-qa.md` records
+  frontend build/lint, backend tests/lint, Docker service smoke, `/api/health`,
+  frontend HTTP smoke, and browser QA for Friends, Add Friend, text channel, voice
+  preview, and screen-share disabled state. Browser media permission returned
+  `Permission denied` on voice join, so connected voice and real screen-share
+  start/stop remain manual checks with microphone/screen-capture permissions.
 
 After each stage or meaningful feature:
 

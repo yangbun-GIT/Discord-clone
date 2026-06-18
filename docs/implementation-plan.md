@@ -448,4 +448,9 @@
   overflow, checked text-channel composer/member/sidebar dimensions, confirmed no
   visible icon-only buttons lacked a text/aria/title label, and documented the
   in-app browser `Tab` keypress limitation.
-- Planned Stage 10.18: final QA, documentation, commit, and push.
+- Completed Stage 10.18: final QA is recorded in `docs/stage-10-final-qa.md`.
+  Frontend build/lint, backend tests/lint, Docker service checks, `/api/health`,
+  frontend HTTP smoke, and browser QA for Friends, Add Friend, text channel, voice
+  preview, and screen-share disabled state passed. Voice join returned browser
+  `Permission denied`, so connected voice and real screen-share start/stop remain
+  manual media-permission QA.

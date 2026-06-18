@@ -59,6 +59,9 @@ the project prompt and context files before changing code.
 - `docs/stage-10-17-responsive-qa.md`
   - Stage 10.17 FHD, side-by-side, tablet, and mobile responsive screenshots,
     layout measurements, accessibility-label checks, and keyboard QA limitation.
+- `docs/stage-10-final-qa.md`
+  - Stage 10.18 final frontend/backend command verification, Docker/API smoke,
+    browser workflow QA, and residual media-permission notes.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -124,6 +127,9 @@ the project prompt and context files before changing code.
 - Update `docs/stage-10-17-responsive-qa.md` when Stage 10 responsive viewport
   coverage, screenshot artifacts, focus order, accessibility labels, or residual QA
   notes change.
+- Update `docs/stage-10-final-qa.md` when final Stage 10 command verification,
+  Docker/API smoke, browser workflow coverage, or residual media-permission notes
+  change.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 
