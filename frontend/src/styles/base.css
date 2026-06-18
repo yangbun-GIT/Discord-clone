@@ -3375,10 +3375,10 @@ select:focus-visible {
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 16px;
+  gap: 12px;
   overflow: hidden;
-  padding: 20px clamp(18px, 3vw, 32px) 18px;
-  background: #0b0c0f;
+  padding: 16px clamp(16px, 2.6vw, 28px) 16px;
+  background: #101114;
 }
 
 .voice-workspace-header {
@@ -3386,10 +3386,10 @@ select:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  border-bottom: 1px solid rgb(255 255 255 / 8%);
-  min-height: 60px;
-  padding-bottom: 14px;
+  gap: 14px;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  min-height: 52px;
+  padding-bottom: 10px;
 }
 
 .voice-workspace-header > div:first-child {
@@ -3400,8 +3400,8 @@ select:focus-visible {
 }
 
 .voice-workspace-icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -3419,7 +3419,7 @@ select:focus-visible {
 }
 
 .voice-workspace-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.24rem;
   line-height: 1.1;
 }
 
@@ -3431,11 +3431,11 @@ select:focus-visible {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .voice-workspace-actions button {
-  min-height: 40px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3444,7 +3444,7 @@ select:focus-visible {
   border-radius: 8px;
   color: #d7dee8;
   background: rgb(255 255 255 / 7%);
-  padding: 0 12px;
+  padding: 0 10px;
   font-weight: 900;
 }
 
@@ -3472,38 +3472,44 @@ select:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  width: min(100%, 1120px);
+  width: min(100%, 980px);
   justify-self: center;
-  align-content: center;
-  grid-template-columns: repeat(2, minmax(260px, 1fr));
-  gap: 16px;
+  align-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
 }
 
 .voice-tile {
   min-width: 0;
-  min-height: clamp(220px, 34vh, 380px);
+  min-height: clamp(142px, 22vh, 240px);
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 12px;
-  border: 1px solid rgb(255 255 255 / 8%);
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 7%);
   border-radius: 8px;
-  background: #16171b;
-  padding: 20px;
+  background: #17181c;
+  padding: 16px;
   text-align: center;
 }
 
 .voice-tile.local {
   background:
-    radial-gradient(circle at 50% 38%, rgb(94 234 212 / 16%), transparent 34%),
-    #0f172a;
+    radial-gradient(circle at 50% 38%, rgb(94 234 212 / 12%), transparent 34%),
+    #111827;
 }
 
 .voice-tile.screen-preview {
+  grid-column: 1 / -1;
+  min-height: 110px;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-content: center;
+  justify-items: start;
+  text-align: left;
   color: #dbeafe;
   background:
-    linear-gradient(135deg, rgb(88 101 242 / 18%), rgb(35 165 89 / 10%)),
-    #111827;
+    linear-gradient(135deg, rgb(88 101 242 / 12%), rgb(35 165 89 / 8%)),
+    #151821;
 }
 
 .voice-tile.connected {
@@ -3512,18 +3518,20 @@ select:focus-visible {
 
 .voice-tile.speaking {
   box-shadow:
-    0 0 0 2px rgb(34 197 94 / 40%),
-    0 0 32px rgb(34 197 94 / 18%);
+    0 0 0 2px rgb(34 197 94 / 44%),
+    0 0 24px rgb(34 197 94 / 16%);
 }
 
 .voice-tile.empty {
+  min-height: 104px;
   color: #9ca3af;
-  background: rgb(255 255 255 / 4%);
+  border-style: dashed;
+  background: rgb(255 255 255 / 2.5%);
 }
 
 .voice-tile-avatar {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -3535,8 +3543,8 @@ select:focus-visible {
 
 .voice-tile.speaking .voice-tile-avatar {
   box-shadow:
-    0 0 0 3px rgb(59 165 93 / 70%),
-    0 0 24px rgb(59 165 93 / 54%);
+    0 0 0 3px rgb(59 165 93 / 72%),
+    0 0 20px rgb(59 165 93 / 42%);
 }
 
 .voice-tile-avatar.remote {

@@ -428,7 +428,10 @@
   diagnostics out of the primary surface, added explicit aria labels for voice
   action buttons, and browser-verified compact sizing plus the corrected user
   identity width.
-- Planned Stage 10.14: voice channel workspace rebuild.
+- Completed Stage 10.14: voice channel workspace rebuild reduced header/action/tile
+  density, made the no-participant state quieter, converted the screen-share preview
+  into a compact full-width row style, and browser-verified the idle voice channel
+  workspace layout without triggering microphone permission.
 - Planned Stage 10.15: screen-share flow rework.
 - Planned Stage 10.16: feature visibility policy.
 - Planned Stage 10.17: responsive and accessibility QA.

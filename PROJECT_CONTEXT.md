@@ -1235,6 +1235,12 @@ Completed Stage 2 bridge work:
   diagnostics. Browser QA verified no overflow, no workspace overlap, and the
   corrective split between composer send-button sizing and voice-panel button
   sizing.
+- Added Stage 10.14 voice workspace rebuild: `frontend/src/App.vue` tags remote
+  voice participant tiles, and `frontend/src/styles/base.css` now uses a tighter
+  voice workspace header, 34 px join/screen-share buttons, lower participant tiles,
+  a dashed quiet empty state, compact speaking rings, and a full-width compact
+  screen-share preview row. Browser QA verified the idle voice channel workspace
+  layout without triggering microphone permission.
 
 After each stage or meaningful feature:
 

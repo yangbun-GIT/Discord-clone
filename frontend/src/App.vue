@@ -887,7 +887,7 @@ async function handleCreateInvite() {
             </div>
           </article>
 
-          <article v-for="participant in selectedVoicePeers" :key="participant.user_id" class="voice-tile">
+          <article v-for="participant in selectedVoicePeers" :key="participant.user_id" class="voice-tile remote">
             <span class="voice-tile-avatar remote">
               {{ (participant.username ?? `U${participant.user_id}`).slice(0, 2).toUpperCase() }}
             </span>

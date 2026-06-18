@@ -499,6 +499,10 @@ Verification:
 
 ## Stage 10.14: Voice Channel Workspace Rebuild
 
+Status: completed. The voice workspace now uses a tighter header, smaller action
+buttons, lower participant tiles, a quieter dashed empty-participant state, and a
+wide compact screen-share preview row when sharing is active.
+
 Goal: make voice view cleaner and closer to Discord's call surface.
 
 Tasks:
@@ -513,6 +517,12 @@ Verification:
 
 - Voice connected state is visible in sidebar and workspace.
 - Speaking state is visible without extra explanatory text.
+- Browser QA confirmed no horizontal overflow, a 54 px voice workspace header,
+  34 px join/screen-share buttons, compact local/empty tiles, and a quiet dashed
+  empty-participant state. The actual voice join click was not executed during QA
+  because it can trigger browser microphone permission; connected and speaking
+  styles were code/CSS verified through the existing `connected`, `speaking`, and
+  `screen-preview` classes.
 
 ## Stage 10.15: Screen Share Flow Rework
 
