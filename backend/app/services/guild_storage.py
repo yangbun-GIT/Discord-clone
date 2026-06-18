@@ -24,17 +24,21 @@ from app.schemas.guild import (
 from app.schemas.message import MessageDeleteRead
 
 
-class GuildStorage(Protocol):
+class GuildReadStorage(Protocol):
     async def list_guilds_for_user(self, user: UserPublic | None = None) -> list[GuildRead]: ...
 
     async def get_guild_for_user(self, guild_id: int, user: UserPublic) -> GuildRead: ...
 
     async def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead: ...
 
+
+class GuildInviteStorage(Protocol):
     async def create_invite(self, guild_id: int, actor: UserPublic) -> InviteRead: ...
 
     async def join_invite(self, code: str, user: UserPublic) -> GuildRead: ...
 
+
+class GuildRoleStorage(Protocol):
     async def create_role(
         self,
         guild_id: int,
@@ -58,6 +62,8 @@ class GuildStorage(Protocol):
         actor: UserPublic,
     ) -> GuildRead: ...
 
+
+class GuildMemberStorage(Protocol):
     async def remove_member(
         self,
         guild_id: int,
@@ -65,6 +71,8 @@ class GuildStorage(Protocol):
         actor: UserPublic,
     ) -> GuildRead: ...
 
+
+class GuildChannelStorage(Protocol):
     async def create_channel(
         self,
         guild_id: int,
@@ -72,6 +80,8 @@ class GuildStorage(Protocol):
         actor: UserPublic,
     ) -> ChannelRead: ...
 
+
+class GuildMessageStorage(Protocol):
     async def create_message(
         self,
         *,
@@ -96,6 +106,18 @@ class GuildStorage(Protocol):
         message_id: int,
         actor: UserPublic,
     ) -> MessageDeleteRead: ...
+
+
+class GuildStorage(
+    GuildReadStorage,
+    GuildInviteStorage,
+    GuildRoleStorage,
+    GuildMemberStorage,
+    GuildChannelStorage,
+    GuildMessageStorage,
+    Protocol,
+):
+    pass
 
 
 class PostgresGuildStorage:

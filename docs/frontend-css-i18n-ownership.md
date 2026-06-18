@@ -1,18 +1,21 @@
 # Frontend CSS And I18n Ownership Plan
 
 This document defines the next safe split points for
-`frontend/src/styles/base.css` and `frontend/src/i18n/index.ts`. Stage 12.9 is a
-planning stage, not a visual rewrite. Do not move large CSS or copy blocks unless
-the target screen can be visually verified immediately after the move.
+`frontend/src/styles/base.css` and `frontend/src/i18n/index.ts`. Stage 12.9 created
+the ownership plan, and Stage 13.6 re-confirmed that this remains a planning
+boundary, not a visual rewrite. Do not move large CSS or copy blocks unless the
+target screen can be visually verified immediately after the move.
 
 ## Current Decision
 
 - Keep `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` intact for
-  the current Stage 12 completion pass.
+  the Stage 13 final maintenance pass.
 - Treat both files as stable visual/copy baselines until the next UI feature or
   visual-parity pass creates a focused reason to split them.
 - When splitting, move one ownership group at a time, run frontend lint/build, and
   perform browser visual smoke for the affected screen before continuing.
+- Use the Stage 13 frontend logic tests for extracted data policy modules, but do
+  not treat them as a substitute for browser visual QA after CSS movement.
 
 ## CSS Ownership Targets
 

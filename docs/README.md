@@ -63,8 +63,9 @@ the project prompt and context files before changing code.
     forward, documentation updates, Korean commit title, and push to `origin/main`.
 - `docs/architecture-principles-audit.md`
   - Current implementation-principle and design-pattern audit.
-  - Lists SRP, OCP, DIP, encapsulation, DRY, and testability gaps plus the
-    previous Stage 10/11 process that should govern future refactor stages.
+  - Lists current SRP, OCP, DIP, encapsulation, DRY, and testability status,
+    completed Stage 12/13 refactor boundaries, and deferred feature-driven
+    candidates.
 - `docs/architecture-refactor-stage-12-plan.md`
   - Current controlling Stage 12 plan for turning the architecture-principles audit
     into behavior-preserving refactor stages.
@@ -79,6 +80,11 @@ the project prompt and context files before changing code.
 - `docs/frontend-css-i18n-ownership.md`
   - Stage 12.9 ownership plan for future `base.css` and i18n module splits.
   - Defines safe extraction order, verification rules, and deferred risks.
+- `docs/architecture-refactor-stage-13-plan.md`
+  - Final architecture-maintenance plan before feature implementation resumes.
+  - Covers DM store boundary splitting, guild/DM visibility policies, frontend
+    unit tests, backend DM seed extraction, storage protocol review, and the final
+    CSS/i18n boundary decision.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
@@ -180,6 +186,8 @@ the project prompt and context files before changing code.
   stage with command checks, review notes, and residual risks.
 - Update `docs/frontend-css-i18n-ownership.md` when frontend style or translation
   ownership changes, especially if `base.css` or `i18n/index.ts` is split.
+- Update `docs/architecture-refactor-stage-13-plan.md` if the final
+  maintenance-pass scope or completion status is corrected after regression.
 - Update `docs/project-file-map.md` when a project folder or important source file
   is added, removed, renamed, or assigned a meaningfully different responsibility.
 - Update `docs/structure-map/README.md` and

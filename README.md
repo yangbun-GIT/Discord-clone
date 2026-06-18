@@ -115,6 +115,7 @@ is maintained in `docs/store-clone-implementation-plan.md`.
 ## Verification
 
 ```powershell
+npm run test:frontend
 npm run test:backend
 npm run lint:backend
 npm run lint:frontend

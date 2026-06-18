@@ -31,7 +31,7 @@ For ordinary implementation work:
 - `README.md`
   - Setup, Docker, local development, and verification commands.
 - `package.json`
-  - Root npm scripts for backend lint/tests, frontend lint/build, and Docker.
+  - Root npm scripts for backend lint/tests, frontend lint/build/tests, and Docker.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `.env.example`
@@ -61,6 +61,8 @@ For ordinary implementation work:
   - Stage 12 behavior-preserving architecture refactor plan and process.
 - `docs/stage-12-architecture-qa.md`
   - Running Stage 12 architecture refactor verification log.
+- `docs/architecture-refactor-stage-13-plan.md`
+  - Stage 13 final architecture-maintenance plan and completion gate.
 - `docs/frontend-css-i18n-ownership.md`
   - Future frontend CSS and i18n split ownership plan.
   - Defines safe extraction order and verification rules for `base.css` and
@@ -168,6 +170,8 @@ For ordinary implementation work:
   - Own channel, invite, member, message, and role SQL respectively.
 - `backend/app/repositories/dms.py`
   - Direct-message persistence.
+- `backend/app/repositories/dm_seed.py`
+  - PostgreSQL DM demo relationship/workspace seed support used by `dms.py`.
 
 ## Backend: Domain, Demo, Gateway, Realtime
 
@@ -306,6 +310,8 @@ For ordinary implementation work:
 - `frontend/src/stores/guilds.ts`
   - Guild list, active guild/channel, local message state, admin state reflection,
     and gateway state application.
+- `frontend/src/stores/guildVisibility.ts`
+  - Guild/channel/message visibility filtering for visual-test/demo noise.
 - `frontend/src/stores/voicePresence.ts`
   - Connected voice guild/channel state, voice-state collections, latest voice
     signal, and voice-channel derived state used by `guilds.ts`.
@@ -316,7 +322,13 @@ For ordinary implementation work:
 - `frontend/src/stores/guildGatewayHandlers.ts`
   - Typed gateway-event validation and event-to-store callback dispatch.
 - `frontend/src/stores/dms.ts`
-  - Direct-message state and mutations.
+  - Public Direct Message Pinia facade and state.
+- `frontend/src/stores/dmApi.ts`
+  - Direct-message REST loaders and mutations used by `dms.ts`.
+- `frontend/src/stores/dmGatewayHandlers.ts`
+  - Direct-message gateway event validation and state callback dispatch.
+- `frontend/src/stores/dmVisibility.ts`
+  - Direct-message relationship/participant/message visibility filtering.
 - `frontend/src/stores/preferences.ts`
   - User preferences such as locale/theme-like settings.
 - `frontend/src/stores/store.ts`
@@ -372,7 +384,7 @@ For ordinary implementation work:
 ## Frontend Runtime And Build
 
 - `frontend/package.json`
-  - Frontend lint, typecheck/build, and Vite scripts.
+  - Frontend lint, typecheck/build, unit test, and Vite scripts.
 - `frontend/vite.config.ts`
   - Vite config.
 - `frontend/index.html`
@@ -383,6 +395,15 @@ For ordinary implementation work:
   - Frontend Nginx runtime config.
 - `frontend/tsconfig.json`, `frontend/tsconfig.node.json`
   - TypeScript configuration.
+
+## Frontend Tests
+
+- `frontend/src/stores/dmGatewayHandlers.test.ts`
+  - Direct-message gateway payload validation and dispatch behavior.
+- `frontend/src/stores/dmVisibility.test.ts`
+  - Direct-message relationship, participant, DM, and message visibility policy.
+- `frontend/src/stores/guildVisibility.test.ts`
+  - Guild, channel, and server-message visibility policy.
 
 ## Common Task Routing
 
@@ -403,8 +424,11 @@ For ordinary implementation work:
     `frontend/src/stores/guilds.ts`.
 - Direct messages:
   - Backend: `backend/app/api/routes/dms.py`, `backend/app/services/dm_service.py`,
-    `backend/app/repositories/dms.py`.
+    `backend/app/repositories/dms.py`, `backend/app/repositories/dm_seed.py`.
   - Frontend: `frontend/src/stores/dms.ts`,
+    `frontend/src/stores/dmApi.ts`,
+    `frontend/src/stores/dmGatewayHandlers.ts`,
+    `frontend/src/stores/dmVisibility.ts`,
     `frontend/src/components/PrivateChannelSidebar.vue`,
     `frontend/src/components/DirectMessageView.vue`.
 - Realtime gateway:

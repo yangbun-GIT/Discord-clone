@@ -248,11 +248,23 @@ Browser UI
   - References:
     - `backend/app/db/pool.py`
     - `backend/app/domain/snowflake.py`
+    - `backend/app/repositories/dm_seed.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`
   - Referenced by:
     - `backend/app/services/dm_storage.py`
     - `backend/tests/test_dm_repository.py`
+
+- `backend/app/repositories/dm_seed.py`
+  - References:
+    - `backend/app/db/pool.py`
+    - `backend/app/domain/snowflake.py`
+    - `backend/app/schemas/auth.py`
+  - Referenced by:
+    - `backend/app/repositories/dms.py`
+  - Owns:
+    - PostgreSQL DM demo user, relationship, direct-message, and message bootstrap
+      support.
 
 - `backend/app/repositories/users.py`
   - References:
@@ -448,9 +460,9 @@ Browser UI
     - `frontend/src/stores/channelMessages.ts`
     - `frontend/src/stores/guildAdmin.ts`
     - `frontend/src/stores/guildGatewayHandlers.ts`
+    - `frontend/src/stores/guildVisibility.ts`
     - `frontend/src/stores/voicePresence.ts`
     - `frontend/src/types.ts`
-    - `frontend/src/utils/visualNoise.ts`
   - Referenced by:
     - `frontend/src/App.vue`
 
@@ -465,11 +477,50 @@ Browser UI
 
 - `frontend/src/stores/dms.ts`
   - References:
+    - `frontend/src/stores/dmApi.ts`
+    - `frontend/src/stores/dmGatewayHandlers.ts`
+    - `frontend/src/stores/dmVisibility.ts`
+    - `frontend/src/types.ts`
+  - Referenced by:
+    - `frontend/src/App.vue`
+
+- `frontend/src/stores/dmApi.ts`
+  - References:
     - `frontend/src/services/api.ts`
+    - `frontend/src/types.ts`
+  - Referenced by:
+    - `frontend/src/stores/dms.ts`
+  - Owns:
+    - Direct-message REST loaders and mutations.
+
+- `frontend/src/stores/dmGatewayHandlers.ts`
+  - References:
+    - `frontend/src/types.ts`
+  - Referenced by:
+    - `frontend/src/stores/dms.ts`
+    - `frontend/src/stores/dmGatewayHandlers.test.ts`
+  - Owns:
+    - Direct-message gateway payload validation and callback dispatch.
+
+- `frontend/src/stores/dmVisibility.ts`
+  - References:
     - `frontend/src/types.ts`
     - `frontend/src/utils/visualNoise.ts`
   - Referenced by:
-    - `frontend/src/App.vue`
+    - `frontend/src/stores/dms.ts`
+    - `frontend/src/stores/dmVisibility.test.ts`
+  - Owns:
+    - Relationship, participant, DM, and DM-message visibility filtering.
+
+- `frontend/src/stores/guildVisibility.ts`
+  - References:
+    - `frontend/src/types.ts`
+    - `frontend/src/utils/visualNoise.ts`
+  - Referenced by:
+    - `frontend/src/stores/guilds.ts`
+    - `frontend/src/stores/guildVisibility.test.ts`
+  - Owns:
+    - Guild, channel, and server-message visibility filtering.
 
 - `frontend/src/stores/navigation.ts`
   - Referenced by:

@@ -4,7 +4,6 @@ import { computed, shallowRef, ref } from 'vue'
 import { apiGet, apiPost } from '../services/api'
 import { runDocumentViewTransition } from '../services/browserApi'
 import type { Channel, Guild, Message, MessageDelete } from '../types'
-import { isVisualTestMessage, isVisualTestName } from '../utils/visualNoise'
 import { deleteChannelMessage, editChannelMessage, sendChannelMessage } from './channelMessages'
 import {
   assignGuildRole,
@@ -16,6 +15,12 @@ import {
   removeGuildRole,
 } from './guildAdmin'
 import { handleGuildGatewayDispatch } from './guildGatewayHandlers'
+import {
+  cleanVisibleGuild,
+  cleanVisibleGuilds,
+  isVisibleChannel,
+  isVisibleGuildMessage,
+} from './guildVisibility'
 import { createGuildVoicePresence } from './voicePresence'
 
 const ADMINISTRATOR_PERMISSION = 1 << 3
@@ -66,7 +71,7 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function replaceGuild(updatedGuild: Guild) {
-    const cleanGuild = cleanGuildForVisualQa(updatedGuild)
+    const cleanGuild = cleanVisibleGuild(updatedGuild)
     if (!cleanGuild) {
       guilds.value = guilds.value.filter((guild) => guild.id !== updatedGuild.id)
       return
@@ -75,7 +80,7 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function appendOrReplaceGuild(updatedGuild: Guild) {
-    const cleanGuild = cleanGuildForVisualQa(updatedGuild)
+    const cleanGuild = cleanVisibleGuild(updatedGuild)
     if (!cleanGuild) return
     const existing = guilds.value.some((guild) => guild.id === cleanGuild.id)
     guilds.value = existing
@@ -83,31 +88,12 @@ export const useGuildStore = defineStore('guilds', () => {
       : [...guilds.value, cleanGuild]
   }
 
-  function cleanGuildForVisualQa(guild: Guild) {
-    if (isVisualTestName(guild.name)) return null
-    const visibleChannels = guild.channels.filter((channel) => !isVisualTestName(channel.name))
-    const visibleChannelIds = new Set(visibleChannels.map((channel) => channel.id))
-    return {
-      ...guild,
-      channels: visibleChannels,
-      messages: guild.messages.filter(
-        (message) =>
-          visibleChannelIds.has(message.channel_id)
-          && !isVisualTestMessage(message.content)
-          && !isVisualTestName(message.author_name),
-      ),
-    }
-  }
-
   async function loadGuilds(token: string | null) {
     isLoading.value = true
     error.value = null
     try {
       const loadedGuilds = await apiGet<Guild[]>('/api/guilds/me', token)
-      guilds.value = loadedGuilds.flatMap((guild) => {
-        const cleanGuild = cleanGuildForVisualQa(guild)
-        return cleanGuild ? [cleanGuild] : []
-      })
+      guilds.value = cleanVisibleGuilds(loadedGuilds)
       activeGuildId.value = guilds.value[0]?.id ?? null
       activeChannelId.value = guilds.value[0]?.channels[0]?.id ?? null
     } catch (cause) {
@@ -125,7 +111,7 @@ export const useGuildStore = defineStore('guilds', () => {
     try {
       const guild = await apiGet<Guild>(`/api/guilds/${activeGuild.value.id}`, token)
       appendOrReplaceGuild(guild)
-      const cleanGuild = cleanGuildForVisualQa(guild)
+      const cleanGuild = cleanVisibleGuild(guild)
       if (!cleanGuild) {
         activeGuildId.value = guilds.value[0]?.id ?? null
         activeChannelId.value = activeGuild.value?.channels[0]?.id ?? null
@@ -151,7 +137,7 @@ export const useGuildStore = defineStore('guilds', () => {
     try {
       const guild = await apiPost<Guild, { name: string }>('/api/guilds', { name: trimmedName }, token)
       appendOrReplaceGuild(guild)
-      const cleanGuild = cleanGuildForVisualQa(guild)
+      const cleanGuild = cleanVisibleGuild(guild)
       activeGuildId.value = cleanGuild?.id ?? activeGuildId.value
       activeChannelId.value = cleanGuild?.channels[0]?.id ?? activeChannelId.value
     } catch (cause) {
@@ -184,7 +170,7 @@ export const useGuildStore = defineStore('guilds', () => {
     try {
       const guild = await joinGuildInvite(token, trimmedCode)
       appendOrReplaceGuild(guild)
-      const cleanGuild = cleanGuildForVisualQa(guild)
+      const cleanGuild = cleanVisibleGuild(guild)
       activeGuildId.value = cleanGuild?.id ?? activeGuildId.value
       activeChannelId.value = cleanGuild?.channels[0]?.id ?? activeChannelId.value
     } catch (cause) {
@@ -224,7 +210,7 @@ export const useGuildStore = defineStore('guilds', () => {
     error.value = null
     try {
       const channel = await createGuildChannel(token, activeGuild.value.id, { name: trimmedName, type })
-      if (isVisualTestName(channel.name)) return
+      if (!isVisibleChannel(channel)) return
       appendChannel(channel)
       selectChannel(channel.id)
     } catch (cause) {
@@ -301,7 +287,7 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function appendMessage(message: Message) {
-    if (isVisualTestMessage(message.content) || isVisualTestName(message.author_name)) return
+    if (!isVisibleGuildMessage(message)) return
     guilds.value = guilds.value.map((guild) => {
       if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
       if (guild.messages.some((existingMessage) => existingMessage.id === message.id)) return guild
@@ -310,7 +296,7 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function updateMessage(message: Message) {
-    if (isVisualTestMessage(message.content) || isVisualTestName(message.author_name)) return
+    if (!isVisibleGuildMessage(message)) return
     guilds.value = guilds.value.map((guild) => {
       if (!guild.channels.some((channel) => channel.id === message.channel_id)) return guild
       return {
@@ -333,7 +319,7 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function appendChannel(channel: Channel) {
-    if (isVisualTestName(channel.name)) return
+    if (!isVisibleChannel(channel)) return
     guilds.value = guilds.value.map((guild) => {
       if (guild.id !== channel.guild_id) return guild
       if (guild.channels.some((existingChannel) => existingChannel.id === channel.id)) return guild

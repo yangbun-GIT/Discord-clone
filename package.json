@@ -10,6 +10,7 @@
     "docker:logs": "docker compose logs -f",
     "lint:backend": "cd backend && ..\\.venv\\Scripts\\python -m ruff check app tests",
     "lint:frontend": "npm --prefix frontend run lint",
+    "test:frontend": "npm --prefix frontend run test",
     "test:backend": "cd backend && ..\\.venv\\Scripts\\python -m pytest"
   }
 }

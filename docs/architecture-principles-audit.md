@@ -248,18 +248,45 @@ Use this process when turning the gaps above into implementation stages:
 ## Latest Whole-Project Re-Audit
 
 The 2026-06-19 whole-project re-audit found that the first remediation pass
-reduced several broad risks, but the project still has the following remaining
+reduced several broad risks, but the project still had the following remaining
 principle and pattern gaps:
 
-1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
-   gateway event application.
-2. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
-    single files. They are acceptable for current visual stability, and
-    `docs/frontend-css-i18n-ownership.md` now defines the next safe extraction
-    order for token/layout/component CSS and domain-copy ownership.
+1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, gateway
+   event application, and visual-test filtering.
+2. `frontend/src/stores/guilds.ts` no longer owns gateway handlers or voice
+   presence directly, but still owns visual-test filtering policy.
+3. The frontend has lint/build verification but no focused unit-test harness for
+   extracted stores, composables, or browser adapters.
+4. `backend/app/repositories/dms.py` still owns PostgreSQL demo relationship/DM
+   seed bootstrap behavior alongside DM persistence queries.
+5. `backend/app/services/guild_storage.py` exposes a broad service-facing storage
+   protocol. This is acceptable as a compatibility facade, but it remains a lower
+   priority Interface Segregation candidate.
+6. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+   single files. They are acceptable for current visual stability, and
+   `docs/frontend-css-i18n-ownership.md` defines the next safe extraction order
+   for token/layout/component CSS and domain-copy ownership.
 
-Stage 12 is complete. Future architecture work should use these remaining gaps as
-the next planning input rather than reopening Stage 12.
+Stage 12 is complete. Stage 13 completed the maintenance-only items above before
+feature implementation resumes.
+
+## Stage 13 Maintenance Scope
+
+The controlling plan is `docs/architecture-refactor-stage-13-plan.md`.
+
+Stage 13 closed the maintenance-only items that can be safely handled without a
+visual or feature rewrite:
+
+- Split DM API mutations, gateway event handling, and visibility policy out of
+  `frontend/src/stores/dms.ts`.
+- Move guild visual filtering out of `frontend/src/stores/guilds.ts`.
+- Add a minimal frontend unit-test harness and focused logic tests.
+- Move PostgreSQL DM demo seed/bootstrap behavior out of
+  `backend/app/repositories/dms.py`.
+- Review the broad guild storage protocol and document whether it should remain
+  as a compatibility facade.
+- Keep CSS/i18n physical splitting deferred unless a focused visual/copy pass
+  needs it.
 
 ## Suggested Refactor Stage Order
 
@@ -283,13 +310,17 @@ These are planning candidates, not completed stages.
 10. Architecture Stage J: split gateway manager registries and broadcasters when
     gateway behavior next expands.
 
-For active work, use the more current Stage 12 plan in
-`docs/architecture-refactor-stage-12-plan.md`.
+For completed maintenance context, use the Stage 12 and Stage 13 plans:
+`docs/architecture-refactor-stage-12-plan.md` and
+`docs/architecture-refactor-stage-13-plan.md`. New feature work should create a
+feature-specific plan instead of reopening broad maintenance by default.
 
 ## Current Status
 
-Stage 12 architecture refactoring is complete for the planned scope. Remaining
-large-file and DM-store items are intentionally deferred candidates.
+Stage 13 architecture maintenance is complete for the planned scope. No
+maintenance-only principle or design-pattern blocker remains before feature
+implementation resumes. Remaining risks are feature-driven or verification-context
+dependent, not broad maintenance prerequisites.
 
 - `frontend/src/App.vue`: global notice, app context-menu state, invite modal
   state, workspace title/subtitle calculation, and voice session orchestration
@@ -303,7 +334,12 @@ large-file and DM-store items are intentionally deferred candidates.
 - `frontend/src/stores/guilds.ts`: gateway event validation moved to
   `guildGatewayHandlers.ts`; server message REST mutations moved to
   `channelMessages.ts`; guild invite/channel/role/member REST mutations moved to
-  `guildAdmin.ts`; connected voice presence moved to `voicePresence.ts`.
+  `guildAdmin.ts`; connected voice presence moved to `voicePresence.ts`; visual
+  test/demo filtering moved to `guildVisibility.ts`.
+- `frontend/src/stores/dms.ts`: remains the public DM Pinia facade while REST
+  behavior lives in `dmApi.ts`, gateway event validation/application lives in
+  `dmGatewayHandlers.ts`, and DM relationship/participant/message visibility
+  filtering lives in `dmVisibility.ts`.
 - `frontend/src/stores/voicePresence.ts`: owns connected voice guild/channel refs,
   voice-state collections, latest voice signal, derived voice channel state, and
   voice-presence mutation helpers used by `guilds.ts`.
@@ -322,6 +358,12 @@ large-file and DM-store items are intentionally deferred candidates.
   `dm_storage.py`.
 - `backend/app/services/dm_storage.py`: owns the direct-message storage protocol
   and PostgreSQL/demo provider selection used by `dm_service.py`.
+- `backend/app/repositories/dm_seed.py`: owns PostgreSQL DM demo user,
+  relationship, direct-message, and message bootstrap support used by
+  `dms.py`.
+- `backend/app/services/guild_storage.py`: keeps the compatibility provider used
+  by `guild_service.py`, with smaller protocol groups for read, invite, role,
+  member, channel, and message responsibilities.
 - `backend/app/repositories/guilds.py`: now owns guild aggregate list/read/create
   SQL and retains compatibility wrapper methods for historical broad calls.
 - `backend/app/repositories/guild_common.py`: owns shared guild read, permission,
@@ -343,6 +385,7 @@ large-file and DM-store items are intentionally deferred candidates.
 Verification for this pass:
 
 - `npm --prefix frontend run build`
+- `npm --prefix frontend run test`
 - `npm --prefix frontend run lint`
 - `npm run lint:backend`
 - `npm run test:backend`
@@ -350,8 +393,9 @@ Verification for this pass:
 
 Remaining deferred candidates:
 
-- `frontend/src/stores/dms.ts` can still be split into state, REST mutations, and
-  gateway event application if DM behavior expands.
 - `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` should follow
   `docs/frontend-css-i18n-ownership.md` when a future visual or copy pass creates
   a focused reason to split them.
+- `frontend/src/App.vue` remains the broad top-level composition point; future
+  feature work should extend focused stores/composables/controllers instead of
+  adding new workflow ownership directly to the shell.

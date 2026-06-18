@@ -97,6 +97,21 @@ planning. The remaining deferred candidates are splitting `frontend/src/stores/d
 if DM behavior expands and physically splitting `base.css`/`i18n/index.ts` using
 `docs/frontend-css-i18n-ownership.md` when visual verification can be focused.
 
+Stage 13 final architecture maintenance is complete. The controlling plan is
+`docs/architecture-refactor-stage-13-plan.md`. This pass closed the remaining
+maintenance-only gaps before feature work resumes: `frontend/src/stores/dms.ts`
+now delegates DM REST behavior to `dmApi.ts`, gateway event validation to
+`dmGatewayHandlers.ts`, and DM visibility filtering to `dmVisibility.ts`;
+`frontend/src/stores/guilds.ts` delegates visual-test filtering to
+`guildVisibility.ts`; focused Vitest coverage now exists for the extracted
+frontend policy/handler modules; PostgreSQL DM demo bootstrap moved from
+`backend/app/repositories/dms.py` to `backend/app/repositories/dm_seed.py`; and
+`backend/app/services/guild_storage.py` now exposes smaller protocol groups behind
+the existing compatibility provider. No maintenance-only principle or pattern
+blocker remains before feature implementation. Physical `base.css` and
+`i18n/index.ts` splitting remains intentionally deferred to a focused visual/copy
+feature pass.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
@@ -1583,6 +1598,15 @@ Completed Stage 2 bridge work:
   frontend lint/build, backend lint/tests, and `git diff --check` passed. Remaining
   deferred candidates are the future `dms.ts` split, future CSS/i18n physical
   extraction, and manual microphone/screen-capture permission QA.
+- Completed Stage 13 final architecture maintenance:
+  `docs/architecture-refactor-stage-13-plan.md` now records the final maintenance
+  pass. DM store responsibilities were split into `dmApi.ts`,
+  `dmGatewayHandlers.ts`, and `dmVisibility.ts`; guild visual filtering moved to
+  `guildVisibility.ts`; frontend Vitest coverage was added for extracted logic;
+  PostgreSQL DM seed/bootstrap support moved to `dm_seed.py`; and guild storage
+  protocols were split into smaller role-focused protocol groups while preserving
+  the existing provider facade. The remaining CSS/i18n physical split is
+  documented as feature-driven, not a maintenance blocker.
 
 After each stage or meaningful feature:
 

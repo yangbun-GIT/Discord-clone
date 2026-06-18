@@ -610,3 +610,23 @@
   - Stage 12.8 Browser API adapter pass: completed.
   - Stage 12.9 CSS and i18n split plan: completed.
   - Stage 12.10 final architecture regression: completed.
+
+## Stage 13: Final Architecture Maintenance Pass
+
+- Status: completed.
+- Plan document: `docs/architecture-refactor-stage-13-plan.md`.
+- Audit document: `docs/architecture-principles-audit.md`.
+- Target: close the remaining maintenance-only architecture gaps before returning
+  to feature implementation.
+- Completed scope:
+  - Stage 13.0 scope lock and whole-project re-audit: completed.
+  - Stage 13.1 DM store boundary split: completed.
+  - Stage 13.2 guild visual policy split: completed.
+  - Stage 13.3 frontend unit test harness: completed.
+  - Stage 13.4 backend DM seed boundary: completed.
+  - Stage 13.5 storage interface segregation review: completed.
+  - Stage 13.6 CSS and i18n boundary decision: completed.
+  - Stage 13.7 final maintenance gate: completed.
+- Result: no maintenance-only principle or pattern blocker remains before feature
+  work. Physical CSS/i18n splitting remains deferred to a focused visual or copy
+  feature pass.

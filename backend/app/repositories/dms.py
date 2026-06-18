@@ -2,6 +2,10 @@ from collections.abc import Iterable
 
 from app.db.pool import database
 from app.domain.snowflake import SnowflakeGenerator
+from app.repositories.dm_seed import (
+    ensure_dm_repository_user,
+    ensure_postgres_dm_demo_workspace,
+)
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
@@ -14,30 +18,6 @@ from app.schemas.dm import (
 )
 
 id_generator = SnowflakeGenerator(worker_id=3)
-
-DEMO_DM_PROFILES = [
-    (701, "Mina", "mina.study", "online", "Reading in voice"),
-    (702, "Joon", "joon.dev", "online", "Working on layout"),
-    (703, "Rina", "rina.notes", "idle", "Reviewing notes"),
-    (704, "Haru", "haru.music", "offline", None),
-    (705, "Nora", "nora.design", "offline", None),
-    (706, "Tae", "tae.voice", "online", "In a voice channel"),
-]
-
-DEMO_RELATIONSHIPS = [
-    (701, "friend"),
-    (702, "friend"),
-    (703, "friend"),
-    (704, "friend"),
-    (705, "pending_incoming"),
-    (706, "friend"),
-]
-
-DEMO_DM_MESSAGES = [
-    (701, "오늘 자료방 정리는 끝났어."),
-    (702, "저녁에 음성 채널에서 다시 얘기하자."),
-    (706, "마이크 들어오면 테두리로만 표시되면 좋겠어."),
-]
 
 
 def _status_from_row(value: object) -> UserPresenceStatus:
@@ -167,7 +147,7 @@ class DmRepository:
         if user.id in recipient_ids:
             raise ValueError("direct message recipient cannot be the current user")
 
-        await self._ensure_user(user)
+        await ensure_dm_repository_user(database, user)
         recipients = await self._profiles(recipient_ids)
         if len(recipients) != len(recipient_ids):
             raise KeyError("recipient not found")
@@ -229,7 +209,7 @@ class DmRepository:
                 raise KeyError(dm_id)
             raise PermissionError("direct message membership required")
 
-        await self._ensure_user(author)
+        await ensure_dm_repository_user(database, author)
         message_id = id_generator.generate()
         await database.execute(
             """
@@ -347,110 +327,17 @@ class DmRepository:
                 return dm_id
         return None
 
-    async def _ensure_user(self, user: UserPublic) -> None:
-        await database.execute(
-            """
-            INSERT INTO users (id, username, password_hash, status)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (id) DO NOTHING
-            """,
-            user.id,
-            user.username,
-            "dev-session",
-            user.status,
-        )
-
     async def ensure_demo_workspace(self, user: UserPublic) -> None:
-        await self._ensure_user(user)
+        await ensure_dm_repository_user(database, user)
         await self.ensure_demo_workspace_for_user_id(user.id)
 
     async def ensure_demo_workspace_for_user_id(self, user_id: int) -> None:
-        for profile_id, username, handle, status, activity in DEMO_DM_PROFILES:
-            await database.execute(
-                """
-                INSERT INTO users (id, username, password_hash, status)
-                VALUES ($1, $2, $3, $4)
-                ON CONFLICT (id) DO UPDATE SET
-                    username = EXCLUDED.username,
-                    status = EXCLUDED.status
-                """,
-                profile_id,
-                username,
-                "dev-session",
-                1 if status == "online" else 0,
-            )
-            await database.execute(
-                """
-                INSERT INTO dm_profiles (user_id, handle, presence_status, activity)
-                VALUES ($1, $2, $3, $4)
-                ON CONFLICT (user_id) DO UPDATE SET
-                    handle = EXCLUDED.handle,
-                    presence_status = EXCLUDED.presence_status,
-                    activity = EXCLUDED.activity
-                """,
-                profile_id,
-                handle,
-                status,
-                activity,
-            )
-
-        relationship_count = await database.fetchrow(
-            "SELECT COUNT(*) AS count FROM relationships WHERE user_id = $1",
-            user_id,
+        await ensure_postgres_dm_demo_workspace(
+            database=database,
+            id_generator=id_generator,
+            user_id=user_id,
+            find_existing_dm=self._find_existing_dm,
         )
-        if relationship_count is not None and int(relationship_count["count"]) == 0:
-            for related_user_id, relationship in DEMO_RELATIONSHIPS:
-                await database.execute(
-                    """
-                    INSERT INTO relationships (user_id, related_user_id, relationship)
-                    VALUES ($1, $2, $3)
-                    ON CONFLICT (user_id, related_user_id) DO NOTHING
-                    """,
-                    user_id,
-                    related_user_id,
-                    relationship,
-                )
-
-        dm_count = await database.fetchrow(
-            "SELECT COUNT(*) AS count FROM direct_message_members WHERE user_id = $1",
-            user_id,
-        )
-        if dm_count is None or int(dm_count["count"]) > 0:
-            return
-
-        for related_user_id, message in DEMO_DM_MESSAGES:
-            existing_dm_id = await self._find_existing_dm(sorted([user_id, related_user_id]))
-            dm_id = existing_dm_id or id_generator.generate()
-            if existing_dm_id is None:
-                await database.execute(
-                    """
-                    INSERT INTO direct_message_channels (id, is_group)
-                    VALUES ($1, false)
-                    """,
-                    dm_id,
-                )
-                for participant_id in (user_id, related_user_id):
-                    await database.execute(
-                        """
-                        INSERT INTO direct_message_members (dm_id, user_id, unread_count)
-                        VALUES ($1, $2, $3)
-                        ON CONFLICT (dm_id, user_id) DO NOTHING
-                        """,
-                        dm_id,
-                        participant_id,
-                        1 if participant_id == user_id else 0,
-                    )
-                await database.execute(
-                    """
-                    INSERT INTO direct_messages (id, dm_id, author_id, content)
-                    VALUES ($1, $2, $3, $4)
-                    ON CONFLICT (id) DO NOTHING
-                    """,
-                    id_generator.generate(),
-                    dm_id,
-                    related_user_id,
-                    message,
-                )
 
 
 dm_repository = DmRepository()

@@ -1,0 +1,44 @@
+import type { DirectMessage, DmMessage } from '../types'
+
+interface DmGatewayHandlerContext {
+  upsertDm: (dm: DirectMessage) => void
+  appendMessage: (dmId: number, message: DmMessage) => void
+}
+
+type DmGatewayHandler = (
+  data: Record<string, unknown>,
+  context: DmGatewayHandlerContext,
+) => void
+
+export function isDirectMessagePayload(data: Record<string, unknown>): data is DirectMessage {
+  return typeof data.id === 'number'
+    && Array.isArray(data.recipient_ids)
+    && Array.isArray(data.participants)
+    && typeof data.display_name === 'string'
+    && Array.isArray(data.messages)
+}
+
+export function isDmMessagePayload(data: Record<string, unknown>): data is DmMessage {
+  return typeof data.id === 'number'
+    && typeof data.dm_id === 'number'
+    && typeof data.author_id === 'number'
+    && typeof data.author_name === 'string'
+    && typeof data.content === 'string'
+}
+
+const handlers: Record<string, DmGatewayHandler> = {
+  DM_CREATE(data, context) {
+    if (isDirectMessagePayload(data)) context.upsertDm(data)
+  },
+  DM_MESSAGE_CREATE(data, context) {
+    if (isDmMessagePayload(data)) context.appendMessage(data.dm_id, data)
+  },
+}
+
+export function handleDmGatewayDispatch(
+  event: string,
+  data: Record<string, unknown>,
+  context: DmGatewayHandlerContext,
+) {
+  handlers[event]?.(data, context)
+}
