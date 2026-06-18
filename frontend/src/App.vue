@@ -117,6 +117,9 @@ const showMemberList = ref(true)
 const inviteCode = ref<string | null>(null)
 const inviteSearchQuery = ref('')
 const inviteCopied = ref(false)
+const pendingVoiceSwitchChannelId = ref<number | null>(null)
+const skipVoiceSwitchConfirm = ref(localStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
+const rememberVoiceSwitchChoice = ref(false)
 const globalContextMenu = ref<{
   x: number
   y: number
@@ -323,6 +326,7 @@ function handleWorkspacePointerDown(event: MouseEvent) {
 
 function handleDocumentKeyDown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return
+  if (pendingVoiceSwitchChannelId.value) cancelVoiceSwitch()
   closeGlobalContextMenu()
   if (workspaceNotice.value) workspaceNotice.value = null
 }
@@ -560,16 +564,24 @@ function voiceParticipantsForChannel(channelId: number) {
   return guilds.voiceStates.filter((state) => state.channel_id === channelId)
 }
 
+function findVoiceChannel(channelId: number) {
+  for (const guild of guilds.guilds) {
+    const channel = guild.channels.find((item) => item.id === channelId && item.type === 1)
+    if (channel) return { guild, channel }
+  }
+  return null
+}
+
 async function connectVoiceToChannel(channelId: number) {
-  if (!activeGuild.value || !session.user) return
-  const targetChannel = activeGuild.value.channels.find((channel) => channel.id === channelId && channel.type === 1)
-  if (!targetChannel) return
+  if (!session.user) return
+  const target = findVoiceChannel(channelId)
+  if (!target) return
 
   try {
     await voiceRtc.connect({
-      channelId: targetChannel.id,
+      channelId: target.channel.id,
       currentUserId: session.user.id,
-      participants: voiceParticipantsForChannel(targetChannel.id),
+      participants: voiceParticipantsForChannel(target.channel.id),
       iceServers: voiceIceServers.value,
       sendSignal: sendVoiceSignal,
     })
@@ -578,10 +590,10 @@ async function connectVoiceToChannel(channelId: number) {
     return
   }
 
-  guilds.setVoiceConnected(true, targetChannel)
+  guilds.setVoiceConnected(true, target.channel)
   updateVoiceState({
-    guild_id: activeGuild.value.id,
-    channel_id: targetChannel.id,
+    guild_id: target.guild.id,
+    channel_id: target.channel.id,
     self_mute: voiceRtc.isMuted.value,
     self_deaf: isDeafened.value,
   })
@@ -602,13 +614,34 @@ async function handleJoinVoiceChannel(channelId: number) {
   guilds.selectChannel(channelId)
   if (connectedVoiceChannelId.value === channelId) return
   if (guilds.voiceConnected) {
-    if (guilds.connectedVoiceGuildId !== activeGuild.value?.id) {
-      const confirmed = window.confirm(t('voice.switchConfirm'))
-      if (!confirmed) return
+    if (guilds.connectedVoiceGuildId !== activeGuild.value?.id && !skipVoiceSwitchConfirm.value) {
+      rememberVoiceSwitchChoice.value = false
+      pendingVoiceSwitchChannelId.value = channelId
+      return
     }
     disconnectVoice()
   }
   await connectVoiceToChannel(channelId)
+}
+
+async function confirmVoiceSwitch() {
+  const channelId = pendingVoiceSwitchChannelId.value
+  pendingVoiceSwitchChannelId.value = null
+  if (!channelId) return
+  if (rememberVoiceSwitchChoice.value) {
+    skipVoiceSwitchConfirm.value = true
+    localStorage.setItem('discord_clone_skip_voice_switch_confirm', 'true')
+  } else {
+    localStorage.removeItem('discord_clone_skip_voice_switch_confirm')
+  }
+  rememberVoiceSwitchChoice.value = false
+  disconnectVoice()
+  await connectVoiceToChannel(channelId)
+}
+
+function cancelVoiceSwitch() {
+  rememberVoiceSwitchChoice.value = false
+  pendingVoiceSwitchChannelId.value = null
 }
 
 function handleLeaveVoiceChannel(channelId: number) {
@@ -1150,6 +1183,37 @@ async function copyInviteCode() {
             {{ inviteCopied ? t('invite.copied') : t('invite.copy') }}
           </button>
         </div>
+      </div>
+    </section>
+
+    <section
+      v-if="pendingVoiceSwitchChannelId"
+      class="modal-layer voice-switch-layer"
+      :aria-label="t('voice.switchTitle')"
+      @click.self="cancelVoiceSwitch"
+    >
+      <div class="voice-switch-dialog" role="dialog" :aria-label="t('voice.switchTitle')" aria-modal="true">
+        <button type="button" class="voice-switch-close" :aria-label="t('common.close')" @click="cancelVoiceSwitch">
+          <X :size="26" aria-hidden="true" />
+        </button>
+        <header>
+          <h2>{{ t('voice.switchTitle') }}</h2>
+          <p>{{ t('voice.switchDescription') }}</p>
+        </header>
+        <footer>
+          <label class="voice-switch-checkbox">
+            <input v-model="rememberVoiceSwitchChoice" type="checkbox" />
+            <span>{{ t('voice.dontAskAgain') }}</span>
+          </label>
+          <div class="voice-switch-actions">
+            <button type="button" class="secondary" @click="cancelVoiceSwitch">
+              {{ t('common.cancel') }}
+            </button>
+            <button type="button" class="primary" @click="confirmVoiceSwitch">
+              {{ t('common.confirm') }}
+            </button>
+          </div>
+        </footer>
       </div>
     </section>
 

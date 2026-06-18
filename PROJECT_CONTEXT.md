@@ -42,16 +42,16 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
-Stage 10 interaction polish is in progress from the user's latest real Discord versus
-clone screenshots. The controlling plan is `docs/discord-interaction-polish-plan.md`;
-the Stage 10.0 baseline lock is recorded in `docs/stage-10-baseline.md`. It targets
-the remaining quality gap: test/demo data cleanup, visual noise reduction,
-Discord-like shell hierarchy, text/button spacing, bottom user panel reconstruction,
-message/composer polish, and voice/screen-share interaction cleanup.
-Stage 10.1 is complete: fresh demo seed and native fallback data now use natural safe
-sample users/messages, frontend stores filter obvious smoke-test names/messages from
-default visual surfaces without deleting database rows, and backend/frontend
-verification passed after fixture updates.
+Stage 10 interaction polish is complete through Stage 10.24. The controlling plan is
+`docs/discord-interaction-polish-plan.md`; the Stage 10.0 baseline lock is recorded
+in `docs/stage-10-baseline.md`, and QA evidence is recorded in
+`docs/stage-10-final-qa.md`. The completed work covers demo/test data cleanup,
+visual-noise reduction, Discord-like shell hierarchy, text/button spacing, bottom
+user panel reconstruction, message/composer polish, voice/screen-share interaction
+cleanup, app-owned context menus/notices, voice-sidebar participant hierarchy,
+server-owned voice session tracking, and the in-app cross-server voice-switch
+dialog. Remaining voice media verification still depends on a browser session with
+microphone and screen-capture permissions granted.
 
 The app boots in two local modes:
 
@@ -1326,6 +1326,16 @@ Completed Stage 2 bridge work:
   `base.css` aligns the self card to the composer-height pattern, narrows panel
   padding, and keeps the surrounding lower panel background matched to the sidebar.
   Frontend lint/build passed.
+
+- Added Stage 10.24 in-app voice switch dialog and bottom edge alignment:
+  `frontend/src/App.vue` replaces the cross-server voice `window.confirm` with a
+  Discord-like modal that supports outside-click, Escape, close, cancel, confirm,
+  and "do not ask again" behavior. `frontend/src/i18n/index.ts` adds Korean/English
+  labels for the dialog, and `frontend/src/styles/base.css` styles the modal while
+  aligning the lower-left self status card to the message composer top/bottom frame
+  with narrower sidebar padding. Frontend lint/build, Docker frontend rebuild, and
+  browser layout QA passed; the in-app browser still denied microphone permission,
+  so the successful connected voice switch remains manual media-permission QA.
 
 After each stage or meaningful feature:
 

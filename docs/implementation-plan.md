@@ -364,7 +364,7 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: completed through Stage 10.19 follow-up interaction polish.
+- Status: completed through Stage 10.24 follow-up interaction polish.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -485,3 +485,10 @@
   voice guild/channel separately from the selected server so voice state no longer
   follows server navigation. Cross-server voice joins now ask before switching.
   Frontend lint/build passed.
+- Completed Stage 10.24: cross-server voice switching now uses a Discord-like
+  in-app confirmation dialog instead of Chrome's native confirm, with outside-click,
+  Escape, close, cancel, confirm, and "do not ask again" behavior. The lower-left
+  self status card now aligns to the text-channel composer top/bottom frame and
+  extends closer to the sidebar edge. Frontend lint/build, Docker frontend rebuild,
+  and browser layout checks passed; microphone permission still blocks connected
+  media-path verification in the in-app browser.

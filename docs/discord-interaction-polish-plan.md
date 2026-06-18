@@ -805,3 +805,38 @@ Verification:
 
 - Frontend lint passed with 0 warnings and 0 errors.
 - Frontend production build passed.
+
+## Stage 10.24: In-App Voice Switch Dialog And Bottom Edge Alignment
+
+Status: completed. This follow-up replaces the browser-native voice-switch confirm
+with a Discord-like in-app dialog and tightens the lower-left status card edge
+alignment against the message composer.
+
+Goal: keep voice switching inside the clone UI and make the lower-left self status
+card align visually with the composer instead of reading as a separate browser or
+layout artifact.
+
+Tasks:
+
+- Replace `window.confirm` for cross-server voice switching with an app-owned modal
+  that supports outside-click dismissal, Escape dismissal, close button, cancel,
+  confirm, and "do not ask again" persistence.
+- Add Korean and English labels for the new modal actions and voice-switch copy.
+- Keep the status card as a 48 px raised card while reducing outer panel padding so
+  it extends closer to the sidebar edge.
+- Align the self status card's visible top and bottom with the text-channel composer
+  box.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- `git diff --check` passed with only CRLF normalization warnings from the working
+  tree.
+- Docker frontend rebuild passed.
+- Browser QA verified the text-channel self status card and composer both render at
+  `y=658`, `bottom=706`, and `height=48`, with no horizontal body overflow.
+- Browser QA verified clicking a voice channel no longer opens a native JavaScript
+  dialog. The in-app browser still returned `Permission denied` for microphone
+  access, so the successful connected cross-server switch modal remains a manual
+  media-permission check in Chrome.

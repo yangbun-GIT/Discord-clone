@@ -186,3 +186,29 @@ Design and state verification:
   voice channel as connected.
 - Joining voice from another server now prompts before disconnecting the current
   session and switching.
+
+## Stage 10.24 In-App Voice Switch Dialog And Bottom Edge QA
+
+Date: 2026-06-18
+
+Scope: focused follow-up for the cross-server voice warning and lower-left status
+card edge alignment.
+
+Command verification:
+
+- `npm run lint:frontend`: passed with 0 warnings and 0 errors.
+- `npm --prefix frontend run build`: passed.
+- `git diff --check`: passed with CRLF normalization warnings only.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- Text channel bottom layout measured `.user-panel` and `.composer` at the same
+  visible frame: `y=658`, `bottom=706`, and `height=48`.
+- The lower-left `.voice-panel` kept `overflowX=0` and the document had no
+  horizontal body overflow.
+- Voice-channel click did not produce a native JavaScript dialog.
+- The in-app browser returned `Permission denied` for microphone access before a
+  successful voice connection, so the full cross-server switch modal path remains a
+  manual Chrome check with microphone permission granted.

@@ -2717,6 +2717,165 @@ select:focus-visible {
   z-index: 20;
 }
 
+.voice-switch-layer {
+  z-index: 90;
+  background: rgb(0 0 0 / 72%);
+}
+
+.voice-switch-dialog {
+  position: relative;
+  width: min(720px, calc(100vw - 44px));
+  display: grid;
+  gap: 34px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 14px;
+  color: #f2f3f5;
+  background: #2b2d31;
+  padding: 30px 36px 36px;
+  box-shadow: 0 28px 90px rgb(0 0 0 / 54%);
+}
+
+.voice-switch-dialog header {
+  display: grid;
+  gap: 10px;
+  padding-right: 38px;
+}
+
+.voice-switch-dialog h2,
+.voice-switch-dialog p {
+  margin: 0;
+}
+
+.voice-switch-dialog h2 {
+  font-size: 1.45rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.voice-switch-dialog p {
+  color: #b5bac1;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.voice-switch-close {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #b5bac1;
+  background: transparent;
+}
+
+.voice-switch-close:hover,
+.voice-switch-close:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 8%);
+}
+
+.voice-switch-dialog footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.voice-switch-checkbox {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #f2f3f5;
+  font-weight: 900;
+}
+
+.voice-switch-checkbox input {
+  width: 28px;
+  height: 28px;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid #6d6f78;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.voice-switch-checkbox input:checked {
+  border-color: #5865f2;
+  background: #5865f2;
+}
+
+.voice-switch-checkbox input:checked::after {
+  content: '';
+  width: 13px;
+  height: 7px;
+  border: solid #ffffff;
+  border-width: 0 0 3px 3px;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.voice-switch-actions {
+  display: inline-flex;
+  gap: 12px;
+}
+
+.voice-switch-actions button {
+  min-width: 150px;
+  min-height: 58px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 0 24px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.voice-switch-actions .secondary {
+  background: #313338;
+}
+
+.voice-switch-actions .secondary:hover,
+.voice-switch-actions .secondary:focus-visible {
+  background: #383a40;
+}
+
+.voice-switch-actions .primary {
+  background: #5865f2;
+}
+
+.voice-switch-actions .primary:hover,
+.voice-switch-actions .primary:focus-visible {
+  background: #4752c4;
+}
+
+@media (max-width: 720px) {
+  .voice-switch-dialog {
+    gap: 24px;
+    padding: 26px 22px 24px;
+  }
+
+  .voice-switch-dialog footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .voice-switch-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .voice-switch-actions button {
+    min-width: 0;
+  }
+}
+
 .server-create-dialog {
   width: min(100%, 390px);
   display: grid;
@@ -4116,7 +4275,7 @@ select:focus-visible {
   grid-template-rows: auto auto;
   align-content: end;
   gap: 6px;
-  padding: 7px 6px 8px;
+  padding: 2px 4px 14px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
   border-top: 1px solid var(--border-subtle);
@@ -4126,7 +4285,7 @@ select:focus-visible {
   min-height: var(--voice-panel-height-connected);
   max-height: var(--voice-panel-height-connected);
   gap: 6px;
-  padding: 8px 6px;
+  padding: 2px 4px 14px;
   background: var(--surface-sidebar);
 }
 
