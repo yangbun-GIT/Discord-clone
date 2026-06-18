@@ -441,12 +441,12 @@ select:focus-visible {
   grid-row: 1 / 2;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 10px;
+  padding: 10px 8px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
 }
@@ -462,11 +462,11 @@ select:focus-visible {
 }
 
 .dm-search-button {
-  min-height: 36px;
+  min-height: 34px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 10px;
+  padding: 0 9px;
   color: #9ca3af;
   background: rgb(255 255 255 / 7%);
 }
@@ -487,7 +487,7 @@ select:focus-visible {
 }
 
 .private-nav-button {
-  min-height: 42px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -546,8 +546,8 @@ select:focus-visible {
   min-height: 0;
   display: grid;
   align-content: start;
-  gap: 4px;
-  overflow: hidden;
+  gap: 2px;
+  overflow: visible;
 }
 
 .dm-list-heading {
@@ -555,6 +555,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 28px;
   padding: 0 8px;
 }
 
@@ -584,19 +585,19 @@ select:focus-visible {
 }
 
 .dm-row {
-  min-height: 54px;
+  min-height: 46px;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   padding: 0 8px;
   text-align: left;
 }
 
 .dm-avatar-wrap {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
 }
 
 .dm-avatar,
@@ -610,14 +611,14 @@ select:focus-visible {
 }
 
 .dm-avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 13px;
 }
 
 .dm-avatar-wrap .dm-avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
 }
 
 .dm-avatar-wrap .presence-dot {
@@ -670,7 +671,7 @@ select:focus-visible {
 .dm-copy {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
 .dm-title-line,
@@ -691,20 +692,23 @@ select:focus-visible {
 
 .dm-copy small {
   color: #9ca3af;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
 }
 
 .dm-badge {
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  max-width: 30px;
+  height: 18px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   color: #ffffff;
-  background: #ef4444;
+  background: var(--accent-danger);
   padding: 0 6px;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .guild-heading {

@@ -270,6 +270,10 @@ Verification:
 
 ## Stage 10.5: Private Sidebar Simplification
 
+Status: completed. Private navigation is now limited to the primary Friends entry
+and compact DM rows, while repeated inactive/fallback copy is hidden from the main
+sidebar.
+
 Goal: make the DM/Friends sidebar match Discord's practical density.
 
 Tasks:
@@ -283,6 +287,9 @@ Verification:
 
 - Sidebar rows do not wrap unexpectedly.
 - DM list feels populated but not noisy.
+- Browser QA confirmed the private sidebar renders at 300 px, DM rows stay compact
+  at 46 px, title/activity lines stay single-line, no `no activity` fallback text is
+  shown, and only the primary Friends navigation row is visible.
 
 ## Stage 10.6: Friends Home Rework
 

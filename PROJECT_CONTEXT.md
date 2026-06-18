@@ -1191,6 +1191,10 @@ Completed Stage 2 bridge work:
   left pill, server button hover/active states are quieter, mention badge labels are
   clamped, and add/discovery buttons read as secondary controls. Browser QA verified
   the active marker, rail width, and secondary action styling.
+- Added Stage 10.5 private sidebar simplification: DM rows are compact single-line
+  entries, repeated inactive fallback text is hidden, unread badges are clamped, and
+  browser QA verified the sidebar stays at 300 px with no row wrapping or scope/test
+  text in primary navigation.
 
 After each stage or meaningful feature:
 

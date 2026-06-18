@@ -22,6 +22,10 @@ const { t } = useI18n()
 function statusLabel(status: UserPresenceStatus) {
   return t(`common.status.${status}`)
 }
+
+function unreadLabel(count: number) {
+  return count > 99 ? '99+' : String(count)
+}
 </script>
 
 <template>
@@ -69,13 +73,12 @@ function statusLabel(status: UserPresenceStatus) {
             <strong>{{ dm.display_name }}</strong>
             <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
           </span>
-          <span class="dm-state-line">
+          <span v-if="dm.activity" class="dm-state-line">
             <small>{{ statusLabel(dm.status) }}</small>
-            <small v-if="dm.activity">{{ dm.activity }}</small>
-            <small v-else-if="!dm.is_group">{{ t('friends.noActivity') }}</small>
+            <small>{{ dm.activity }}</small>
           </span>
         </span>
-        <span v-if="dm.unread_count" class="dm-badge">{{ dm.unread_count }}</span>
+        <span v-if="dm.unread_count" class="dm-badge">{{ unreadLabel(dm.unread_count) }}</span>
       </button>
     </section>
   </aside>
