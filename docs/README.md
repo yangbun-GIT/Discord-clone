@@ -62,6 +62,9 @@ the project prompt and context files before changing code.
 - `docs/stage-10-final-qa.md`
   - Stage 10.18 final frontend/backend command verification, Docker/API smoke,
     browser workflow QA, and residual media-permission notes.
+- `docs/reference-screenshots/`
+  - Real Discord and current clone screenshot folders for future visual parity
+    review and implementation reference.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
@@ -130,6 +133,8 @@ the project prompt and context files before changing code.
 - Update `docs/stage-10-final-qa.md` when final Stage 10 command verification,
   Docker/API smoke, browser workflow coverage, or residual media-permission notes
   change.
+- Update `docs/reference-screenshots/README.md` when screenshot folder structure,
+  naming rules, or visual-reference handling changes.
 - Update `DEVELOPMENT_PROMPT.md` only for durable policy changes, not one-off code
   changes.
 
