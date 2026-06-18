@@ -23,7 +23,7 @@
   --channel-sidebar-width: 300px;
   --member-list-width: 264px;
   --topbar-height: 48px;
-  --voice-panel-height: 118px;
+  --voice-panel-height: 102px;
   --composer-min-height: 44px;
   --icon-button-size: 32px;
   --row-height: 42px;
@@ -3050,8 +3050,7 @@ select:focus-visible {
   background: rgb(255 255 255 / 10%);
 }
 
-.composer-send-button,
-.voice-panel button {
+.composer-send-button {
   width: 36px;
   height: 36px;
   border: 0;
@@ -3583,10 +3582,10 @@ select:focus-visible {
   overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  align-content: start;
-  gap: 6px;
-  padding: 8px;
+  grid-template-rows: minmax(0, 1fr) 34px;
+  align-content: stretch;
+  gap: 4px;
+  padding: 6px 8px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
   border-top: 1px solid var(--border-subtle);
@@ -3597,18 +3596,19 @@ select:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  align-self: end;
 }
 
 .user-identity {
   width: 100%;
   height: auto;
   min-width: 0;
-  min-height: 38px;
+  min-height: 36px;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   border: 0;
   border-radius: 8px;
   color: #f8fafc;
@@ -3623,8 +3623,8 @@ select:focus-visible {
 }
 
 .user-panel-avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -3677,13 +3677,13 @@ select:focus-visible {
 
 .user-panel-actions {
   display: inline-flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .user-panel-actions button,
 .voice-actions button {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   border: 0;
@@ -3705,15 +3705,22 @@ select:focus-visible {
   background: rgb(248 113 113 / 14%);
 }
 
+.voice-panel.speaking .user-panel-avatar {
+  box-shadow:
+    0 0 0 2px rgb(59 165 93 / 92%),
+    0 0 16px rgb(59 165 93 / 54%);
+}
+
 .voice-connection-card,
 .voice-connection-idle {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 8px;
-  padding: 7px 76px 7px 9px;
+  min-height: 34px;
+  padding: 5px 72px 5px 8px;
 }
 
 .voice-connection-card {
@@ -3790,6 +3797,11 @@ select:focus-visible {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.voice-actions .call-button:not(.connected) {
+  color: #bbf7d0;
+  background: rgb(34 197 94 / 12%);
 }
 
 .voice-actions .screen-button.active {

@@ -66,7 +66,7 @@ const presenceLabel = computed(() => {
 </script>
 
 <template>
-  <section class="voice-panel" :aria-label="t('voice.aria.controls')">
+  <section class="voice-panel" :class="{ connected, speaking: localSpeaking }" :aria-label="t('voice.aria.controls')">
     <div class="user-panel">
       <button
         type="button"
@@ -87,6 +87,7 @@ const presenceLabel = computed(() => {
         <button
           type="button"
           :title="muted ? t('voice.unmute') : t('voice.mute')"
+          :aria-label="muted ? t('voice.unmute') : t('voice.mute')"
           :aria-pressed="muted"
           :disabled="!connected"
           @click="$emit('toggleMute')"
@@ -97,6 +98,7 @@ const presenceLabel = computed(() => {
         <button
           type="button"
           :title="deafened ? t('voice.undeafen') : t('voice.deafen')"
+          :aria-label="deafened ? t('voice.undeafen') : t('voice.deafen')"
           :aria-pressed="deafened"
           @click="$emit('toggleDeafen')"
         >
@@ -118,7 +120,7 @@ const presenceLabel = computed(() => {
       <Radio :size="18" aria-hidden="true" />
       <div>
         <span>{{ channel?.name ?? 'voice-room' }}</span>
-        <small>{{ connected ? t('common.status.connected') : t('common.status.disconnected') }}</small>
+        <small>{{ screenSharing ? t('voice.screenLive') : t('common.status.connected') }}</small>
       </div>
     </div>
     <div v-else class="voice-connection-idle">
@@ -150,6 +152,7 @@ const presenceLabel = computed(() => {
         class="screen-button"
         :class="{ active: screenSharing }"
         :title="screenSharing ? t('voice.stopScreenShare') : t('voice.screenShare')"
+        :aria-label="screenSharing ? t('voice.stopScreenShare') : t('voice.screenShare')"
         :disabled="!connected"
         @click="$emit('toggleScreen')"
       >
@@ -161,6 +164,7 @@ const presenceLabel = computed(() => {
         class="call-button"
         :class="{ connected }"
         :title="connected ? t('voice.disconnect') : t('voice.joinSelected')"
+        :aria-label="connected ? t('voice.disconnect') : t('voice.joinSelected')"
         @click="$emit('toggle')"
       >
         <PhoneOff v-if="connected" :size="18" aria-hidden="true" />

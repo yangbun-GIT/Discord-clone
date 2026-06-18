@@ -469,6 +469,10 @@ Verification:
 
 ## Stage 10.13: Bottom User Panel Rebuild
 
+Status: completed. The lower-left panel is now shorter and split into a compact
+user control row plus a compact selected/connected voice card; detailed voice
+diagnostics remain hidden from the primary visual surface.
+
 Goal: replace the current full-width bottom bar with Discord-like controls.
 
 Tasks:
@@ -484,6 +488,14 @@ Verification:
 
 - Bottom controls do not obscure main content.
 - Mic on/off and speaking state are understandable at a glance.
+- Stage feedback: browser QA found the earlier broad `.voice-panel button` rule was
+  shrinking the user identity button to 36 px. The corrective patch separated
+  composer send-button sizing from voice-panel button sizing, restoring the
+  identity control to the available row width.
+- Browser QA confirmed no horizontal overflow, a 300 x 102 px lower-left panel,
+  a 189 px user identity control, 28 px mic/deafen/settings/screen/join buttons,
+  a compact 34 px voice card, no visible RTT/Jitter/STUN diagnostics in the primary
+  surface, and no overlap with the main workspace.
 
 ## Stage 10.14: Voice Channel Workspace Rebuild
 

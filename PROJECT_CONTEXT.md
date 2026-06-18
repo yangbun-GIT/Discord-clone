@@ -1228,6 +1228,13 @@ Completed Stage 2 bridge work:
   inside an explicit management mode, and keep the admin toggle visible at low
   contrast. Browser QA verified the default member panel has no role controls and
   the management toggle opens role creation, refresh, and per-member controls.
+- Added Stage 10.13 bottom user panel rebuild: `VoicePanel.vue` and
+  `frontend/src/styles/base.css` now use a 102 px lower-left panel with a full-width
+  user identity row, 28 px voice/user action buttons, a compact selected/connected
+  voice card, explicit aria labels for voice actions, and hidden visible
+  diagnostics. Browser QA verified no overflow, no workspace overlap, and the
+  corrective split between composer send-button sizing and voice-panel button
+  sizing.
 
 After each stage or meaningful feature:
 

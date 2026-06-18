@@ -423,7 +423,11 @@
   role assignment/removal, and member removal behind an explicit low-contrast
   management toggle, added localized member-list labels, and browser-verified the
   default panel remains clean while admin controls remain reachable.
-- Planned Stage 10.13: bottom user panel rebuild.
+- Completed Stage 10.13: bottom user panel rebuild shortened the lower-left panel,
+  split user identity/actions from the selected/connected voice card, moved visible
+  diagnostics out of the primary surface, added explicit aria labels for voice
+  action buttons, and browser-verified compact sizing plus the corrected user
+  identity width.
 - Planned Stage 10.14: voice channel workspace rebuild.
 - Planned Stage 10.15: screen-share flow rework.
 - Planned Stage 10.16: feature visibility policy.
