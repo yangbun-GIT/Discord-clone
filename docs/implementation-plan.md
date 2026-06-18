@@ -507,3 +507,8 @@
   separate rail signals, and private/server sidebars expose a top separator aligned
   with the workspace header edge. Frontend lint/build, Docker frontend rebuild, and
   browser layout checks passed.
+- Completed Stage 10.28: Friends/DM private sidebar layering now matches Discord's
+  shell hierarchy more closely. The private sidebar stays top-pinned with a 48 px
+  header band connected to the workspace `# Friends` header, while the conversation
+  search and DM navigation move below that band into the secondary content layer.
+  Frontend lint/build, Docker frontend rebuild, and browser layout checks passed.

@@ -42,7 +42,7 @@ and Add Friend density, adds message attachment/reaction visual structure, clean
 member management visibility, and improves voice/screen-share state clarity with
 Discord-like speaking indicators.
 
-Stage 10 interaction polish is complete through Stage 10.27. The controlling plan is
+Stage 10 interaction polish is complete through Stage 10.28. The controlling plan is
 `docs/discord-interaction-polish-plan.md`; the Stage 10.0 baseline lock is recorded
 in `docs/stage-10-baseline.md`, and QA evidence is recorded in
 `docs/stage-10-final-qa.md`. The completed work covers demo/test data cleanup,
@@ -51,7 +51,8 @@ user panel reconstruction, message/composer polish, timeline divider cleanup,
 voice/screen-share interaction cleanup, app-owned context menus/notices,
 browser-native UI removal for clone workflows, voice-sidebar participant hierarchy,
 server-owned voice session tracking, the in-app cross-server voice-switch dialog,
-message timeline divider cleanup, and server-rail/header seam cleanup. Remaining
+message timeline divider cleanup, server-rail/header seam cleanup, and layered
+private-sidebar header alignment. Remaining
 voice media verification still depends on a browser session with
 microphone and screen-capture permissions granted.
 

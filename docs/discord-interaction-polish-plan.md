@@ -939,3 +939,33 @@ Verification:
 - Browser QA verified a server selection has exactly one active rail slot for that
   server, the Direct Messages item is inactive, the sidebar separator sits at
   `47px` to meet the 48 px header edge, and there is no horizontal body overflow.
+
+## Stage 10.28: Layered Private Sidebar Header Alignment
+
+Status: completed. This follow-up corrects the Friends/DM shell layering after
+visual comparison with Discord's Friends screen.
+
+Goal: make the server rail, private sidebar, and `# Friends` workspace header read
+as stacked Discord-like layers instead of one flat split layout.
+
+Tasks:
+
+- Keep the private sidebar itself pinned to the top of the app shell so its outer
+  edge connects with the server rail and workspace header band.
+- Add a 48 px private-sidebar header layer with the same bottom border as the
+  workspace topbar.
+- Move the `Find or start a conversation` control below that header layer so it
+  aligns with the Friends filter row rather than competing with the `# Friends`
+  title row.
+- Keep server sidebars top-aligned by letting their server heading occupy the same
+  header band instead of adding a duplicate pseudo separator.
+- Move the quick-switcher popover below the relocated search control.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- Docker frontend rebuild passed.
+- Browser QA verified the private sidebar starts at `y=0`, its header layer is
+  48 px tall, the workspace topbar is 48 px tall, the search button moved to
+  `y=56`, and horizontal body overflow remains `0`.

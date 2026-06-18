@@ -468,7 +468,7 @@ select:focus-visible {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px 8px;
+  padding: 0 8px 10px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
 }
@@ -483,22 +483,27 @@ select:focus-visible {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px 8px;
+  padding: calc(var(--topbar-height) + 8px) 8px 10px;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--border-subtle);
 }
 
-.channel-sidebar::before,
 .private-sidebar::before {
   content: "";
   position: absolute;
-  z-index: 1;
-  top: calc(var(--topbar-height) - 1px);
+  z-index: 0;
+  top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: var(--border-subtle);
+  height: var(--topbar-height);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-base);
   pointer-events: none;
+}
+
+.private-sidebar > * {
+  position: relative;
+  z-index: 1;
 }
 
 .dm-search-button,
@@ -524,7 +529,7 @@ select:focus-visible {
 .quick-switcher-popover {
   position: absolute;
   z-index: 45;
-  top: 50px;
+  top: calc(var(--topbar-height) + 48px);
   left: 8px;
   right: 8px;
   display: grid;
@@ -856,8 +861,10 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 8px;
+  margin: 0 -8px;
+  padding: 0 16px;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
+  background: var(--surface-base);
   font-weight: 800;
 }
 

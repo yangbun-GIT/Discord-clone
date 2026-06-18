@@ -307,3 +307,33 @@ Residual manual QA:
 
 - No backend or media behavior changed. Connected voice and screen-share checks
   remain governed by microphone/screen-capture permissions.
+
+## Stage 10.28 Layered Private Sidebar Header QA
+
+Date: 2026-06-18
+
+Scope: Discord-like layered header alignment for the Friends/DM private sidebar.
+
+Command verification:
+
+- `npm run lint:frontend`: passed with 0 warnings and 0 errors.
+- `npm --prefix frontend run build`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- Friends surface rendered with `.private-sidebar` starting at `y=0`, matching the
+  server rail and workspace topbar origin.
+- The private sidebar header layer measured 48 px tall with a bottom border,
+  matching `.topbar` at `y=0`, `height=48`, and `bottom=48`.
+- The `Find or start a conversation` control moved below the header band to
+  `y=56`, so the top `# Friends` row stays visually connected across the rail,
+  sidebar, and workspace.
+- The private navigation row now starts below the search control at `y=100`, and
+  horizontal body overflow remained `0`.
+
+Residual manual QA:
+
+- No backend or media behavior changed. Connected voice and screen-share checks
+  remain governed by microphone/screen-capture permissions.
