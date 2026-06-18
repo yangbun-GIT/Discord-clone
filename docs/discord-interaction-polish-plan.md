@@ -725,3 +725,32 @@ Verification:
   denied`, so connected voice participant chips, server-rail voice badge during an
   active media session, and live speaking rings need manual verification with
   microphone permission granted.
+
+## Stage 10.21: Voice Sidebar Participant Stack
+
+Status: completed. This focused follow-up addresses the user's Discord reference
+for how a joined voice channel should expand in the server sidebar.
+
+Goal: keep the voice channel row compact while showing connected voice participants
+under the channel, matching Discord's hierarchy instead of crowding status text
+inside the selected channel row.
+
+Tasks:
+
+- Split a connected voice channel into a compact channel header row plus a separate
+  detail stack below it.
+- Add the Discord-like lower stack order: channel status shortcut, dashed mood
+  prompt, connected participants, and "Invite to voice".
+- Keep member rows simple by showing names by default and only showing status text
+  for speaking/muted/deafened states.
+- Avoid green connected backgrounds covering the full expanded block; apply the
+  connected/speaking emphasis to the channel header and participant row only.
+- Localize the new voice-sidebar labels for Korean and English.
+
+Verification:
+
+- Frontend lint passed with 0 warnings and 0 errors.
+- Frontend production build passed.
+- Residual manual QA: in-app browser microphone permission can still deny voice
+  join, so the successful connected state should be visually checked in Chrome with
+  microphone permission granted.

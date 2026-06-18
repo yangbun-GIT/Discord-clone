@@ -115,3 +115,28 @@ Residual manual QA:
   participant chips, server-rail voice badge visibility during a successful media
   session, and live speaking rings require manual QA in a browser session with
   microphone permission granted.
+
+## Stage 10.21 Voice Sidebar Participant Stack QA
+
+Date: 2026-06-18
+
+Scope: focused follow-up for the server sidebar's connected voice-channel layout.
+
+Command verification:
+
+- `npm run lint` in `frontend/`: passed with 0 warnings and 0 errors.
+- `npm run build` in `frontend/`: passed.
+
+Code/design verification:
+
+- A connected voice channel now renders as a compact header row, with participant
+  and invite details in a separate lower stack instead of crowding inside the row.
+- The lower stack order matches the user's Discord reference: channel status
+  shortcut, dashed mood prompt, connected participants, and invite-to-voice action.
+- Connected/speaking emphasis is scoped to the channel header/member row so the
+  expanded block no longer becomes one large green selected card.
+
+Residual manual QA:
+
+- Successful voice-join visual QA still requires microphone permission in Chrome or
+  another browser session where media permissions are granted.

@@ -1301,6 +1301,14 @@ Completed Stage 2 bridge work:
   dismissal, and Docker service refresh. In-app browser microphone permission still returned
   `Permission denied`, so connected voice participant rendering and live speaking
   rings remain manual QA in a browser session with microphone permission granted.
+- Added Stage 10.21 voice-sidebar participant stack: `ChannelSidebar.vue` now keeps
+  connected voice channels as a compact channel row and renders the Discord-like
+  lower stack beneath it: channel status shortcut, dashed mood prompt, connected
+  participant rows, and invite-to-voice action. `frontend/src/styles/base.css`
+  scopes connected/speaking emphasis to the row/member surfaces instead of coloring
+  the full expanded block, and `frontend/src/i18n/index.ts` localizes the new Korean
+  and English labels. Frontend lint/build passed; successful connected-state visual
+  QA still requires microphone permission in the browser.
 
 After each stage or meaningful feature:
 

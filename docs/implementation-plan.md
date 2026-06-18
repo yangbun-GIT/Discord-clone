@@ -471,3 +471,8 @@
   connection indication to the server rail. Frontend lint/build, backend tests/lint,
   Docker frontend rebuild, and browser QA passed for the visible surfaces; in-app
   browser microphone permission still blocks connected media verification.
+- Completed Stage 10.21: voice-sidebar participant stack now renders a joined voice
+  channel as a compact channel header plus Discord-like lower details: channel
+  status shortcut, mood prompt, connected participant rows, and invite-to-voice
+  action. Frontend lint/build passed; successful connected-state visual QA still
+  needs a browser session with microphone permission granted.

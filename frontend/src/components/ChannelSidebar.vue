@@ -5,7 +5,9 @@ import {
   ChevronRight,
   Hash,
   LogOut,
+  MessageCircle,
   MoreHorizontal,
+  Pencil,
   Plus,
   Radio,
   Settings,
@@ -92,6 +94,17 @@ function voiceStateStatusLabel(state: VoiceState) {
   if (state.self_deaf) return t('common.status.deafened')
   if (state.self_mute) return t('common.status.muted')
   return t('common.status.listening')
+}
+
+function shouldShowVoiceStatus(state?: VoiceState) {
+  if (state) return state.self_deaf || state.self_mute
+  return props.localSpeaking || props.muted || props.deafened
+}
+
+function voiceMemberInitials(label: string | null | undefined) {
+  const text = label?.trim() || t('channel.you')
+  const chars = Array.from(text)
+  return chars.slice(0, 2).join('').toUpperCase()
 }
 
 function toggleServerMenu() {
@@ -324,7 +337,7 @@ onBeforeUnmount(() => {
       <div
         v-for="channel in voiceCollapsed ? [] : voiceChannels"
         :key="channel.id"
-        class="channel-row"
+        class="channel-row voice-channel-row"
         :class="{
           active: channel.id === activeChannelId,
           connected: connectedVoiceChannelId === channel.id,
@@ -353,6 +366,15 @@ onBeforeUnmount(() => {
           <button
             v-if="connectedVoiceChannelId === channel.id"
             type="button"
+            :title="t('channel.aria.voiceChat')"
+            :aria-label="t('channel.aria.voiceChat')"
+            @click.stop="$emit('select', channel.id)"
+          >
+            <MessageCircle :size="14" aria-hidden="true" />
+          </button>
+          <button
+            v-if="connectedVoiceChannelId === channel.id"
+            type="button"
             :title="t('channel.aria.leaveVoice')"
             :aria-label="t('channel.aria.leaveVoice')"
             @click.stop="$emit('leaveVoice', channel.id)"
@@ -370,25 +392,65 @@ onBeforeUnmount(() => {
         </div>
         <div
           v-if="channelVoiceStates(channel.id).length || connectedVoiceChannelId === channel.id"
-          class="voice-sidebar-members"
+          class="voice-channel-details"
           :aria-label="t('channel.aria.voiceMembers')"
         >
-          <span
+          <button
             v-if="connectedVoiceChannelId === channel.id"
-            class="voice-sidebar-member self"
-            :class="{ speaking: localSpeaking }"
+            type="button"
+            class="voice-status-link"
+            @click.stop="$emit('channelSettings', channel.id)"
           >
-            <strong>{{ t('channel.you') }}</strong>
-            <small :class="{ speaking: localSpeaking }">{{ selfVoiceStatusLabel() }}</small>
-          </span>
-          <span
-            v-for="state in otherVoiceStates(channel.id)"
-            :key="`${channel.id}:${state.user_id}`"
-            class="voice-sidebar-member"
+            <span>{{ t('channel.voiceStatusSetup') }}</span>
+            <Pencil :size="11" aria-hidden="true" />
+          </button>
+          <button
+            v-if="connectedVoiceChannelId === channel.id"
+            type="button"
+            class="voice-mood-prompt"
+            @click.stop="$emit('demoNotice', t('channel.voiceMoodPrompt'))"
           >
-            <strong>{{ state.username ?? `User ${state.user_id}` }}</strong>
-            <small>{{ voiceStateStatusLabel(state) }}</small>
-          </span>
+            <UserPlus :size="15" aria-hidden="true" />
+            <span>{{ t('channel.voiceMoodPrompt') }}</span>
+          </button>
+          <div class="voice-sidebar-members">
+            <span
+              v-if="connectedVoiceChannelId === channel.id"
+              class="voice-sidebar-member self"
+              :class="{ speaking: localSpeaking }"
+            >
+              <span class="voice-member-avatar">{{ voiceMemberInitials(t('channel.you')) }}</span>
+              <span class="voice-member-copy">
+                <strong>{{ t('channel.you') }}</strong>
+                <small v-if="shouldShowVoiceStatus()" :class="{ speaking: localSpeaking }">
+                  {{ selfVoiceStatusLabel() }}
+                </small>
+              </span>
+            </span>
+            <span
+              v-for="state in otherVoiceStates(channel.id)"
+              :key="`${channel.id}:${state.user_id}`"
+              class="voice-sidebar-member"
+            >
+              <span class="voice-member-avatar">{{ voiceMemberInitials(state.username) }}</span>
+              <span class="voice-member-copy">
+                <strong>{{ state.username ?? `User ${state.user_id}` }}</strong>
+                <small v-if="shouldShowVoiceStatus(state)">{{ voiceStateStatusLabel(state) }}</small>
+              </span>
+            </span>
+          </div>
+          <button
+            v-if="connectedVoiceChannelId === channel.id"
+            type="button"
+            class="voice-invite-row"
+            @click.stop="$emit('createInvite')"
+          >
+            <span class="voice-invite-icon">
+              <UserPlus :size="16" aria-hidden="true" />
+            </span>
+            <span>{{ t('channel.voiceInvite') }}</span>
+            <ChevronRight :size="16" aria-hidden="true" />
+          </button>
         </div>
       </div>
     </div>
