@@ -1206,6 +1206,10 @@ Completed Stage 2 bridge work:
 - Added Stage 10.8 server sidebar polish: channel rows are compact, category create
   buttons and channel management actions are hidden until hover/focus, and browser
   QA verified no horizontal overflow plus active/text/voice channel scan quality.
+- Added Stage 10.9 header action reduction: the server header now keeps only
+  notifications, pins, member list, search, and invite creation while removing
+  threads, inbox, help, join-server, and logout from the primary header. Browser QA
+  verified no wrapping or horizontal overflow.
 
 After each stage or meaningful feature:
 

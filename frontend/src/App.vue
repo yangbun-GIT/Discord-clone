@@ -2,13 +2,8 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import {
   Bell,
-  CircleHelp,
   Hash,
-  Inbox,
   Link,
-  List,
-  LogIn,
-  LogOut,
   Mic,
   Pin,
   Radio,
@@ -657,16 +652,6 @@ async function handleCreateInvite() {
           <button
             class="topbar-icon-button"
             type="button"
-            :title="t('app.header.threads')"
-            :aria-label="t('app.header.threads')"
-            :aria-expanded="activeHeaderPanel === 'threads'"
-            @click="toggleHeaderPanel('threads')"
-          >
-            <List :size="17" aria-hidden="true" />
-          </button>
-          <button
-            class="topbar-icon-button"
-            type="button"
             :title="t('app.header.notifications')"
             :aria-label="t('app.header.notifications')"
             :aria-expanded="activeHeaderPanel === 'notifications'"
@@ -705,31 +690,13 @@ async function handleCreateInvite() {
               @input="activeHeaderPanel = 'search'"
             />
           </label>
-          <button
-            class="topbar-icon-button"
-            type="button"
-            :title="t('app.header.inbox')"
-            :aria-label="t('app.header.inbox')"
-            @click="showHeaderPlaceholder(t('app.header.inbox'))"
-          >
-            <Inbox :size="17" aria-hidden="true" />
-          </button>
-          <button
-            class="topbar-icon-button"
-            type="button"
-            :title="t('app.header.help')"
-            :aria-label="t('app.header.help')"
-            @click="showHeaderPlaceholder(t('app.header.help'))"
-          >
-            <CircleHelp :size="17" aria-hidden="true" />
-          </button>
         </div>
         <div class="session-state" :class="gatewayStatus">
           <Wifi v-if="gatewayStatus === 'connected'" :size="17" aria-hidden="true" />
           <WifiOff v-else :size="17" aria-hidden="true" />
           <span>{{ statusLabel }}</span>
         </div>
-        <div class="topbar-actions">
+        <div v-if="isServerDestination" class="topbar-actions">
           <button
             class="topbar-icon-button"
             type="button"
@@ -739,18 +706,6 @@ async function handleCreateInvite() {
             @click="handleCreateInvite"
           >
             <Link :size="17" aria-hidden="true" />
-          </button>
-          <button
-            class="topbar-icon-button"
-            type="button"
-            :aria-label="t('app.header.joinServer')"
-            v-if="isServerDestination"
-            @click="openJoinGuild"
-          >
-            <LogIn :size="17" aria-hidden="true" />
-          </button>
-          <button class="topbar-icon-button" type="button" :aria-label="t('app.header.logout')" @click="handleLogout">
-            <LogOut :size="17" aria-hidden="true" />
           </button>
         </div>
       </header>

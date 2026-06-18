@@ -365,6 +365,10 @@ Verification:
 
 ## Stage 10.9: Header Action Reduction
 
+Status: completed. The server header now keeps only notifications, pins, member
+list, search, and invite creation; thread, inbox, help, join-server, and logout
+buttons are removed from the primary header.
+
 Goal: show only useful controls in the top header.
 
 Tasks:
@@ -378,6 +382,9 @@ Verification:
 
 - Header icons do not wrap or collide at side-by-side width.
 - Each visible icon has a working action or clear local fallback.
+- Browser QA confirmed a 48 px header, no horizontal overflow, no wrapping, visible
+  search/member/invite controls, and only four icon buttons: notifications, pins,
+  member list, and invite creation.
 
 ## Stage 10.10: Text Timeline Rebuild
 
