@@ -86,16 +86,16 @@ preserves the Stage 10 process: each stage is documented, implemented separately
 verified before advancing, and then committed with a Korean commit title before
 pushing to `origin/main`.
 
-Stage 12 architecture-principle refactoring has started. The controlling plan is
+Stage 12 architecture-principle refactoring is complete. The controlling plan is
 `docs/architecture-refactor-stage-12-plan.md`, and the refreshed audit is recorded
 in `docs/architecture-principles-audit.md`. Stage 12 is behavior-preserving refactor
-work focused on remaining SRP, DIP, DRY, encapsulation, and testability gaps: App
+work that reduced SRP, DIP, DRY, encapsulation, and testability gaps: App
 voice orchestration, WebRTC module boundaries, guild voice presence, DM storage
 provider selection, guild repository query movement, API exception mapping,
 realtime fan-out duplication, browser API adapters, and CSS/i18n ownership
-planning. Stage 12 preserves the Stage 10/11 process: one stage at a time,
-verification before advancing, documentation and structure-map updates, Korean
-commit titles, and push to `origin/main`.
+planning. The remaining deferred candidates are splitting `frontend/src/stores/dms.ts`
+if DM behavior expands and physically splitting `base.css`/`i18n/index.ts` using
+`docs/frontend-css-i18n-ownership.md` when visual verification can be focused.
 
 The app boots in two local modes:
 
@@ -1579,6 +1579,10 @@ Completed Stage 2 bridge work:
   `docs/frontend-css-i18n-ownership.md` now defines safe future ownership for
   `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts`. No CSS or
   translation code was moved in Stage 12.9 to preserve current visual parity.
+- Completed Stage 12.10 final architecture regression:
+  frontend lint/build, backend lint/tests, and `git diff --check` passed. Remaining
+  deferred candidates are the future `dms.ts` split, future CSS/i18n physical
+  extraction, and manual microphone/screen-capture permission QA.
 
 After each stage or meaningful feature:
 

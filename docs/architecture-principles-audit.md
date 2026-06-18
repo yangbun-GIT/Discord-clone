@@ -258,8 +258,8 @@ principle and pattern gaps:
     `docs/frontend-css-i18n-ownership.md` now defines the next safe extraction
     order for token/layout/component CSS and domain-copy ownership.
 
-The active implementation plan for these gaps is
-`docs/architecture-refactor-stage-12-plan.md`.
+Stage 12 is complete. Future architecture work should use these remaining gaps as
+the next planning input rather than reopening Stage 12.
 
 ## Suggested Refactor Stage Order
 
@@ -288,7 +288,8 @@ For active work, use the more current Stage 12 plan in
 
 ## Current Status
 
-Partially applied.
+Stage 12 architecture refactoring is complete for the planned scope. Remaining
+large-file and DM-store items are intentionally deferred candidates.
 
 - `frontend/src/App.vue`: global notice, app context-menu state, invite modal
   state, workspace title/subtitle calculation, and voice session orchestration
@@ -345,3 +346,12 @@ Verification for this pass:
 - `npm --prefix frontend run lint`
 - `npm run lint:backend`
 - `npm run test:backend`
+- `git diff --check`
+
+Remaining deferred candidates:
+
+- `frontend/src/stores/dms.ts` can still be split into state, REST mutations, and
+  gateway event application if DM behavior expands.
+- `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` should follow
+  `docs/frontend-css-i18n-ownership.md` when a future visual or copy pass creates
+  a focused reason to split them.

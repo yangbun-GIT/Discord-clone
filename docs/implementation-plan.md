@@ -589,7 +589,7 @@
 
 ## Stage 12: Architecture Principle Refactor
 
-- Status: started.
+- Status: completed.
 - Plan document: `docs/architecture-refactor-stage-12-plan.md`.
 - Audit document: `docs/architecture-principles-audit.md`.
 - Target: reduce remaining SRP, DIP, DRY, encapsulation, and testability gaps
@@ -609,4 +609,4 @@
   - Stage 12.7 Realtime fan-out DRY pass: completed.
   - Stage 12.8 Browser API adapter pass: completed.
   - Stage 12.9 CSS and i18n split plan: completed.
-  - Stage 12.10 final architecture regression.
+  - Stage 12.10 final architecture regression: completed.

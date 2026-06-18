@@ -117,6 +117,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.10 Final Architecture Regression
 
+- Status: completed.
 - Run frontend lint/build, backend tests/lint, `git diff --check`, and a final
   architecture-doc review.
 - Record remaining external or intentionally deferred risks.

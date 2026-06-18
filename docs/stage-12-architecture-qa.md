@@ -297,3 +297,37 @@ Residual risk:
 
 - `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
   files until a future focused split can be visually verified.
+
+## Stage 12.10 Final Architecture Regression
+
+Status: completed.
+
+Changed files:
+
+- `docs/architecture-principles-audit.md`
+- `docs/architecture-refactor-stage-12-plan.md`
+- `docs/implementation-plan.md`
+- `docs/stage-12-architecture-qa.md`
+- `PROJECT_CONTEXT.md`
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `npm run lint:backend` passed.
+- `npm run test:backend` passed with 110 tests.
+- `git diff --check` must pass before commit.
+
+Review:
+
+- Stage 12.6 through 12.9 changes remain covered by the final regression suite.
+- Architecture docs now distinguish completed Stage 12 scope from future deferred
+  candidates.
+
+Residual risk:
+
+- `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
+  gateway event application; split only when DM work expands.
+- CSS/i18n physical splitting remains deferred to preserve current visual parity.
+- Live microphone and screen-capture permission QA still requires browser
+  permission/manual media verification.
