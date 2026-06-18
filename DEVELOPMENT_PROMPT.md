@@ -42,10 +42,17 @@ Before starting any non-trivial task, read in this order:
 4. `docs/implementation-plan.md`
 5. `README.md`
 6. `docs/README.md` for the document index
-7. Any task-specific document, such as `docs/deployment.md` or `docs/voice-qa.md`
+7. `docs/project-file-map.md` for quick path routing
+8. `docs/structure-map/reference-map.md` for cross-file dependency routing when
+   the change spans multiple files
+9. Any task-specific document, such as `docs/deployment.md` or `docs/voice-qa.md`
 
 Treat `PROJECT_CONTEXT.md` as the implementation map. It should describe live file
 ownership, integration points, commands, known decisions, and next work.
+
+Use `docs/project-file-map.md` and `docs/structure-map/reference-map.md` to narrow
+the likely owner files before broad code exploration. Prefer scoped `rg` searches
+over full recursive browsing once likely owners are known.
 
 If any of these documents are stale compared with the code, update the documents as
 part of the change unless the user explicitly asks for code-only work.
@@ -69,16 +76,18 @@ that is the current PyPI release line. Keep schema code isolated for a future up
 ## Implementation Policy
 
 1. Map the request to the current project structure.
-2. Read the relevant code and docs before editing.
-3. Decide which service/module owns the behavior.
-4. Follow existing patterns before adding new abstractions.
-5. Keep changes scoped to the requested behavior and its required integration points.
-6. Preserve current user flows, auth/permission behavior, persistence behavior, and
+2. Use `docs/project-file-map.md` and, for cross-file work,
+   `docs/structure-map/reference-map.md` to identify likely owner files.
+3. Read the relevant code and docs before editing.
+4. Decide which service/module owns the behavior.
+5. Follow existing patterns before adding new abstractions.
+6. Keep changes scoped to the requested behavior and its required integration points.
+7. Preserve current user flows, auth/permission behavior, persistence behavior, and
    local/Docker development flows.
-7. Update docs when service boundaries, commands, environment variables, behavior, or
-   next work change.
-8. Run verification appropriate to the change.
-9. Commit and push completed stages to `origin/main` unless the user explicitly asks
+8. Update docs when service boundaries, commands, environment variables, behavior,
+   file ownership, cross-file references, or next work change.
+9. Run verification appropriate to the change.
+10. Commit and push completed stages to `origin/main` unless the user explicitly asks
    not to.
 
 Avoid:

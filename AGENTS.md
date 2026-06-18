@@ -10,7 +10,8 @@
 
 - Before starting implementation, read `DEVELOPMENT_PROMPT.md`, `AGENTS.md`,
   `PROJECT_CONTEXT.md`, `docs/implementation-plan.md`, `README.md`, and
-  `docs/README.md`.
+  `docs/README.md`, then use `docs/project-file-map.md` and
+  `docs/structure-map/reference-map.md` for path and dependency routing.
 - Treat `DEVELOPMENT_PROMPT.md` as the project-specific development prompt:
   operating role, verification policy, documentation policy, security policy, and
   collaboration policy.
@@ -23,14 +24,27 @@
   integration points, commands, known decisions, and next work.
 - Use `docs/project-file-map.md` as the quick path map for locating likely owner
   files before broad code exploration.
+- For cross-file changes, read `docs/structure-map/reference-map.md` before broad
+  recursive searches so dependencies and reverse references are checked first.
 - After meaningful code or policy changes, update `PROJECT_CONTEXT.md` and any
   relevant files in `docs/` before committing.
 - When folders or important source-file responsibilities change, update
   `docs/project-file-map.md` before committing.
+- When core file dependencies change, update
+  `docs/structure-map/reference-map.md` before committing.
 - Keep documentation factual and concise. Prefer concrete file paths and live
   integration details over broad summaries.
 - Continue committing and pushing completed stages to `origin/main` unless the user
   explicitly asks not to.
+
+## Efficiency Rules
+
+- Use `docs/project-file-map.md` and `docs/structure-map/reference-map.md` to narrow
+  target files before broad exploration.
+- Prefer `rg` scoped to likely owner folders over full-repository recursive scans.
+- Parallelize independent file reads with `multi_tool_use.parallel`.
+- Keep stage scope tied to the mapped owner files; if scope expands, document the
+  new owner path before continuing.
 
 ## Backend Rules
 

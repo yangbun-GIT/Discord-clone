@@ -12,6 +12,8 @@ editing code, then update it whenever a meaningful implementation change lands.
 4. `docs/implementation-plan.md` for the staged roadmap.
 5. `README.md` for setup and verification commands.
 6. `docs/README.md` for the document index and task-specific reading guide.
+7. `docs/project-file-map.md` for quick path routing before broad exploration.
+8. `docs/structure-map/reference-map.md` for cross-file dependency routing.
 
 ## Current Milestone
 
@@ -172,6 +174,11 @@ The app boots in two local modes:
     implementation.
   - Must be updated when a project folder or important source file is added,
     removed, renamed, or assigned a meaningfully different responsibility.
+- `docs/structure-map/`
+  - Fast-navigation structure folder.
+  - `README.md` defines usage and update rules.
+  - `reference-map.md` records core file references and reverse references for
+    high-impact backend/frontend files.
 - `docs/stage-10-baseline.md`
   - Stage 10.0 baseline lock for FHD 100% comparison screenshots, problem inventory,
     and persistent/demo/test data classification.

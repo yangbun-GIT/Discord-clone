@@ -43,6 +43,10 @@ For ordinary implementation work:
 
 - `docs/README.md`
   - Documentation index and update rules.
+- `docs/structure-map/README.md`
+  - Structure-map folder index and update rules.
+- `docs/structure-map/reference-map.md`
+  - Core file reference and reverse-reference map.
 - `docs/implementation-plan.md`
   - Long-running roadmap and stage status.
 - `docs/GITHUB_COLLABORATION_WORKFLOW.md`
@@ -363,3 +367,6 @@ rg -n "Stage 11|voice|gateway|composer|invite" PROJECT_CONTEXT.md docs
 ```
 
 Prefer `rg` over recursive `Get-ChildItem` or `Select-String` for code lookup.
+
+For cross-file changes, read `docs/structure-map/reference-map.md` before expanding
+search beyond the likely owner files.

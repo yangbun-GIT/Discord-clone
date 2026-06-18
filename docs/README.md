@@ -20,6 +20,10 @@ the project prompt and context files before changing code.
    - Stage roadmap and current stage status.
 5. `README.md`
    - Local setup, Docker setup, environment notes, and verification commands.
+6. `docs/project-file-map.md`
+   - Quick path map for likely owner files and common task routing.
+7. `docs/structure-map/reference-map.md`
+   - Cross-file dependency and reverse-reference map for important files.
 
 ## Task-Specific Documents
 
@@ -66,6 +70,10 @@ the project prompt and context files before changing code.
     implementation.
   - Lists root files, backend/frontend ownership, tests, common task routing, and
     efficient lookup commands.
+- `docs/structure-map/`
+  - Fast-navigation structure folder.
+  - `README.md` defines usage and update rules; `reference-map.md` records core
+    file references and reverse references.
 - `docs/stage-11-baseline.md`
   - Stage 11.0 baseline and scope lock.
   - Records completed Stage 10.29 behavior, remaining risk areas, stage
@@ -154,6 +162,9 @@ the project prompt and context files before changing code.
   change.
 - Update `docs/project-file-map.md` when a project folder or important source file
   is added, removed, renamed, or assigned a meaningfully different responsibility.
+- Update `docs/structure-map/README.md` and
+  `docs/structure-map/reference-map.md` when the structure-map usage rules or core
+  cross-file dependencies change.
 - Update `docs/stage-11-baseline.md` when Stage 11 baseline assumptions, stage
   classification, or initial risk areas change.
 - Update `docs/stage-11-final-qa.md` after each Stage 11 implementation stage with
