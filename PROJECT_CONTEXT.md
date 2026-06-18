@@ -1183,6 +1183,10 @@ Completed Stage 2 bridge work:
   focus rings, scrollbars, composer, member, and voice-panel surfaces. Stage 10.2
   browser QA confirmed token application, no horizontal body overflow at 1280 px,
   and old development-style DM names hidden from the primary shell.
+- Added Stage 10.3 shell layout recomposition: the main workspace now spans the full
+  content height, the voice controls are constrained to the active sidebar column,
+  and browser QA verified Friends, text channel, and voice channel layouts have no
+  horizontal body overflow or bottom-control overlap with the main workspace.
 
 After each stage or meaningful feature:
 

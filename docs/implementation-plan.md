@@ -364,8 +364,8 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: in progress; Stage 10.0 through Stage 10.2 are complete and implementation
-  continues at Stage 10.3.
+- Status: in progress; Stage 10.0 through Stage 10.3 are complete and implementation
+  continues at Stage 10.4.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -387,8 +387,10 @@
   layers, hover/selected states, focus styles, scrollbars, and high-use shell
   controls; browser QA confirmed token application, no horizontal overflow, and old
   development-style names hidden.
-- Planned Stage 10.3: shell layout recomposition for rail/sidebar/main/member/bottom
-  rhythm and overflow control.
+- Completed Stage 10.3: shell layout recomposition moved the bottom voice controls
+  into the active sidebar column, let the workspace keep the full main height, and
+  verified Friends, text channel, and voice channel surfaces for horizontal overflow
+  and column separation.
 - Planned Stage 10.4: server rail polish.
 - Planned Stage 10.5: private sidebar simplification.
 - Planned Stage 10.6: Friends home rework.

@@ -219,6 +219,10 @@ Verification:
 
 ## Stage 10.3: Shell Layout Recomposition
 
+Status: completed. The workspace now owns the main content height while the voice
+panel is constrained to the active sidebar column, so bottom controls no longer take
+space from chat, Friends, member, or voice workspace content.
+
 Goal: fix the overall rail/sidebar/main/member/bottom rhythm.
 
 Tasks:
@@ -233,6 +237,10 @@ Verification:
 
 - No horizontal scrollbar in Friends, text channel, or voice channel.
 - Main content remains readable at FHD side-by-side width.
+- Browser QA passed for Friends, text channel, and voice channel surfaces: no body
+  horizontal overflow, voice controls stay inside the sidebar column, the sidebar
+  ends above the voice panel, and the workspace remains clear of the voice-control
+  column.
 
 ## Stage 10.4: Server Rail Polish
 

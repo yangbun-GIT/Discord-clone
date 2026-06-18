@@ -23,7 +23,7 @@
   --channel-sidebar-width: 300px;
   --member-list-width: 264px;
   --topbar-height: 48px;
-  --voice-panel-height: 72px;
+  --voice-panel-height: 118px;
   --composer-min-height: 44px;
   --icon-button-size: 32px;
   --row-height: 42px;
@@ -254,6 +254,7 @@ select:focus-visible {
 
 .app-shell.settings-mode .workspace {
   grid-column: 1;
+  grid-row: 1;
 }
 
 .server-rail {
@@ -1057,6 +1058,8 @@ select:focus-visible {
 
 .workspace {
   position: relative;
+  grid-column: 3;
+  grid-row: 1 / 3;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -3403,17 +3406,21 @@ select:focus-visible {
 }
 
 .voice-panel {
-  grid-column: 2 / 4;
+  position: relative;
+  grid-column: 2;
+  grid-row: 2;
   min-width: 0;
   min-height: var(--voice-panel-height);
   max-height: var(--voice-panel-height);
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(220px, 360px) minmax(110px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 6px;
+  padding: 8px;
   background: var(--surface-sidebar);
+  border-right: 1px solid var(--border-subtle);
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -3429,9 +3436,9 @@ select:focus-visible {
   width: 100%;
   height: auto;
   min-width: 0;
-  min-height: 44px;
+  min-height: 38px;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
   gap: 9px;
   border: 0;
@@ -3448,8 +3455,8 @@ select:focus-visible {
 }
 
 .user-panel-avatar {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -3507,8 +3514,8 @@ select:focus-visible {
 
 .user-panel-actions button,
 .voice-actions button {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   border: 0;
@@ -3538,7 +3545,7 @@ select:focus-visible {
   gap: 10px;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 7px 76px 7px 9px;
 }
 
 .voice-connection-card {
@@ -3573,8 +3580,8 @@ select:focus-visible {
 }
 
 .voice-presence {
+  display: none;
   min-width: 0;
-  display: grid;
   gap: 3px;
   text-align: right;
 }
@@ -3609,9 +3616,12 @@ select:focus-visible {
 }
 
 .voice-actions {
+  position: absolute;
+  right: 8px;
+  bottom: 9px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .voice-actions .screen-button.active {
@@ -3647,7 +3657,7 @@ select:focus-visible {
 .screen-share-stage {
   position: fixed;
   right: 24px;
-  bottom: calc(var(--voice-panel-height) + 18px);
+  bottom: 24px;
   z-index: 30;
   display: grid;
   gap: 10px;
@@ -3720,6 +3730,7 @@ select:focus-visible {
 
   .workspace {
     grid-column: 2;
+    grid-row: 1;
     max-width: calc(100vw - var(--server-rail-width-mobile));
     overflow: hidden;
   }
@@ -3734,9 +3745,19 @@ select:focus-visible {
 
   .voice-panel {
     grid-column: 2;
+    grid-row: 2;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
     padding: 10px 12px;
+  }
+
+  .voice-actions {
+    position: static;
+  }
+
+  .voice-connection-card,
+  .voice-connection-idle {
+    padding: 7px 9px;
   }
 
   .voice-connection-card,
