@@ -176,6 +176,10 @@ Verification:
 Goal: make the lower-left user card and connected voice panel feel like raised
 Discord controls instead of fixed wireframe blocks.
 
+Status: completed. Disconnected user-card spacing, connected-panel padding,
+disabled action styling, and shared raised-card language were tightened. QA
+evidence is in `docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Normalize disconnected and connected lower-left panel heights.

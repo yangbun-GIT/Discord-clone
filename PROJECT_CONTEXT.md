@@ -76,6 +76,9 @@ and voice-detail spacing. Stage 11.5 text-channel timeline/composer polish is
 complete in `frontend/src/components/ChatView.vue`, `frontend/src/styles/base.css`,
 and `frontend/src/i18n/index.ts`, removing fake attachment cards, code-like emoji
 options, empty-channel date dividers, and demo wording from composer helper panels.
+Stage 11.6 bottom user/voice panel polish is complete in
+`frontend/src/styles/base.css`, tightening disconnected/connected panel padding,
+raised-card styling, disabled action states, and connected voice-card composition.
 `docs/stage-11-final-qa.md` records the running Stage 11 QA evidence. Stage 11
 preserves the Stage 10 process: each stage is documented, implemented separately,
 verified before advancing, and then committed with a Korean commit title before

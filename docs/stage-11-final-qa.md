@@ -164,3 +164,33 @@ Residual notes:
 - Direct server text-channel click/send automation remains limited by the in-app
   browser synthetic-event restriction noted in Stage 11.3 and 11.4. The text
   timeline and composer code paths are compile-verified.
+
+## Stage 11.6: Bottom User And Voice Panel
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Disconnected and connected voice-panel padding now use the same spacing model.
+- The lower-left user card uses a darker raised surface with steadier internal
+  gaps, keeping the identity area and action cluster separated.
+- Disabled user action buttons now render as disabled controls instead of looking
+  active.
+- Connected voice cards gained matching horizontal padding for consistent raised
+  card composition.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- Browser QA on `http://localhost:5173/` measured horizontal overflow as `0`, the
+  disconnected voice panel at 68 px height, the lower-left user card at 48 px
+  height, and one disabled user action button while disconnected.
+
+Residual notes:
+
+- Connected media-state QA still depends on a browser session with microphone
+  permission granted. The connected panel styling is compile-verified and will be
+  covered again in Stage 11.7 and final media QA.

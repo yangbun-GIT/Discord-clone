@@ -544,3 +544,6 @@
   attachment cards, replaced code-like emoji options, hid date dividers in empty
   channels, removed demo wording from composer helper panels, and tightened message
   row/empty-channel spacing.
+- Completed Stage 11.6: lower-left user and voice panels gained steadier
+  disconnected/connected padding, darker raised-card styling, clearer disabled
+  action states, and matching connected voice-card composition.
