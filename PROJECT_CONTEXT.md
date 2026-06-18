@@ -221,6 +221,10 @@ The app boots in two local modes:
 - `backend/app/api/dependencies.py`
   - Bearer-token dependency for protected REST routes.
   - Decodes JWTs and returns the current user payload.
+- `backend/app/api/errors.py`
+  - Shared REST route exception mapping helper.
+  - Converts service-layer `KeyError`, `PermissionError`, and `ValueError` into
+    route-specific HTTP responses for guild, channel, and DM routes.
 - `backend/app/api/routes/auth.py`
   - `POST /api/auth/register` creates a database-backed user with bcrypt password
     hashing and returns a JWT.
@@ -1548,6 +1552,11 @@ Completed Stage 2 bridge work:
   `guild_common.py`. `guilds.py` now owns guild aggregate list/read/create SQL
   plus compatibility wrapper methods. Backend lint, guild repository tests, and
   the full backend suite passed.
+- Completed Stage 12.6 API exception mapping:
+  `backend/app/api/errors.py` now owns shared route exception-to-HTTP mapping for
+  `KeyError`, `PermissionError`, and `ValueError`; guild, channel, and DM routes
+  preserve route-specific messages while delegating status mapping to the helper.
+  Backend lint and the full backend suite passed.
 
 After each stage or meaningful feature:
 

@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
+from app.api.errors import raise_route_error
 from app.realtime.publisher import publish_dm_create, publish_dm_message_create
 from app.schemas.auth import UserPublic
 from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageRead, DmRead
@@ -27,21 +28,13 @@ async def create_direct_message(
         dm = await create_dm(payload, current_user)
         await publish_dm_create(dm)
         return dm
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="recipient not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(exc),
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="recipient not found",
+            forbidden=str(exc),
+            bad_request=str(exc),
+        )
 
 
 @router.post(
@@ -64,18 +57,10 @@ async def create_direct_message_message(
         message = await create_dm_message(dm_id=dm_id, payload=payload, author=current_user)
         await publish_dm_message_create(message)
         return message
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="direct message not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="direct message membership required",
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="direct message not found",
+            forbidden="direct message membership required",
+            bad_request=str(exc),
+        )

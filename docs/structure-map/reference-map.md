@@ -54,6 +54,17 @@ Browser UI
 
 ### REST Route To Service Flow
 
+- `backend/app/api/errors.py`
+  - References:
+    - FastAPI `HTTPException` and status codes.
+  - Referenced by:
+    - `backend/app/api/routes/guilds.py`
+    - `backend/app/api/routes/channels.py`
+    - `backend/app/api/routes/dms.py`
+  - Owns:
+    - Shared REST route mapping for `KeyError`, `PermissionError`, and
+      `ValueError` into HTTP responses.
+
 - `backend/app/api/routes/auth.py`
   - References:
     - `backend/app/api/dependencies.py`
@@ -65,6 +76,7 @@ Browser UI
 - `backend/app/api/routes/guilds.py`
   - References:
     - `backend/app/api/dependencies.py`
+    - `backend/app/api/errors.py`
     - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/guild.py`
@@ -75,6 +87,7 @@ Browser UI
 - `backend/app/api/routes/channels.py`
   - References:
     - `backend/app/api/dependencies.py`
+    - `backend/app/api/errors.py`
     - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/guild.py`
@@ -86,6 +99,7 @@ Browser UI
 - `backend/app/api/routes/dms.py`
   - References:
     - `backend/app/api/dependencies.py`
+    - `backend/app/api/errors.py`
     - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`

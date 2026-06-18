@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
+from app.api.errors import raise_route_error
 from app.realtime.publisher import (
     publish_message_create,
     publish_message_delete,
@@ -40,21 +41,13 @@ async def create_channel_message(
         )
         await publish_message_create(message)
         return message
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="channel not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="send messages permission required",
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="channel not found",
+            forbidden="send messages permission required",
+            bad_request=str(exc),
+        )
 
 
 @router.patch(
@@ -76,21 +69,13 @@ async def update_channel_message(
         )
         await publish_message_update(message)
         return message
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="message not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="message author or manage messages permission required",
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="message not found",
+            forbidden="message author or manage messages permission required",
+            bad_request=str(exc),
+        )
 
 
 @router.delete(
@@ -110,18 +95,10 @@ async def delete_channel_message(
         )
         await publish_message_delete(deleted)
         return deleted
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="message not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="message author or manage messages permission required",
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="message not found",
+            forbidden="message author or manage messages permission required",
+            bad_request=str(exc),
+        )

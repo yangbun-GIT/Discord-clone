@@ -253,15 +253,13 @@ principle and pattern gaps:
 
 1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
-2. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
-   exception-to-HTTP mappings.
-3. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
+2. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
    subscription-sync behavior around local gateway fan-out.
-4. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
+3. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
    and view transitions remain scattered across a few frontend modules. Some are
    appropriate at the browser boundary, but high-use clone workflows should be
    wrapped where doing so improves testability.
-5. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+4. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
     single files. They are acceptable for current visual stability, but future
     changes should move toward token/layout/component and domain-copy ownership.
 
@@ -330,6 +328,10 @@ Partially applied.
 - `backend/app/repositories/guild_channels.py`, `guild_invites.py`,
   `guild_members.py`, `guild_messages.py`, and `guild_roles.py`: now own their
   matching domain SQL instead of delegating to `guilds.py`.
+- `backend/app/api/errors.py`: owns shared REST route exception-to-HTTP mapping
+  for `KeyError`, `PermissionError`, and `ValueError`; guild, channel, and DM
+  routes now keep route-specific detail text while delegating status-code mapping
+  to this helper.
 - `backend/app/gateway/manager.py`: split into connection, subscription,
   broadcaster, voice service, and zombie reaper modules while preserving the
   manager facade used by routes, realtime, and tests.

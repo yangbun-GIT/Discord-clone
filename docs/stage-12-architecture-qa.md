@@ -171,3 +171,32 @@ Residual risk:
 
 - `guilds.py` intentionally retains compatibility wrapper methods until callers
   no longer need the historical broad repository API.
+
+## Stage 12.6 API Exception Mapping
+
+Status: completed.
+
+Changed files:
+
+- `backend/app/api/errors.py`
+- `backend/app/api/routes/guilds.py`
+- `backend/app/api/routes/channels.py`
+- `backend/app/api/routes/dms.py`
+
+Verification:
+
+- `npm run lint:backend` passed.
+- `npm run test:backend` passed with 107 tests.
+
+Review:
+
+- Shared route exception mapping now lives in `backend/app/api/errors.py`.
+- Guild, channel, and DM routes preserve route-specific detail messages while
+  delegating `KeyError`, `PermissionError`, and `ValueError` status-code mapping
+  to `raise_route_error()`.
+- Payload/path mismatch checks remain local to routes because they are explicit
+  request-contract validation, not service-layer exception mapping.
+
+Residual risk:
+
+- None identified for REST contracts; full backend tests passed.

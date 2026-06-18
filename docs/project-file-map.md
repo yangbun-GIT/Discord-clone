@@ -100,6 +100,10 @@ For ordinary implementation work:
 
 ## Backend: REST Routes
 
+- `backend/app/api/errors.py`
+  - Shared REST route exception-to-HTTP mapping helpers.
+  - Used by guild, channel, and DM routes to keep route handlers focused on API
+    flow and route-specific detail text.
 - `backend/app/api/routes/auth.py`
   - Register, login, and `me` endpoints.
 - `backend/app/api/routes/dev.py`

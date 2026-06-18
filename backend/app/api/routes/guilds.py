@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.api.dependencies import get_current_user
+from app.api.errors import raise_route_error
 from app.realtime.publisher import publish_channel_create, publish_guild_update
 from app.schemas.auth import UserPublic
 from app.schemas.guild import (
@@ -45,10 +46,7 @@ async def get_guild(
     try:
         return await get_guild_for_user(guild_id, current_user)
     except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="guild not found",
-        ) from exc
+        raise_route_error(exc, not_found="guild not found")
 
 
 @router.post("", response_model=GuildRead, status_code=status.HTTP_201_CREATED)
@@ -73,10 +71,7 @@ async def join_guild_invite(
         await publish_guild_update(guild)
         return guild
     except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="invite not found",
-        ) from exc
+        raise_route_error(exc, not_found="invite not found")
 
 
 @router.post(
@@ -90,16 +85,12 @@ async def create_guild_invite(
 ) -> InviteRead:
     try:
         return await create_invite(guild_id, current_user)
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="guild not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="create invite permission required",
-        ) from exc
+    except (KeyError, PermissionError) as exc:
+        raise_route_error(
+            exc,
+            not_found="guild not found",
+            forbidden="create invite permission required",
+        )
 
 
 @router.post(
@@ -116,16 +107,12 @@ async def create_guild_role(
         guild = await create_role(guild_id, payload, current_user)
         await publish_guild_update(guild)
         return guild
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="guild not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="administrator permission required",
-        ) from exc
+    except (KeyError, PermissionError) as exc:
+        raise_route_error(
+            exc,
+            not_found="guild not found",
+            forbidden="administrator permission required",
+        )
 
 
 @router.post(
@@ -143,16 +130,12 @@ async def assign_guild_member_role(
         guild = await assign_member_role(guild_id, member_id, payload, current_user)
         await publish_guild_update(guild)
         return guild
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="member or role not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="administrator permission required",
-        ) from exc
+    except (KeyError, PermissionError) as exc:
+        raise_route_error(
+            exc,
+            not_found="member or role not found",
+            forbidden="administrator permission required",
+        )
 
 
 @router.delete(
@@ -170,16 +153,12 @@ async def remove_guild_member_role(
         guild = await remove_member_role(guild_id, member_id, role_id, current_user)
         await publish_guild_update(guild)
         return guild
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="member or role not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="administrator permission required",
-        ) from exc
+    except (KeyError, PermissionError) as exc:
+        raise_route_error(
+            exc,
+            not_found="member or role not found",
+            forbidden="administrator permission required",
+        )
 
 
 @router.delete(
@@ -196,21 +175,13 @@ async def remove_guild_member(
         guild = await remove_member(guild_id, member_id, current_user)
         await publish_guild_update(guild)
         return guild
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="member not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="administrator permission required",
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="member not found",
+            forbidden="administrator permission required",
+            bad_request=str(exc),
+        )
 
 
 @router.post(
@@ -227,13 +198,9 @@ async def create_guild_channel(
         channel = await create_channel(guild_id, payload, current_user)
         await publish_channel_create(channel)
         return channel
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="guild not found",
-        ) from exc
-    except PermissionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="manage channels permission required",
-        ) from exc
+    except (KeyError, PermissionError) as exc:
+        raise_route_error(
+            exc,
+            not_found="guild not found",
+            forbidden="manage channels permission required",
+        )

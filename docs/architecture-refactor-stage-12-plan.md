@@ -81,6 +81,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.6 API Exception Mapping
 
+- Status: completed.
 - Introduce shared route exception helpers for `KeyError`, `PermissionError`, and
   `ValueError` mappings.
 - Replace repeated mappings in guild, channel, and DM routes.
