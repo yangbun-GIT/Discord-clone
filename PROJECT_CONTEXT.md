@@ -1284,6 +1284,23 @@ Completed Stage 2 bridge work:
   browser QA for menu dismissal, tab order, hidden disconnected voice card, and voice
   row direct-join attempt; microphone permission denial remains the manual connected
   media QA blocker.
+- Added Stage 10.20 Discord feedback cleanup: `FriendsHome.vue` now keeps friend
+  status/activity on one compact status line with taller row spacing; `ChatView.vue`
+  and `DirectMessageView.vue` removed the hardcoded `OK`/`+1` reaction pills and now
+  share clearer message-row borders, padding, and hover separation; `VoicePanel.vue`
+  rebuilds the lower-left user/voice surface as raised cards, moves voice actions
+  out of absolute overlap, and renders connected participant chips when media
+  permission allows voice connection. `App.vue`, `ChannelSidebar.vue`,
+  `PrivateChannelSidebar.vue`, `ServerRail.vue`, `types.ts`, `i18n/index.ts`, and
+  `base.css` add target-aware app context menus, outside-click/Escape dismissal for
+  transient menus/notices, cleaner one-line topbar behavior, and server-rail voice
+  connection badges instead of topbar voice-location chips. Verification passed
+  frontend lint/build, backend tests/lint, Docker frontend rebuild, browser QA for
+  friend row density, server/DM message separation, removal of hardcoded reaction
+  pills, app-level right-click menu suppression of the browser menu, outside-click
+  dismissal, and Docker service refresh. In-app browser microphone permission still returned
+  `Permission denied`, so connected voice participant rendering and live speaking
+  rings remain manual QA in a browser session with microphone permission granted.
 
 After each stage or meaningful feature:
 

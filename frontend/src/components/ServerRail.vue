@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Compass, MessageCircle, Plus } from 'lucide-vue-next'
+import { Compass, MessageCircle, Plus, Radio } from 'lucide-vue-next'
 
 import type { Guild, ServerRailGuildMeta } from '../types'
 
@@ -85,6 +85,8 @@ function badgeLabel(count: number | undefined) {
         title="Direct Messages"
         :aria-label="homeUnreadCount ? `Direct Messages, ${homeUnreadCount} unread` : 'Direct Messages'"
         :aria-current="homeActive ? 'page' : undefined"
+        data-context-kind="home"
+        data-context-label="Direct Messages"
         @click="$emit('home')"
       >
         <MessageCircle :size="22" aria-hidden="true" />
@@ -114,11 +116,16 @@ function badgeLabel(count: number | undefined) {
           :title="guild.name"
           :aria-label="ariaLabelForGuild(guild)"
           :aria-current="!homeActive && guild.id === activeGuildId ? 'page' : undefined"
+          data-context-kind="server"
+          :data-context-label="guild.name"
           @click="$emit('select', guild.id)"
         >
           {{ guildInitials(guild.name) }}
           <span v-if="guildMeta[guild.id]?.mention_count" class="server-badge">
             {{ badgeLabel(guildMeta[guild.id]?.mention_count) }}
+          </span>
+          <span v-if="guildMeta[guild.id]?.voice_connected" class="server-voice-indicator" aria-label="Voice connected">
+            <Radio :size="12" aria-hidden="true" />
           </span>
           <span v-else-if="guildMeta[guild.id]?.muted" class="server-muted-dot" aria-hidden="true"></span>
         </button>
@@ -157,11 +164,16 @@ function badgeLabel(count: number | undefined) {
             :title="guild.name"
             :aria-label="ariaLabelForGuild(guild)"
             :aria-current="!homeActive && guild.id === activeGuildId ? 'page' : undefined"
+            data-context-kind="server"
+            :data-context-label="guild.name"
             @click="$emit('select', guild.id)"
           >
             {{ guildInitials(guild.name) }}
             <span v-if="guildMeta[guild.id]?.mention_count" class="server-badge">
               {{ badgeLabel(guildMeta[guild.id]?.mention_count) }}
+            </span>
+            <span v-if="guildMeta[guild.id]?.voice_connected" class="server-voice-indicator" aria-label="Voice connected">
+              <Radio :size="12" aria-hidden="true" />
             </span>
             <span v-else-if="guildMeta[guild.id]?.muted" class="server-muted-dot" aria-hidden="true"></span>
           </button>

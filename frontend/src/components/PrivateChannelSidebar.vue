@@ -119,6 +119,8 @@ onBeforeUnmount(() => {
         class="private-nav-button"
         :class="{ active: activeDestination === 'friends' }"
         :aria-current="activeDestination === 'friends' ? 'page' : undefined"
+        data-context-kind="friends-home"
+        :data-context-label="t('channel.friends')"
         @click="$emit('openFriends')"
       >
         <MessageCircle :size="18" aria-hidden="true" />
@@ -140,6 +142,8 @@ onBeforeUnmount(() => {
         class="dm-row"
         :class="{ active: activeDestination === 'dm' && dm.id === activeDmId }"
         :aria-current="activeDestination === 'dm' && dm.id === activeDmId ? 'page' : undefined"
+        data-context-kind="dm-row"
+        :data-context-label="dm.display_name"
         @click="$emit('openDm', dm.id)"
       >
         <span class="dm-avatar-wrap">

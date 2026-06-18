@@ -241,6 +241,8 @@ onBeforeUnmount(() => {
         class="channel-row"
         :class="{ active: channel.id === activeChannelId }"
         :aria-current="channel.id === activeChannelId ? 'page' : undefined"
+        data-context-kind="text-channel"
+        :data-context-label="channel.name"
       >
         <button
           class="channel-button"
@@ -329,6 +331,8 @@ onBeforeUnmount(() => {
           speaking: connectedVoiceChannelId === channel.id && localSpeaking,
         }"
         :aria-current="channel.id === activeChannelId ? 'page' : undefined"
+        data-context-kind="voice-channel"
+        :data-context-label="channel.name"
       >
         <button
           class="channel-button"

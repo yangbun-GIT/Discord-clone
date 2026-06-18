@@ -100,7 +100,13 @@ watch(
         <p>{{ t('dm.selectConversation') }}</p>
       </section>
 
-      <article v-for="(message, index) in dm?.messages ?? []" :key="message.id" class="message-row">
+      <article
+        v-for="(message, index) in dm?.messages ?? []"
+        :key="message.id"
+        class="message-row"
+        data-context-kind="dm-message"
+        :data-context-label="message.author_name"
+      >
         <div class="avatar" aria-hidden="true">
           {{ message.author_name.slice(0, 1).toUpperCase() }}
         </div>

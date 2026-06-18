@@ -274,8 +274,10 @@ watch(
               :key="friend.id"
               class="friend-row"
               :class="{ active: selectedFriend?.id === friend.id }"
+              data-context-kind="friend"
+              :data-context-label="friend.username"
               @click="selectedFriendId = friend.id"
-              @contextmenu.prevent="openFriendMenu($event, friend, 'context')"
+              @contextmenu.stop.prevent="openFriendMenu($event, friend, 'context')"
             >
               <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
               <span class="friend-copy">
@@ -286,11 +288,11 @@ watch(
                 <span class="friend-status-line">
                   <span class="presence-dot" :class="friend.status" aria-hidden="true"></span>
                   <small>{{ statusLabel(friend.status) }}</small>
+                  <small v-if="friend.activity" class="friend-activity">{{ friend.activity }}</small>
                   <small v-if="friend.relationship !== 'friend'" class="friend-relationship">
                     {{ relationshipLabel(friend) }}
                   </small>
                 </span>
-                <small v-if="friend.activity" class="friend-activity">{{ friend.activity }}</small>
               </span>
               <button
                 type="button"

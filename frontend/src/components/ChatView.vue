@@ -38,11 +38,6 @@ const demoAttachmentCards = [
   { title: '16. Mid-fi prototyping.pdf', meta: '1.38 MB' },
   { title: '18.0_Evaluation.pdf', meta: '928.06 KB' },
 ]
-const reactionOptions = [
-  { label: 'OK', count: 3 },
-  { label: '+1', count: 1 },
-]
-
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
 )
@@ -155,7 +150,13 @@ function messageTime(index: number) {
   <section class="chat-view" :aria-label="t('chat.aria.messages')">
     <div class="message-list">
       <div class="date-divider"><span>{{ timelineDate }}</span></div>
-      <article v-for="(message, index) in messages" :key="message.id" class="message-row">
+      <article
+        v-for="(message, index) in messages"
+        :key="message.id"
+        class="message-row"
+        data-context-kind="message"
+        :data-context-label="message.author_name"
+      >
         <div class="avatar" aria-hidden="true">
           {{ message.author_name.slice(0, 1).toUpperCase() }}
         </div>
@@ -259,12 +260,6 @@ function messageTime(index: number) {
                 <small>{{ attachment.meta }}</small>
               </div>
             </article>
-          </div>
-          <div class="message-reactions" aria-label="Message reactions">
-            <button v-for="reaction in reactionOptions" :key="reaction.label" type="button">
-              <span>{{ reaction.label }}</span>
-              <strong>{{ reaction.count }}</strong>
-            </button>
           </div>
         </div>
       </article>

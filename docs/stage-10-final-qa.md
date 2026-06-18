@@ -73,3 +73,45 @@ Browser QA:
 - Voice channel row click moved to the voice workspace and attempted voice connection
   directly. The browser returned `Permission denied` for microphone access, so full
   connected media verification remains manual with microphone permission granted.
+
+## Stage 10.20 Feedback Cleanup QA
+
+Date: 2026-06-18
+
+Scope: second user-feedback pass for friend/message density, lower-left user/voice
+panel quality, app context menus, topbar cleanup, and voice state placement.
+
+Command verification:
+
+- `npm run lint` in `frontend/`: passed with 0 warnings and 0 errors.
+- `npm run build` in `frontend/`: passed.
+- `npm run test:backend`: passed, 103 tests.
+- `npm run lint:backend`: passed.
+- `docker compose up -d --build frontend`: passed and refreshed the running Docker
+  frontend/backend containers.
+
+Browser QA:
+
+- Friends home: friend rows render at 72 px with one compact status/activity line
+  and stronger row separation.
+- Text channel: `.message-reactions` count is `0`; server message rows render with
+  a top border, 13 px padding, and no `OK`/`+1` pills.
+- Direct-message-compatible message styling: server and DM message rows now share
+  the same `.message-row` separation rules.
+- Lower-left user panel: renders as a raised card with a visible shadow and 128 px
+  panel height; disconnected voice-room idle text is not shown.
+- App right-click: right-clicking a message shows the app context menu with reply,
+  copy, edit, and pin actions, and the browser context menu is suppressed.
+- Outside click: clicking outside the context menu closes it.
+- Server/channel context targets: server rail, DM rows, friend rows, text channels,
+  voice channels, messages, and the user panel expose `data-context-kind` targets
+  for app context menus.
+- Topbar/voice placement: the visible topbar no longer renders the voice-location
+  chip; voice connection indication is implemented on the server rail.
+
+Residual manual QA:
+
+- Voice join in the in-app browser returned `Permission denied`, so connected voice
+  participant chips, server-rail voice badge visibility during a successful media
+  session, and live speaking rings require manual QA in a browser session with
+  microphone permission granted.

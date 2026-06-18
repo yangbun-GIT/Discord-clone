@@ -461,3 +461,13 @@
   browser QA for menu dismissal, hidden disconnected voice card, and voice direct
   join attempt passed. Backend tests and lint also passed; microphone permission
   denial remains manual connected media QA.
+- Completed Stage 10.20: follow-up Discord feedback cleanup tightened friend row
+  status/activity density, removed hardcoded `OK`/`+1` message reaction pills,
+  added stronger server/DM message separation, rebuilt the lower-left user/voice
+  panel as raised cards with non-overlapping actions and connected participant
+  chips, added target-aware app context menus for messages, DMs, users, channels,
+  servers, and workspace areas, closed transient menus/notices on outside click or
+  Escape, removed the misplaced topbar voice-location chip, and moved voice
+  connection indication to the server rail. Frontend lint/build, backend tests/lint,
+  Docker frontend rebuild, and browser QA passed for the visible surfaces; in-app
+  browser microphone permission still blocks connected media verification.

@@ -688,3 +688,40 @@ Verification:
 - Residual manual QA: the in-app browser denied microphone permission during voice
   join, so connected voice and real screen-share start/stop remain manual checks in
   a browser session with media permissions granted.
+
+## Stage 10.20: Feedback Cleanup Follow-Up
+
+Status: completed. This pass resolves the second user feedback list focused on
+friend/message density, lower-left user/voice panel quality, context menus, topbar
+cleanup, and voice-state placement.
+
+Goal: remove remaining wireframe-like surfaces and make high-frequency Discord
+interactions feel cleaner without adding low-value clone-only controls.
+
+Tasks:
+
+- Keep friend activity/status information compact enough that each friend row reads
+  as one separated item.
+- Remove demo-only hardcoded message reactions from server text channels and apply
+  clearer message separation to both server and DM timelines.
+- Rebuild the lower-left user/voice area as elevated cards with no text/button
+  overlap.
+- Show connected voice participants in the lower-left voice card when media
+  permission allows connection.
+- Replace remaining browser context-menu behavior with app-level context menus for
+  messages, users/DMs, channels, servers, and workspace areas.
+- Close transient context menus and notices on outside click or Escape.
+- Remove misplaced voice-location text from the topbar and place voice connection
+  indication on the relevant server rail icon.
+
+Verification:
+
+- Frontend lint/build passed.
+- Docker frontend rebuild passed.
+- Browser QA verified friend row height/spacing, removal of `.message-reactions`,
+  message-row borders/padding, raised user-panel styling, app context-menu rendering,
+  context-menu outside-click dismissal, and context target coverage.
+- Residual manual QA: in-app browser microphone permission returned `Permission
+  denied`, so connected voice participant chips, server-rail voice badge during an
+  active media session, and live speaking rings need manual verification with
+  microphone permission granted.

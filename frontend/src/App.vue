@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   Bell,
   Hash,
@@ -117,6 +117,12 @@ const showMemberList = ref(true)
 const inviteCode = ref<string | null>(null)
 const inviteSearchQuery = ref('')
 const inviteCopied = ref(false)
+const globalContextMenu = ref<{
+  x: number
+  y: number
+  title: string
+  items: { id: string; label: string; danger?: boolean }[]
+} | null>(null)
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 const voiceTurnConfigured = ref(false)
 const userPresenceStatus = ref<UserPresenceStatus>('online')
@@ -152,6 +158,7 @@ const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
         unread_count: unreadCount,
         mention_count: index === 0 && !isPrivateDestination.value ? 0 : Number(index === 0 && unreadCount > 0),
         muted: index % 3 === 2,
+        voice_connected: guilds.voiceConnected && guilds.voiceChannel?.guild_id === guild.id,
         folder_name: index < 2 ? 'Project' : null,
         folder_color: index < 2 ? '#5eead4' : null,
       },
@@ -206,8 +213,113 @@ onMounted(async () => {
   if (session.token) {
     await openWorkspace()
   }
+  document.addEventListener('keydown', handleDocumentKeyDown)
   isBooting.value = false
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleDocumentKeyDown)
+})
+
+function contextMenuItems(kind: string) {
+  if (kind === 'message' || kind === 'dm-message') {
+    return [
+      { id: 'reply', label: t('context.reply') },
+      { id: 'copy-message', label: t('context.copyMessage') },
+      { id: 'edit-message', label: t('context.editMessage') },
+      { id: 'pin-message', label: t('context.pinMessage') },
+    ]
+  }
+  if (kind === 'friend' || kind === 'dm-row' || kind === 'user-panel') {
+    return [
+      { id: 'message-user', label: t('context.messageUser') },
+      { id: 'start-call', label: t('context.startCall') },
+      { id: 'view-profile', label: t('context.viewProfile') },
+      { id: 'mute-conversation', label: t('context.muteConversation') },
+      { id: 'block-user', label: t('context.blockUser'), danger: true },
+    ]
+  }
+  if (kind === 'voice-channel' || kind === 'voice-session') {
+    return [
+      { id: guilds.voiceConnected ? 'voice-disconnect' : 'voice-connect', label: guilds.voiceConnected ? t('voice.disconnect') : t('voice.joinSelected') },
+      { id: 'invite', label: t('channel.menu.invitePeople') },
+      { id: 'copy-link', label: t('context.copyChannelLink') },
+      { id: 'settings', label: t('channel.aria.settings') },
+    ]
+  }
+  if (kind === 'text-channel') {
+    return [
+      { id: 'mark-read', label: t('context.markRead') },
+      { id: 'invite', label: t('channel.menu.invitePeople') },
+      { id: 'copy-link', label: t('context.copyChannelLink') },
+      { id: 'settings', label: t('channel.aria.settings') },
+    ]
+  }
+  if (kind === 'server') {
+    return [
+      { id: 'mark-read', label: t('context.markRead') },
+      { id: 'invite', label: t('channel.menu.invitePeople') },
+      { id: 'settings', label: t('channel.menu.serverSettings') },
+    ]
+  }
+  return [
+    { id: 'mark-read', label: t('context.markRead') },
+    { id: 'open-settings', label: t('settings.userSettings') },
+  ]
+}
+
+function openGlobalContextMenu(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (target.closest('.friend-local-menu, .server-context-menu, .global-context-menu')) return
+
+  const contextTarget = target.closest<HTMLElement>('[data-context-kind]')
+  const kind = contextTarget?.dataset.contextKind ?? 'workspace'
+  const label = contextTarget?.dataset.contextLabel ?? workspaceTitle.value
+  const menuWidth = 244
+  const menuHeight = 228
+
+  globalContextMenu.value = {
+    x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
+    y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8)),
+    title: label,
+    items: contextMenuItems(kind),
+  }
+}
+
+function closeGlobalContextMenu() {
+  globalContextMenu.value = null
+}
+
+function runGlobalContextAction(id: string) {
+  if (id === 'invite') {
+    void handleCreateInvite()
+  } else if (id === 'settings' || id === 'open-settings') {
+    handleOpenUserSettings()
+  } else if (id === 'voice-disconnect') {
+    disconnectVoice()
+  } else if (id === 'copy-message' || id === 'copy-link') {
+    void navigator.clipboard?.writeText(id === 'copy-link' ? window.location.href : globalContextMenu.value?.title ?? '')
+  }
+  closeGlobalContextMenu()
+}
+
+function handleWorkspacePointerDown(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (globalContextMenu.value && !target.closest('.global-context-menu')) {
+    closeGlobalContextMenu()
+  }
+  if (workspaceNotice.value && !target.closest('.app-notice')) {
+    workspaceNotice.value = null
+  }
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return
+  closeGlobalContextMenu()
+  if (workspaceNotice.value) workspaceNotice.value = null
+}
 
 async function runAuth(action: () => Promise<void>) {
   authError.value = null
@@ -625,6 +737,8 @@ async function copyInviteCode() {
     class="app-shell"
     :class="{ 'settings-mode': navigation.destination === 'settings' }"
     :aria-label="t('app.aria.workspace')"
+    @mousedown="handleWorkspacePointerDown"
+    @contextmenu.prevent="openGlobalContextMenu"
   >
     <ServerRail
       v-if="navigation.destination !== 'settings'"
@@ -679,7 +793,6 @@ async function copyInviteCode() {
             <span>{{ workspaceTitle }}</span>
             <small>{{ workspaceSubtitle }}</small>
           </span>
-          <span v-if="voiceLocationSummary" class="channel-location-summary">{{ voiceLocationSummary }}</span>
         </div>
         <div v-if="isServerDestination" class="channel-header-tools" :aria-label="t('app.header.channelTools')">
           <button
@@ -1068,6 +1181,26 @@ async function copyInviteCode() {
         :key="remote.userId"
         :stream="remote.stream"
       />
+    </div>
+    <div
+      v-if="globalContextMenu"
+      class="global-context-menu"
+      :style="{ left: `${globalContextMenu.x}px`, top: `${globalContextMenu.y}px` }"
+      role="menu"
+      @mousedown.stop
+      @click.stop
+    >
+      <strong>{{ globalContextMenu.title }}</strong>
+      <button
+        v-for="item in globalContextMenu.items"
+        :key="item.id"
+        type="button"
+        role="menuitem"
+        :class="{ danger: item.danger }"
+        @click="runGlobalContextAction(item.id)"
+      >
+        {{ item.label }}
+      </button>
     </div>
   </main>
 </template>

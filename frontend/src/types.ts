@@ -105,6 +105,7 @@ export type ServerRailGuildMeta = {
   unread_count: number
   mention_count: number
   muted: boolean
+  voice_connected: boolean
   folder_name: string | null
   folder_color: string | null
 }
