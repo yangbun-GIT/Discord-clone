@@ -112,6 +112,7 @@ watch(
         v-for="(message, index) in dm?.messages ?? []"
         :key="message.id"
         class="message-row"
+        tabindex="0"
         data-context-kind="dm-message"
         :data-context-label="message.author_name"
       >

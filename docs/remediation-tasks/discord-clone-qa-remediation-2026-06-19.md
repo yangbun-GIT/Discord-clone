@@ -761,6 +761,40 @@
   - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
   - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
 
+### R3 - Message timeline redesign
+
+- Status: completed.
+- Goal: server and DM timelines must share a clean default message-row pattern,
+  with message actions hidden until hover, keyboard focus, or an open app-owned
+  menu. Date dividers must not stack with row borders.
+- Findings reviewed:
+  - QA-P1-01 message timelines expose action bars as persistent UI.
+  - R1.1 message row actions need the strict hidden-control accessibility policy.
+- Target files reviewed:
+  - `frontend/src/components/ChatView.vue`
+  - `frontend/src/components/DirectMessageView.vue`
+  - `frontend/src/styles/base.css`
+- Existing state:
+  - Server message actions were visually hidden with opacity but could still behave
+    like active controls before row hover/focus.
+  - DM rows already used the same `.message-row` base visual pattern but did not
+    expose a row focus target for keyboard context-menu workflows.
+  - Date divider behavior already avoided first-row double borders by applying row
+    borders only to adjacent message rows.
+- Implementation:
+  - Server message rows now receive an `options-open` class and `tabindex="0"` so
+    keyboard focus can intentionally reveal the action toolbar.
+  - DM message rows now also use `tabindex="0"` to share the same focusable row
+    contract.
+  - `frontend/src/styles/base.css` now gives focused message rows a visible focus
+    outline and hides `.message-actions` with `visibility: hidden` until
+    hover/focus/options-open state.
+  - The R1.1 sub-issue is resolved by the shared message-action visibility policy.
+- Verification:
+  - `frontend/node_modules/.bin/oxlint.cmd .` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vue-tsc.cmd -b` passed with bundled Node on PATH.
+  - `frontend/node_modules/.bin/vite.cmd build` passed with bundled Node on PATH.
+
 ### Remediation Stage R1: Visible-control policy
 
 1. Inventory every visible button/control by surface.

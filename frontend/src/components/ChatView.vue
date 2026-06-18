@@ -149,8 +149,11 @@ function messageTime(index: number) {
         v-for="(message, index) in messages"
         :key="message.id"
         class="message-row"
+        :class="{ 'options-open': optionsMessageId === message.id }"
+        tabindex="0"
         data-context-kind="message"
         :data-context-label="message.author_name"
+        @keydown.esc="optionsMessageId = null"
       >
         <div class="avatar" aria-hidden="true">
           {{ message.author_name.slice(0, 1).toUpperCase() }}

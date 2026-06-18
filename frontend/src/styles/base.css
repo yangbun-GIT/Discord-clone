@@ -3448,6 +3448,12 @@ select:focus-visible {
   background: rgb(255 255 255 / 4.5%);
 }
 
+.message-row:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+  background: rgb(255 255 255 / 4.5%);
+}
+
 .message-main {
   min-width: 0;
   max-width: min(820px, 100%);
@@ -3597,13 +3603,16 @@ select:focus-visible {
   background: #2b2d31;
   padding: 2px;
   opacity: 0;
+  visibility: hidden;
   box-shadow: 0 8px 22px rgb(0 0 0 / 24%);
   transition: opacity 140ms ease;
 }
 
+.message-row.options-open .message-actions,
 .message-row:focus-within .message-actions,
 .message-row:hover .message-actions {
   opacity: 1;
+  visibility: visible;
 }
 
 .message-icon-button {
