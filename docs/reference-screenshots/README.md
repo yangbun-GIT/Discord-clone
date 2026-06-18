@@ -29,3 +29,6 @@ straightforward.
   `side-by-side`, `tablet`, or `mobile`.
 - Do not add screenshots containing private tokens, private messages, or sensitive
   account details.
+- Screenshot files in `real-discord/` and `clone-current/` are local-only reference
+  material and are ignored by Git. Only this README and `.gitkeep` placeholders
+  should be committed.

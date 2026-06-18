@@ -41,3 +41,9 @@ Thumbs.db
 .cache/
 .turbo/
 .parcel-cache/
+
+# Local visual reference screenshots
+docs/reference-screenshots/real-discord/*
+docs/reference-screenshots/clone-current/*
+!docs/reference-screenshots/real-discord/.gitkeep
+!docs/reference-screenshots/clone-current/.gitkeep
