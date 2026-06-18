@@ -531,3 +531,8 @@
   separation, default tab ordering, hidden low-frequency Blocked tab exposure,
   roomier friend rows, stronger selected-row emphasis, a cleaner activity card,
   and less demo-oriented Add Friend copy.
+- Completed Stage 11.3: DM sidebar rows, DM intro spacing, timeline divider spacing,
+  composer surface color, group-DM copy, and emoji choices were tightened. Browser
+  static QA confirmed no horizontal overflow and 56 px DM rows; synthetic DM click
+  automation was blocked by the in-app browser execution context and is logged as a
+  residual QA limitation.

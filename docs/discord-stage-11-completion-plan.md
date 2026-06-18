@@ -104,6 +104,11 @@ Verification:
 Goal: make DM list, DM profile intro, timeline, and composer usable as a primary
 communication surface.
 
+Status: completed. DM row density, selected-state affordance, intro spacing,
+date-divider spacing, composer surface color, and group-DM copy were tightened.
+QA evidence and browser automation limitation notes are in
+`docs/stage-11-final-qa.md`.
+
 Tasks:
 
 - Refine DM list selected/unread/group states.

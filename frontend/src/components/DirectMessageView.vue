@@ -14,7 +14,7 @@ const props = defineProps<{
 const draft = ref('')
 const showEmojiPanel = ref(false)
 const { t } = useI18n()
-const emojiOptions = ['😀', '👍', '✅', '🔥', '🎉', '🙏', '👀', '💡']
+const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '🙌']
 
 const emit = defineEmits<{
   send: [content: string]

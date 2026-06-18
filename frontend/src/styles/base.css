@@ -682,7 +682,7 @@ select:focus-visible {
   min-height: 0;
   display: grid;
   align-content: start;
-  gap: 2px;
+  gap: 4px;
   overflow: visible;
 }
 
@@ -721,19 +721,25 @@ select:focus-visible {
 }
 
 .dm-row {
-  min-height: 46px;
+  min-height: 56px;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  padding: 0 8px;
+  gap: 10px;
+  border: 1px solid transparent;
+  padding: 6px 8px;
   text-align: left;
+}
+
+.dm-row:hover,
+.dm-row.active {
+  border-color: var(--border-muted);
 }
 
 .dm-avatar-wrap {
   position: relative;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
 }
 
 .dm-avatar,
@@ -753,8 +759,8 @@ select:focus-visible {
 }
 
 .dm-avatar-wrap .dm-avatar {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
 }
 
 .dm-avatar-wrap .presence-dot {
@@ -807,7 +813,7 @@ select:focus-visible {
 .dm-copy {
   min-width: 0;
   display: grid;
-  gap: 1px;
+  gap: 3px;
 }
 
 .dm-title-line,
@@ -2643,8 +2649,9 @@ select:focus-visible {
 
 .dm-chat-intro {
   align-content: start;
-  margin-bottom: 4px;
-  padding: 4px 0 12px;
+  margin: 0 0 10px;
+  border-bottom: 1px solid var(--border-muted);
+  padding: 8px 0 18px;
 }
 
 .dm-intro-heading {
@@ -2652,6 +2659,13 @@ select:focus-visible {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.dm-chat-intro .dm-placeholder-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  font-size: 1.2rem;
 }
 
 .dm-intro-title {
@@ -3403,7 +3417,7 @@ select:focus-visible {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 18px 22px 14px;
+  padding: 18px 22px 16px;
 }
 
 .message-row {
@@ -3485,7 +3499,7 @@ select:focus-visible {
 }
 
 .dm-date-divider {
-  margin-top: 0;
+  margin-top: 2px;
 }
 
 .date-divider::before,
@@ -3749,6 +3763,7 @@ select:focus-visible {
 
 .dm-composer {
   grid-template-columns: minmax(0, 1fr) auto 36px;
+  background: #383a40;
 }
 
 .composer input {

@@ -69,3 +69,34 @@ Residual notes:
 
 - The Friends local more/context menu behavior was not intentionally changed in
   this stage. The global menu/popover audit remains assigned to Stage 11.8.
+
+## Stage 11.3: Direct Messages Surface Finalization
+
+Date: 2026-06-18
+
+Changes verified:
+
+- DM sidebar rows now use 56 px height, larger avatar columns, explicit transparent
+  borders for stable active/hover states, and clearer copy spacing.
+- DM intro sections now have a larger avatar, stronger bottom separation, and more
+  stable spacing before the timeline date divider.
+- DM composer background was aligned with the raised composer surface used by other
+  message views.
+- Group DM copy no longer calls the conversation a demo conversation.
+- The DM emoji picker set was normalized to common emoji choices.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` rebuilt and restarted the development
+  frontend stack successfully.
+- Browser static QA on `http://localhost:5173/` measured horizontal overflow as
+  `0` and the first visible DM sidebar rows at 56 px height.
+
+Residual notes:
+
+- The in-app browser execution context rejected standard synthetic click event
+  creation during this run, so automatic DM-open/send interaction QA could not be
+  completed. The affected code paths remain compile-verified and are scheduled for
+  broader menu/composer verification in later Stage 11 QA.

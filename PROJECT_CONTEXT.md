@@ -65,10 +65,14 @@ shadow tokens used by popovers, menus, modals, notices, and sticky overlays. Sta
 11.2 Friends finalization is complete: `frontend/src/components/FriendsHome.vue`,
 `frontend/src/styles/base.css`, and `frontend/src/i18n/index.ts` now provide clearer
 Friends tabs, friend-row separation, activity-card hierarchy, and less demo-oriented
-Add Friend copy. `docs/stage-11-final-qa.md` records the running Stage 11 QA
-evidence. Stage 11 preserves the Stage 10 process: each stage is documented,
-implemented separately, verified before advancing, and then committed with a Korean
-commit title before pushing to `origin/main`.
+Add Friend copy. Stage 11.3 DM finalization is complete: DM sidebar rows, DM intro
+spacing, timeline divider spacing, composer surface color, group-DM copy, and emoji
+choices were tightened in `frontend/src/components/DirectMessageView.vue`,
+`frontend/src/styles/base.css`, and `frontend/src/i18n/index.ts`.
+`docs/stage-11-final-qa.md` records the running Stage 11 QA evidence. Stage 11
+preserves the Stage 10 process: each stage is documented, implemented separately,
+verified before advancing, and then committed with a Korean commit title before
+pushing to `origin/main`.
 
 The app boots in two local modes:
 
