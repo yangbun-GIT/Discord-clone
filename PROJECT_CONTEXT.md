@@ -1187,6 +1187,10 @@ Completed Stage 2 bridge work:
   content height, the voice controls are constrained to the active sidebar column,
   and browser QA verified Friends, text channel, and voice channel layouts have no
   horizontal body overflow or bottom-control overlap with the main workspace.
+- Added Stage 10.4 server rail polish: active/unread markers now use a consistent
+  left pill, server button hover/active states are quieter, mention badge labels are
+  clamped, and add/discovery buttons read as secondary controls. Browser QA verified
+  the active marker, rail width, and secondary action styling.
 
 After each stage or meaningful feature:
 

@@ -67,12 +67,17 @@ function ariaLabelForGuild(guild: Guild) {
   ].filter(Boolean)
   return details.length ? `${guild.name}, ${details.join(', ')}` : guild.name
 }
+
+function badgeLabel(count: number | undefined) {
+  if (!count) return ''
+  return count > 99 ? '99+' : String(count)
+}
 </script>
 
 <template>
   <nav class="server-rail" aria-label="Servers">
-    <div class="server-slot">
-      <span v-if="homeUnreadCount" class="server-unread-pill" aria-hidden="true"></span>
+    <div class="server-slot" :class="{ active: homeActive, unread: homeUnreadCount }">
+      <span v-if="homeActive || homeUnreadCount" class="server-unread-pill" aria-hidden="true"></span>
       <button
         class="server-button home"
         :class="{ active: homeActive }"
@@ -83,15 +88,22 @@ function ariaLabelForGuild(guild: Guild) {
         @click="$emit('home')"
       >
         <MessageCircle :size="22" aria-hidden="true" />
-        <span v-if="homeUnreadCount" class="server-badge">{{ homeUnreadCount }}</span>
+        <span v-if="homeUnreadCount" class="server-badge">{{ badgeLabel(homeUnreadCount) }}</span>
       </button>
     </div>
     <div class="server-separator" role="separator" aria-hidden="true"></div>
 
     <template v-for="guild in railGroups.ungrouped" :key="guild.id">
-      <div class="server-slot">
+      <div
+        class="server-slot"
+        :class="{
+          active: guild.id === activeGuildId,
+          unread: guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId,
+          mentioned: guildMeta[guild.id]?.mention_count,
+        }"
+      >
         <span
-          v-if="guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId"
+          v-if="guild.id === activeGuildId || (guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId)"
           class="server-unread-pill"
           aria-hidden="true"
         ></span>
@@ -106,7 +118,7 @@ function ariaLabelForGuild(guild: Guild) {
         >
           {{ guildInitials(guild.name) }}
           <span v-if="guildMeta[guild.id]?.mention_count" class="server-badge">
-            {{ guildMeta[guild.id]?.mention_count }}
+            {{ badgeLabel(guildMeta[guild.id]?.mention_count) }}
           </span>
           <span v-else-if="guildMeta[guild.id]?.muted" class="server-muted-dot" aria-hidden="true"></span>
         </button>
@@ -123,9 +135,18 @@ function ariaLabelForGuild(guild: Guild) {
         {{ folder.name.slice(0, 2).toUpperCase() }}
       </div>
       <div class="server-folder-stack">
-        <div v-for="guild in folder.guilds" :key="guild.id" class="server-slot">
+        <div
+          v-for="guild in folder.guilds"
+          :key="guild.id"
+          class="server-slot"
+          :class="{
+            active: guild.id === activeGuildId,
+            unread: guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId,
+            mentioned: guildMeta[guild.id]?.mention_count,
+          }"
+        >
           <span
-            v-if="guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId"
+            v-if="guild.id === activeGuildId || (guildMeta[guild.id]?.unread_count && guild.id !== activeGuildId)"
             class="server-unread-pill"
             aria-hidden="true"
           ></span>
@@ -140,7 +161,7 @@ function ariaLabelForGuild(guild: Guild) {
           >
             {{ guildInitials(guild.name) }}
             <span v-if="guildMeta[guild.id]?.mention_count" class="server-badge">
-              {{ guildMeta[guild.id]?.mention_count }}
+              {{ badgeLabel(guildMeta[guild.id]?.mention_count) }}
             </span>
             <span v-else-if="guildMeta[guild.id]?.muted" class="server-muted-dot" aria-hidden="true"></span>
           </button>

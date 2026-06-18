@@ -364,8 +364,8 @@
 
 ## Stage 10: Discord Interaction Polish And Noise Reduction
 
-- Status: in progress; Stage 10.0 through Stage 10.3 are complete and implementation
-  continues at Stage 10.4.
+- Status: in progress; Stage 10.0 through Stage 10.4 are complete and implementation
+  continues at Stage 10.5.
 - Plan document: `docs/discord-interaction-polish-plan.md`.
 - Target: make the existing clone feel cleaner, quieter, and more Discord-like by
   removing visual noise, development/test artifacts, oversized bottom controls, and
@@ -391,7 +391,9 @@
   into the active sidebar column, let the workspace keep the full main height, and
   verified Friends, text channel, and voice channel surfaces for horizontal overflow
   and column separation.
-- Planned Stage 10.4: server rail polish.
+- Completed Stage 10.4: server rail polish normalized active/unread markers,
+  quieter hover states, mention badge labels, secondary add/discovery actions, and
+  browser-verified active marker/rail overflow behavior.
 - Planned Stage 10.5: private sidebar simplification.
 - Planned Stage 10.6: Friends home rework.
 - Planned Stage 10.7: Add Friend workflow polish.

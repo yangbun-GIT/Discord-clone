@@ -244,6 +244,10 @@ Verification:
 
 ## Stage 10.4: Server Rail Polish
 
+Status: completed. Server rail active/unread markers now use a consistent left pill,
+server buttons keep stable sizing and quiet hover states, mention badges are clamped
+to compact labels, and add/discovery controls are visually secondary.
+
 Goal: improve scan quality of the left icon rail.
 
 Tasks:
@@ -258,6 +262,11 @@ Verification:
 
 - Active server is recognizable without reading text.
 - Badges do not overlap avatars.
+- Browser QA confirmed the active marker renders as a tall left pill, active buttons
+  use the expected 16 px rounded state, the rail has no horizontal overflow, and
+  add/discovery controls use secondary colors. The current demo state had no live
+  mention badge, so badge overlap was verified from the clamped corner placement
+  implementation.
 
 ## Stage 10.5: Private Sidebar Simplification
 

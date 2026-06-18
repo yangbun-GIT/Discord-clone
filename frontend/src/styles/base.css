@@ -265,16 +265,16 @@ select:focus-visible {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  padding: 12px 8px;
+  padding: 10px 8px;
   background: var(--surface-rail);
   border-right: 1px solid rgb(255 255 255 / 7%);
 }
 
 .server-slot {
   position: relative;
-  width: 54px;
+  width: 56px;
   min-height: 48px;
   display: grid;
   place-items: center;
@@ -292,14 +292,13 @@ select:focus-visible {
   transition:
     border-radius 160ms ease,
     background 160ms ease,
-    transform 160ms ease;
+    color 160ms ease;
 }
 
 .server-button:hover,
 .server-button.active {
   border-radius: 16px;
   background: var(--accent-primary);
-  transform: none;
 }
 
 .server-button[aria-current="page"] {
@@ -312,13 +311,19 @@ select:focus-visible {
 }
 
 .server-button.add {
-  color: #3ba55c;
-  background: #24262c;
+  color: #23a559;
+  background: #25262b;
 }
 
 .server-button.discovery {
-  color: #dbdee1;
-  background: #24262c;
+  color: #949ba4;
+  background: #25262b;
+}
+
+.server-button.add:hover,
+.server-button.discovery:hover {
+  color: #f2f3f5;
+  background: #2f3136;
 }
 
 .server-button.home {
@@ -332,37 +337,51 @@ select:focus-visible {
 }
 
 .server-separator {
-  width: 32px;
+  width: 30px;
   height: 1px;
-  background: rgb(255 255 255 / 12%);
+  margin: 2px 0;
+  background: rgb(255 255 255 / 10%);
 }
 
 .server-unread-pill {
   position: absolute;
-  left: -8px;
+  left: -6px;
   top: 50%;
   width: 4px;
-  height: 40px;
+  height: 8px;
   border-radius: 999px;
-  background: #f8fafc;
+  background: #dbdee1;
   transform: translateY(-50%);
+  transition: height 160ms ease;
+}
+
+.server-slot.active .server-unread-pill {
+  height: 40px;
+  background: #f2f3f5;
+}
+
+.server-slot.mentioned .server-unread-pill {
+  height: 14px;
 }
 
 .server-badge {
   position: absolute;
-  right: -5px;
-  bottom: -4px;
+  right: -3px;
+  bottom: -3px;
   min-width: 18px;
+  max-width: 28px;
   height: 18px;
   display: grid;
   place-items: center;
-  border: 2px solid #101114;
+  border: 2px solid var(--surface-rail);
   border-radius: 999px;
   color: #ffffff;
-  background: #ef4444;
+  background: var(--accent-danger);
   padding: 0 4px;
   font-size: 0.68rem;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .server-muted-dot {
@@ -371,18 +390,18 @@ select:focus-visible {
   bottom: 4px;
   width: 8px;
   height: 8px;
-  border: 2px solid #101114;
+  border: 2px solid var(--surface-rail);
   border-radius: 999px;
   background: #94a3b8;
 }
 
 .server-folder {
-  width: 58px;
+  width: 56px;
   display: grid;
   justify-items: center;
-  gap: 6px;
-  border-radius: 18px;
-  background: rgb(255 255 255 / 5%);
+  gap: 5px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 4%);
   padding: 6px 0;
 }
 
