@@ -488,9 +488,9 @@ The app boots in two local modes:
   - Loads `/api/guilds/me`.
   - Tracks loading, mutation, and API error state for guild/channel/message/invite
     operations.
-  - Tracks active guild, active channel, active messages, voice channel, and voice
-    connection UI state.
-  - Tracks voice states and the latest voice signal dispatch received from the gateway.
+  - Tracks active guild, active channel, and active messages.
+  - Delegates voice channel, connected voice guild/channel, voice states, and the
+    latest voice signal dispatch to `frontend/src/stores/voicePresence.ts`.
   - Calls the protected guild creation API and selects the new guild's first channel.
   - Calls invite creation and invite join APIs.
   - Calls role creation, role assignment, and role removal APIs.
@@ -551,6 +551,10 @@ The app boots in two local modes:
     mute/deafen state through gateway opcode 4, toggles screen sharing through
     `useVoiceRtc()`, synchronizes connected participants, and applies incoming
     voice signals while keeping `App.vue` focused on layout/event wiring.
+- `frontend/src/stores/voicePresence.ts`
+  - Stage 12.3 voice-presence store boundary used by `guilds.ts`.
+  - Owns connected voice guild/channel refs, voice states, latest voice signal,
+    active/connected voice-state derived lists, and voice-presence mutation helpers.
 - `frontend/src/components/ServerRail.vue`
   - Discord-like rail with `@me` Direct Messages button, server icons, separators,
     server unread/mention badges, muted indicator, demo folder grouping, create-server
@@ -1516,6 +1520,12 @@ Completed Stage 2 bridge work:
   continues to own WebRTC quality aggregation. Frontend lint and production build
   passed; live microphone/screen-capture QA remains permission-dependent manual
   coverage.
+- Completed Stage 12.3 Guild voice presence store boundary:
+  `frontend/src/stores/voicePresence.ts` now owns connected voice guild/channel
+  refs, voice states, latest voice signal, derived active/connected voice-state
+  lists, and voice-presence mutation helpers. `frontend/src/stores/guilds.ts`
+  keeps the public Pinia API stable while delegating those voice responsibilities.
+  Frontend lint and production build passed.
 
 After each stage or meaningful feature:
 

@@ -602,7 +602,7 @@
   - Stage 12.0 audit and plan lock: completed.
   - Stage 12.1 App voice session controller: completed.
   - Stage 12.2 Voice RTC internal modules: completed.
-  - Stage 12.3 Guild voice presence store boundary.
+  - Stage 12.3 Guild voice presence store boundary: completed.
   - Stage 12.4 DM storage provider boundary.
   - Stage 12.5 Guild repository query movement.
   - Stage 12.6 API exception mapping.

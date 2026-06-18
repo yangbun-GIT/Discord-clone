@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
 import { apiGet, apiPost } from '../services/api'
-import type { Channel, Guild, Message, MessageDelete, VoiceSignal, VoiceState } from '../types'
+import type { Channel, Guild, Message, MessageDelete } from '../types'
 import { isVisualTestMessage, isVisualTestName } from '../utils/visualNoise'
 import { deleteChannelMessage, editChannelMessage, sendChannelMessage } from './channelMessages'
 import {
@@ -15,6 +15,7 @@ import {
   removeGuildRole,
 } from './guildAdmin'
 import { handleGuildGatewayDispatch } from './guildGatewayHandlers'
+import { createGuildVoicePresence } from './voicePresence'
 
 const ADMINISTRATOR_PERMISSION = 1 << 3
 const MANAGE_MESSAGES_PERMISSION = 1 << 13
@@ -23,11 +24,6 @@ export const useGuildStore = defineStore('guilds', () => {
   const guilds = shallowRef<Guild[]>([])
   const activeGuildId = ref<number | null>(null)
   const activeChannelId = ref<number | null>(null)
-  const voiceConnected = ref(false)
-  const connectedVoiceGuildId = ref<number | null>(null)
-  const connectedVoiceChannelId = ref<number | null>(null)
-  const voiceStates = shallowRef<VoiceState[]>([])
-  const lastVoiceSignal = ref<VoiceSignal | null>(null)
   const isLoading = ref(false)
   const isMutating = ref(false)
   const error = ref<string | null>(null)
@@ -40,25 +36,24 @@ export const useGuildStore = defineStore('guilds', () => {
     if (!activeChannel.value) return []
     return activeGuild.value?.messages.filter((message) => message.channel_id === activeChannel.value?.id) ?? []
   })
-  const voiceChannel = computed(() => {
-    if (activeChannel.value?.type === 1) return activeChannel.value
-    return activeGuild.value?.channels.find((channel) => channel.type === 1) ?? null
-  })
-  const connectedVoiceGuild = computed(
-    () => guilds.value.find((guild) => guild.id === connectedVoiceGuildId.value) ?? null,
-  )
-  const connectedVoiceChannel = computed(() => {
-    if (!connectedVoiceChannelId.value) return null
-    return connectedVoiceGuild.value?.channels.find((channel) => channel.id === connectedVoiceChannelId.value) ?? null
-  })
-  const activeVoiceStates = computed(() => {
-    if (!voiceChannel.value) return []
-    return voiceStates.value.filter((state) => state.channel_id === voiceChannel.value?.id)
-  })
-  const connectedVoiceStates = computed(() => {
-    if (!connectedVoiceChannelId.value) return []
-    return voiceStates.value.filter((state) => state.channel_id === connectedVoiceChannelId.value)
-  })
+  const voicePresence = createGuildVoicePresence({ guilds, activeGuild, activeChannel })
+  const {
+    voiceConnected,
+    connectedVoiceGuildId,
+    connectedVoiceChannelId,
+    voiceStates,
+    lastVoiceSignal,
+    voiceChannel,
+    connectedVoiceGuild,
+    connectedVoiceChannel,
+    activeVoiceStates,
+    connectedVoiceStates,
+    resetVoicePresence,
+    toggleVoice,
+    setVoiceConnected,
+    syncVoiceState,
+    setLastVoiceSignal,
+  } = voicePresence
   const canManageRoles = computed(() => Boolean((activeGuild.value?.permissions ?? 0) & ADMINISTRATOR_PERMISSION))
   const canManageMessages = computed(() => {
     const permissions = activeGuild.value?.permissions ?? 0
@@ -203,11 +198,7 @@ export const useGuildStore = defineStore('guilds', () => {
     guilds.value = []
     activeGuildId.value = null
     activeChannelId.value = null
-    voiceConnected.value = false
-    connectedVoiceGuildId.value = null
-    connectedVoiceChannelId.value = null
-    voiceStates.value = []
-    lastVoiceSignal.value = null
+    resetVoicePresence()
     isLoading.value = false
     isMutating.value = false
     error.value = null
@@ -227,16 +218,6 @@ export const useGuildStore = defineStore('guilds', () => {
       return
     }
     activeChannelId.value = channelId
-  }
-
-  function toggleVoice() {
-    voiceConnected.value = !voiceConnected.value
-  }
-
-  function setVoiceConnected(connected: boolean, channel: Channel | null = null) {
-    voiceConnected.value = connected
-    connectedVoiceGuildId.value = connected ? channel?.guild_id ?? connectedVoiceGuildId.value : null
-    connectedVoiceChannelId.value = connected ? channel?.id ?? connectedVoiceChannelId.value : null
   }
 
   async function createChannel(token: string | null, name: string, type: 0 | 1 = 0) {
@@ -372,16 +353,6 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
-  function syncVoiceState(voiceState: VoiceState) {
-    voiceStates.value = [
-      ...voiceStates.value.filter(
-        (state) =>
-          !(state.guild_id === voiceState.guild_id && state.user_id === voiceState.user_id),
-      ),
-      ...(voiceState.channel_id === null ? [] : [voiceState]),
-    ]
-  }
-
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
     handleGuildGatewayDispatch(event, data, {
       appendMessage,
@@ -390,9 +361,7 @@ export const useGuildStore = defineStore('guilds', () => {
       appendChannel,
       syncVoiceState,
       syncGuildUpdate,
-      setLastVoiceSignal: (signal) => {
-        lastVoiceSignal.value = signal
-      },
+      setLastVoiceSignal,
     })
   }
 

@@ -256,24 +256,22 @@ principle and pattern gaps:
    and screen-share toggling.
 2. `frontend/src/composables/useVoiceRtc.ts` still combines browser media capture,
    local VAD, peer lifecycle, signaling, screen sharing, and RTC facade behavior.
-3. `frontend/src/stores/guilds.ts` still owns voice presence and connected voice
-   guild/channel state alongside guild/channel selection.
-4. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
+3. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
-5. `backend/app/services/dm_service.py` still directly branches between
+4. `backend/app/services/dm_service.py` still directly branches between
    PostgreSQL and demo storage based on `database.is_connected`.
-6. `backend/app/repositories/guilds.py` still contains the actual SQL for channel,
+5. `backend/app/repositories/guilds.py` still contains the actual SQL for channel,
    message, invite, role, member, and permission-helper workflows; the
    domain-specific repository files currently provide only entry-point boundaries.
-7. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
+6. `backend/app/api/routes/guilds.py`, `channels.py`, and `dms.py` repeat
    exception-to-HTTP mappings.
-8. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
+7. `backend/app/realtime/publisher.py` and `subscriber.py` duplicate
    subscription-sync behavior around local gateway fan-out.
-9. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
+8. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
    and view transitions remain scattered across a few frontend modules. Some are
    appropriate at the browser boundary, but high-use clone workflows should be
    wrapped where doing so improves testability.
-10. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+9. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
     single files. They are acceptable for current visual stability, but future
     changes should move toward token/layout/component and domain-copy ownership.
 
@@ -321,7 +319,10 @@ Partially applied.
 - `frontend/src/stores/guilds.ts`: gateway event validation moved to
   `guildGatewayHandlers.ts`; server message REST mutations moved to
   `channelMessages.ts`; guild invite/channel/role/member REST mutations moved to
-  `guildAdmin.ts`. Voice presence remains inside `guilds.ts`.
+  `guildAdmin.ts`; connected voice presence moved to `voicePresence.ts`.
+- `frontend/src/stores/voicePresence.ts`: owns connected voice guild/channel refs,
+  voice-state collections, latest voice signal, derived voice channel state, and
+  voice-presence mutation helpers used by `guilds.ts`.
 - `frontend/src/composables/useVoiceRtc.ts`: now acts as the public WebRTC facade.
   Media capture helpers moved to `voiceMedia.ts`, local VAD moved to
   `voiceVad.ts`, peer lifecycle/signaling/remote-stream handling moved to

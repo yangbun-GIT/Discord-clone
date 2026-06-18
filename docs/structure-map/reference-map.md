@@ -361,10 +361,20 @@ Browser UI
     - `frontend/src/stores/channelMessages.ts`
     - `frontend/src/stores/guildAdmin.ts`
     - `frontend/src/stores/guildGatewayHandlers.ts`
+    - `frontend/src/stores/voicePresence.ts`
     - `frontend/src/types.ts`
     - `frontend/src/utils/visualNoise.ts`
   - Referenced by:
     - `frontend/src/App.vue`
+
+- `frontend/src/stores/voicePresence.ts`
+  - References:
+    - `frontend/src/types.ts`
+  - Referenced by:
+    - `frontend/src/stores/guilds.ts`
+  - Owns:
+    - Connected voice guild/channel refs, voice states, latest voice signal,
+      voice-channel derived state, and voice-presence mutation helpers.
 
 - `frontend/src/stores/dms.ts`
   - References:

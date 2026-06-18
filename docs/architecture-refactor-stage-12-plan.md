@@ -56,6 +56,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.3 Guild Voice Presence Store Boundary
 
+- Status: completed.
 - Move connected voice guild/channel state and voice-state mutation helpers out of
   `frontend/src/stores/guilds.ts` into a focused voice-presence module or store.
 - Keep existing component props and gateway event behavior stable.

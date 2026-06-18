@@ -284,7 +284,10 @@ For ordinary implementation work:
   - Active destination: friends, DM, server, settings, store.
 - `frontend/src/stores/guilds.ts`
   - Guild list, active guild/channel, local message state, admin state reflection,
-    voice state, and gateway state application.
+    and gateway state application.
+- `frontend/src/stores/voicePresence.ts`
+  - Connected voice guild/channel state, voice-state collections, latest voice
+    signal, and voice-channel derived state used by `guilds.ts`.
 - `frontend/src/stores/channelMessages.ts`
   - Server text-channel message REST mutations.
 - `frontend/src/stores/guildAdmin.ts`
