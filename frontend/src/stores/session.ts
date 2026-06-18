@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 import { apiGet, apiPost } from '../services/api'
+import { browserStorage } from '../services/browserApi'
 import type { User } from '../types'
 
 type AuthSession = {
@@ -24,18 +25,18 @@ export const useSessionStore = defineStore('session', () => {
   function setSession(session: AuthSession) {
     token.value = session.access_token
     user.value = session.user
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
+    browserStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
   }
 
   function clearSession() {
     token.value = null
     user.value = null
-    localStorage.removeItem(SESSION_STORAGE_KEY)
+    browserStorage.removeItem(SESSION_STORAGE_KEY)
   }
 
   async function restoreSession() {
     if (token.value) return
-    const rawSession = localStorage.getItem(SESSION_STORAGE_KEY)
+    const rawSession = browserStorage.getItem(SESSION_STORAGE_KEY)
     if (!rawSession) return
 
     try {

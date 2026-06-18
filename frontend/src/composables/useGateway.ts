@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 
 import { useI18n } from '../i18n'
+import { getNavigatorPlatform, getWebSocketUrl } from '../services/browserApi'
 
 type GatewayStatus = 'idle' | 'connecting' | 'connected' | 'disconnected'
 
@@ -56,14 +57,13 @@ export function useGateway() {
     }
 
     status.value = 'connecting'
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    socket.value = new WebSocket(`${protocol}://${window.location.host}/gateway`)
+    socket.value = new WebSocket(getWebSocketUrl('/gateway'))
 
     socket.value.addEventListener('message', (event) => {
       const payload = JSON.parse(event.data) as GatewayEvent
       if (payload.op === 10) {
         const interval = Number(payload.d?.heartbeat_interval ?? 30000)
-        send({ op: 2, d: { token, os: navigator.platform, library: 'vue' } })
+        send({ op: 2, d: { token, os: getNavigatorPlatform(), library: 'vue' } })
         clearHeartbeat()
         heartbeatTimer.value = window.setInterval(() => send({ op: 1 }), interval)
       }

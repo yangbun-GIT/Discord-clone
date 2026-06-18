@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+import { browserStorage } from '../services/browserApi'
+
 export type AppLanguage = 'ko' | 'en'
 
 const PREFERENCES_STORAGE_KEY = 'discord-clone-preferences'
@@ -17,7 +19,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
   const language = ref<AppLanguage>('ko')
 
   function restorePreferences() {
-    const rawPreferences = localStorage.getItem(PREFERENCES_STORAGE_KEY)
+    const rawPreferences = browserStorage.getItem(PREFERENCES_STORAGE_KEY)
     if (!rawPreferences) return
 
     try {
@@ -26,7 +28,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
         language.value = preferences.language
       }
     } catch {
-      localStorage.removeItem(PREFERENCES_STORAGE_KEY)
+      browserStorage.removeItem(PREFERENCES_STORAGE_KEY)
     }
   }
 
@@ -34,7 +36,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
     const preferences: PersistedPreferences = {
       language: language.value,
     }
-    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences))
+    browserStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences))
   }
 
   function setLanguage(nextLanguage: AppLanguage) {

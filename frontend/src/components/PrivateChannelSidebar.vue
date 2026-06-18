@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { MessageCircle, Plus, Search } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
+import { addDocumentEventListener } from '../services/browserApi'
 import type { DirectMessage, UserPresenceStatus } from '../types'
 
 const props = defineProps<{
@@ -22,6 +23,8 @@ const { t } = useI18n()
 const root = ref<HTMLElement | null>(null)
 const searchOpen = ref(false)
 const searchQuery = ref('')
+let removeDocumentPointerDown: (() => void) | null = null
+let removeDocumentKeyDown: (() => void) | null = null
 
 const filteredDms = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -61,13 +64,15 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  document.addEventListener('mousedown', handleDocumentPointerDown)
-  document.addEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleDocumentPointerDown)
-  document.removeEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentPointerDown?.()
+  removeDocumentKeyDown?.()
+  removeDocumentPointerDown = null
+  removeDocumentKeyDown = null
 })
 </script>
 

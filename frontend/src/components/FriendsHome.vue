@@ -12,6 +12,7 @@ import {
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
+import { addDocumentEventListener } from '../services/browserApi'
 import type { Friend, UserPresenceStatus } from '../types'
 
 const props = defineProps<{
@@ -23,6 +24,8 @@ const emit = defineEmits<{
 }>()
 
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('online')
+let removeDocumentPointerDown: (() => void) | null = null
+let removeDocumentKeyDown: (() => void) | null = null
 const searchQuery = ref('')
 const addFriendName = ref('')
 const addFriendResult = ref('')
@@ -167,13 +170,15 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  document.addEventListener('mousedown', handleDocumentPointerDown)
-  document.addEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleDocumentPointerDown)
-  document.removeEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentPointerDown?.()
+  removeDocumentKeyDown?.()
+  removeDocumentPointerDown = null
+  removeDocumentKeyDown = null
 })
 
 watch(

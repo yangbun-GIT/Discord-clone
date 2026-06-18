@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { apiGet } from '../services/api'
+import { browserStorage } from '../services/browserApi'
 import type { TranslationKey } from '../i18n'
 import type { Channel, Guild, User, VoiceConfig, VoiceIceServer, VoiceSignal, VoiceState } from '../types'
 import type { useGateway } from './useGateway'
@@ -28,7 +29,7 @@ interface VoiceSessionControllerOptions {
 export function useVoiceSessionController(options: VoiceSessionControllerOptions) {
   const isDeafened = ref(false)
   const pendingVoiceSwitchChannelId = ref<number | null>(null)
-  const skipVoiceSwitchConfirm = ref(localStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
+  const skipVoiceSwitchConfirm = ref(browserStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
   const rememberVoiceSwitchChoice = ref(false)
   const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
   const voiceTurnConfigured = ref(false)
@@ -157,9 +158,9 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     if (!channelId) return
     if (rememberVoiceSwitchChoice.value) {
       skipVoiceSwitchConfirm.value = true
-      localStorage.setItem('discord_clone_skip_voice_switch_confirm', 'true')
+      browserStorage.setItem('discord_clone_skip_voice_switch_confirm', 'true')
     } else {
-      localStorage.removeItem('discord_clone_skip_voice_switch_confirm')
+      browserStorage.removeItem('discord_clone_skip_voice_switch_confirm')
     }
     rememberVoiceSwitchChoice.value = false
     disconnectVoice()

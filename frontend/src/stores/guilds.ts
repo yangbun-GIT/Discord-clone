@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
 import { apiGet, apiPost } from '../services/api'
+import { runDocumentViewTransition } from '../services/browserApi'
 import type { Channel, Guild, Message, MessageDelete } from '../types'
 import { isVisualTestMessage, isVisualTestName } from '../utils/visualNoise'
 import { deleteChannelMessage, editChannelMessage, sendChannelMessage } from './channelMessages'
@@ -210,14 +211,9 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function selectChannel(channelId: number) {
-    const startViewTransition = document.startViewTransition
-    if (startViewTransition) {
-      startViewTransition.call(document, () => {
-        activeChannelId.value = channelId
-      })
-      return
-    }
-    activeChannelId.value = channelId
+    runDocumentViewTransition(() => {
+      activeChannelId.value = channelId
+    })
   }
 
   async function createChannel(token: string | null, name: string, type: 0 | 1 = 0) {

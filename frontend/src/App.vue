@@ -38,6 +38,12 @@ import { useVoiceRtc } from './composables/useVoiceRtc'
 import { useVoiceSessionController } from './composables/useVoiceSessionController'
 import { useWorkspaceController } from './composables/useWorkspaceController'
 import { useI18n } from './i18n'
+import {
+  addDocumentEventListener,
+  getCurrentHref,
+  getViewportSize,
+  writeClipboardText,
+} from './services/browserApi'
 import { useDmStore } from './stores/dms'
 import { useGuildStore } from './stores/guilds'
 import { useNavigationStore } from './stores/navigation'
@@ -61,6 +67,7 @@ const {
   status: gatewayStatus,
 } = useGateway()
 const voiceRtc = useVoiceRtc()
+let removeDocumentKeyDown: (() => void) | null = null
 
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
@@ -219,12 +226,13 @@ onMounted(async () => {
   if (session.token) {
     await openWorkspace()
   }
-  document.addEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
   isBooting.value = false
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentKeyDown?.()
+  removeDocumentKeyDown = null
   clearWorkspaceNotice()
 })
 
@@ -285,10 +293,11 @@ function openGlobalContextMenu(event: MouseEvent) {
   const label = contextTarget?.dataset.contextLabel ?? workspaceTitle.value
   const menuWidth = 244
   const menuHeight = 228
+  const viewport = getViewportSize()
 
   openContextMenu({
-    x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
-    y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8)),
+    x: Math.max(8, Math.min(event.clientX, viewport.width - menuWidth - 8)),
+    y: Math.max(8, Math.min(event.clientY, viewport.height - menuHeight - 8)),
     title: label,
     items: contextMenuItems(kind),
   })
@@ -303,7 +312,7 @@ function runGlobalContextAction(id: string) {
   } else if (id === 'voice-disconnect') {
     disconnectVoice()
   } else if (id === 'copy-message' || id === 'copy-link') {
-    const value = id === 'copy-link' ? window.location.href : globalContextMenu.value?.title ?? ''
+    const value = id === 'copy-link' ? getCurrentHref() : globalContextMenu.value?.title ?? ''
     void copyToClipboard(value, t('app.notice.copySuccess'), t('app.notice.copyFailed'))
   } else {
     setWorkspaceNotice(t('app.notice.localControl', { label: actionLabel }))
@@ -478,8 +487,7 @@ function showDemoNotice(label: string) {
 async function copyToClipboard(value: string, successMessage: string, failureMessage: string) {
   workspaceError.value = null
   try {
-    if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable')
-    await navigator.clipboard.writeText(value)
+    await writeClipboardText(value)
     setWorkspaceNotice(successMessage, 'success')
     return true
   } catch {

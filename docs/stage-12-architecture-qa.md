@@ -229,3 +229,40 @@ Review:
 Residual risk:
 
 - None identified for local/Redis dispatch contracts; full backend tests passed.
+
+## Stage 12.8 Browser API Adapter Pass
+
+Status: completed.
+
+Changed files:
+
+- `frontend/src/services/browserApi.ts`
+- `frontend/src/App.vue`
+- `frontend/src/components/ChannelSidebar.vue`
+- `frontend/src/components/FriendsHome.vue`
+- `frontend/src/components/PrivateChannelSidebar.vue`
+- `frontend/src/composables/useGateway.ts`
+- `frontend/src/composables/useVoiceSessionController.ts`
+- `frontend/src/stores/guilds.ts`
+- `frontend/src/stores/preferences.ts`
+- `frontend/src/stores/session.ts`
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+
+Review:
+
+- Session, preference, and voice-switch confirmation storage now use
+  `browserStorage`.
+- Clipboard copy, viewport clamping, current URL reads, document key/pointer
+  listener registration, gateway URL construction, navigator platform reads, and
+  view transitions now go through `frontend/src/services/browserApi.ts`.
+- WebRTC microphone/display-capture APIs remain in `voiceMedia.ts` as planned so
+  browser permission behavior is unchanged.
+
+Residual risk:
+
+- Live browser permission prompts for microphone and display capture remain manual
+  QA items, consistent with `docs/voice-qa.md`.

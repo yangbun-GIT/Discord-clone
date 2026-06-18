@@ -607,6 +607,6 @@
   - Stage 12.5 Guild repository query movement: completed.
   - Stage 12.6 API exception mapping: completed.
   - Stage 12.7 Realtime fan-out DRY pass: completed.
-  - Stage 12.8 Browser API adapter pass.
+  - Stage 12.8 Browser API adapter pass: completed.
   - Stage 12.9 CSS and i18n split plan.
   - Stage 12.10 final architecture regression.

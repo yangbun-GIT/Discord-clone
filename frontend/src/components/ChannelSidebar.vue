@@ -16,6 +16,7 @@ import {
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useI18n } from '../i18n'
+import { addDocumentEventListener } from '../services/browserApi'
 import type { Channel, Guild, VoiceState } from '../types'
 
 const props = defineProps<{
@@ -45,6 +46,8 @@ const voiceCollapsed = ref(false)
 const channelDraft = ref('')
 const serverMenuOpen = ref(false)
 const { t } = useI18n()
+let removeDocumentPointerDown: (() => void) | null = null
+let removeDocumentKeyDown: (() => void) | null = null
 
 const textChannels = computed(() => propsChannels(0))
 const voiceChannels = computed(() => propsChannels(1))
@@ -153,13 +156,15 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  document.addEventListener('mousedown', handleDocumentPointerDown)
-  document.addEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleDocumentPointerDown)
-  document.removeEventListener('keydown', handleDocumentKeyDown)
+  removeDocumentPointerDown?.()
+  removeDocumentKeyDown?.()
+  removeDocumentPointerDown = null
+  removeDocumentKeyDown = null
 })
 </script>
 

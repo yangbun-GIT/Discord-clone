@@ -253,11 +253,7 @@ principle and pattern gaps:
 
 1. `frontend/src/stores/dms.ts` still combines DM state, REST mutations, and
    gateway event application.
-2. Browser APIs such as clipboard, localStorage, document listeners, mediaDevices,
-   and view transitions remain scattered across a few frontend modules. Some are
-   appropriate at the browser boundary, but high-use clone workflows should be
-   wrapped where doing so improves testability.
-3. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
+2. `frontend/src/styles/base.css` and `frontend/src/i18n/index.ts` remain large
     single files. They are acceptable for current visual stability, but future
     changes should move toward token/layout/component and domain-copy ownership.
 
@@ -313,6 +309,11 @@ Partially applied.
   Media capture helpers moved to `voiceMedia.ts`, local VAD moved to
   `voiceVad.ts`, peer lifecycle/signaling/remote-stream handling moved to
   `voicePeerConnections.ts`, and quality stats remain in `voiceStats.ts`.
+- `frontend/src/services/browserApi.ts`: owns high-use browser API adapters for
+  localStorage, clipboard, document-level listeners, viewport/location reads,
+  gateway WebSocket URL construction, navigator platform reads, and view
+  transitions. WebRTC permission APIs intentionally remain in the voice media
+  boundary.
 - `backend/app/services/guild_service.py`: PostgreSQL/demo branching moved behind
   `guild_storage.py`.
 - `backend/app/services/dm_service.py`: PostgreSQL/demo branching moved behind

@@ -322,6 +322,10 @@ For ordinary implementation work:
 
 - `frontend/src/services/api.ts`
   - Fetch wrapper helpers for GET/POST/PATCH/DELETE.
+- `frontend/src/services/browserApi.ts`
+  - Browser API adapter helpers for storage, clipboard, document listeners,
+    viewport/location reads, gateway URL construction, navigator platform, and
+    view transitions.
 - `frontend/src/composables/useGateway.ts`
   - WebSocket gateway connection, Identify, heartbeat, dispatch handling, and voice
     signal send/update helpers.

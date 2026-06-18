@@ -478,11 +478,16 @@ The app boots in two local modes:
     `/api/users/me/relationships`, `/api/dms`, and `/api/dms/{dm_id}/messages`.
   - Exposes Store read wrappers for `/api/store/catalog` and
     `/api/store/items/{item_id}`.
+- `frontend/src/services/browserApi.ts`
+  - Browser API adapter boundary.
+  - Owns localStorage, clipboard, document-level listener, viewport/location,
+    gateway WebSocket URL, navigator platform, and document view-transition
+    helpers for high-use clone workflows.
 - `frontend/src/stores/session.ts`
   - Pinia session store.
   - Calls `/api/auth/login`, `/api/auth/register`, `/api/auth/me`, and
     `/api/dev/session`.
-  - Stores JWT/current user in localStorage and clears them on logout.
+  - Stores JWT/current user through `browserStorage` and clears them on logout.
 - `frontend/src/stores/guilds.ts`
   - Pinia guild store.
   - Uses `shallowRef` for guild data as required by the SRS performance guidance.
@@ -504,7 +509,8 @@ The app boots in two local modes:
   - Applies gateway `CHANNEL_CREATE` dispatches with channel ID deduplication.
   - Applies gateway `GUILD_UPDATE` dispatches by replacing the local guild snapshot
     and preserving a valid active channel.
-  - Uses `document.startViewTransition()` when available for channel switching.
+  - Uses the browser API adapter for optional document view transitions during
+    channel switching.
 - `frontend/src/stores/dms.ts`
   - Pinia DM store for Stage 7.3.
   - Uses `shallowRef` for relationship rows and DM thread snapshots.
@@ -533,6 +539,7 @@ The app boots in two local modes:
   - Accepts a dispatch callback and forwards non-READY gateway dispatch events to the
     app store.
   - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
+  - Builds gateway URL and navigator platform values through `browserApi`.
 - `frontend/src/composables/useVoiceRtc.ts`
   - Public WebRTC voice facade used by the app and Stage 12.1 voice session
     controller.
@@ -1559,6 +1566,11 @@ Completed Stage 2 bridge work:
   subscription synchronization used by both Redis subscriber dispatch and native
   publisher fallback. Focused realtime fan-out tests were added, and backend lint
   plus the full backend suite passed.
+- Completed Stage 12.8 Browser API adapter pass:
+  `frontend/src/services/browserApi.ts` now wraps high-use browser APIs for storage,
+  clipboard, document listeners, viewport/location reads, gateway URL construction,
+  navigator platform, and view transitions. Frontend lint and production build
+  passed; WebRTC permission APIs intentionally remain in the voice media boundary.
 
 After each stage or meaningful feature:
 

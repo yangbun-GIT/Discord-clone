@@ -394,6 +394,7 @@ Browser UI
     - `frontend/src/composables/useVoiceSessionController.ts`
     - `frontend/src/composables/useWorkspaceController.ts`
     - `frontend/src/i18n/index.ts`
+    - `frontend/src/services/browserApi.ts`
     - `frontend/src/stores/dms.ts`
     - `frontend/src/stores/guilds.ts`
     - `frontend/src/stores/navigation.ts`
@@ -416,9 +417,26 @@ Browser UI
     - `frontend/src/stores/session.ts`
     - `frontend/src/stores/store.ts`
 
+- `frontend/src/services/browserApi.ts`
+  - Referenced by:
+    - `frontend/src/App.vue`
+    - `frontend/src/components/ChannelSidebar.vue`
+    - `frontend/src/components/FriendsHome.vue`
+    - `frontend/src/components/PrivateChannelSidebar.vue`
+    - `frontend/src/composables/useGateway.ts`
+    - `frontend/src/composables/useVoiceSessionController.ts`
+    - `frontend/src/stores/guilds.ts`
+    - `frontend/src/stores/preferences.ts`
+    - `frontend/src/stores/session.ts`
+  - Owns:
+    - High-use browser API adapters for storage, clipboard, document listeners,
+      viewport/location reads, WebSocket URL construction, navigator platform
+      reads, and document view transitions.
+
 - `frontend/src/stores/session.ts`
   - References:
     - `frontend/src/services/api.ts`
+    - `frontend/src/services/browserApi.ts`
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
@@ -426,6 +444,7 @@ Browser UI
 - `frontend/src/stores/guilds.ts`
   - References:
     - `frontend/src/services/api.ts`
+    - `frontend/src/services/browserApi.ts`
     - `frontend/src/stores/channelMessages.ts`
     - `frontend/src/stores/guildAdmin.ts`
     - `frontend/src/stores/guildGatewayHandlers.ts`
@@ -457,6 +476,8 @@ Browser UI
     - `frontend/src/App.vue`
 
 - `frontend/src/stores/preferences.ts`
+  - References:
+    - `frontend/src/services/browserApi.ts`
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/i18n/index.ts`
@@ -473,6 +494,7 @@ Browser UI
 - `frontend/src/composables/useGateway.ts`
   - References:
     - `frontend/src/i18n/index.ts`
+    - `frontend/src/services/browserApi.ts`
   - Referenced by:
     - `frontend/src/App.vue`
   - Talks to:
@@ -517,6 +539,7 @@ Browser UI
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:
     - `frontend/src/services/api.ts`
+    - `frontend/src/services/browserApi.ts`
     - `frontend/src/composables/useGateway.ts`
     - `frontend/src/composables/useVoiceRtc.ts`
     - `frontend/src/stores/guilds.ts`

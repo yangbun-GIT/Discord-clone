@@ -98,6 +98,7 @@ Preserve the Stage 10 and Stage 11 process:
 
 ### Stage 12.8 Browser API Adapter Pass
 
+- Status: completed.
 - Wrap remaining scattered frontend browser APIs that affect testability, such as
   clipboard, localStorage voice-confirm preferences, and document-level listeners.
 - Do not alter browser permission behavior for microphone or display capture in
