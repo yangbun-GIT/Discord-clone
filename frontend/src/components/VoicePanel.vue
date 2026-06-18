@@ -44,19 +44,6 @@ defineEmits<{
 
 const { t } = useI18n()
 
-const qualityLabel = computed(() => {
-  const stats = props.qualityStats
-  const rtt = stats.averageRoundTripTimeMs === null ? '--' : `${Math.round(stats.averageRoundTripTimeMs)}ms`
-  const jitter = stats.inboundAudioJitterMs === null ? '--' : `${Math.round(stats.inboundAudioJitterMs)}ms`
-  const audio = stats.outboundAudioBitrateKbps === null
-    ? '--'
-    : `${Math.round(stats.outboundAudioBitrateKbps)}kbps`
-  const screen = stats.outboundScreenBitrateKbps === null
-    ? '--'
-    : `${Math.round(stats.outboundScreenBitrateKbps)}kbps`
-  return `Peers ${stats.connectedPeerCount}/${stats.peerCount} | RTT ${rtt} | Jitter ${jitter} | Loss ${stats.inboundAudioPacketsLost} | Audio ${audio} | Screen ${screen}`
-})
-
 const presenceLabel = computed(() => {
   if (props.userStatus === 'dnd') return t('common.status.dnd')
   if (props.userStatus === 'idle') return t('common.status.idle')
@@ -129,22 +116,6 @@ const presenceLabel = computed(() => {
         <span>{{ channel?.name ?? 'voice-room' }}</span>
         <small>{{ t('voice.selectToPreview') }}</small>
       </div>
-    </div>
-    <div class="voice-presence" aria-live="polite">
-      <span>{{ t('voice.onlineCount', { count: participants.length }) }}</span>
-      <small v-if="error">{{ error }}</small>
-      <small v-else-if="deafened">{{ t('common.status.deafened') }}</small>
-      <small v-else-if="muted">{{ t('common.status.muted') }}</small>
-      <small v-else-if="localSpeaking" class="speaking">{{ t('voice.speaking') }}</small>
-      <small v-else>
-        {{
-          signalingReady
-            ? t('voice.signaling', { ice: turnConfigured ? t('voice.turnReady') : t('voice.stunOnly') })
-            : t('voice.gatewayRequired')
-        }}
-      </small>
-      <small v-if="connected" class="voice-quality">{{ qualityLabel }}</small>
-      <meter min="0" max="100" :value="inputLevel" :aria-label="t('voice.aria.inputLevel')" />
     </div>
     <div class="voice-actions">
       <button

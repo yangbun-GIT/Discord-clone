@@ -554,6 +554,10 @@ Verification:
 
 ## Stage 10.16: Feature Visibility Policy
 
+Status: completed. Gateway and WebRTC diagnostic text is no longer present in the
+primary header or lower-left voice panel DOM; diagnostics remain available from the
+settings voice/scope sections and project documentation.
+
 Goal: decide what should be visible by default.
 
 Visible by default:
@@ -574,6 +578,14 @@ Verification:
 
 - Primary screen contains no obvious developer/debug text.
 - Low-frequency features do not appear as broken buttons.
+- Stage feedback: browser QA initially detected `STUN` through hidden lower-left
+  voice diagnostics because parent text still contained hidden child text. The
+  corrective patch removed the hidden diagnostics DOM from `VoicePanel.vue` and
+  left ICE/STUN/TURN details in Settings only.
+- Browser QA confirmed no horizontal overflow, no `.session-state` or
+  `.voice-presence` primary-shell nodes, only the Friends private-nav row, no
+  visible forbidden low-frequency/debug terms, and a compact voice-panel text of
+  user, status, selected voice room, and join-preview state only.
 
 ## Stage 10.17: Responsive And Accessibility QA
 

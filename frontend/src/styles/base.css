@@ -1115,8 +1115,7 @@ select:focus-visible {
   background: var(--surface-base);
 }
 
-.channel-title,
-.session-state {
+.channel-title {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1162,18 +1161,6 @@ select:focus-visible {
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.session-state {
-  display: none;
-}
-
-.session-state.connected {
-  color: #86efac;
-}
-
-.channel-title + .session-state {
-  margin-left: auto;
 }
 
 .channel-header-tools {
@@ -3762,42 +3749,6 @@ select:focus-visible {
   color: #9ca3af;
 }
 
-.voice-presence {
-  display: none;
-  min-width: 0;
-  gap: 3px;
-  text-align: right;
-}
-
-.voice-presence span {
-  color: #d7dee8;
-  font-size: 0.85rem;
-  font-weight: 800;
-}
-
-.voice-presence small {
-  color: #9ca3af;
-}
-
-.voice-presence small.speaking {
-  color: #86efac;
-  font-weight: 800;
-}
-
-.voice-quality {
-  display: none;
-  max-width: min(52vw, 520px);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.voice-presence meter {
-  width: 124px;
-  height: 6px;
-  justify-self: end;
-}
-
 .voice-actions {
   position: absolute;
   right: 8px;
@@ -3949,8 +3900,7 @@ select:focus-visible {
   }
 
   .voice-connection-card,
-  .voice-connection-idle,
-  .voice-presence {
+  .voice-connection-idle {
     display: none;
   }
 
@@ -4044,10 +3994,6 @@ select:focus-visible {
 
   .friends-content {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .session-state {
-    display: none;
   }
 
   .friend-row {

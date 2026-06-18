@@ -14,8 +14,6 @@ import {
   ScreenShareOff,
   UserRound,
   Users,
-  Wifi,
-  WifiOff,
 } from 'lucide-vue-next'
 
 import { apiGet } from './services/api'
@@ -57,7 +55,6 @@ const {
   updateVoiceState,
   sendVoiceSignal,
   status: gatewayStatus,
-  statusLabel,
 } = useGateway()
 const voiceRtc = useVoiceRtc()
 
@@ -691,11 +688,6 @@ async function handleCreateInvite() {
               @input="activeHeaderPanel = 'search'"
             />
           </label>
-        </div>
-        <div class="session-state" :class="gatewayStatus">
-          <Wifi v-if="gatewayStatus === 'connected'" :size="17" aria-hidden="true" />
-          <WifiOff v-else :size="17" aria-hidden="true" />
-          <span>{{ statusLabel }}</span>
         </div>
         <div v-if="isServerDestination" class="topbar-actions">
           <button

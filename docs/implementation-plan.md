@@ -437,6 +437,10 @@
   voice-channel workspace, removed visible low-level stream state text, added
   action labels, and browser-verified disconnected screen-share controls remain
   disabled without covering composer or member-list surfaces.
-- Planned Stage 10.16: feature visibility policy.
+- Completed Stage 10.16: feature visibility policy removed the hidden primary
+  header gateway status block and the lower-left voice diagnostic DOM so gateway,
+  STUN/TURN, RTT, jitter, commerce, and smoke/debug strings are not exposed in the
+  primary shell. Browser QA verified no visible forbidden terms, no horizontal
+  overflow, and only the Friends entry in private primary navigation.
 - Planned Stage 10.17: responsive and accessibility QA.
 - Planned Stage 10.18: final QA, documentation, commit, and push.

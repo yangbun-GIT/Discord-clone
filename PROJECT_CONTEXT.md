@@ -1248,6 +1248,14 @@ Completed Stage 2 bridge work:
   `frontend/src/styles/base.css` shrinks the remote preview PiP. Browser QA verified
   disconnected screen-share controls are disabled and no remote preview layer covers
   text-channel composer or member-list surfaces.
+- Added Stage 10.16 feature visibility policy cleanup: `frontend/src/App.vue`
+  removes the primary header gateway-status block, `VoicePanel.vue` removes the
+  hidden lower-left voice diagnostics DOM, and `frontend/src/styles/base.css`
+  removes the now-dead session/voice diagnostic selectors. Settings remains the
+  place for clone scope and ICE/STUN/TURN detail. Browser QA verified no horizontal
+  overflow, no visible gateway/STUN/TURN/RTT/Jitter/Nitro/Shop/Quests/smoke/debug
+  terms in the primary shell, only the Friends private-nav row, and no
+  `.session-state` or `.voice-presence` nodes in the app shell.
 
 After each stage or meaningful feature:
 
