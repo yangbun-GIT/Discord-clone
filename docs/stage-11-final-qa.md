@@ -417,3 +417,42 @@ Residual notes:
 - The repository reference screenshot folders currently contain only placeholders,
   so this pass used live browser measurements and the user-provided Discord
   screenshots already discussed in Stage 10/11 planning.
+
+## Stage 11.14: Final Regression And Handoff
+
+Date: 2026-06-18
+
+Changes verified:
+
+- Stage 11 was closed with a full command suite and Docker/local smoke checks.
+- Browser regression after Docker rebuild covered Friends, DM, server text, and
+  settings surfaces with no native JavaScript dialog active.
+- The final scope and remaining media/TURN limitations are documented for the next
+  development pass.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed with Vite 8.0.16.
+- `npm run test:backend` passed with 105 tests.
+- `npm run lint:backend` passed.
+- `docker compose up -d --build` rebuilt and restarted the full stack.
+- `npm --prefix frontend audit --audit-level=high` passed with `found 0 vulnerabilities`.
+- Docker services running: `backend`, `frontend`, `postgres`.
+- `GET http://127.0.0.1:8000/api/health` returned `{"status":"ok","environment":"local"}`.
+- `GET http://127.0.0.1:8000/api/meta/voice` returned one ICE server and
+  `turn_configured: false`.
+- `GET http://127.0.0.1:5173/` returned HTTP `200` and contained the app root.
+- WebSocket `ws://127.0.0.1:8000/gateway` returned gateway HELLO opcode `10` with
+  a `30000` ms heartbeat interval.
+- Browser regression:
+  - Friends: horizontal overflow `0`, clipped core controls `0`.
+  - DM: horizontal overflow `0`, clipped core controls `0`.
+  - Server text: horizontal overflow `0`, clipped core controls `0`.
+  - Settings: horizontal overflow `0`, clipped core controls `0`.
+
+Residual notes:
+
+- Microphone capture, screen-capture permission, and TURN/NAT behavior remain
+  manual/external QA items because the local browser automation environment cannot
+  grant or inspect those permissions and no TURN server is configured.

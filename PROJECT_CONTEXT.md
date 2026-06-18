@@ -1430,6 +1430,12 @@ Completed Stage 2 bridge work:
   lint/build, Docker frontend rebuild, and browser metrics for Friends, DM, server
   text, and settings all passed with zero horizontal overflow and zero clipped core
   controls.
+- Added Stage 11.14 final regression: frontend lint/build, backend tests/lint,
+  full Docker rebuild, frontend high-severity audit, API/frontend HTTP smoke,
+  gateway HELLO smoke, and browser regression all passed. Running services are
+  `backend`, `frontend`, and `postgres`; remaining external QA is limited to
+  browser-permission microphone/screen-capture checks and TURN/NAT validation in
+  `docs/voice-qa.md`.
 
 After each stage or meaningful feature:
 

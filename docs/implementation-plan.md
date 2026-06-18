@@ -580,3 +580,9 @@
   settings surfaces. A clipped hidden composer action was fixed by removing the
   optional action from layout until hover/focus/open state; frontend lint/build,
   Docker frontend rebuild, and browser visual metrics passed.
+- Completed Stage 11.14: final regression ran frontend lint/build, backend
+  tests/lint, full Docker rebuild, frontend high-severity audit, API/frontend
+  HTTP smoke, gateway HELLO smoke, and browser regression across Friends, DM,
+  server text, and settings. The only remaining Stage 11 risks are manual
+  microphone/screen-capture permission QA and TURN/NAT validation documented in
+  `docs/voice-qa.md`.

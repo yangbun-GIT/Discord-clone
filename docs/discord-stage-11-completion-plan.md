@@ -367,6 +367,12 @@ Verification:
 
 Goal: close Stage 11 with a reproducible verification and handoff state.
 
+Status: completed. The full command suite, Docker rebuild, API/frontend/gateway
+smoke checks, frontend audit, and browser regression across Friends, DM, server
+text, and settings surfaces passed. Remaining risk is limited to manual
+browser-permission media validation and TURN/NAT validation documented in
+`docs/voice-qa.md`.
+
 Tasks:
 
 - Run frontend lint/build, backend tests/lint, Docker rebuild, API health, frontend
