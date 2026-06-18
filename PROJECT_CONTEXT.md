@@ -1456,6 +1456,19 @@ Completed Stage 2 bridge work:
   `backend`, `frontend`, and `postgres`; remaining external QA is limited to
   browser-permission microphone/screen-capture checks and TURN/NAT validation in
   `docs/voice-qa.md`.
+- Added architecture-principles remediation pass from
+  `docs/architecture-principles-audit.md`: backend gateway internals are now split
+  into `connection.py`, `subscriptions.py`, `broadcaster.py`, `voice_service.py`,
+  and `zombie_reaper.py` behind the existing `GatewayConnectionManager` facade;
+  `guild_service.py` now delegates PostgreSQL/demo selection to
+  `guild_storage.py`; guild domain repository entry points were added for channel,
+  invite, member, message, and role operations. Frontend `App.vue` now delegates
+  global notices, context-menu state, invite modal state, and workspace
+  title/subtitle derivation to composables. `guilds.ts` now delegates gateway
+  payload validation to `guildGatewayHandlers.ts`, message REST calls to
+  `channelMessages.ts`, and admin REST calls to `guildAdmin.ts`. `useVoiceRtc.ts`
+  now delegates WebRTC quality-stat aggregation to `voiceStats.ts`. Verification
+  passed frontend build/lint, backend lint, and full backend tests.
 
 After each stage or meaningful feature:
 

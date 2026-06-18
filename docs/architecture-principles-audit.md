@@ -269,4 +269,31 @@ These are planning candidates, not completed stages.
 
 ## Current Status
 
-Documented only. No refactor has been applied by this audit.
+Partially applied.
+
+- `frontend/src/App.vue`: global notice, app context-menu state, invite modal
+  state, and workspace title/subtitle calculation were moved into focused
+  composables. Voice session orchestration still remains in `App.vue`.
+- `frontend/src/stores/guilds.ts`: gateway event validation moved to
+  `guildGatewayHandlers.ts`; server message REST mutations moved to
+  `channelMessages.ts`; guild invite/channel/role/member REST mutations moved to
+  `guildAdmin.ts`. Voice presence remains inside `guilds.ts`.
+- `frontend/src/composables/useVoiceRtc.ts`: WebRTC quality stats moved to
+  `voiceStats.ts`. Media capture, VAD, peer lifecycle, and screen sharing remain
+  in the facade module.
+- `backend/app/services/guild_service.py`: PostgreSQL/demo branching moved behind
+  `guild_storage.py`.
+- `backend/app/repositories/guilds.py`: domain-specific repository entry points
+  were added for channels, invites, members, messages, and roles. They currently
+  delegate to the legacy implementation so query movement can proceed safely in
+  smaller repository-focused commits.
+- `backend/app/gateway/manager.py`: split into connection, subscription,
+  broadcaster, voice service, and zombie reaper modules while preserving the
+  manager facade used by routes, realtime, and tests.
+
+Verification for this pass:
+
+- `npm --prefix frontend run build`
+- `npm --prefix frontend run lint`
+- `npm run lint:backend`
+- `npm run test:backend`

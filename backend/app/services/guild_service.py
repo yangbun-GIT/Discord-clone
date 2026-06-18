@@ -1,6 +1,3 @@
-from app.db.pool import database
-from app.demo.store import demo_store
-from app.repositories.guilds import guild_repository
 from app.schemas.auth import UserPublic
 from app.schemas.guild import (
     ChannelCreate,
@@ -13,47 +10,31 @@ from app.schemas.guild import (
     RoleCreate,
 )
 from app.schemas.message import MessageDeleteRead
+from app.services.guild_storage import get_guild_storage
 
 
 async def list_guilds_for_user(user: UserPublic | None = None) -> list[GuildRead]:
-    if database.is_connected:
-        if user is None:
-            return []
-        return await guild_repository.list_for_user(user.id)
-    return demo_store.list_guilds(user.id if user else None)
+    return await get_guild_storage().list_guilds_for_user(user)
 
 
 async def get_guild_for_user(guild_id: int, user: UserPublic) -> GuildRead:
-    if database.is_connected:
-        guild = await guild_repository.get_for_user(guild_id, user.id)
-        if guild is None:
-            raise KeyError(guild_id)
-        return guild
-    return demo_store.get_guild_for_user(guild_id, user)
+    return await get_guild_storage().get_guild_for_user(guild_id, user)
 
 
 async def create_guild(payload: GuildCreate, owner: UserPublic) -> GuildRead:
-    if database.is_connected:
-        return await guild_repository.create_guild(payload, owner)
-    return demo_store.create_guild(payload, owner)
+    return await get_guild_storage().create_guild(payload, owner)
 
 
 async def create_invite(guild_id: int, actor: UserPublic) -> InviteRead:
-    if database.is_connected:
-        return await guild_repository.create_invite(guild_id, actor)
-    return demo_store.create_invite(guild_id, actor)
+    return await get_guild_storage().create_invite(guild_id, actor)
 
 
 async def join_invite(code: str, user: UserPublic) -> GuildRead:
-    if database.is_connected:
-        return await guild_repository.join_invite(code, user)
-    return demo_store.join_invite(code, user)
+    return await get_guild_storage().join_invite(code, user)
 
 
 async def create_role(guild_id: int, payload: RoleCreate, actor: UserPublic) -> GuildRead:
-    if database.is_connected:
-        return await guild_repository.create_role(guild_id, payload, actor)
-    return demo_store.create_role(guild_id, payload, actor)
+    return await get_guild_storage().create_role(guild_id, payload, actor)
 
 
 async def assign_member_role(
@@ -62,9 +43,7 @@ async def assign_member_role(
     payload: MemberRoleUpdate,
     actor: UserPublic,
 ) -> GuildRead:
-    if database.is_connected:
-        return await guild_repository.assign_member_role(guild_id, member_id, payload, actor)
-    return demo_store.assign_member_role(guild_id, member_id, payload, actor)
+    return await get_guild_storage().assign_member_role(guild_id, member_id, payload, actor)
 
 
 async def remove_member_role(
@@ -73,15 +52,11 @@ async def remove_member_role(
     role_id: int,
     actor: UserPublic,
 ) -> GuildRead:
-    if database.is_connected:
-        return await guild_repository.remove_member_role(guild_id, member_id, role_id, actor)
-    return demo_store.remove_member_role(guild_id, member_id, role_id, actor)
+    return await get_guild_storage().remove_member_role(guild_id, member_id, role_id, actor)
 
 
 async def remove_member(guild_id: int, member_id: int, actor: UserPublic) -> GuildRead:
-    if database.is_connected:
-        return await guild_repository.remove_member(guild_id, member_id, actor)
-    return demo_store.remove_member(guild_id, member_id, actor)
+    return await get_guild_storage().remove_member(guild_id, member_id, actor)
 
 
 async def create_channel(
@@ -89,9 +64,7 @@ async def create_channel(
     payload: ChannelCreate,
     actor: UserPublic,
 ) -> ChannelRead:
-    if database.is_connected:
-        return await guild_repository.create_channel(guild_id, payload, actor)
-    return demo_store.create_channel(guild_id, payload, actor)
+    return await get_guild_storage().create_channel(guild_id, payload, actor)
 
 
 async def create_message(
@@ -100,16 +73,9 @@ async def create_message(
     author: UserPublic,
     content: str,
 ) -> MessageRead:
-    if database.is_connected:
-        return await guild_repository.create_message(
-            channel_id=channel_id,
-            author=author,
-            content=content,
-        )
-    return demo_store.create_message(
+    return await get_guild_storage().create_message(
         channel_id=channel_id,
-        author_id=author.id,
-        author_name=author.username,
+        author=author,
         content=content,
     )
 
@@ -121,14 +87,7 @@ async def update_message(
     actor: UserPublic,
     content: str,
 ) -> MessageRead:
-    if database.is_connected:
-        return await guild_repository.update_message(
-            channel_id=channel_id,
-            message_id=message_id,
-            actor=actor,
-            content=content,
-        )
-    return demo_store.update_message(
+    return await get_guild_storage().update_message(
         channel_id=channel_id,
         message_id=message_id,
         actor=actor,
@@ -142,13 +101,7 @@ async def delete_message(
     message_id: int,
     actor: UserPublic,
 ) -> MessageDeleteRead:
-    if database.is_connected:
-        return await guild_repository.delete_message(
-            channel_id=channel_id,
-            message_id=message_id,
-            actor=actor,
-        )
-    return demo_store.delete_message(
+    return await get_guild_storage().delete_message(
         channel_id=channel_id,
         message_id=message_id,
         actor=actor,

@@ -124,9 +124,7 @@ Browser UI
 
 - `backend/app/services/guild_service.py`
   - References:
-    - `backend/app/db/pool.py`
-    - `backend/app/demo/store.py`
-    - `backend/app/repositories/guilds.py`
+    - `backend/app/services/guild_storage.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/guild.py`
     - `backend/app/schemas/message.py`
@@ -134,6 +132,22 @@ Browser UI
     - `backend/app/api/routes/guilds.py`
     - `backend/app/api/routes/channels.py`
     - `backend/app/gateway/router.py`
+
+- `backend/app/services/guild_storage.py`
+  - References:
+    - `backend/app/db/pool.py`
+    - `backend/app/demo/store.py`
+    - `backend/app/repositories/guilds.py`
+    - `backend/app/repositories/guild_channels.py`
+    - `backend/app/repositories/guild_invites.py`
+    - `backend/app/repositories/guild_members.py`
+    - `backend/app/repositories/guild_messages.py`
+    - `backend/app/repositories/guild_roles.py`
+    - `backend/app/schemas/auth.py`
+    - `backend/app/schemas/guild.py`
+    - `backend/app/schemas/message.py`
+  - Referenced by:
+    - `backend/app/services/guild_service.py`
 
 - `backend/app/services/dm_service.py`
   - References:
@@ -166,7 +180,12 @@ Browser UI
     - `backend/app/schemas/guild.py`
     - `backend/app/schemas/message.py`
   - Referenced by:
-    - `backend/app/services/guild_service.py`
+    - `backend/app/services/guild_storage.py`
+    - `backend/app/repositories/guild_channels.py`
+    - `backend/app/repositories/guild_invites.py`
+    - `backend/app/repositories/guild_members.py`
+    - `backend/app/repositories/guild_messages.py`
+    - `backend/app/repositories/guild_roles.py`
     - `backend/tests/test_guild_repository.py`
 
 - `backend/app/repositories/dms.py`
@@ -223,13 +242,32 @@ Browser UI
 
 - `backend/app/gateway/manager.py`
   - References:
-    - `backend/app/gateway/opcodes.py`
+    - `backend/app/gateway/broadcaster.py`
+    - `backend/app/gateway/connection.py`
+    - `backend/app/gateway/subscriptions.py`
+    - `backend/app/gateway/voice_service.py`
+    - `backend/app/gateway/zombie_reaper.py`
   - Referenced by:
     - `backend/app/gateway/router.py`
     - `backend/app/gateway/reaper.py`
     - `backend/app/realtime/publisher.py`
     - `backend/app/realtime/subscriber.py`
     - `backend/tests/test_gateway_manager.py`
+
+- `backend/app/gateway/connection.py`
+  - References:
+    - `backend/app/gateway/opcodes.py`
+  - Referenced by:
+    - `backend/app/gateway/manager.py`
+    - `backend/app/gateway/broadcaster.py`
+    - `backend/app/gateway/subscriptions.py`
+    - `backend/app/gateway/voice_service.py`
+    - `backend/app/gateway/zombie_reaper.py`
+
+- `backend/app/gateway/broadcaster.py`, `subscriptions.py`, `voice_service.py`,
+  `zombie_reaper.py`
+  - Referenced by:
+    - `backend/app/gateway/manager.py`
 
 - `backend/app/realtime/publisher.py`
   - References:
@@ -280,8 +318,12 @@ Browser UI
     - `frontend/src/components/VoiceAudioSink.vue`
     - `frontend/src/components/VoicePanel.vue`
     - `frontend/src/components/VoiceVideoSink.vue`
+    - `frontend/src/composables/useContextMenuController.ts`
     - `frontend/src/composables/useGateway.ts`
+    - `frontend/src/composables/useGlobalNotice.ts`
+    - `frontend/src/composables/useInviteController.ts`
     - `frontend/src/composables/useVoiceRtc.ts`
+    - `frontend/src/composables/useWorkspaceController.ts`
     - `frontend/src/i18n/index.ts`
     - `frontend/src/stores/dms.ts`
     - `frontend/src/stores/guilds.ts`
@@ -315,6 +357,9 @@ Browser UI
 - `frontend/src/stores/guilds.ts`
   - References:
     - `frontend/src/services/api.ts`
+    - `frontend/src/stores/channelMessages.ts`
+    - `frontend/src/stores/guildAdmin.ts`
+    - `frontend/src/stores/guildGatewayHandlers.ts`
     - `frontend/src/types.ts`
     - `frontend/src/utils/visualNoise.ts`
   - Referenced by:
@@ -356,6 +401,7 @@ Browser UI
 
 - `frontend/src/composables/useVoiceRtc.ts`
   - References:
+    - `frontend/src/composables/voiceStats.ts`
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`

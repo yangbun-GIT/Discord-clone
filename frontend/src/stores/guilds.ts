@@ -1,9 +1,20 @@
 import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
-import { apiDelete, apiGet, apiPatch, apiPost } from '../services/api'
-import type { Channel, Guild, Invite, Message, MessageDelete, VoiceSignal, VoiceState } from '../types'
+import { apiGet, apiPost } from '../services/api'
+import type { Channel, Guild, Message, MessageDelete, VoiceSignal, VoiceState } from '../types'
 import { isVisualTestMessage, isVisualTestName } from '../utils/visualNoise'
+import { deleteChannelMessage, editChannelMessage, sendChannelMessage } from './channelMessages'
+import {
+  assignGuildRole,
+  createGuildChannel,
+  createGuildInvite,
+  createGuildRole,
+  joinGuildInvite,
+  removeGuildMember,
+  removeGuildRole,
+} from './guildAdmin'
+import { handleGuildGatewayDispatch } from './guildGatewayHandlers'
 
 const ADMINISTRATOR_PERMISSION = 1 << 3
 const MANAGE_MESSAGES_PERMISSION = 1 << 13
@@ -160,7 +171,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      return await apiPost<Invite, Record<string, never>>(`/api/guilds/${activeGuild.value.id}/invites`, {}, token)
+      return await createGuildInvite(token, activeGuild.value.id)
     } catch (cause) {
       setError(cause, 'Failed to create invite')
       throw cause
@@ -175,11 +186,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const guild = await apiPost<Guild, Record<string, never>>(
-        `/api/guilds/invites/${encodeURIComponent(trimmedCode)}/join`,
-        {},
-        token,
-      )
+      const guild = await joinGuildInvite(token, trimmedCode)
       appendOrReplaceGuild(guild)
       const cleanGuild = cleanGuildForVisualQa(guild)
       activeGuildId.value = cleanGuild?.id ?? activeGuildId.value
@@ -239,11 +246,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const channel = await apiPost<Channel, { name: string; type: 0 | 1 }>(
-        `/api/guilds/${activeGuild.value.id}/channels`,
-        { name: trimmedName, type },
-        token,
-      )
+      const channel = await createGuildChannel(token, activeGuild.value.id, { name: trimmedName, type })
       if (isVisualTestName(channel.name)) return
       appendChannel(channel)
       selectChannel(channel.id)
@@ -262,11 +265,10 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const guild = await apiPost<Guild, { name: string; permissions: number }>(
-        `/api/guilds/${activeGuild.value.id}/roles`,
-        { name: trimmedName, permissions },
-        token,
-      )
+      const guild = await createGuildRole(token, activeGuild.value.id, {
+        name: trimmedName,
+        permissions,
+      })
       replaceGuild(guild)
     } catch (cause) {
       setError(cause, 'Failed to create role')
@@ -281,11 +283,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const guild = await apiPost<Guild, { role_id: number }>(
-        `/api/guilds/${activeGuild.value.id}/members/${memberId}/roles`,
-        { role_id: roleId },
-        token,
-      )
+      const guild = await assignGuildRole(token, activeGuild.value.id, memberId, roleId)
       replaceGuild(guild)
     } catch (cause) {
       setError(cause, 'Failed to assign role')
@@ -300,10 +298,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const guild = await apiDelete<Guild>(
-        `/api/guilds/${activeGuild.value.id}/members/${memberId}/roles/${roleId}`,
-        token,
-      )
+      const guild = await removeGuildRole(token, activeGuild.value.id, memberId, roleId)
       replaceGuild(guild)
     } catch (cause) {
       setError(cause, 'Failed to remove role')
@@ -318,10 +313,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const guild = await apiDelete<Guild>(
-        `/api/guilds/${activeGuild.value.id}/members/${memberId}`,
-        token,
-      )
+      const guild = await removeGuildMember(token, activeGuild.value.id, memberId)
       replaceGuild(guild)
     } catch (cause) {
       setError(cause, 'Failed to remove member')
@@ -391,96 +383,17 @@ export const useGuildStore = defineStore('guilds', () => {
   }
 
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
-    if (event === 'MESSAGE_CREATE') {
-      const message = data as Message
-      if (
-        typeof message.id !== 'number'
-        || typeof message.channel_id !== 'number'
-        || typeof message.author_id !== 'number'
-        || typeof message.author_name !== 'string'
-        || typeof message.content !== 'string'
-      ) {
-        return
-      }
-      appendMessage(message)
-      return
-    }
-    if (event === 'MESSAGE_UPDATE') {
-      const message = data as Message
-      if (
-        typeof message.id !== 'number'
-        || typeof message.channel_id !== 'number'
-        || typeof message.author_id !== 'number'
-        || typeof message.author_name !== 'string'
-        || typeof message.content !== 'string'
-      ) {
-        return
-      }
-      updateMessage(message)
-      return
-    }
-    if (event === 'MESSAGE_DELETE') {
-      const message = data as MessageDelete
-      if (typeof message.id !== 'number' || typeof message.channel_id !== 'number') {
-        return
-      }
-      deleteStoredMessage(message)
-      return
-    }
-    if (event === 'CHANNEL_CREATE') {
-      const channel = data as Channel
-      if (
-        typeof channel.id !== 'number'
-        || typeof channel.guild_id !== 'number'
-        || typeof channel.name !== 'string'
-        || typeof channel.type !== 'number'
-        || typeof channel.position !== 'number'
-      ) {
-        return
-      }
-      appendChannel(channel)
-      return
-    }
-    if (event === 'VOICE_STATE_UPDATE') {
-      const voiceState = data as VoiceState
-      if (
-        typeof voiceState.guild_id !== 'number'
-        || (voiceState.channel_id !== null && typeof voiceState.channel_id !== 'number')
-        || typeof voiceState.user_id !== 'number'
-        || typeof voiceState.self_mute !== 'boolean'
-        || typeof voiceState.self_deaf !== 'boolean'
-      ) {
-        return
-      }
-      syncVoiceState(voiceState)
-      return
-    }
-    if (event === 'VOICE_SIGNAL') {
-      const signal = data as VoiceSignal
-      if (
-        typeof signal.channel_id !== 'number'
-        || typeof signal.from_user_id !== 'number'
-        || typeof signal.target_user_id !== 'number'
-        || !['offer', 'answer', 'ice'].includes(signal.type)
-      ) {
-        return
-      }
-      lastVoiceSignal.value = signal
-      return
-    }
-    if (event === 'GUILD_UPDATE') {
-      const guild = data as Guild
-      if (
-        typeof guild.id !== 'number'
-        || typeof guild.name !== 'string'
-        || !Array.isArray(guild.channels)
-        || !Array.isArray(guild.members)
-        || !Array.isArray(guild.messages)
-      ) {
-        return
-      }
-      syncGuildUpdate(guild)
-    }
+    handleGuildGatewayDispatch(event, data, {
+      appendMessage,
+      updateMessage,
+      deleteStoredMessage,
+      appendChannel,
+      syncVoiceState,
+      syncGuildUpdate,
+      setLastVoiceSignal: (signal) => {
+        lastVoiceSignal.value = signal
+      },
+    })
   }
 
   async function sendMessage(token: string | null, content: string) {
@@ -488,11 +401,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const message = await apiPost<Message, { channel_id: number; content: string }>(
-        `/api/channels/${activeChannel.value.id}/messages`,
-        { channel_id: activeChannel.value.id, content },
-        token,
-      )
+      const message = await sendChannelMessage(token, activeChannel.value.id, content)
       appendMessage(message)
     } catch (cause) {
       setError(cause, 'Failed to send message')
@@ -509,11 +418,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const message = await apiPatch<Message, { content: string }>(
-        `/api/channels/${activeChannel.value.id}/messages/${messageId}`,
-        { content: trimmedContent },
-        token,
-      )
+      const message = await editChannelMessage(token, activeChannel.value.id, messageId, trimmedContent)
       updateMessage(message)
     } catch (cause) {
       setError(cause, 'Failed to edit message')
@@ -528,10 +433,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating.value = true
     error.value = null
     try {
-      const message = await apiDelete<MessageDelete>(
-        `/api/channels/${activeChannel.value.id}/messages/${messageId}`,
-        token,
-      )
+      const message = await deleteChannelMessage(token, activeChannel.value.id, messageId)
       deleteStoredMessage(message)
     } catch (cause) {
       setError(cause, 'Failed to delete message')

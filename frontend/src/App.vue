@@ -31,8 +31,12 @@ import SettingsView from './components/SettingsView.vue'
 import VoiceAudioSink from './components/VoiceAudioSink.vue'
 import VoicePanel from './components/VoicePanel.vue'
 import VoiceVideoSink from './components/VoiceVideoSink.vue'
+import { useContextMenuController } from './composables/useContextMenuController'
 import { useGateway } from './composables/useGateway'
+import { useGlobalNotice } from './composables/useGlobalNotice'
+import { useInviteController } from './composables/useInviteController'
 import { useVoiceRtc } from './composables/useVoiceRtc'
+import { useWorkspaceController } from './composables/useWorkspaceController'
 import { useI18n } from './i18n'
 import { useDmStore } from './stores/dms'
 import { useGuildStore } from './stores/guilds'
@@ -64,23 +68,6 @@ const activeMessages = computed(() => guilds.activeMessages)
 const remoteScreenStreams = computed(() =>
   voiceRtc.remoteStreams.value.filter((remote) => remote.sharingScreen),
 )
-const workspaceTitle = computed(() => {
-  if (navigation.destination === 'friends') return t('app.status.friends')
-  if (navigation.destination === 'dm') {
-    return dms.getDm(navigation.activeDmId)?.display_name ?? t('app.status.directMessage')
-  }
-  if (navigation.destination === 'settings') return t('app.status.userSettings')
-  if (!activeGuild.value) return t('app.status.noServers')
-  return activeChannel.value?.name ?? t('app.status.loading')
-})
-const workspaceSubtitle = computed(() => {
-  if (navigation.destination === 'friends') return t('app.location.privateHome')
-  if (navigation.destination === 'dm') return t('app.location.directMessage')
-  if (navigation.destination === 'settings') return t('app.location.settings')
-  if (!activeGuild.value) return t('app.location.noServer')
-  const channelKind = activeChannel.value?.type === 1 ? t('app.location.voiceChannel') : t('app.location.textChannel')
-  return `${activeGuild.value.name} / ${channelKind}`
-})
 const voiceLocationSummary = computed(() => {
   if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
   const state = isDeafened.value
@@ -102,9 +89,16 @@ const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
-const workspaceNotice = ref<string | null>(null)
-const workspaceNoticeTone = ref<'info' | 'success' | 'warning'>('info')
-const workspaceNoticeTimer = ref<number | null>(null)
+const {
+  notice: workspaceNotice,
+  tone: workspaceNoticeTone,
+  setNotice: setWorkspaceNotice,
+  clearNotice: clearWorkspaceNotice,
+} = useGlobalNotice({
+  onShow: () => {
+    workspaceError.value = null
+  },
+})
 const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
@@ -114,24 +108,41 @@ const channelSearchQuery = ref('')
 const showAddServer = ref(false)
 const addServerMode = ref<'create' | 'join'>('create')
 const showDiscovery = ref(false)
-const showInvite = ref(false)
 const showMemberList = ref(true)
-const inviteCode = ref<string | null>(null)
-const inviteSearchQuery = ref('')
-const inviteCopied = ref(false)
+const {
+  showInvite,
+  inviteCode,
+  inviteSearchQuery,
+  inviteCopied,
+  inviteFriends,
+  openInvite,
+  closeInvite,
+} = useInviteController(() => dms.relationships)
 const pendingVoiceSwitchChannelId = ref<number | null>(null)
 const skipVoiceSwitchConfirm = ref(localStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
 const rememberVoiceSwitchChoice = ref(false)
-const globalContextMenu = ref<{
-  x: number
-  y: number
-  title: string
-  items: { id: string; label: string; danger?: boolean }[]
-} | null>(null)
+const {
+  menu: globalContextMenu,
+  openMenu: openContextMenu,
+  closeMenu: closeGlobalContextMenu,
+} = useContextMenuController()
 const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
 const voiceTurnConfigured = ref(false)
 const userPresenceStatus = ref<UserPresenceStatus>('online')
 const isDeafened = ref(false)
+const { workspaceTitle, workspaceSubtitle } = useWorkspaceController({
+  destination: () => navigation.destination,
+  activeGuild: () => activeGuild.value ?? null,
+  activeChannel: () => activeChannel.value ?? null,
+  selectedDm: () => selectedDm.value,
+  voiceConnected: () => guilds.voiceConnected,
+  connectedVoiceGuild: () => guilds.connectedVoiceGuild,
+  connectedVoiceChannel: () => guilds.connectedVoiceChannel,
+  isDeafened: () => isDeafened.value,
+  isMuted: () => voiceRtc.isMuted.value,
+  localSpeaking: () => voiceRtc.localSpeaking.value,
+  t,
+})
 const connectedVoiceChannelId = computed(() => (guilds.voiceConnected ? guilds.connectedVoiceChannelId : null))
 const activeGuildConnectedVoiceChannelId = computed(() =>
   guilds.connectedVoiceGuildId === activeGuild.value?.id ? connectedVoiceChannelId.value : null,
@@ -185,17 +196,6 @@ const channelSearchResults = computed(() => {
     || message.author_name.toLowerCase().includes(query),
   )
 })
-const inviteFriends = computed(() => {
-  const query = inviteSearchQuery.value.trim().toLowerCase()
-  return dms.relationships
-    .filter((friend) => friend.relationship === 'friend')
-    .filter((friend) => {
-      if (!query) return true
-      return friend.username.toLowerCase().includes(query) || friend.handle.toLowerCase().includes(query)
-    })
-    .slice(0, 8)
-})
-
 async function openWorkspace() {
   if (!session.token) return
   await Promise.all([
@@ -291,16 +291,12 @@ function openGlobalContextMenu(event: MouseEvent) {
   const menuWidth = 244
   const menuHeight = 228
 
-  globalContextMenu.value = {
+  openContextMenu({
     x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
     y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8)),
     title: label,
     items: contextMenuItems(kind),
-  }
-}
-
-function closeGlobalContextMenu() {
-  globalContextMenu.value = null
+  })
 }
 
 function runGlobalContextAction(id: string) {
@@ -318,28 +314,6 @@ function runGlobalContextAction(id: string) {
     setWorkspaceNotice(t('app.notice.localControl', { label: actionLabel }))
   }
   closeGlobalContextMenu()
-}
-
-function clearWorkspaceNotice() {
-  if (workspaceNoticeTimer.value) {
-    window.clearTimeout(workspaceNoticeTimer.value)
-    workspaceNoticeTimer.value = null
-  }
-  workspaceNotice.value = null
-}
-
-function setWorkspaceNotice(message: string, tone: 'info' | 'success' | 'warning' = 'info') {
-  if (workspaceNoticeTimer.value) {
-    window.clearTimeout(workspaceNoticeTimer.value)
-    workspaceNoticeTimer.value = null
-  }
-  workspaceError.value = null
-  workspaceNoticeTone.value = tone
-  workspaceNotice.value = message
-  workspaceNoticeTimer.value = window.setTimeout(() => {
-    workspaceNotice.value = null
-    workspaceNoticeTimer.value = null
-  }, 3600)
 }
 
 function handleWorkspacePointerDown(event: MouseEvent) {
@@ -390,7 +364,7 @@ function handleLogout() {
   disconnectGateway()
   authError.value = null
   workspaceError.value = null
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   session.logout()
   navigation.resetNavigation()
   guilds.resetGuilds()
@@ -401,20 +375,20 @@ function handleLogout() {
 }
 
 function handleSelectGuild(guildId: number) {
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   activeHeaderPanel.value = null
   navigation.openServerChannel()
   guilds.selectGuild(guildId)
 }
 
 function handleOpenFriends() {
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   activeHeaderPanel.value = null
   navigation.openFriends()
 }
 
 function handleOpenDm(dmId: number) {
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   activeHeaderPanel.value = null
   navigation.openDm(dmId)
 }
@@ -433,7 +407,7 @@ async function handleMessageFriend(friendId: number) {
 
 function openAddServer(mode: 'create' | 'join' = 'create') {
   workspaceError.value = null
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   addServerMode.value = mode
   showAddServer.value = true
 }
@@ -448,7 +422,7 @@ function closeAddServer() {
 
 function openDiscovery() {
   workspaceError.value = null
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   showAddServer.value = false
   showDiscovery.value = true
 }
@@ -475,14 +449,14 @@ async function handleCreateGuild(name: string) {
 
 function handleCreateChannel(name: string, type: 0 | 1 = 0) {
   workspaceError.value = null
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   void guilds.createChannel(session.token, name, type).catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.channelCreateFailed')
   })
 }
 
 function handleSelectChannel(channelId: number) {
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   activeHeaderPanel.value = null
   const channel = activeGuild.value?.channels.find((item) => item.id === channelId)
   if (channel?.type === 1) {
@@ -498,7 +472,7 @@ function showHeaderPlaceholder(label: string) {
 
 function toggleHeaderPanel(panel: 'threads' | 'notifications' | 'pins' | 'search') {
   workspaceError.value = null
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   activeHeaderPanel.value = activeHeaderPanel.value === panel ? null : panel
 }
 
@@ -709,7 +683,7 @@ function handleToggleDeafen() {
 
 function handleOpenUserSettings() {
   workspaceError.value = null
-  workspaceNotice.value = null
+  clearWorkspaceNotice()
   navigation.openSettings()
 }
 
@@ -772,20 +746,12 @@ async function handleJoinGuild(code: string) {
   }
 }
 
-function closeInvite() {
-  showInvite.value = false
-  inviteCode.value = null
-  inviteSearchQuery.value = ''
-  inviteCopied.value = false
-}
-
 async function handleCreateInvite() {
   workspaceError.value = null
   isInviteWorking.value = true
   try {
     const invite = await guilds.createInvite(session.token)
-    inviteCode.value = invite?.code ?? null
-    showInvite.value = true
+    openInvite(invite?.code ?? null)
   } catch (error) {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.inviteCreateFailed')
   } finally {

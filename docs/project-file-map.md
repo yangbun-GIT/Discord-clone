@@ -121,7 +121,10 @@ For ordinary implementation work:
   - Authentication business flow and token issuing.
 - `backend/app/services/guild_service.py`
   - Guild, invite, role, member, channel, and message service facade.
-  - Current refactor candidate: storage-provider branching should be extracted.
+- `backend/app/services/guild_storage.py`
+  - Service-facing storage provider boundary.
+  - Selects PostgreSQL or demo guild storage once and exposes a common async
+    interface to `guild_service.py`.
 - `backend/app/services/dm_service.py`
   - Direct-message service facade.
 - `backend/app/services/store_service.py`
@@ -138,8 +141,13 @@ For ordinary implementation work:
 - `backend/app/repositories/users.py`
   - User persistence and password-hash lookup.
 - `backend/app/repositories/guilds.py`
-  - Guild persistence plus current channel/message/invite/role/member operations.
-  - Current refactor candidate: split by domain responsibility.
+  - Core guild persistence and legacy implementation for channel/message/invite/
+    role/member operations.
+- `backend/app/repositories/guild_channels.py`,
+  `guild_invites.py`, `guild_members.py`, `guild_messages.py`, `guild_roles.py`
+  - Domain-specific repository entry points used by `guild_storage.py`.
+  - Currently delegate to `guilds.py` while providing stable split boundaries for
+    future query movement.
 - `backend/app/repositories/dms.py`
   - Direct-message persistence.
 
@@ -166,9 +174,18 @@ For ordinary implementation work:
 - `backend/app/gateway/router.py`
   - WebSocket gateway endpoint and payload handling.
 - `backend/app/gateway/manager.py`
-  - Connection registry, subscriptions, broadcast, voice state, and voice signal
-    routing.
-  - Current refactor candidate: split registry/broadcaster/voice/reaper concerns.
+  - Compatibility facade for gateway connection, subscription, broadcast, voice,
+    and reaper operations.
+- `backend/app/gateway/connection.py`
+  - `ClientConnection` and active WebSocket connection registry.
+- `backend/app/gateway/subscriptions.py`
+  - Guild/channel/DM subscription mutation helpers and voice-channel assignment.
+- `backend/app/gateway/broadcaster.py`
+  - Channel/guild/DM dispatch fan-out and stale connection pruning.
+- `backend/app/gateway/voice_service.py`
+  - Voice state broadcast and targeted voice signal routing.
+- `backend/app/gateway/zombie_reaper.py`
+  - Heartbeat timeout detection and stale websocket closure.
 - `backend/app/gateway/events.py`
   - Gateway event naming/contracts.
 - `backend/app/gateway/opcodes.py`
@@ -214,9 +231,9 @@ For ordinary implementation work:
 - `frontend/src/main.ts`
   - Vue app bootstrap, Pinia, and root component mount.
 - `frontend/src/App.vue`
-  - Top-level app shell and current global workflow orchestration.
-  - Current refactor candidate: split workspace, notice, context-menu, voice, and
-    invite controllers.
+  - Top-level app shell and remaining global workflow orchestration.
+  - Delegates global notices, app context menus, invite modal state, and workspace
+    title/subtitle calculation to focused composables.
 - `frontend/src/types.ts`
   - Shared frontend DTO and state types.
 - `frontend/src/env.d.ts`
@@ -262,9 +279,14 @@ For ordinary implementation work:
 - `frontend/src/stores/navigation.ts`
   - Active destination: friends, DM, server, settings, store.
 - `frontend/src/stores/guilds.ts`
-  - Guild list, active guild/channel, messages, admin mutations, voice state, and
-    gateway event handling.
-  - Current refactor candidate: split message, admin, voice, and gateway handlers.
+  - Guild list, active guild/channel, local message state, admin state reflection,
+    voice state, and gateway state application.
+- `frontend/src/stores/channelMessages.ts`
+  - Server text-channel message REST mutations.
+- `frontend/src/stores/guildAdmin.ts`
+  - Guild invite, channel, role, and member REST mutations.
+- `frontend/src/stores/guildGatewayHandlers.ts`
+  - Typed gateway-event validation and event-to-store callback dispatch.
 - `frontend/src/stores/dms.ts`
   - Direct-message state and mutations.
 - `frontend/src/stores/preferences.ts`
@@ -282,7 +304,16 @@ For ordinary implementation work:
 - `frontend/src/composables/useVoiceRtc.ts`
   - Browser WebRTC media capture, peer connections, VAD, screen share, and quality
     stats.
-  - Current refactor candidate: split media, VAD, peers, and stats modules.
+- `frontend/src/composables/voiceStats.ts`
+  - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`.
+- `frontend/src/composables/useGlobalNotice.ts`
+  - App notice state, timeout, and dismissal behavior.
+- `frontend/src/composables/useContextMenuController.ts`
+  - App-owned context menu state.
+- `frontend/src/composables/useInviteController.ts`
+  - Invite modal state, search query, copy state, and filtered invite targets.
+- `frontend/src/composables/useWorkspaceController.ts`
+  - Workspace title/subtitle and voice-location derived state.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
 - `frontend/src/styles/base.css`
