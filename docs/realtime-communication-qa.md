@@ -133,6 +133,32 @@ Manual two-account voice/product recheck:
 - Follow-up implementation stages C10-C13 are tracked in
   `docs/remediation-tasks/realtime-communication-plan.md`.
 
+Chrome profile control note:
+
+- Date: 2026-06-19.
+- The two visible clone accounts can live in separate Chrome profiles. In this case,
+  the automation surface exposes separate extension browser instances.
+- Known profile mapping for the current local QA setup:
+  - `minruel`: A tab at `http://localhost:5173/`.
+  - `jbnu.ac.kr`: B tab at `http://127.0.0.1:5173/`.
+- If only one clone tab is listed, inspect available extension browser instances and
+  choose the profile that owns the missing tab before concluding the tab is
+  unavailable.
+- If a real profile cannot be controlled, fall back to the project Playwright smoke
+  or open a controlled second tab with the local QA account procedure. Do not inspect
+  browser cookies, local storage, saved passwords, or session stores.
+
+Voice architecture note:
+
+- Current implementation correctly uses WebSocket for signaling and WebRTC for
+  media transport.
+- Raw WebSocket microphone transport is rejected for clone completion because it
+  would bypass browser-native WebRTC media handling.
+- WebRTC P2P remains acceptable for immediate local two-user remediation.
+- SFU-backed WebRTC, preferably a managed/open-source stack such as LiveKit unless a
+  lower-level mediasoup integration is specifically justified, is the best long-term
+  path for Discord-like multi-user voice channels.
+
 ## Manual Same-PC QA
 
 1. Open two isolated browser profiles.

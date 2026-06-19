@@ -73,6 +73,48 @@
     primary UI and use wide document-like cards with large empty space. This needs a
     separate settings-surface remediation item, QA-P2-11.
 
+## Two-Account Web/Product Recheck - 2026-06-19
+
+Scope:
+
+- User A in Chrome profile `minruel` at `http://localhost:5173/`.
+- User B in Chrome profile `jbnu.ac.kr` at `http://127.0.0.1:5173/`.
+- Both profiles have the Codex Chrome extension installed and can be claimed
+  separately by selecting the matching extension browser instance.
+
+Confirmed working:
+
+- Server text messages synchronize in both directions after both users are in the
+  same server/channel.
+- Existing DM threads synchronize in both directions and inactive-recipient unread
+  behavior works.
+
+New or reinforced web issues:
+
+- Friends/Add Friend remains incomplete: sending a request can look successful, but
+  the receiver does not get a real incoming request workflow.
+- Server invite UX is incomplete: joining can require an exact invite code, success
+  routing is weak, and member accounts still see invite affordances they cannot use.
+- Unauthorized invite action shows raw English backend text
+  `create invite permission required`; this must become localized app-owned UX.
+- Voice participant UI is inconsistent: sidebar, workspace, bottom panel, and server
+  rail can disagree about who is connected.
+- Voice workspace can show only the local user while another participant appears in
+  another surface.
+- Preview/pre-join state can lack a clear primary Join Voice action.
+- Real microphone quality is not acceptable: keyboard/tap sounds may pass through
+  while spoken language sounds echoing, unstable, or intermittently cut.
+
+Development routing:
+
+- Friends/Add Friend belongs to
+  `docs/remediation-tasks/friend-relationship-implementation-plan.md`.
+- Voice, signaling, participant synchronization, microphone quality, and invite
+  permission UX belong to
+  `docs/remediation-tasks/realtime-communication-plan.md` stages C10-C13.
+- Shared visible-control cleanup remains under QA-P1-01, QA-P1-02, QA-P1-04, and
+  QA-P2 invite/settings items in this document.
+
 ## Development Execution Rules
 
 1. Treat each QA item as a development work item, not only a design note.

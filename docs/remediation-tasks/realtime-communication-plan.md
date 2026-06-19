@@ -1508,6 +1508,83 @@ Additional implementation stages required before claiming real voice completion:
   - Localize permission errors.
   - Add browser QA for member and owner invite behavior.
 
+## Voice Architecture Decision Update
+
+Date: 2026-06-19.
+
+Current implementation:
+
+- Use WebSocket only for gateway state, voice-state updates, and WebRTC signaling
+  payloads such as offer, answer, and ICE.
+- Use browser WebRTC peer connections for actual microphone audio and screen-share
+  media.
+- Current topology is P2P mesh between browser clients.
+
+Decision:
+
+- Keep the current WebRTC P2P plus WebSocket signaling approach for the immediate
+  C10-C13 remediation work.
+- Do not move microphone audio transport to raw WebSocket. Raw WebSocket audio would
+  require custom codec, jitter buffering, packet-loss handling, echo cancellation,
+  media permissions, and device handling that browsers already provide through
+  WebRTC.
+- Treat SFU-backed WebRTC as the best long-term architecture for a Discord-like
+  voice channel experience when the target moves beyond small-room local clone QA.
+
+Architecture comparison:
+
+| Option | Fit | Strength | Risk / limitation | Decision |
+| --- | --- | --- | --- | --- |
+| Raw WebSocket audio | Poor | Simple conceptual transport | Reimplements browser media stack, weak latency/jitter handling, poor echo/noise support | Reject |
+| WebRTC P2P mesh + WebSocket signaling | Good now | Browser-native media, low infrastructure cost, fits 2-user/local QA | Mesh upload/CPU grows with participants; late-join snapshot still needs app logic | Keep for C10-C13 |
+| WebRTC SFU, LiveKit-style | Best long-term | Scales multi-user rooms, centralizes track forwarding, SDK/ops support | Adds server dependency, auth/token integration, deployment and TURN work | Evaluate after C10-C13 |
+| WebRTC SFU, mediasoup-style | Strong but low-level | Maximum media-layer control | More custom room/signaling/server work than LiveKit | Defer unless LiveKit is insufficient |
+| Managed realtime/media provider | Possible | Fastest hosted path | Cost, vendor lock-in, project budget constraints | Defer |
+
+Evidence used for this decision:
+
+- MDN WebRTC API documents WebRTC as the browser-native API for real-time audio,
+  video, and data.
+- MDN WebRTC signaling guidance separates signaling/discovery from media exchange.
+- Discord's public engineering write-up describes its voice stack as WebRTC-based.
+- LiveKit documents an SFU as a low-latency media-forwarding server optimized for
+  multi-party WebRTC.
+- mediasoup is also an SFU option but is lower-level and requires more application
+  integration work.
+
+Implementation implication:
+
+- C10-C13 must fix correctness and quality gaps in the current P2P stack first:
+  voice-state snapshot, participant-source consistency, preview/join UX, real speech
+  quality diagnostics, and permission-aware controls.
+- A later SFU evaluation stage should be created only after the current stack passes
+  real same-PC speech QA and the project needs larger voice rooms or cross-network
+  reliability beyond TURN-backed P2P.
+
+## Chrome Profile QA Note
+
+Date: 2026-06-19.
+
+Two local clone accounts were opened in different Chrome profiles:
+
+- Profile `minruel`: `http://localhost:5173/`
+- Profile `jbnu.ac.kr`: `http://127.0.0.1:5173/`
+
+The Codex Chrome extension can see both profiles, but browser automation initially
+defaulted to the last-used `minruel` profile and therefore only listed the A tab.
+Future manual two-account QA should explicitly select both extension browser
+instances before claiming tabs.
+
+Required future QA setup:
+
+1. List available extension browsers and identify the intended Chrome profile names.
+2. Select the A profile and claim the `localhost:5173` tab.
+3. Select the B profile and claim the `127.0.0.1:5173` tab.
+4. Keep both user tabs as handoff tabs when the QA turn ends.
+5. If one profile still does not appear, use the automated Playwright smoke with two
+   isolated browser contexts, or create a controlled second tab and log in with the
+   non-secret local QA account procedure.
+
 ## Verification Matrix
 
 | Scenario | Text | DM | Gateway reconnect | Voice | Screen share | Required |

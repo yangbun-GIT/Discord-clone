@@ -188,6 +188,14 @@ workspace/sidebar participant divergence, preview mode without a clear Join acti
 and raw/unlocalized invite permission errors for member accounts. Server text and
 existing DM delivery passed in both directions during this recheck.
 
+The same recheck also clarified browser QA setup and voice architecture direction.
+The two user tabs may live in separate Chrome profiles; the current local mapping is
+`minruel` for `localhost:5173` and `jbnu.ac.kr` for `127.0.0.1:5173`, so future
+manual QA must select both Chrome extension browser instances before claiming tabs.
+Voice transport should remain WebRTC media with WebSocket signaling for C10-C13.
+Raw WebSocket audio is rejected, and SFU-backed WebRTC is the preferred future
+architecture if the clone moves toward larger Discord-like voice rooms.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
