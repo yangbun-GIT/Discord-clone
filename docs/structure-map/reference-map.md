@@ -123,6 +123,18 @@ Browser UI
     - Relationship reads plus Add Friend request, accept, reject, cancel, remove,
       block, and unblock REST endpoints.
 
+- `backend/app/api/routes/meta.py`
+  - References:
+    - `backend/app/core/config.py`
+    - `backend/app/domain/permissions.py`
+  - Referenced by:
+    - `backend/app/api/router.py`
+    - `scripts/voice_readiness_check.mjs`
+    - `frontend/src/composables/useVoiceSessionController.ts`
+  - Owns:
+    - Permission metadata, browser-required voice ICE configuration, and safe
+      STUN/TURN readiness metadata.
+
 - `backend/app/api/routes/store.py`
   - References:
     - `backend/app/api/dependencies.py`
@@ -450,6 +462,18 @@ Browser UI
       paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
+
+- `scripts/voice_readiness_check.mjs`
+  - References:
+    - `/api/meta/voice/readiness`
+    - root `package.json` script `check:voice:readiness`.
+  - Referenced by:
+    - `README.md`
+    - `docs/deployment.md`
+    - `docs/voice-qa.md`
+  - Owns:
+    - Safe operator-facing STUN/TURN readiness output without ICE URLs, TURN
+      credentials, candidates, tokens, message content, or media device labels.
 
 ## Frontend References
 

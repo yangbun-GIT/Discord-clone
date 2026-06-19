@@ -236,6 +236,8 @@ Verification:
 
 ### Stage M5: TURN/NAT Readiness
 
+Status: implemented, pending real TURN credentials and different-network QA.
+
 Owner files:
 
 - `README.md`
@@ -247,14 +249,32 @@ Owner files:
 Tasks:
 
 1. Keep TURN credentials environment-only.
+   - Completed: `.env.example` keeps placeholders only, and the readiness check
+     prints no ICE URLs, TURN credentials, tokens, candidates, or device labels.
 2. Add a clear setup path for `WEBRTC_ICE_SERVERS_JSON`.
+   - Completed in `README.md`, `docs/deployment.md`, and `docs/voice-qa.md`.
 3. Expose safe readiness data only: ICE server count and `turn_configured`.
+   - Completed with `GET /api/meta/voice/readiness`, which returns only
+     `ice_server_count`, `stun_configured`, and `turn_configured`.
 4. Add a manual internet test script using two different networks.
+   - Completed with `npm run check:voice:readiness` plus the different-network
+     manual QA checklist in `docs/voice-qa.md`.
 
 Acceptance:
 
 - User can tell whether TURN is configured before starting an external test.
 - No TURN credential, ICE candidate, token, or media label is logged or documented.
+
+Verification:
+
+- `npm run test:backend -- -q tests/test_api_routes.py::test_voice_readiness_omits_ice_server_credentials`
+  passed.
+- `npm run lint:backend` passed.
+- `npm run test:backend` passed.
+- `npm run check:voice:readiness` passed against the local Docker backend and
+  reported `turn_configured: false` without credentials.
+- Real TURN/NAT completion remains blocked until valid TURN credentials are supplied
+  and two users on different networks pass voice and screen-share QA.
 
 ### Stage M6: Friends Pending And Presence Clarity
 

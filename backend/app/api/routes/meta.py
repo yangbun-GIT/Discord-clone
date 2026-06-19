@@ -20,3 +20,13 @@ async def get_voice_config() -> dict[str, object]:
         "ice_server_count": len(ice_servers),
         "turn_configured": settings.webrtc_turn_configured,
     }
+
+
+@router.get("/voice/readiness")
+async def get_voice_readiness() -> dict[str, object]:
+    settings = get_settings()
+    return {
+        "ice_server_count": len(settings.webrtc_ice_servers),
+        "stun_configured": settings.webrtc_stun_configured,
+        "turn_configured": settings.webrtc_turn_configured,
+    }

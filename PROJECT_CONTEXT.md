@@ -263,6 +263,15 @@ HTTP LAN text/gateway reachability from HTTPS LAN media-capture testing. Real
 same-LAN media capture still requires a manually trusted certificate on the second
 device.
 
+Manual QA follow-up Stage M5 is implemented in code/docs. The backend now exposes
+`GET /api/meta/voice/readiness`, which returns only `ice_server_count`,
+`stun_configured`, and `turn_configured`; browser-required ICE configuration remains
+on `GET /api/meta/voice`. `npm run check:voice:readiness` calls the safe readiness
+endpoint and prints no TURN credentials, ICE candidates, tokens, or media device
+labels. The current local Docker backend reports `turn_configured: false`, so
+different-network TURN/NAT voice remains a manual release gate until real TURN
+credentials are supplied and tested.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

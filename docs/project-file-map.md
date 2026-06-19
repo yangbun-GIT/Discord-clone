@@ -34,7 +34,7 @@ For ordinary implementation work:
 - `package.json`
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
     dev commands, HTTPS LAN frontend dev, Docker, the C8 realtime browser smoke,
-    and the C4 Redis cross-worker realtime smoke.
+    the C4 Redis cross-worker realtime smoke, and the safe voice readiness check.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.redis-smoke.yaml`
@@ -54,6 +54,11 @@ For ordinary implementation work:
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
+- `scripts/voice_readiness_check.mjs`
+  - Safe operator check for `/api/meta/voice/readiness`.
+  - Prints only endpoint, ICE server count, STUN readiness, and TURN readiness.
+  - Does not print ICE URLs, TURN credentials, candidates, tokens, message content,
+    or media device labels.
 - `.env.example`
   - Non-secret environment variable template, including LAN CORS and STUN/TURN
     guidance.
@@ -172,7 +177,7 @@ For ordinary implementation work:
 - `backend/app/api/routes/health.py`
   - Health check endpoint.
 - `backend/app/api/routes/meta.py`
-  - Runtime metadata endpoints such as voice config.
+  - Runtime metadata endpoints such as voice config and safe voice readiness.
 - `backend/app/api/routes/guilds.py`
   - Guild list/read/create, invite, roles, members, and channel creation routes.
 - `backend/app/api/routes/channels.py`

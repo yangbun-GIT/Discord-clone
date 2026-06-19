@@ -11,6 +11,7 @@
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
+    "check:voice:readiness": "node scripts/voice_readiness_check.mjs",
     "smoke:realtime:browser": "node scripts/realtime_browser_smoke.mjs",
     "smoke:realtime:redis": ".\\.venv\\Scripts\\python.exe scripts\\realtime_redis_smoke.py",
     "lint:backend": "cd backend && ..\\.venv\\Scripts\\python -m ruff check app tests",

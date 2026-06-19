@@ -62,6 +62,19 @@ def test_voice_meta_returns_ice_servers() -> None:
     assert response.json()["turn_configured"] is False
 
 
+def test_voice_readiness_omits_ice_server_credentials() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/meta/voice/readiness")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "ice_server_count": 1,
+        "stun_configured": True,
+        "turn_configured": False,
+    }
+
+
 def test_dev_session_returns_local_user_token() -> None:
     client = TestClient(app)
 

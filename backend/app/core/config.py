@@ -52,6 +52,15 @@ class Settings(BaseSettings):
                 return True
         return False
 
+    @property
+    def webrtc_stun_configured(self) -> bool:
+        for server in self.webrtc_ice_servers:
+            urls = server["urls"]
+            url_values = urls if isinstance(urls, list) else [urls]
+            if any(url.startswith("stun:") for url in url_values):
+                return True
+        return False
+
     @staticmethod
     def _is_valid_ice_server(item: object) -> bool:
         if not isinstance(item, dict):

@@ -36,9 +36,11 @@ Use a TURN provider such as Open Relay or Metered Video before testing voice acr
 NATs or deployed networks. STUN-only is acceptable for local development but is not a
 reliable production voice path.
 
-`GET /api/meta/voice` exposes `ice_server_count` and `turn_configured` so the frontend
-and deployment checks can confirm whether a TURN server is active without inspecting
-host secrets.
+`GET /api/meta/voice/readiness` exposes only `ice_server_count`,
+`stun_configured`, and `turn_configured` so deployment checks can confirm whether a
+TURN server is active without printing ICE URLs or TURN credentials. The browser app
+still uses `GET /api/meta/voice` to fetch the ICE server configuration required by
+WebRTC.
 
 ## LAN Development Access
 
@@ -118,12 +120,17 @@ HTTPS LAN media path:
 TURN/NAT internet checklist:
 
 1. Configure `WEBRTC_ICE_SERVERS_JSON` with at least one `turn:` or `turns:` URL.
-2. Restart the backend and verify `/api/meta/voice` reports
-   `turn_configured: true`.
+2. Restart the backend and verify the safe readiness check reports
+   `turn_configured: true`:
+
+   ```powershell
+   npm run check:voice:readiness
+   ```
+
 3. Test two users from different networks, such as home Wi-Fi and mobile hotspot.
 4. Verify voice join, audio, mute/unmute, screen-share start/stop, and peer stats.
 5. Mark internet voice incomplete if TURN credentials are unavailable or
-   `/api/meta/voice` reports `turn_configured: false`.
+   `/api/meta/voice/readiness` reports `turn_configured: false`.
 
 ## VM Checklist
 
@@ -136,7 +143,8 @@ TURN/NAT internet checklist:
 5. Run the frontend and backend runtime images.
 6. Verify:
    - `GET /api/health` returns `status: ok`.
-   - `GET /api/meta/voice` returns `turn_configured: true`.
+   - `GET /api/meta/voice/readiness` returns `turn_configured: true` without
+     credentials.
    - `/gateway` upgrades to WebSocket.
    - Two authenticated browser sessions can exchange text messages.
    - Two authenticated browser sessions can join the same voice channel and exchange
@@ -172,8 +180,8 @@ Deployment remains gated by environment-specific checks:
 
 - Configure `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `CORS_ORIGINS`, and
   `WEBRTC_ICE_SERVERS_JSON` through host secrets, not committed files.
-- Confirm `/api/meta/voice.turn_configured` is `true` before claiming internet
-  voice support.
+- Confirm `/api/meta/voice/readiness.turn_configured` is `true` before claiming
+  internet voice support.
 - Run different-PC LAN QA and different-network TURN/NAT QA separately from the
   same-PC fake-device browser smoke.
 - Do not treat fake microphone or fake screen-share automation as real microphone

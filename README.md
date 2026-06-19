@@ -135,10 +135,19 @@ Screen sharing uses the browser display-capture permission prompt and works only
 connected to a voice channel.
 The backend voice metadata also reports whether TURN is configured, and the voice
 panel shows peer count, RTT, jitter, packet loss, and outbound bitrate while connected.
+For a credential-safe readiness check before external testing, run:
+
+```powershell
+npm run check:voice:readiness
+```
+
+This calls `/api/meta/voice/readiness` and prints only ICE server count plus
+STUN/TURN readiness. It does not print ICE URLs, TURN credentials, tokens, or media
+device labels.
 
 LAN success and TURN/NAT internet success are separate release gates. Do not mark
-internet voice complete unless `/api/meta/voice` reports `turn_configured: true` and
-two users on different networks can complete a real voice/screen-share test.
+internet voice complete unless the readiness check reports `turn_configured: true`
+and two users on different networks can complete a real voice/screen-share test.
 
 Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
 in `docs/voice-qa.md`, and communication QA steps are maintained in

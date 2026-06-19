@@ -97,8 +97,14 @@ Use this path when the second device must test real microphone or screen capture
    WEBRTC_ICE_SERVERS_JSON=[{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:turn.example.com:3478","username":"replace-me","credential":"replace-me"}]
    ```
 
-2. Restart the backend and load `/api/meta/voice`.
-3. Confirm `turn_configured` is `true`.
+2. Restart the backend and run the safe readiness check:
+
+   ```powershell
+   npm run check:voice:readiness
+   ```
+
+3. Confirm `turn_configured` is `true`. The readiness check must not print TURN
+   credentials, ICE candidates, tokens, or media device labels.
 4. Repeat the two-session voice test across two different networks, such as home
    Wi-Fi and mobile hotspot.
 5. Watch the voice quality line for persistent packet loss, high jitter, or
@@ -107,7 +113,7 @@ Use this path when the second device must test real microphone or screen capture
 Release gate:
 
 - LAN pass: same network, same development host, text/gateway/voice reachable.
-- TURN/NAT pass: different networks, `/api/meta/voice.turn_configured` is `true`,
+- TURN/NAT pass: different networks, `/api/meta/voice/readiness.turn_configured` is `true`,
   and media works through a configured TURN-capable ICE list.
 - Do not mark internet voice complete from fake-device or LAN-only tests.
 
@@ -116,7 +122,8 @@ Release gate:
 Run this after deploying behind HTTPS:
 
 - `GET /api/health` returns `status: ok`.
-- `/api/meta/voice` returns the expected ICE server count and `turn_configured: true`.
+- `/api/meta/voice/readiness` returns the expected ICE server count and
+  `turn_configured: true` without credentials.
 - `/gateway` upgrades successfully through the reverse proxy.
 - Two users can exchange text messages.
 - Two users can join voice, hear each other, mute/unmute, and share a screen.
