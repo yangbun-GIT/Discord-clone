@@ -106,6 +106,10 @@ the project prompt and context files before changing code.
     rejoin, LAN secure-context, TURN readiness, Friends pending/presence, DM
     identity, invite delivery/copy state, deafen behavior, and invite permission
     browser QA follow-up stages.
+- `docs/remediation-tasks/manual-qa-followup-2026-06-19-ko.md`
+  - Korean summary of the completed manual QA follow-up fixes.
+  - Lists M1-M10 changes, verification results, unresolved manual gates, and
+    related commits for quick handoff.
 - `docs/realtime-communication-qa.md`
   - Stage C8 and later communication QA checklist.
   - Documents the automated two-browser smoke, same-PC manual QA, LAN QA, TURN/NAT

@@ -119,6 +119,10 @@ For ordinary implementation work:
     rejoin, LAN secure-context, TURN readiness, Friends pending/presence, DM
     identity, invite delivery/copy state, deafen behavior, and invite permission
     browser QA work.
+- `docs/remediation-tasks/manual-qa-followup-2026-06-19-ko.md`
+  - Korean summary of completed M1-M10 manual QA follow-up fixes.
+  - Use for quick Korean handoff of changed behavior, verification, remaining
+    manual gates, and related commits.
 - `docs/realtime-communication-qa.md`
   - C8 and later communication QA checklist.
   - Owns automated two-browser smoke instructions, same-PC manual QA, LAN QA,
