@@ -153,6 +153,27 @@ Manual QA follow-up result:
 - Detailed staged follow-up is tracked in
   `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`.
 
+Voice input feedback and gate update:
+
+- Date: 2026-06-20.
+- User-visible issue: connected voice users did not get clear visual feedback when
+  microphone input entered the clone, and long sustained sounds could still pulse
+  because the input gate closed after the processed signal dipped.
+- Fix: local speaking state now follows the current RMS input-level path with a
+  short release hold instead of the older frequency-bin VAD path. The input meter
+  samples before RNNoise/gate attenuation, the sensitivity gate holds open longer
+  for sustained speech, and a closed gate softly attenuates rather than fully
+  cutting audio. The voice workspace tile, sidebar voice-channel row, and lower
+  user card now react visually to input. Remote received audio streams are analyzed
+  locally so remote participant cards can show speaking feedback.
+- Verification: frontend lint, frontend tests, production build, and
+  `CHROME_EXECUTABLE="C:/Program Files/Google/Chrome/Application/chrome.exe"
+  npm run smoke:realtime:browser` passed with `voiceRemoteAudioSinks: 1` and
+  `browserErrors: 0`.
+- Remaining manual gate: the user still needs to run a real sustained vowel and
+  fan/wind-noise listening test because fake-device automation cannot judge speech
+  intelligibility.
+
 Screen-share participant composition update:
 
 - Date: 2026-06-19.

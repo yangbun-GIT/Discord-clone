@@ -81,6 +81,9 @@ const remoteScreenStreams = computed(() =>
   activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
 )
 const remoteScreenUserIds = computed(() => new Set(remoteScreenStreams.value.map((remote) => remote.userId)))
+const remoteVoiceStreamByUserId = computed(() =>
+  new Map(activeRemoteVoiceStreams.value.map((remote) => [remote.userId, remote])),
+)
 const visibleSelectedVoicePeers = computed(() =>
   selectedVoicePeers.value.filter((participant) => !remoteScreenUserIds.value.has(participant.user_id)),
 )
@@ -965,6 +968,7 @@ async function handleSendInviteToFriend(friendId: number) {
       :connected-voice-channel-id="activeGuildConnectedVoiceChannelId"
       :current-user-id="session.user?.id ?? null"
       :local-speaking="voiceRtc.localSpeaking.value"
+      :input-level="voiceRtc.inputLevel.value"
       :muted="voiceRtc.isMuted.value"
       :deafened="isDeafened"
       :can-create-invite="guilds.canCreateInvite"
@@ -1268,6 +1272,7 @@ async function handleSendInviteToFriend(friendId: number) {
           <article
             class="voice-tile local"
             :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
+            :style="{ '--voice-channel-input-level': `${Math.min(100, Math.max(0, voiceRtc.inputLevel.value))}%` }"
           >
             <span class="voice-tile-avatar">{{ session.user?.username.slice(0, 2).toUpperCase() ?? 'YA' }}</span>
             <div>
@@ -1289,6 +1294,7 @@ async function handleSendInviteToFriend(friendId: number) {
             v-for="participant in visibleSelectedVoicePeers"
             :key="participant.user_id"
             class="voice-tile remote"
+            :class="{ speaking: remoteVoiceStreamByUserId.get(participant.user_id)?.speaking }"
             :data-user-id="participant.user_id"
           >
             <span class="voice-tile-avatar remote">
@@ -1296,7 +1302,15 @@ async function handleSendInviteToFriend(friendId: number) {
             </span>
             <div>
               <strong>{{ participant.username ?? `User ${participant.user_id}` }}</strong>
-              <span>{{ participant.self_mute ? t('common.status.muted') : t('common.status.connected') }}</span>
+              <span>
+                {{
+                  participant.self_mute
+                    ? t('common.status.muted')
+                    : remoteVoiceStreamByUserId.get(participant.user_id)?.speaking
+                      ? t('voice.speaking')
+                      : t('common.status.connected')
+                }}
+              </span>
             </div>
           </article>
         </div>

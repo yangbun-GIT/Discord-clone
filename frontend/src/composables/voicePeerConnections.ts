@@ -1,11 +1,13 @@
 import type { ShallowRef } from 'vue'
 
 import type { RemoteVoiceStream, VoiceIceServer, VoiceSignal, VoiceState } from '../types'
-import { screenTrackIsActive } from './voiceMedia'
+import { calculateRms, rmsToInputLevelPercent, screenTrackIsActive } from './voiceMedia'
 
 const PEER_RETRY_DELAY_MS = 1_000
 const MAX_PEER_RETRY_COUNT = 1
 const SIGNALING_STABLE_WAIT_MS = 2_000
+const REMOTE_SPEAKING_THRESHOLD = 12
+const REMOTE_SPEAKING_RELEASE_MS = 900
 
 type PeerKey = `${number}:${number}`
 
@@ -35,6 +37,12 @@ export type PeerEntry = {
   screenSender: RTCRtpSender | null
   screenTransceiver: RTCRtpTransceiver | null
   pendingCandidates: RTCIceCandidate[]
+}
+
+type RemoteSpeakingMonitor = {
+  context: AudioContext
+  intervalId: number
+  releaseTimer: number | null
 }
 
 interface VoicePeerRegistryOptions {
@@ -125,6 +133,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   const retryTimers = new Map<PeerKey, number>()
   const retryCounts = new Map<PeerKey, number>()
   const signalQueues = new Map<PeerKey, Promise<void>>()
+  const remoteSpeakingMonitors = new Map<PeerKey, RemoteSpeakingMonitor>()
 
   function isActivePeer(peer: Pick<PeerEntry, 'channelId'>) {
     return options.getActiveOptions()?.channelId === peer.channelId
@@ -156,6 +165,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     const peer = peers.get(key)
     if (!peer) return
     clearRetryTimer(key)
+    stopRemoteSpeakingMonitor(key)
     peer.connection.close()
     peer.stream.getTracks().forEach((track) => track.stop())
     peers.delete(key)
@@ -172,6 +182,59 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       sharingScreen: screenTrackIsActive(peer.stream),
       connectionState: peer.connection.connectionState,
     })
+  }
+
+  function setRemoteSpeaking(peer: PeerEntry, speaking: boolean) {
+    replaceRemoteStream(peer, { speaking })
+  }
+
+  function stopRemoteSpeakingMonitor(key: PeerKey) {
+    const monitor = remoteSpeakingMonitors.get(key)
+    if (!monitor) return
+    window.clearInterval(monitor.intervalId)
+    if (monitor.releaseTimer !== null) window.clearTimeout(monitor.releaseTimer)
+    void monitor.context.close().catch(() => {})
+    remoteSpeakingMonitors.delete(key)
+  }
+
+  function startRemoteSpeakingMonitor(peer: PeerEntry) {
+    const key = peerKey(peer.channelId, peer.userId)
+    if (remoteSpeakingMonitors.has(key) || !peer.stream.getAudioTracks().length) return
+    const AudioContextConstructor = window.AudioContext
+    if (!AudioContextConstructor) return
+
+    const context = new AudioContextConstructor()
+    const source = context.createMediaStreamSource(peer.stream)
+    const analyser = context.createAnalyser()
+    const samples = new Float32Array(512)
+    analyser.fftSize = 512
+    analyser.smoothingTimeConstant = 0
+    source.connect(analyser)
+
+    const monitor: RemoteSpeakingMonitor = {
+      context,
+      intervalId: 0,
+      releaseTimer: null,
+    }
+    monitor.intervalId = window.setInterval(() => {
+      if (!peers.has(key) || !isActivePeer(peer)) return
+      analyser.getFloatTimeDomainData(samples)
+      const level = rmsToInputLevelPercent(calculateRms(samples))
+      if (level >= REMOTE_SPEAKING_THRESHOLD) {
+        if (monitor.releaseTimer !== null) {
+          window.clearTimeout(monitor.releaseTimer)
+          monitor.releaseTimer = null
+        }
+        setRemoteSpeaking(peer, true)
+        return
+      }
+      if (monitor.releaseTimer !== null) return
+      monitor.releaseTimer = window.setTimeout(() => {
+        monitor.releaseTimer = null
+        setRemoteSpeaking(peer, false)
+      }, REMOTE_SPEAKING_RELEASE_MS)
+    }, 120)
+    remoteSpeakingMonitors.set(key, monitor)
   }
 
   function schedulePeerRetry(peer: PeerEntry) {
@@ -269,6 +332,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (!stream.getTracks().includes(event.track)) {
         stream.addTrack(event.track)
       }
+      if (event.track.kind === 'audio') startRemoteSpeakingMonitor(peer)
       event.track.addEventListener('ended', () => refreshRemoteStream(peer))
       event.track.addEventListener('mute', () => refreshRemoteStream(peer))
       event.track.addEventListener('unmute', () => refreshRemoteStream(peer))
@@ -454,6 +518,9 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     retryTimers.forEach((timer) => window.clearTimeout(timer))
     retryTimers.clear()
     retryCounts.clear()
+    for (const key of remoteSpeakingMonitors.keys()) {
+      stopRemoteSpeakingMonitor(key)
+    }
     for (const key of peers.keys()) {
       closePeer(key)
     }

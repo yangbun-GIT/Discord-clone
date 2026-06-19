@@ -270,12 +270,17 @@ gain to reduce sustained-syllable chopping. A later voice-quality pass added the
 MIT-licensed `@sapphi-red/web-noise-suppressor` dependency and inserts its
 RNNoise AudioWorklet/WASM processor before the local gain/gate chain when the
 browser supports 48 kHz AudioWorklet processing. The input sensitivity gate now
-uses RMS/time-domain envelope sampling instead of frequency-bin averages, holds
-open longer for sustained vowels, and exposes one combined input-level/threshold
-track in User Settings and the bottom microphone popover. The local VAD remains
-diagnostic-only for speaking state and no longer owns the public input-level meter.
-Focused frontend voice media tests, frontend lint, and production build passed.
-Real sustained-vowel and fan/wind-noise listening remains a manual gate.
+uses RMS/time-domain envelope sampling from a pre-gate microphone level path
+instead of frequency-bin averages, holds open longer for sustained vowels, and
+attenuates softly instead of hard-cutting audio when the gate closes. The same
+input-level path now drives local speaking feedback directly, so the voice tile,
+sidebar voice channel, and bottom user card react when speech enters the mic.
+Remote WebRTC audio streams are also analyzed locally in
+`voicePeerConnections.ts`, updating remote `speaking` state for voice workspace
+cards. User Settings and the bottom microphone popover expose one combined
+input-level/threshold track. Focused frontend voice media tests, frontend lint,
+production build, and browser realtime smoke passed. Real sustained-vowel and
+fan/wind-noise listening remains a manual gate.
 
 Manual QA follow-up Stage M2 is implemented in code. Remote screen-sharing
 participants now render as one screen-share participant composition, and their

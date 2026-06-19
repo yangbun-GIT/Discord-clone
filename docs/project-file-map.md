@@ -483,8 +483,9 @@ For ordinary implementation work:
     from browser support plus user-selected echo/noise/gain settings.
   - Owns RNNoise AudioWorklet/WASM loading through
     `@sapphi-red/web-noise-suppressor`, microphone input volume, RMS-based input
-    level sampling, input sensitivity/noise gate, and input device selection
-    helpers used before WebRTC peer tracks are created.
+    level sampling from the pre-gate microphone path, soft input sensitivity/noise
+    gate behavior, and input device selection helpers used before WebRTC peer
+    tracks are created.
 - `frontend/src/composables/voiceMedia.test.ts`
   - Unit coverage for typed microphone/screen media error normalization and
     voice-processing/device-setting constraint generation plus RMS input-level
@@ -496,7 +497,8 @@ For ordinary implementation work:
 - `frontend/src/composables/voicePeerConnections.ts`
   - Channel-scoped peer connection registry, offer/answer/ICE handling, pending
     candidate queueing, stale-signal filtering, remote stream tracking,
-    participant sync, screen-share state signaling, retry, and peer renegotiation.
+    participant sync, remote received-audio speaking detection, screen-share state
+    signaling, retry, and peer renegotiation.
 - `frontend/src/composables/voiceStats.ts`
   - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`;
     consumes channel-scoped peer registry entries.

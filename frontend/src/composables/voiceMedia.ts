@@ -8,6 +8,8 @@ const VOICE_PROCESSING_SETTINGS_KEY = 'discord_clone_voice_processing_settings'
 const VOICE_DEVICE_SETTINGS_KEY = 'discord_clone_voice_device_settings'
 const SILENCE_DB = -64
 const SPEECH_REFERENCE_DB = -18
+const GATE_HOLD_MS = 4_800
+const GATE_ATTENUATED_GAIN = 0.38
 
 type RnnoiseNode = AudioNode & { destroy: () => void }
 
@@ -346,6 +348,7 @@ export async function createVoiceInputProcessor(
   const highpass = context.createBiquadFilter()
   const compressor = context.createDynamicsCompressor()
   const inputGain = context.createGain()
+  const levelGain = context.createGain()
   const gateGain = context.createGain()
   const analyser = context.createAnalyser()
   const destination = context.createMediaStreamDestination()
@@ -372,6 +375,8 @@ export async function createVoiceInputProcessor(
   gateGain.gain.value = 1
 
   source.connect(highpass)
+  highpass.connect(levelGain)
+  levelGain.connect(analyser)
   if (rnnoiseNode) {
     highpass.connect(rnnoiseNode)
     rnnoiseNode.connect(compressor)
@@ -381,11 +386,11 @@ export async function createVoiceInputProcessor(
   compressor.connect(inputGain)
   inputGain.connect(gateGain)
   gateGain.connect(destination)
-  inputGain.connect(analyser)
 
   function applySettings(nextSettings: VoiceDeviceSettings) {
     settings = normalizeVoiceDeviceSettings(nextSettings)
     inputGain.gain.setTargetAtTime(settings.inputVolume / 100, context.currentTime, 0.025)
+    levelGain.gain.setTargetAtTime(settings.inputVolume / 100, context.currentTime, 0.025)
     if (!settings.noiseGate) {
       gateOpen = true
       gateGain.gain.setTargetAtTime(1, context.currentTime, 0.025)
@@ -417,16 +422,16 @@ export async function createVoiceInputProcessor(
     releaseTimer = window.setTimeout(() => {
       releaseTimer = null
       gateOpen = false
-      gateGain.gain.setTargetAtTime(0.03, context.currentTime, 0.22)
-    }, 1800)
+      gateGain.gain.setTargetAtTime(GATE_ATTENUATED_GAIN, context.currentTime, 0.55)
+    }, GATE_HOLD_MS)
   }
 
   function tickGate() {
     const level = inputLevel()
     options.onInputLevel?.(level)
     if (!settings.noiseGate) return
-    const openThreshold = settings.inputSensitivity
-    const closeThreshold = Math.max(4, settings.inputSensitivity - 16)
+    const openThreshold = Math.max(5, settings.inputSensitivity - 10)
+    const closeThreshold = Math.max(3, settings.inputSensitivity - 28)
     if (level >= openThreshold) {
       openGate()
       return

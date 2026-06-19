@@ -26,6 +26,7 @@ const props = defineProps<{
   connectedVoiceChannelId: number | null
   currentUserId: number | null
   localSpeaking: boolean
+  inputLevel: number
   muted: boolean
   deafened: boolean
   canCreateInvite: boolean
@@ -356,6 +357,9 @@ onBeforeUnmount(() => {
           connected: connectedVoiceChannelId === channel.id,
           speaking: connectedVoiceChannelId === channel.id && localSpeaking,
         }"
+        :style="connectedVoiceChannelId === channel.id
+          ? { '--voice-channel-input-level': `${Math.min(100, Math.max(0, inputLevel))}%` }
+          : undefined"
         :aria-current="channel.id === activeChannelId ? 'page' : undefined"
         data-context-kind="voice-channel"
         :data-context-label="channel.name"
@@ -431,6 +435,7 @@ onBeforeUnmount(() => {
               v-if="connectedVoiceChannelId === channel.id"
               class="voice-sidebar-member self"
               :class="{ speaking: localSpeaking }"
+              :style="{ '--voice-channel-input-level': `${Math.min(100, Math.max(0, inputLevel))}%` }"
             >
               <span class="voice-member-avatar">{{ voiceMemberInitials(t('channel.you')) }}</span>
               <span class="voice-member-copy">

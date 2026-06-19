@@ -754,8 +754,8 @@ Browser UI
     - Typed microphone/screen capture errors, local voice-processing preferences,
       local voice device preferences, browser-supported audio constraint detection,
       RNNoise AudioWorklet/WASM setup through `@sapphi-red/web-noise-suppressor`,
-      microphone input volume, RMS-based input-level sampling,
-      sensitivity/noise-gate processing, and media-track cleanup.
+      microphone input volume, pre-gate RMS-based input-level sampling,
+      soft sensitivity/noise-gate processing, and media-track cleanup.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:
@@ -777,7 +777,8 @@ Browser UI
       offer/answer/ICE handling, pending ICE candidate queueing, stale signal
       filtering, bounded failed-peer retry, reserved video transceivers for screen
       sharing, explicit screen-share state signal handling, remote screen-track
-      state refresh, and participant synchronization.
+      state refresh, remote received-audio speaking detection, and participant
+      synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:

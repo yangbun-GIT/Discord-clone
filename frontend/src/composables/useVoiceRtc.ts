@@ -30,7 +30,6 @@ import {
   type ConnectOptions,
 } from './voicePeerConnections'
 import { createEmptyQualityStats, createVoiceStatsCollector } from './voiceStats'
-import { createVoiceVad } from './voiceVad'
 
 const localStream = shallowRef<MediaStream | null>(null)
 const screenStream = shallowRef<MediaStream | null>(null)
@@ -47,10 +46,10 @@ const voiceDeviceSettings = ref<VoiceDeviceSettings>(readVoiceDeviceSettings())
 const voiceDevices = ref<VoiceDeviceList>({ inputs: [], outputs: [] })
 const qualityStats = ref<VoiceQualityStats>(createEmptyQualityStats())
 const voiceStatsCollector = createVoiceStatsCollector()
-const voiceVad = createVoiceVad({ inputLevel, localSpeaking, updateInputLevel: false })
 let activeOptions: ConnectOptions | null = null
 let statsTimer: number | null = null
 let inputProcessor: VoiceInputProcessor | null = null
+let localSpeakingReleaseTimer: number | null = null
 
 const peerRegistry = createVoicePeerRegistry({
   remoteStreams,
@@ -101,11 +100,10 @@ export function useVoiceRtc() {
         inputProcessor = await createVoiceInputProcessor(rawStream, voiceDeviceSettings.value, {
           onInputLevel: (level) => {
             inputLevel.value = level
+            updateLocalSpeakingFromInput(level)
           },
         })
         localStream.value = inputProcessor.stream
-        voiceVad.attach(localStream.value)
-        voiceVad.start()
         void refreshVoiceDevices()
       }
       isCapturing.value = true
@@ -136,9 +134,10 @@ export function useVoiceRtc() {
     isMuted.value = false
     isScreenSharing.value = false
     inputLevel.value = 0
+    clearLocalSpeakingReleaseTimer()
+    localSpeaking.value = false
     errorCode.value = null
     activeOptions = null
-    voiceVad.close()
     stopStatsLoop()
   }
 
@@ -162,6 +161,10 @@ export function useVoiceRtc() {
   function setMuted(muted: boolean) {
     isMuted.value = muted
     setAudioTracksMuted(localStream.value, muted)
+    if (muted) {
+      clearLocalSpeakingReleaseTimer()
+      localSpeaking.value = false
+    }
   }
 
   function toggleMute() {
@@ -243,6 +246,31 @@ export function useVoiceRtc() {
     window.removeEventListener('pagehide', handlePageHide)
     disconnect()
   })
+
+  function clearLocalSpeakingReleaseTimer() {
+    if (localSpeakingReleaseTimer === null) return
+    window.clearTimeout(localSpeakingReleaseTimer)
+    localSpeakingReleaseTimer = null
+  }
+
+  function updateLocalSpeakingFromInput(level: number) {
+    if (isMuted.value || !isCapturing.value) {
+      clearLocalSpeakingReleaseTimer()
+      localSpeaking.value = false
+      return
+    }
+    const threshold = Math.max(8, voiceDeviceSettings.value.inputSensitivity - 12)
+    if (level >= threshold) {
+      clearLocalSpeakingReleaseTimer()
+      localSpeaking.value = true
+      return
+    }
+    if (!localSpeaking.value || localSpeakingReleaseTimer !== null) return
+    localSpeakingReleaseTimer = window.setTimeout(() => {
+      localSpeakingReleaseTimer = null
+      localSpeaking.value = false
+    }, 850)
+  }
 
   return {
     localStream,

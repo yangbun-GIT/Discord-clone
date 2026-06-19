@@ -102,6 +102,12 @@ Verification:
 - `npm --prefix frontend run test -- --run src/composables/voiceMedia.test.ts`
   passed.
 - `npm --prefix frontend run build` passed.
+- 2026-06-20 follow-up: the input-level meter now samples before RNNoise/gate
+  attenuation, local speaking feedback is driven directly from that RMS input
+  level, the sensitivity gate uses a longer hold plus soft attenuation instead of
+  hard cutting, and remote received-audio streams update remote speaking feedback.
+  Frontend lint, frontend tests, production build, and
+  `npm run smoke:realtime:browser` passed.
 - Real sustained-vowel listening remains a manual gate because fake-device tests do
   not prove speech quality.
 
