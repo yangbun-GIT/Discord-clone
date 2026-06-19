@@ -754,10 +754,12 @@ Browser UI
   - Owns:
     - Typed microphone/screen capture errors, local voice-processing preferences,
       local voice device preferences, browser-supported audio constraint detection,
-      RNNoise AudioWorklet/WASM setup through `@sapphi-red/web-noise-suppressor`,
-      microphone input volume, pre-gate RMS-based input-level sampling,
-      optional soft sensitivity/noise-gate processing, sustained-input stable
-      defaults, one-time default setting migration, and media-track cleanup.
+      selectable denoiser setup before WebRTC transmission: off baseline, RNNoise
+      and SpeexDSP preprocess through `@sapphi-red/web-noise-suppressor`, and
+      DTLN/LiteRT through `@workadventure/noise-suppression`.
+    - Microphone input volume, pre-gate RMS-based input-level sampling, optional
+      soft sensitivity/noise-gate processing, sustained-input stable defaults,
+      one-time default setting migration, and media-track cleanup.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:

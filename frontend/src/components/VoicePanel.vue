@@ -105,10 +105,15 @@ function handleNoiseGateChange(event: Event) {
   emit('updateVoiceDeviceSettings', { noiseGate: target.checked })
 }
 
-function handleRnnoiseChange(event: Event) {
+function handleNoiseSuppressionModeChange(event: Event) {
   const target = event.target
-  if (!(target instanceof HTMLInputElement)) return
-  emit('updateVoiceDeviceSettings', { rnnoiseSuppression: target.checked })
+  if (!(target instanceof HTMLSelectElement)) return
+  const mode = target.value
+  if (mode !== 'off' && mode !== 'rnnoise' && mode !== 'speex' && mode !== 'dtln') return
+  emit('updateVoiceDeviceSettings', {
+    noiseSuppressionMode: mode,
+    rnnoiseSuppression: mode === 'rnnoise',
+  })
 }
 
 function openSettings() {
@@ -252,13 +257,17 @@ onBeforeUnmount(() => {
           />
           <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
         </label>
-        <label class="voice-device-toggle">
-          <span>{{ t('settings.rnnoiseSuppression') }}</span>
-          <input
-            type="checkbox"
-            :checked="voiceDeviceSettings.rnnoiseSuppression"
-            @change="handleRnnoiseChange"
-          />
+        <label class="voice-device-field">
+          <span>{{ t('settings.noiseSuppressionEngine') }}</span>
+          <select
+            :value="voiceDeviceSettings.noiseSuppressionMode"
+            @change="handleNoiseSuppressionModeChange"
+          >
+            <option value="off">{{ t('settings.noiseSuppressionOff') }}</option>
+            <option value="rnnoise">{{ t('settings.rnnoiseSuppression') }}</option>
+            <option value="speex">{{ t('settings.speexSuppression') }}</option>
+            <option value="dtln">{{ t('settings.dtlnSuppression') }}</option>
+          </select>
         </label>
         <label class="voice-device-toggle">
           <span>{{ t('settings.noiseGate') }}</span>

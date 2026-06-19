@@ -172,6 +172,7 @@ describe('voice processing settings', () => {
       inputSensitivity: 41.4,
       noiseGate: false,
       rnnoiseSuppression: false,
+      noiseSuppressionMode: 'off',
     })
 
     expect(readVoiceDeviceSettings()).toEqual({
@@ -182,6 +183,7 @@ describe('voice processing settings', () => {
       inputSensitivity: 41,
       noiseGate: false,
       rnnoiseSuppression: false,
+      noiseSuppressionMode: 'off',
     })
   })
 
@@ -194,8 +196,43 @@ describe('voice processing settings', () => {
       inputSensitivity: 38,
       noiseGate: false,
       rnnoiseSuppression: false,
+      noiseSuppressionMode: 'off',
     })).toMatchObject({
       deviceId: { exact: 'mic-selected' },
+    })
+  })
+
+  it('migrates legacy RNNoise boolean settings into the selectable engine mode', () => {
+    globalThis.localStorage.setItem('discord_clone_voice_device_stability_migrated', '1')
+    globalThis.localStorage.setItem('discord_clone_voice_device_settings', JSON.stringify({
+      inputVolume: 82,
+      outputVolume: 100,
+      inputSensitivity: 38,
+      noiseGate: false,
+      rnnoiseSuppression: true,
+    }))
+
+    expect(readVoiceDeviceSettings()).toMatchObject({
+      rnnoiseSuppression: true,
+      noiseSuppressionMode: 'rnnoise',
+    })
+  })
+
+  it('persists the selected denoiser candidate independently from the legacy RNNoise flag', () => {
+    writeVoiceDeviceSettings({
+      inputDeviceId: null,
+      outputDeviceId: null,
+      inputVolume: 82,
+      outputVolume: 100,
+      inputSensitivity: 38,
+      noiseGate: false,
+      rnnoiseSuppression: false,
+      noiseSuppressionMode: 'dtln',
+    })
+
+    expect(readVoiceDeviceSettings()).toMatchObject({
+      rnnoiseSuppression: false,
+      noiseSuppressionMode: 'dtln',
     })
   })
 })

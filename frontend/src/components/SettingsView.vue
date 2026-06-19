@@ -181,11 +181,14 @@ function handleNoiseGateChange(event: Event) {
   })
 }
 
-function handleRnnoiseChange(event: Event) {
+function handleNoiseSuppressionModeChange(event: Event) {
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
+  const mode = target.value
+  if (mode !== 'off' && mode !== 'rnnoise' && mode !== 'speex' && mode !== 'dtln') return
   emit('updateVoiceDeviceSettings', {
-    rnnoiseSuppression: target.checked,
+    noiseSuppressionMode: mode,
+    rnnoiseSuppression: mode === 'rnnoise',
   })
 }
 </script>
@@ -467,17 +470,60 @@ function handleRnnoiseChange(event: Event) {
               </span>
             </label>
           </div>
-          <label class="settings-toggle">
-            <span>
-              <strong>{{ t('settings.rnnoiseSuppression') }}</strong>
-              <small>{{ t('settings.rnnoiseSuppressionDescription') }}</small>
-            </span>
-            <input
-              type="checkbox"
-              :checked="voiceDeviceSettings.rnnoiseSuppression"
-              @change="handleRnnoiseChange"
-            />
-          </label>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.noiseSuppressionEngine')">
+            <label>
+              <input
+                type="radio"
+                name="noise-suppression-mode"
+                value="off"
+                :checked="voiceDeviceSettings.noiseSuppressionMode === 'off'"
+                @change="handleNoiseSuppressionModeChange"
+              />
+              <span>
+                <strong>{{ t('settings.noiseSuppressionOff') }}</strong>
+                <small>{{ t('settings.noiseSuppressionOffDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="noise-suppression-mode"
+                value="rnnoise"
+                :checked="voiceDeviceSettings.noiseSuppressionMode === 'rnnoise'"
+                @change="handleNoiseSuppressionModeChange"
+              />
+              <span>
+                <strong>{{ t('settings.rnnoiseSuppression') }}</strong>
+                <small>{{ t('settings.rnnoiseSuppressionDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="noise-suppression-mode"
+                value="speex"
+                :checked="voiceDeviceSettings.noiseSuppressionMode === 'speex'"
+                @change="handleNoiseSuppressionModeChange"
+              />
+              <span>
+                <strong>{{ t('settings.speexSuppression') }}</strong>
+                <small>{{ t('settings.speexSuppressionDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="noise-suppression-mode"
+                value="dtln"
+                :checked="voiceDeviceSettings.noiseSuppressionMode === 'dtln'"
+                @change="handleNoiseSuppressionModeChange"
+              />
+              <span>
+                <strong>{{ t('settings.dtlnSuppression') }}</strong>
+                <small>{{ t('settings.dtlnSuppressionDescription') }}</small>
+              </span>
+            </label>
+          </div>
           <label class="settings-toggle">
             <span>
               <strong>{{ t('settings.noiseGate') }}</strong>

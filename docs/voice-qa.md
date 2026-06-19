@@ -193,11 +193,13 @@ Known 2026-06-19 real-device issue:
 - A 2026-06-20 remediation added app-level input/output device settings, input
   volume, output volume, input sensitivity, and a local Web Audio sensitivity gate
   before WebRTC peer tracks are created.
-- A later 2026-06-20 remediation added RNNoise noise reduction through
-  `@sapphi-red/web-noise-suppressor` and replaced frequency-bin gate detection with
-  RMS/time-domain envelope detection. Treat real voice completion as blocked until
-  a manual speech-quality pass confirms this solves fan/wind pickup without
-  reintroducing sustained-vowel chopping.
+- A later 2026-06-20 remediation added selectable client-side denoiser candidates
+  before WebRTC transmission. The stable default remains `Off`; optional candidates
+  are RNNoise and SpeexDSP preprocess from `@sapphi-red/web-noise-suppressor`, plus
+  DTLN/LiteRT AudioWorklet from `@workadventure/noise-suppression`. Treat real voice
+  completion as blocked until a manual speech-quality pass compares these options
+  against fan/wind pickup, keyboard noise, CPU cost, latency, and sustained-vowel
+  chopping.
 
 Stage M1 remediation note:
 
@@ -213,16 +215,17 @@ Stage M1 remediation note:
   public input-level meter, gate outgoing microphone audio, or disable outgoing
   microphone audio.
 - The post-M10 voice settings pass adds a separate Web Audio processing path:
-  RNNoise noise reduction when AudioWorklet/WASM is available, high-pass filtering,
-  light compression, microphone input volume, and adjustable sensitivity/noise gate.
-  The gate is controlled through User Settings -> Voice & Video or the bottom
-  microphone quick popover.
+  selectable denoiser engines when AudioWorklet/WASM is available, high-pass
+  filtering, light compression, microphone input volume, and adjustable
+  sensitivity/noise gate. The selected denoiser engine is controlled through User
+  Settings -> Voice & Video or the bottom microphone quick popover.
 - The input sensitivity control overlays the current input level and transmission
   threshold on the same track. If the level bar stays below the thumb, the gate
   will eventually close. If the level bar stays above the thumb during a sustained
   vowel, the gate should remain open.
 - Lower sensitivity if long vowels are chopped; raise sensitivity if fan/wind noise
-  opens the microphone too often. Keep RNNoise enabled for normal testing.
+  opens the microphone too often. Keep the denoiser engine set to `Off` for the
+  baseline test, then compare RNNoise, SpeexDSP, and DTLN one at a time.
 - Output volume and supported output-device routing are applied to remote audio
   sinks through the bottom headphones quick popover or User Settings -> Voice &
   Video.
@@ -231,10 +234,10 @@ Current sustained-vowel QA:
 
 1. Open User Settings -> Voice & Video.
 2. Select Speech stability.
-3. Confirm RNNoise noise reduction and Noise Gate are on, set Input Volume near
-   80%, and start Input Sensitivity around 30-40%.
-4. Leave and rejoin the voice channel if the input device or audio-processing
-   preset changed.
+3. Set the denoiser engine to `Off`, keep Noise Gate off for the baseline, set
+   Input Volume near 80%, and start Input Sensitivity around 30-40%.
+4. Leave and rejoin the voice channel if the input device, denoiser engine, or
+   audio-processing preset changed.
 5. Say a single vowel continuously for at least 10 seconds.
 6. Watch the combined input-level/sensitivity track. If the sustained sound is
    chopped while the level bar is above the thumb, record it as a gate bug. If the
@@ -244,7 +247,12 @@ Current sustained-vowel QA:
 7. Repeat with a normal Korean sentence and a short English sentence.
 8. If sustained audio is still chopped after sensitivity tuning, test Balanced and
    Near raw, leaving and rejoining after each preset change.
-9. Record only pass/fail notes and visible quality stats. Do not record raw audio,
+9. Compare denoiser engines in this order: Off baseline, RNNoise, SpeexDSP, DTLN.
+   Leave and rejoin after each denoiser change. Record whether fan/wind noise,
+   keyboard noise, speech naturalness, sustained vowels, and perceived delay improve
+   or degrade. If DTLN causes high CPU, long startup, or unstable audio, switch back
+   to Off or RNNoise before continuing the call.
+10. Record only pass/fail notes and visible quality stats. Do not record raw audio,
    device labels, ICE candidates, TURN credentials, or user tokens.
 
 ## Call Recording QA 2026-06-19

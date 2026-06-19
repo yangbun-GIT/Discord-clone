@@ -2051,6 +2051,19 @@ Completed Stage 2 bridge work:
   apply the same outside-click/Escape dismissal policy to composer and message
   option panels. Frontend lint, tests, production build, and browser smoke for the
   voice quick-settings outside-click behavior passed.
+- Added selectable denoiser candidate support without changing the default
+  communication path. `voiceMedia.ts` now treats client-side denoising as an
+  optional pre-WebRTC input processor with four modes: Off baseline, RNNoise,
+  SpeexDSP preprocess, and WorkAdventure DTLN/LiteRT AudioWorklet. Existing
+  `rnnoiseSuppression` preferences migrate to the RNNoise mode, while new default
+  and migrated stability settings remain Off so current stable microphone behavior
+  is preserved. Denoiser mode changes apply on the next voice join to avoid
+  replacing tracks or renegotiating active calls. `SettingsView.vue` and
+  `VoicePanel.vue` expose the same candidate selector, `vite.config.ts` registers
+  the WorkAdventure worklet plugin, and `docs/voice-qa.md` now defines manual A/B
+  comparison steps for fan/wind noise, keyboard noise, sustained vowels,
+  naturalness, CPU cost, and latency. Frontend lint, tests, and production build
+  passed; real audio quality comparison remains manual.
 
 After each stage or meaningful feature:
 

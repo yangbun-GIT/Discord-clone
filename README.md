@@ -130,9 +130,10 @@ restarts.
 WebRTC voice uses `WEBRTC_ICE_SERVERS_JSON` from the backend environment. The default
 STUN server is enough for local development; deployed voice should use a TURN provider
 such as Open Relay or Metered Video.
-Voice controls support microphone mute, input/output device preferences, RNNoise
-noise reduction when browser AudioWorklet/WASM support is available, combined
-input-level/sensitivity feedback, and screen sharing.
+Voice controls support microphone mute, input/output device preferences, selectable
+free client-side denoiser candidates (off, RNNoise, SpeexDSP preprocess, and DTLN
+AudioWorklet when browser support is available), combined input-level/sensitivity
+feedback, and screen sharing.
 Screen sharing uses the browser display-capture permission prompt and works only while
 connected to a voice channel.
 The backend voice metadata also reports whether TURN is configured, and the voice

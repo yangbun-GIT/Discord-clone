@@ -1,6 +1,8 @@
 import rnnoiseWasmPath from '@sapphi-red/web-noise-suppressor/rnnoise.wasm?url'
 import rnnoiseSimdWasmPath from '@sapphi-red/web-noise-suppressor/rnnoise_simd.wasm?url'
 import rnnoiseWorkletPath from '@sapphi-red/web-noise-suppressor/rnnoiseWorklet.js?url'
+import speexWasmPath from '@sapphi-red/web-noise-suppressor/speex.wasm?url'
+import speexWorkletPath from '@sapphi-red/web-noise-suppressor/speexWorklet.js?url'
 
 const MEDIA_PERMISSION_TIMEOUT_MS = 30_000
 const VOICE_CONSTRAINT_SUPPORT_KEY = 'discord_clone_voice_constraint_support'
@@ -12,7 +14,8 @@ const SPEECH_REFERENCE_DB = -18
 const GATE_CLOSE_DELAY_MS = 650
 const GATE_ATTENUATED_GAIN = 0.06
 
-type RnnoiseNode = AudioNode & { destroy: () => void }
+export type VoiceNoiseSuppressionMode = 'off' | 'rnnoise' | 'speex' | 'dtln'
+type VoiceNoiseSuppressionNode = AudioNode & { destroy?: () => void; dispose?: () => void }
 
 type ExtendedMediaTrackSupportedConstraints = MediaTrackSupportedConstraints & {
   latency?: boolean
@@ -62,6 +65,7 @@ export interface VoiceDeviceSettings {
   inputSensitivity: number
   noiseGate: boolean
   rnnoiseSuppression: boolean
+  noiseSuppressionMode: VoiceNoiseSuppressionMode
 }
 
 export interface VoiceDeviceOption {
@@ -123,6 +127,7 @@ export function defaultVoiceDeviceSettings(): VoiceDeviceSettings {
     inputSensitivity: 38,
     noiseGate: false,
     rnnoiseSuppression: false,
+    noiseSuppressionMode: 'off',
   }
 }
 
@@ -342,8 +347,10 @@ export async function createVoiceInputProcessor(
   }
 
   let context: AudioContext
+  const initialNoiseMode = normalizeVoiceDeviceSettings(initialSettings).noiseSuppressionMode
+  const preferredSampleRate = initialNoiseMode === 'dtln' ? 16_000 : 48_000
   try {
-    context = new AudioContextConstructor({ sampleRate: 48_000 })
+    context = new AudioContextConstructor({ sampleRate: preferredSampleRate })
   } catch {
     context = new AudioContextConstructor()
   }
@@ -361,9 +368,7 @@ export async function createVoiceInputProcessor(
   let releaseTimer: number | null = null
   let intervalId: number | null = null
   let smoothedLevel = 0
-  const rnnoiseNode = settings.rnnoiseSuppression
-    ? await createRnnoiseNode(context)
-    : null
+  const noiseSuppressionNode = await createNoiseSuppressionNode(context, settings.noiseSuppressionMode)
 
   highpass.type = 'highpass'
   highpass.frequency.value = 90
@@ -380,9 +385,9 @@ export async function createVoiceInputProcessor(
   source.connect(highpass)
   highpass.connect(levelGain)
   levelGain.connect(analyser)
-  if (rnnoiseNode) {
-    highpass.connect(rnnoiseNode)
-    rnnoiseNode.connect(compressor)
+  if (noiseSuppressionNode) {
+    highpass.connect(noiseSuppressionNode)
+    noiseSuppressionNode.connect(compressor)
   } else {
     highpass.connect(compressor)
   }
@@ -464,7 +469,8 @@ export async function createVoiceInputProcessor(
     close: () => {
       if (intervalId !== null) window.clearInterval(intervalId)
       if (releaseTimer !== null) window.clearTimeout(releaseTimer)
-      rnnoiseNode?.destroy()
+      noiseSuppressionNode?.destroy?.()
+      noiseSuppressionNode?.dispose?.()
       stopMediaStream(rawStream)
       stopMediaStream(destination.stream)
       void context.close().catch(() => {})
@@ -565,20 +571,56 @@ function normalizeVoiceDeviceSettings(settings: Partial<VoiceDeviceSettings>): V
     rnnoiseSuppression: typeof settings.rnnoiseSuppression === 'boolean'
       ? settings.rnnoiseSuppression
       : defaults.rnnoiseSuppression,
+    noiseSuppressionMode: normalizeNoiseSuppressionMode(settings, defaults.noiseSuppressionMode),
   }
 }
 
 function migrateStabilityDefaults(settings: Partial<VoiceDeviceSettings>) {
   const storage = getLocalStorage()
   if (!storage || storage.getItem(VOICE_DEVICE_STABILITY_MIGRATION_KEY)) return
+  if (settings.noiseSuppressionMode) {
+    try {
+      storage.setItem(VOICE_DEVICE_STABILITY_MIGRATION_KEY, '1')
+    } catch {
+      // Migration is best-effort; explicit user settings still normalize below.
+    }
+    return
+  }
   settings.noiseGate = false
   settings.rnnoiseSuppression = false
+  settings.noiseSuppressionMode = 'off'
   try {
     storage.setItem(VOICE_DEVICE_STABILITY_MIGRATION_KEY, '1')
     storage.setItem(VOICE_DEVICE_SETTINGS_KEY, JSON.stringify(normalizeVoiceDeviceSettings(settings)))
   } catch {
     // Migration is best-effort; defaults still apply for new sessions.
   }
+}
+
+function normalizeNoiseSuppressionMode(
+  settings: Partial<VoiceDeviceSettings>,
+  fallback: VoiceNoiseSuppressionMode,
+): VoiceNoiseSuppressionMode {
+  if (
+    settings.noiseSuppressionMode === 'off'
+    || settings.noiseSuppressionMode === 'rnnoise'
+    || settings.noiseSuppressionMode === 'speex'
+    || settings.noiseSuppressionMode === 'dtln'
+  ) {
+    return settings.noiseSuppressionMode
+  }
+  if (settings.rnnoiseSuppression === true) return 'rnnoise'
+  return fallback
+}
+
+async function createNoiseSuppressionNode(
+  context: AudioContext,
+  mode: VoiceNoiseSuppressionMode,
+): Promise<VoiceNoiseSuppressionNode | null> {
+  if (mode === 'rnnoise') return createRnnoiseNode(context)
+  if (mode === 'speex') return createSpeexNode(context)
+  if (mode === 'dtln') return createDtlnNode(context)
+  return null
 }
 
 async function createRnnoiseNode(context: AudioContext) {
@@ -593,7 +635,38 @@ async function createRnnoiseNode(context: AudioContext) {
     return new RnnoiseWorkletNode(context, {
       wasmBinary,
       maxChannels: 1,
-    }) as RnnoiseNode
+    }) as VoiceNoiseSuppressionNode
+  } catch {
+    return null
+  }
+}
+
+async function createSpeexNode(context: AudioContext) {
+  if (!context.audioWorklet) return null
+  try {
+    const { loadSpeex, SpeexWorkletNode } = await import('@sapphi-red/web-noise-suppressor')
+    const wasmBinary = await loadSpeex({ url: speexWasmPath })
+    await context.audioWorklet.addModule(speexWorkletPath)
+    return new SpeexWorkletNode(context, {
+      wasmBinary,
+      maxChannels: 1,
+    }) as VoiceNoiseSuppressionNode
+  } catch {
+    return null
+  }
+}
+
+async function createDtlnNode(context: AudioContext) {
+  if (!context.audioWorklet || context.sampleRate !== 16_000) return null
+  try {
+    const { createNoiseSuppressionAudioWorklet } = await import('@workadventure/noise-suppression/audio-worklet')
+    const worklet = await createNoiseSuppressionAudioWorklet(context, {
+      bypassUntilReady: true,
+      threads: false,
+    })
+    return Object.assign(worklet.node, {
+      dispose: () => worklet.dispose(),
+    }) as VoiceNoiseSuppressionNode
   } catch {
     return null
   }

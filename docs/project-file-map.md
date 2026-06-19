@@ -492,11 +492,13 @@ For ordinary implementation work:
   - Defaults the speech-stability path to minimal browser auto-processing for
     sustained input stability, and migrates default RNNoise/gate settings off so
     noise reduction and sensitivity gating remain explicit user choices.
-  - Owns RNNoise AudioWorklet/WASM loading through
-    `@sapphi-red/web-noise-suppressor`, microphone input volume, RMS-based input
-    level sampling from the pre-gate microphone path, optional soft input
-    sensitivity/noise gate behavior, and input device selection helpers used
-    before WebRTC peer tracks are created.
+  - Owns selectable denoiser candidate loading before WebRTC peer tracks are
+    created: off baseline, RNNoise and SpeexDSP preprocess through
+    `@sapphi-red/web-noise-suppressor`, and DTLN/LiteRT through
+    `@workadventure/noise-suppression`.
+  - Owns microphone input volume, RMS-based input-level sampling from the pre-gate
+    microphone path, optional soft input sensitivity/noise gate behavior, and input
+    device selection helpers used before WebRTC peer tracks are created.
 - `frontend/src/composables/voiceMedia.test.ts`
   - Unit coverage for typed microphone/screen media error normalization and
     voice-processing/device-setting constraint generation plus RMS input-level
@@ -546,9 +548,9 @@ For ordinary implementation work:
     dev scripts, HTTPS LAN dev script, and the official Playwright devDependency
     used by the root realtime browser smoke.
 - `frontend/vite.config.ts`
-  - Vite config, backend/gateway dev proxy config, and optional HTTPS LAN
-    certificate loading through `VITE_HTTPS_KEY_FILE` and
-    `VITE_HTTPS_CERT_FILE`.
+  - Vite config, backend/gateway dev proxy config, WorkAdventure DTLN AudioWorklet
+    plugin registration, and optional HTTPS LAN certificate loading through
+    `VITE_HTTPS_KEY_FILE` and `VITE_HTTPS_CERT_FILE`.
 - `frontend/scripts/ensureHttpsCertEnv.mjs`
   - Validates local HTTPS LAN certificate environment variables before running the
     Vite HTTPS LAN dev server.
