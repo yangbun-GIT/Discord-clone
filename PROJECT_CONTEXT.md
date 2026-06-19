@@ -2063,6 +2063,10 @@ Completed Stage 2 bridge work:
   `SettingsView.vue` and `VoicePanel.vue`. `docs/voice-qa.md` now defines manual
   Off-versus-RNNoise comparison steps for fan/wind noise, keyboard noise,
   sustained vowels, naturalness, CPU cost, and latency.
+- Moved the user settings close control out of the scrollable settings panel and
+  into the fixed workspace topbar in `App.vue`, so Settings can be closed from
+  the right side of the `User Settings` header regardless of the current scroll
+  position.
 
 After each stage or meaningful feature:
 

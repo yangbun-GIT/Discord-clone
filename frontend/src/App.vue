@@ -997,6 +997,16 @@ async function handleSendInviteToFriend(friendId: number) {
             <small>{{ workspaceSubtitle }}</small>
           </span>
         </div>
+        <button
+          v-if="navigation.destination === 'settings'"
+          class="topbar-icon-button settings-topbar-close"
+          type="button"
+          :title="t('settings.close')"
+          :aria-label="t('settings.close')"
+          @click="navigation.closeSettings"
+        >
+          <X :size="18" aria-hidden="true" />
+        </button>
         <div v-if="isServerDestination" class="channel-header-tools" :aria-label="t('app.header.channelTools')">
           <button
             class="topbar-icon-button"

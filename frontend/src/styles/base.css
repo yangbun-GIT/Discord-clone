@@ -1582,6 +1582,20 @@ select:focus-visible {
   background: rgb(255 255 255 / 5%);
 }
 
+.settings-topbar-close {
+  flex: 0 0 auto;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: transparent;
+}
+
+.settings-topbar-close:hover,
+.settings-topbar-close:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
 .channel-header-panel {
   position: absolute;
   z-index: var(--layer-popover);
@@ -2081,7 +2095,7 @@ select:focus-visible {
 .settings-panel-header {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 18px;
   margin-bottom: 22px;
 }
@@ -2101,23 +2115,6 @@ select:focus-visible {
 .settings-card p {
   color: #9ca3af;
   line-height: 1.45;
-}
-
-.settings-close-button {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 999px;
-  color: #cbd5e1;
-  background: transparent;
-}
-
-.settings-close-button:hover,
-.settings-close-button:focus-visible {
-  color: #ffffff;
-  background: rgb(255 255 255 / 10%);
 }
 
 .settings-section-grid {

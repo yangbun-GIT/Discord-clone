@@ -13,7 +13,6 @@ import {
   Shield,
   Volume2,
   UserRound,
-  X,
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
@@ -231,15 +230,6 @@ function handleNoiseSuppressionModeChange(event: Event) {
         <div>
           <h1 :id="`settings-${activePanel}`">{{ activePanelLabel }}</h1>
         </div>
-        <button
-          type="button"
-          class="settings-close-button"
-          :title="t('settings.close')"
-          :aria-label="t('settings.close')"
-          @click="$emit('close')"
-        >
-          <X :size="20" aria-hidden="true" />
-        </button>
       </header>
 
       <div v-if="activePanel === 'account'" class="settings-section-grid">
