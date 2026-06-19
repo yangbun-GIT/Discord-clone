@@ -21,6 +21,18 @@ Run:
 npm run smoke:realtime:browser
 ```
 
+If the Docker HTTPS LAN stack is running, Vite serves HTTPS only on port `5173`.
+Use the HTTPS smoke instead of the default HTTP smoke:
+
+```powershell
+npm run smoke:realtime:browser:https
+```
+
+For manual local browser checks in that mode, open `https://localhost:5173` or
+`https://127.0.0.1:5173`. `http://localhost:5173` and `http://127.0.0.1:5173`
+will disconnect with an empty response because the server is not speaking HTTP on
+that port.
+
 Optional endpoints:
 
 ```powershell

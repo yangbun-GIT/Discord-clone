@@ -114,12 +114,20 @@ Use this when the local stack is running through Docker Compose.
    npm run docker:up:https:detached
    ```
 
-4. Open `https://<host-ip>:5173` from the notebook.
+4. Open `https://localhost:5173` or `https://127.0.0.1:5173` on the development
+   PC, and `https://<host-ip>:5173` from the notebook. Do not use `http://...` on
+   port `5173` while this stack is running; the frontend is HTTPS-only in this
+   mode and HTTP tabs will disconnect with an empty response.
 5. Confirm `https://<host-ip>:5173/api/health` works and the browser shows a secure
    origin before testing microphone, voice join, mute/unmute, screen sharing, and
    gateway reconnect.
 6. If media is still blocked, check certificate trust on the notebook and confirm
    the certificate SAN matches the URL host exactly.
+7. For same-PC automated verification in this mode, run:
+
+   ```powershell
+   npm run smoke:realtime:browser:https
+   ```
 
 ## TURN / NAT Test
 

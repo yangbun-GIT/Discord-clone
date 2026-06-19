@@ -4,8 +4,12 @@ import os from 'node:os'
 const require = createRequire(new URL('../frontend/package.json', import.meta.url))
 const { chromium } = require('playwright')
 
-const APP_URL = process.env.APP_URL ?? 'http://127.0.0.1:5173'
+const USE_HTTPS_APP = process.env.SMOKE_HTTPS === '1'
+const APP_URL = process.env.APP_URL ?? (USE_HTTPS_APP ? 'https://127.0.0.1:5173' : 'http://127.0.0.1:5173')
 const REST_BASE = process.env.REST_BASE ?? 'http://127.0.0.1:8000'
+const IGNORE_HTTPS_ERRORS =
+  process.env.SMOKE_IGNORE_HTTPS_ERRORS === '1'
+  || (USE_HTTPS_APP && APP_URL.startsWith('https://'))
 const CHROME_EXECUTABLE =
   process.env.CHROME_EXECUTABLE
   ?? (os.platform() === 'win32'
@@ -40,6 +44,7 @@ async function createDevSession(username, userId) {
 
 async function createPage(browser, session) {
   const context = await browser.newContext({
+    ignoreHTTPSErrors: IGNORE_HTTPS_ERRORS,
     permissions: ['microphone'],
     viewport: { width: 1366, height: 768 },
   })

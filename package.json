@@ -15,6 +15,7 @@
     "docker:logs": "docker compose logs -f",
     "check:voice:readiness": "node scripts/voice_readiness_check.mjs",
     "smoke:realtime:browser": "node scripts/realtime_browser_smoke.mjs",
+    "smoke:realtime:browser:https": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$env:SMOKE_HTTPS='1'; $env:SMOKE_IGNORE_HTTPS_ERRORS='1'; npm run smoke:realtime:browser\"",
     "smoke:realtime:redis": ".\\.venv\\Scripts\\python.exe scripts\\realtime_redis_smoke.py",
     "lint:backend": "cd backend && ..\\.venv\\Scripts\\python -m ruff check app tests",
     "lint:frontend": "npm --prefix frontend run lint",

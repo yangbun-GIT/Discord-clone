@@ -2073,6 +2073,12 @@ Completed Stage 2 bridge work:
   a host-IP certificate plus `lan-dev-root-ca.cer` trust file, and README/voice/
   deployment docs now route microphone and screen-capture LAN testing through
   `https://<host-ip>:5173` instead of blocked `http://<host-ip>:5173` media.
+- Added HTTPS-mode local verification routing: while `npm run docker:up:https` or
+  `npm run docker:up:https:detached` is active, Vite serves HTTPS only on port
+  `5173`, so local tabs must use `https://localhost:5173` or
+  `https://127.0.0.1:5173`. The browser smoke script now supports that mode
+  through `npm run smoke:realtime:browser:https`; plain HTTP smoke remains for the
+  normal non-HTTPS dev stack.
 
 After each stage or meaningful feature:
 
