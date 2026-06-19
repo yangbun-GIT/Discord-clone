@@ -213,8 +213,8 @@
 - 재점검 후 Discord에 가깝게 수정했다.
 - Deafen을 켜면:
   - 원격 참가자 소리가 로컬에서 들리지 않는다.
-  - 내 마이크 track도 비활성화되어 송출되지 않는다.
-  - 수동 mute 버튼은 비활성화된다.
+  - 내 마이크 track은 소리 차단만으로 비활성화되지 않는다.
+  - 수동 mute 버튼은 소리 차단 중에도 활성 상태로 유지된다.
   - 화면 공유는 계속 가능하다.
 - Deafen을 끄면:
   - 원격 오디오가 다시 들린다.
@@ -228,9 +228,11 @@
 - 확인된 값:
   - `remoteAudioMutedWhileDeafened: true`
   - `remoteAudioUnmutedAfterUndeafen: true`
-  - `localMicrophoneMutedWhileDeafened: true`
+  - `localMicrophoneOpenWhileDeafened: true`
+  - `localMicrophoneMutedByMuteWhileDeafened: true`
+  - `localMicrophoneUnmutedWhileStillDeafened: true`
   - `localMicrophoneRestoredAfterUndeafen: true`
-  - `muteButtonDisabledWhileDeafened: true`
+  - `muteButtonEnabledWhileDeafened: true`
 
 남은 확인:
 

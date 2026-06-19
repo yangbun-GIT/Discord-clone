@@ -462,17 +462,19 @@ Tasks:
    - Completed: browser smoke toggles undeafen and verifies remote audio elements
      become unmuted without reconnecting.
 4. Keep microphone mute semantics separate from deafen semantics.
-   - Corrected after recheck: the first implementation muted only remote playback.
-     Deafen now also disables the local microphone track like Discord, remembers
-     the pre-deafen manual mute state, restores that state on undeafen, and keeps
-     the manual mute button disabled while deafened.
+   - Corrected after user recheck: deafen now only mutes local playback of remote
+     audio. The manual microphone mute button remains enabled while deafened and
+     independently controls the local microphone track.
 5. Keep screen sharing independent from deafen.
    - Completed after recheck: deafen no longer disables the screen-share button.
 
 Acceptance:
 
 - With deafen enabled, user does not hear remote participants.
-- With deafen enabled, the local microphone does not transmit.
+- With deafen enabled, the local microphone continues to follow the separate
+  microphone mute state instead of being implicitly disabled.
+- While deafened, the microphone button can still mute and unmute the local
+  microphone track.
 - Remote participants do not lose their connection because one user deafened.
 - UI communicates deafen state clearly in bottom panel and voice workspace.
 
@@ -483,9 +485,12 @@ Verification:
 - `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
   `remoteAudioMutedWhileDeafened: true` and
   `remoteAudioUnmutedAfterUndeafen: true`.
-- Recheck verification passed with `localMicrophoneMutedWhileDeafened: true`,
+- Recheck verification was updated after the independent-control fix to require
+  `localMicrophoneOpenWhileDeafened: true`,
+  `localMicrophoneMutedByMuteWhileDeafened: true`,
+  `localMicrophoneUnmutedWhileStillDeafened: true`,
   `localMicrophoneRestoredAfterUndeafen: true`, and
-  `muteButtonDisabledWhileDeafened: true`.
+  `muteButtonEnabledWhileDeafened: true`.
 
 ### Stage M10: Invite Permission Browser QA
 

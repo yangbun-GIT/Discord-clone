@@ -165,10 +165,12 @@ cover these items.
    and outbound bitrate.
 6. Toggle mute/unmute on each side and confirm audio state is reflected on the other
    side.
-7. Toggle deafen on one side and confirm both expected Discord-like effects:
+7. Toggle deafen on one side and confirm the independent control behavior:
    - The deafened user cannot hear remote participants.
-   - The deafened user's microphone no longer transmits until undeafen restores the
-     previous manual mute state.
+   - The deafened user's microphone remains controlled only by the separate
+     mute/unmute button.
+   - While deafened, mute/unmute still toggles the local microphone track without
+     changing the deafen state.
    - Screen sharing remains available while deafened.
 8. Refresh one client while the other remains connected and confirm:
    - The refreshed client returns to the same voice workspace.

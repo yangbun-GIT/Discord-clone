@@ -160,7 +160,7 @@ const connectionDetailLabel = computed(() => {
           :title="muted ? t('voice.unmute') : t('voice.mute')"
           :aria-label="muted ? t('voice.unmute') : t('voice.mute')"
           :aria-pressed="muted"
-          :disabled="!connected || deafened"
+          :disabled="!connected"
           @click="$emit('toggleMute')"
         >
           <MicOff v-if="muted" :size="17" aria-hidden="true" />

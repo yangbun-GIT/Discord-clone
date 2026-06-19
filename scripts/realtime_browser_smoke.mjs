@@ -302,7 +302,7 @@ async function run() {
 
     await clickVoiceAction(pageA.page, /Deafen/i)
     await pageA.page.waitForFunction(
-      () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'true',
+      () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'false',
       null,
       { timeout: 10_000 },
     )
@@ -317,15 +317,33 @@ async function run() {
     const remoteAudioMutedWhileDeafened = await pageA.page.locator('.voice-audio-sinks audio').evaluateAll((audios) =>
       audios.length >= 1 && audios.every((audio) => audio.muted),
     )
-    const localMicrophoneMutedWhileDeafened = await pageA.page
+    const localMicrophoneOpenWhileDeafened = await pageA.page
       .locator('.app-shell')
-      .getAttribute('data-local-microphone-muted') === 'true'
-    const muteButtonDisabledWhileDeafened = await pageA.page.evaluate(() => {
+      .getAttribute('data-local-microphone-muted') === 'false'
+    const muteButtonEnabledWhileDeafened = await pageA.page.evaluate(() => {
       const buttons = [...document.querySelectorAll('button')]
         .filter((button) => /unmute microphone|mute microphone/i.test(button.getAttribute('aria-label') ?? ''))
         .filter((button) => Boolean(button.offsetParent))
-      return buttons.length >= 1 && buttons.every((button) => button.disabled)
+      return buttons.length >= 1 && buttons.every((button) => !button.disabled)
     })
+    await clickVoiceAction(pageA.page, /Mute microphone/i)
+    await pageA.page.waitForFunction(
+      () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'true',
+      null,
+      { timeout: 10_000 },
+    )
+    const localMicrophoneMutedByMuteWhileDeafened = await pageA.page
+      .locator('.app-shell')
+      .getAttribute('data-local-microphone-muted') === 'true'
+    await clickVoiceAction(pageA.page, /Unmute microphone/i)
+    await pageA.page.waitForFunction(
+      () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'false',
+      null,
+      { timeout: 10_000 },
+    )
+    const localMicrophoneUnmutedWhileStillDeafened = await pageA.page
+      .locator('.app-shell')
+      .getAttribute('data-local-microphone-muted') === 'false'
     await clickVoiceAction(pageA.page, /Undeafen/i)
     await pageA.page.waitForFunction(
       () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'false',
@@ -422,9 +440,11 @@ async function run() {
       deafenPressed: deafenPressed === 'true',
       remoteAudioMutedWhileDeafened,
       remoteAudioUnmutedAfterUndeafen,
-      localMicrophoneMutedWhileDeafened,
+      localMicrophoneOpenWhileDeafened,
+      localMicrophoneMutedByMuteWhileDeafened,
+      localMicrophoneUnmutedWhileStillDeafened,
       localMicrophoneRestoredAfterUndeafen,
-      muteButtonDisabledWhileDeafened,
+      muteButtonEnabledWhileDeafened,
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
       localScreenPreviewVideos,
       remoteScreenVideos,
@@ -455,9 +475,11 @@ async function run() {
       || !result.deafenPressed
       || !result.remoteAudioMutedWhileDeafened
       || !result.remoteAudioUnmutedAfterUndeafen
-      || !result.localMicrophoneMutedWhileDeafened
+      || !result.localMicrophoneOpenWhileDeafened
+      || !result.localMicrophoneMutedByMuteWhileDeafened
+      || !result.localMicrophoneUnmutedWhileStillDeafened
       || !result.localMicrophoneRestoredAfterUndeafen
-      || !result.muteButtonDisabledWhileDeafened
+      || !result.muteButtonEnabledWhileDeafened
       || !result.fakeScreenShareVisible
       || result.localScreenPreviewVideos < 1
       || result.remoteScreenVideos < 1

@@ -459,9 +459,9 @@ Browser UI
   - Owns:
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
       invite-DM delivery, owner/member invite permission UI/API behavior, voice
-      peer visibility, remote audio sink, mute/deafen including local microphone
-      track suppression while deafened, fake screen-share UI, local screen-preview
-      rendering, remote screen-video rendering, screen-share stop cleanup,
+      peer visibility, remote audio sink, independent mute/deafen behavior, fake
+      screen-share UI, local screen-preview rendering, remote screen-video
+      rendering, screen-share stop cleanup,
       connected-tab reload rejoin recovery, and voice leave cleanup paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
@@ -822,8 +822,8 @@ Browser UI
     stats plus typed media-error copy from `frontend/src/App.vue`.
   - Emits join/leave/mute/screen-share/retry/settings actions to
     `frontend/src/App.vue`.
-  - Keeps screen sharing available while deafened and disables the manual mute
-    control while deafen owns local microphone suppression.
+  - Keeps screen sharing and manual microphone mute available while deafened so
+    deafen only controls local playback of remote audio.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.

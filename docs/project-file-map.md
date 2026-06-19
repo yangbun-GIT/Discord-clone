@@ -49,9 +49,9 @@ For ordinary implementation work:
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
     friend relationship, and a DM, then verifies invite-DM delivery, server text,
     DM, owner/member invite permission UI, voice peer visibility, remote audio
-    sink, mute/deafen including local microphone track suppression while deafened,
-    fake screen-share paths, local screen-preview rendering, remote screen-video
-    rendering, screen-share stop cleanup, server-channel reload retention,
+    sink, independent mute/deafen behavior, fake screen-share paths, local
+    screen-preview rendering, remote screen-video rendering, screen-share stop
+    cleanup, server-channel reload retention,
     connected voice-workspace reload retention, connected-tab automatic voice
     rejoin recovery, and voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
@@ -393,7 +393,8 @@ For ordinary implementation work:
   - Server member list and role/member controls.
 - `frontend/src/components/VoicePanel.vue`
   - Voice-channel workspace, participant tiles, screen-share state, and controls.
-  - Disables manual mute while deafened while keeping screen sharing independent.
+  - Keeps manual microphone mute available while deafened so mute and deafen remain
+    independent.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Remote audio stream rendering and local deafen-to-audio-muted binding.
 - `frontend/src/components/VoiceVideoSink.vue`
@@ -460,8 +461,7 @@ For ordinary implementation work:
 - `frontend/src/composables/useVoiceRtc.ts`
   - Public WebRTC voice facade used by the app.
   - Composes media capture, VAD, peer registry, screen share, and stats modules.
-  - Exposes explicit local microphone mute state/setter for voice controls and
-    deafen orchestration.
+  - Exposes explicit local microphone mute state/setter for voice controls.
 - `frontend/src/composables/voiceMedia.ts`
   - Browser microphone/display capture helpers, native audio constraint support
     detection/storage, typed media error normalization, and media-track helpers.

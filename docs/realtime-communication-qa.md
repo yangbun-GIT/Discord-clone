@@ -141,6 +141,8 @@ Manual QA follow-up result:
   `/api/meta/voice.turn_configured` is `false`.
 - Deafen/소리 차단 does not currently satisfy user expectation; remote audio should
   be muted locally while deafen is active.
+- Latest deafen control rule: deafen mutes only remote playback locally.
+  Microphone mute remains a separate control and must keep working while deafened.
 - API-level owner/member invite permission was checked: owner invite creation
   returned `201`; normal member invite creation returned `403`. Browser
   visibility/disabled-state QA remains pending.

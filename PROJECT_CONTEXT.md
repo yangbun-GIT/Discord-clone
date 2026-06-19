@@ -312,9 +312,11 @@ from the modal, and verifies the recipient receives the invite code in DM realti
 
 Manual QA follow-up Stage M9 is implemented in code/docs. `VoiceAudioSink` now binds
 the local deafen state to remote audio element `muted`, so deafen blocks local
-playback without disconnecting peers or changing microphone mute semantics. Browser
-realtime smoke verifies remote audio is muted while deafened and restored after
-undeafen without rejoin.
+playback without disconnecting peers. Microphone mute remains a separate control:
+it stays available while deafened and independently controls the local microphone
+track. Browser realtime smoke verifies remote audio is muted while deafened, the
+local microphone stays open until the microphone button is pressed, mute/unmute
+works while deafened, and remote audio is restored after undeafen without rejoin.
 
 The app boots in two local modes:
 
@@ -1945,10 +1947,10 @@ Completed Stage 2 bridge work:
   friend-request tabs, DM display normalization, per-recipient invite DM delivery,
   Discord-like deafen behavior, and owner/member invite permission browser QA are
   covered by frontend tests and `scripts/realtime_browser_smoke.mjs`. The M9
-  recheck fixed the missing deafen microphone behavior: deafen now disables the
-  local microphone track, mutes remote playback locally, disables the manual mute
-  button while deafened, restores the previous manual mute state on undeafen, and
-  keeps screen sharing independent. Remaining release gates are real
+  recheck fixed deafen playback, and a later follow-up split deafen from microphone
+  mute: deafen now mutes remote playback locally, the microphone button remains
+  available while deafened, mute/unmute independently controls the local microphone
+  track, and screen sharing remains independent. Remaining release gates are real
   sustained-vowel microphone quality, real screen picker layout with multiple
   participants, different-PC HTTPS LAN media, and TURN/NAT internet voice with real
   credentials.
