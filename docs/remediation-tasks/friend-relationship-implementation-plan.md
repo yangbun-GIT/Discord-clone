@@ -360,6 +360,99 @@ Acceptance:
 - Same-PC two-browser smoke proves the full request-to-friend path.
 - Manual QA does not require seeded demo-only relationships.
 
+## Manual Two-Account QA Findings
+
+Date: 2026-06-19.
+
+Scenario:
+
+- User A was signed in at `http://localhost:5173`.
+- User B was signed in at `http://127.0.0.1:5173`.
+- A controlled B tab was also opened for repeatable QA because the originally
+  visible second Chrome profile was not exposed to the browser automation session.
+- No secrets, tokens, passwords, invite codes, ICE candidates, or private payloads
+  should be recorded from this workflow.
+
+Confirmed working behavior:
+
+- Existing DM threads can exchange messages between two real accounts.
+- DM unread count appears when the recipient is outside the DM view.
+- Server text messages persist and become visible to the second user after that
+  user has successfully joined the same server and opens the text channel.
+- A generated invite code can add user B to user A's server when the exact current
+  invite code is manually entered through the Join tab.
+
+New defects and implementation requirements:
+
+1. Friend request send is misleading.
+   - A can submit B's username and receives an app-owned success status.
+   - B's Pending tab does not show A's request; only seeded demo pending data is
+     shown.
+   - Required fix: Stage F1-F8 must turn the Add Friend success message into a real
+     backend mutation, incoming/outgoing pending state, and realtime update.
+2. Real users are mixed with demo-only friend data.
+   - Friends lists and pending lists still show seeded demo users as if they were
+     real account relationships.
+   - Required fix: relationship reads must distinguish real persisted
+     relationships from demo-only fixtures, and QA accounts must not depend on
+     seeded social rows.
+3. Server invite modal does not list real target users.
+   - User A's server invite dialog lists demo friends, not user B, because user B is
+     not a real friend.
+   - Required fix: once relationships are real, server invite targets must be backed
+     by the current accepted-friend list and must include searchable real users
+     allowed by product scope.
+4. Invite join success and failure feedback is insufficient.
+   - Joining with a stale or mismatched invite code gives no clear error.
+   - Joining with a valid invite code adds the server rail icon but does not
+     automatically move the user into the joined server or show a clear success
+     result.
+   - Required fix: Join must show app-owned validation errors, success state, and
+     route the user into the joined server by default.
+5. Server discovery is not a substitute for joining a real friend's server.
+   - Explore Servers creates predefined public/demo servers; it does not discover
+     or join user A's real server.
+   - Required fix: keep discovery separate from friend/server invite workflows and
+     avoid presenting Create-only discovery as a join path.
+6. Voice channel participation is blocked for the second account.
+   - After B joins A's server, B can select `voice-room`, but remains in selected /
+     preview / pre-join state.
+   - No clear Join action is available in that state, and A never sees B as a voice
+     participant.
+   - Required fix: voice channel click behavior must either immediately join or
+     expose one obvious app-owned Join action, then verify both users see each
+     other in the channel.
+7. Media permission handling needs manual-QA guidance.
+   - When the browser microphone permission is not answered, the app shows an
+     internal voice connection problem notice.
+   - Required fix: relationship/voice QA must document how to grant or deny
+     microphone permission and which result is expected in each path.
+8. Login password fields must not expose typed values to accessibility snapshots.
+   - During QA, the password textbox snapshot exposed the typed password value.
+   - Required fix: auth UI must use proper password input semantics and automated
+     QA must avoid logging password field values.
+9. New DM creation flow is not complete enough for relationship bootstrap.
+   - `대화 찾기 또는 시작하기` finds an existing DM.
+   - `새 다이렉트 메시지 시작` did not open a durable new-user selection flow in the
+     observed state.
+   - Required fix: after relationships are implemented, starting a DM must be
+     possible from accepted friend rows and from the start-conversation UI without
+     relying on pre-seeded DM threads.
+
+Additional acceptance criteria for Stage F8:
+
+- The two-browser relationship smoke must create two non-demo users, send a request,
+  accept it, start a DM, exchange one message each way, create or reuse a server
+  invite, join the invited server, and verify both users can reach the same text
+  and voice channel surfaces.
+- The smoke must fail if the receiver only sees seeded demo pending requests.
+- The smoke must fail if invite join succeeds but leaves the user in DM without
+  visible success feedback or a newly selectable server.
+- The smoke must fail if selecting a voice channel leaves the user in preview state
+  without a visible Join action.
+- Browser automation must not print passwords, tokens, message bodies, invite codes,
+  ICE candidates, TURN credentials, media device labels, or DM contents.
+
 ## Verification Checklist
 
 Minimum command suite before marking the feature complete:

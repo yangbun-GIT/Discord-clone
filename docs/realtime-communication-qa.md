@@ -87,6 +87,26 @@ Post-C9 remediation result:
   - `npm run smoke:realtime:browser`
   - `npm run smoke:realtime:redis`
 
+Manual two-account product-flow result:
+
+- Date: 2026-06-19.
+- Scope: same-PC Chrome tabs using user A at `localhost:5173` and user B at
+  `127.0.0.1:5173`.
+- Existing DM text exchange worked in both directions, including unread badge and
+  stored message visibility.
+- Valid invite-code join could add user B to user A's server, but success feedback
+  and automatic routing into the server were insufficient.
+- Stale or mismatched invite-code join did not expose a clear app-owned error.
+- Server text became visible after user B joined and user A opened the channel.
+- User B could select the shared voice channel, but stayed in selected/pre-join
+  state without a clear Join action; user A did not see user B as a voice
+  participant.
+- Browser microphone permission that was not answered produced an app-owned voice
+  problem notice, so real voice QA must explicitly include permission grant and
+  denial branches.
+- Related product-flow defects and implementation requirements are tracked in
+  `docs/remediation-tasks/friend-relationship-implementation-plan.md`.
+
 ## Manual Same-PC QA
 
 1. Open two isolated browser profiles.

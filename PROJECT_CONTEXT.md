@@ -173,6 +173,14 @@ voice workspace now opens from voice-channel selection/join paths, and the remot
 screen-share stage renders from the selected voice workspace when a live unmuted
 remote video track is present.
 
+A 2026-06-19 manual two-account browser QA pass found product-flow blockers that
+are now tracked in `docs/remediation-tasks/friend-relationship-implementation-plan.md`
+and summarized in `docs/realtime-communication-qa.md`: Add Friend still shows a
+local success message without creating an incoming request, server invite targets
+are demo friends rather than real accepted friends, invite join lacks clear
+success/error routing, and the second account can select but not clearly join the
+shared voice channel.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
