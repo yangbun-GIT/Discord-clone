@@ -1086,6 +1086,29 @@ Verification:
 - No microphone device smoke if feasible.
 - Local speaking indicator smoke.
 
+Result 2026-06-19:
+
+- Implemented browser-native microphone constraints, supported-constraint detection,
+  debug-safe constraint support storage, and typed media error normalization in
+  `frontend/src/composables/voiceMedia.ts`.
+- `useVoiceRtc()` now records constraint support before explicit voice join,
+  exposes typed media error codes, stops media on page hide/unmount/disconnect, and
+  keeps retry/leave behavior inside clone-owned UI.
+- `VoicePanel.vue` now renders app-owned voice error actions for retry, opening
+  voice settings, and leaving voice; `SettingsView.vue` displays supported native
+  audio processing without exposing device labels.
+- Added `frontend/src/composables/voiceMedia.test.ts` for permission/device/screen
+  error mapping.
+- Verification passed:
+  - `npm --prefix frontend run lint`
+  - `npm --prefix frontend run test`
+  - `npm --prefix frontend run build`
+  - Playwright with system Chrome, fake microphone, and explicit click path from
+    development login to `Study Hall / voice-room` voice join.
+- Permission-denied/no-device real browser UI checks remain manual because the
+  automated smoke uses fake media devices and must not be claimed as real audio
+  quality or real hardware coverage.
+
 ### Stage C6: WebRTC Peer Lifecycle Hardening
 
 Goal: make voice stable across joins, leaves, screen share, and participant changes.

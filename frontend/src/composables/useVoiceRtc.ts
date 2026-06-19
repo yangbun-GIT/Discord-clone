@@ -9,6 +9,11 @@ import type {
 import {
   captureDisplay,
   captureMicrophone,
+  getSupportedVoiceConstraints,
+  normalizeMediaError,
+  recordVoiceConstraintSupport,
+  type VoiceConstraintSupport,
+  type VoiceMediaErrorCode,
   setAudioTracksMuted,
   stopMediaStream,
 } from './voiceMedia'
@@ -28,6 +33,8 @@ const isScreenSharing = ref(false)
 const localSpeaking = ref(false)
 const inputLevel = ref(0)
 const error = ref<string | null>(null)
+const errorCode = ref<VoiceMediaErrorCode | null>(null)
+const constraintSupport = ref<VoiceConstraintSupport>(getSupportedVoiceConstraints())
 const qualityStats = ref<VoiceQualityStats>(createEmptyQualityStats())
 const voiceStatsCollector = createVoiceStatsCollector()
 const voiceVad = createVoiceVad({ inputLevel, localSpeaking })
@@ -65,11 +72,20 @@ function stopStatsLoop() {
 }
 
 export function useVoiceRtc() {
+  function handlePageHide() {
+    disconnect()
+  }
+
+  window.addEventListener('pagehide', handlePageHide)
+
   async function connect(options: ConnectOptions) {
     activeOptions = options
     error.value = null
+    errorCode.value = null
     try {
       if (!localStream.value) {
+        constraintSupport.value = getSupportedVoiceConstraints()
+        recordVoiceConstraintSupport(constraintSupport.value)
         localStream.value = await captureMicrophone()
         voiceVad.attach(localStream.value)
         voiceVad.start()
@@ -79,9 +95,11 @@ export function useVoiceRtc() {
       startStatsLoop()
       await syncParticipants(options.participants)
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : 'Voice capture failed'
+      const mediaError = normalizeMediaError(cause, 'microphone')
+      errorCode.value = mediaError.code
+      error.value = mediaError.message
       disconnect()
-      throw cause
+      throw mediaError
     }
   }
 
@@ -94,6 +112,7 @@ export function useVoiceRtc() {
     isCapturing.value = false
     isMuted.value = false
     isScreenSharing.value = false
+    errorCode.value = null
     activeOptions = null
     voiceVad.close()
     stopStatsLoop()
@@ -113,6 +132,7 @@ export function useVoiceRtc() {
       throw new Error('voice is not connected')
     }
     error.value = null
+    errorCode.value = null
     try {
       const displayStream = await captureDisplay()
       screenStream.value = displayStream
@@ -130,8 +150,10 @@ export function useVoiceRtc() {
       }
       await peerRegistry.renegotiateAllPeers()
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : 'Screen sharing failed'
-      throw cause
+      const mediaError = normalizeMediaError(cause, 'screen')
+      errorCode.value = mediaError.code
+      error.value = mediaError.message
+      throw mediaError
     }
   }
 
@@ -165,6 +187,7 @@ export function useVoiceRtc() {
   }
 
   onBeforeUnmount(() => {
+    window.removeEventListener('pagehide', handlePageHide)
     disconnect()
   })
 
@@ -178,6 +201,8 @@ export function useVoiceRtc() {
     localSpeaking,
     inputLevel,
     error,
+    errorCode,
+    constraintSupport,
     qualityStats,
     connect,
     disconnect,

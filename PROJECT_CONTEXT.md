@@ -854,6 +854,10 @@ The app boots in two local modes:
     renders remote audio through `VoiceAudioSink`, and tears down tracks/connections on
     disconnect.
   - Mute toggles local audio track enabled state without leaving the voice channel.
+  - Media capture now detects native browser audio constraint support, requests
+    supported echo cancellation/noise suppression/auto gain constraints, stores only
+    debug-safe support booleans, and normalizes permission/device/screen errors into
+    clone UI messages.
   - Screen sharing uses `getDisplayMedia()`, adds/removes a video sender on each
     active peer connection, renegotiates offers, and renders remote screen streams
     through `VoiceVideoSink`.
@@ -862,6 +866,9 @@ The app boots in two local modes:
   - While connected, `useVoiceRtc()` samples `RTCPeerConnection.getStats()` every two
     seconds and the voice panel displays connected peers, RTT, inbound audio jitter,
     inbound packet loss, outbound audio bitrate, and outbound screen-share bitrate.
+  - `VoicePanel.vue` owns retry/open-settings/leave actions for media permission
+    failures, and `SettingsView.vue` displays supported native audio processing
+    without exposing media device labels.
 - Realtime message flow:
   - `POST /api/channels/{channel_id}/messages` persists the sanitized message first.
   - `publish_message_create()` emits a `MESSAGE_CREATE` realtime event.

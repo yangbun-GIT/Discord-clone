@@ -39,6 +39,8 @@ defineEmits<{
   toggleMute: []
   toggleDeafen: []
   toggleScreen: []
+  retry: []
+  leave: []
   cycleStatus: []
   openSettings: []
 }>()
@@ -55,7 +57,11 @@ const presenceLabel = computed(() => {
 </script>
 
 <template>
-  <section class="voice-panel" :class="{ connected, speaking: localSpeaking }" :aria-label="t('voice.aria.controls')">
+  <section
+    class="voice-panel"
+    :class="{ connected, speaking: localSpeaking, error: Boolean(error) }"
+    :aria-label="t('voice.aria.controls')"
+  >
     <div
       v-if="connected"
       class="voice-connection-card"
@@ -98,6 +104,20 @@ const presenceLabel = computed(() => {
         </button>
       </div>
     </div>
+
+    <section v-if="error" class="voice-error-card" role="alert">
+      <div>
+        <strong>{{ t('voice.errorTitle') }}</strong>
+        <span>{{ error }}</span>
+      </div>
+      <div class="voice-error-actions">
+        <button type="button" @click="$emit('retry')">{{ t('voice.retryCapture') }}</button>
+        <button type="button" @click="$emit('openSettings')">{{ t('voice.openVoiceSettings') }}</button>
+        <button v-if="connected" type="button" class="danger" @click="$emit('leave')">
+          {{ t('voice.leaveSelected') }}
+        </button>
+      </div>
+    </section>
 
     <div class="user-panel" data-context-kind="user-panel" :data-context-label="currentUser?.username">
       <button

@@ -604,14 +604,18 @@ Browser UI
     - `frontend/src/App.vue`
     - `frontend/src/composables/useVoiceSessionController.ts`
   - Talks to:
-    - Browser `navigator.mediaDevices`, `RTCPeerConnection`, and WebRTC APIs.
+    - Browser `navigator.mediaDevices`, page lifecycle events, `RTCPeerConnection`,
+      and WebRTC APIs.
 
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
+    - `frontend/src/App.vue` for media error translation keys.
+    - `frontend/src/components/SettingsView.vue` for safe constraint-support display.
     - `frontend/src/composables/useVoiceRtc.ts`
     - `frontend/src/composables/voicePeerConnections.ts`
+    - `frontend/src/composables/voiceMedia.test.ts`
   - Talks to:
-    - Browser `navigator.mediaDevices`.
+    - Browser `navigator.mediaDevices`, `localStorage`, and media stream tracks.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:
@@ -680,14 +684,16 @@ Browser UI
   - Emits role/member actions to `frontend/src/App.vue`.
 - `frontend/src/components/VoicePanel.vue`
   - Receives selected voice channel, participants, current user, and voice quality
-    stats from `frontend/src/App.vue`.
-  - Emits join/leave/mute/screen-share actions to `frontend/src/App.vue`.
+    stats plus typed media-error copy from `frontend/src/App.vue`.
+  - Emits join/leave/mute/screen-share/retry/settings actions to
+    `frontend/src/App.vue`.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives remote audio stream from `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/VoiceVideoSink.vue`
   - Receives remote screen/video stream from `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/SettingsView.vue`
-  - Receives current user and status controls from `frontend/src/App.vue`.
+  - Receives current user, status controls, and debug-safe voice constraint support
+    from `frontend/src/App.vue`.
   - Emits locale/status/settings actions to `frontend/src/App.vue`.
 
 ## High-Risk Dependency Clusters

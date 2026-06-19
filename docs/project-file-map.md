@@ -381,7 +381,10 @@ For ordinary implementation work:
   - Public WebRTC voice facade used by the app.
   - Composes media capture, VAD, peer registry, screen share, and stats modules.
 - `frontend/src/composables/voiceMedia.ts`
-  - Browser microphone/display capture helpers and media-track helpers.
+  - Browser microphone/display capture helpers, native audio constraint support
+    detection/storage, typed media error normalization, and media-track helpers.
+- `frontend/src/composables/voiceMedia.test.ts`
+  - Unit coverage for typed microphone/screen media error normalization.
 - `frontend/src/composables/voiceVad.ts`
   - Local AudioContext/analyser voice activity detection and input-level sampling.
 - `frontend/src/composables/voicePeerConnections.ts`
@@ -474,7 +477,10 @@ For ordinary implementation work:
   - Backend: `backend/app/gateway/router.py`, `backend/app/gateway/manager.py`,
     `backend/app/api/routes/meta.py`, `backend/app/core/config.py`.
   - Frontend: `frontend/src/composables/useVoiceRtc.ts`,
+    `frontend/src/composables/voiceMedia.ts`,
+    `frontend/src/composables/voicePeerConnections.ts`,
     `frontend/src/components/VoicePanel.vue`,
+    `frontend/src/components/SettingsView.vue`,
     `frontend/src/components/VoiceAudioSink.vue`,
     `frontend/src/components/VoiceVideoSink.vue`,
     `frontend/src/components/ChannelSidebar.vue`.
@@ -491,8 +497,9 @@ For ordinary implementation work:
     `frontend/nginx.conf`, `docs/deployment.md`, `README.md`.
 - Test updates:
   - Backend tests live in `backend/tests`.
-  - Frontend currently relies on lint/build and browser smoke unless a future test
-    framework is added.
+  - Frontend unit tests live beside owner modules, for example
+    `frontend/src/composables/voiceMedia.test.ts`, and run through
+    `npm --prefix frontend run test`.
 
 ## Efficient Lookup Commands
 

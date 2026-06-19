@@ -38,6 +38,8 @@
   --topbar-height: 48px;
   --voice-panel-height: 68px;
   --voice-panel-height-connected: 122px;
+  --voice-panel-height-error: 146px;
+  --voice-panel-height-connected-error: 198px;
   --composer-min-height: 44px;
   --icon-button-size: 32px;
   --row-height: 42px;
@@ -263,6 +265,14 @@ select:focus-visible {
 
 .app-shell.voice-connected {
   grid-template-rows: minmax(0, 1fr) var(--voice-panel-height-connected);
+}
+
+.app-shell.voice-error {
+  grid-template-rows: minmax(0, 1fr) var(--voice-panel-height-error);
+}
+
+.app-shell.voice-connected.voice-error {
+  grid-template-rows: minmax(0, 1fr) var(--voice-panel-height-connected-error);
 }
 
 .app-shell.settings-mode {
@@ -4449,6 +4459,16 @@ select:focus-visible {
   background: var(--surface-sidebar);
 }
 
+.voice-panel.error {
+  min-height: var(--voice-panel-height-error);
+  max-height: var(--voice-panel-height-error);
+}
+
+.app-shell.voice-connected .voice-panel.error {
+  min-height: var(--voice-panel-height-connected-error);
+  max-height: var(--voice-panel-height-connected-error);
+}
+
 .voice-panel:not(.connected) {
   grid-template-rows: minmax(0, 1fr);
   align-content: end;
@@ -4687,6 +4707,65 @@ select:focus-visible {
   background: rgb(255 255 255 / 9%);
 }
 
+.voice-error-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgb(248 113 113 / 28%);
+  border-radius: 8px;
+  background: rgb(127 29 29 / 32%);
+  color: #fecaca;
+  padding: 9px;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 22%);
+}
+
+.voice-error-card div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.voice-error-card strong {
+  color: #fef2f2;
+  font-size: 0.78rem;
+}
+
+.voice-error-card span {
+  overflow: hidden;
+  color: #fecaca;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.voice-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.voice-error-actions button {
+  min-height: 28px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 8%);
+  padding: 0 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.voice-error-actions button:hover,
+.voice-error-actions button:focus-visible {
+  background: rgb(255 255 255 / 14%);
+}
+
+.voice-error-actions .danger {
+  color: #fecaca;
+  background: rgb(239 68 68 / 14%);
+}
+
 .voice-audio-sinks {
   position: fixed;
   width: 1px;
@@ -4769,6 +4848,11 @@ select:focus-visible {
     grid-template-rows: minmax(0, 1fr) var(--voice-panel-height);
   }
 
+  .app-shell.voice-error,
+  .app-shell.voice-connected.voice-error {
+    grid-template-rows: minmax(0, 1fr) var(--voice-panel-height-error);
+  }
+
   .channel-sidebar,
   .private-sidebar {
     display: none;
@@ -4803,6 +4887,13 @@ select:focus-visible {
     padding: 6px 10px;
   }
 
+  .voice-panel.error,
+  .app-shell.voice-connected .voice-panel.error {
+    min-height: var(--voice-panel-height-error);
+    max-height: var(--voice-panel-height-error);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .voice-actions {
     position: static;
   }
@@ -4815,6 +4906,10 @@ select:focus-visible {
   .voice-connection-card,
   .voice-connection-idle {
     display: none;
+  }
+
+  .voice-error-card span {
+    white-space: normal;
   }
 
   .voice-workspace-header {

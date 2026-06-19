@@ -37,7 +37,8 @@ import { useInviteController } from './composables/useInviteController'
 import { useVoiceRtc } from './composables/useVoiceRtc'
 import { useVoiceSessionController } from './composables/useVoiceSessionController'
 import { useWorkspaceController } from './composables/useWorkspaceController'
-import { useI18n } from './i18n'
+import type { VoiceMediaErrorCode } from './composables/voiceMedia'
+import { useI18n, type TranslationKey } from './i18n'
 import {
   addDocumentEventListener,
   getCurrentHref,
@@ -85,6 +86,10 @@ const voiceLocationSummary = computed(() => {
         ? t('voice.speaking')
         : t('common.status.connected')
   return `${guilds.connectedVoiceGuild.name} / ${guilds.connectedVoiceChannel.name} · ${state}`
+})
+const voiceErrorMessage = computed(() => {
+  if (!voiceRtc.errorCode.value) return voiceRtc.error.value
+  return t(voiceMediaErrorKey(voiceRtc.errorCode.value))
 })
 const isPrivateDestination = computed(() =>
   navigation.destination === 'friends' || navigation.destination === 'dm',
@@ -402,6 +407,58 @@ function handleLogout() {
   isDeafened.value = false
 }
 
+function voiceMediaErrorKey(errorCode: VoiceMediaErrorCode): TranslationKey {
+  switch (errorCode) {
+    case 'media-unsupported':
+      return 'voice.error.mediaUnsupported'
+    case 'insecure-context':
+      return 'voice.error.insecureContext'
+    case 'permission-denied':
+      return 'voice.error.permissionDenied'
+    case 'no-device':
+      return 'voice.error.noDevice'
+    case 'device-busy':
+      return 'voice.error.deviceBusy'
+    case 'constraints-unsatisfied':
+      return 'voice.error.constraints'
+    case 'permission-timeout':
+      return 'voice.error.permissionTimeout'
+    case 'screen-permission-denied':
+      return 'voice.error.screenPermissionDenied'
+    case 'screen-unavailable':
+      return 'voice.error.screenUnavailable'
+    case 'screen-timeout':
+      return 'voice.error.screenTimeout'
+    case 'unknown':
+    default:
+      return 'voice.error.unknown'
+  }
+}
+
+function handleRetryVoiceCapture() {
+  const code = voiceRtc.errorCode.value
+  if (code?.startsWith('screen') && guilds.voiceConnected) {
+    handleToggleScreenShare()
+    return
+  }
+  if (!guilds.voiceConnected) {
+    void handleToggleVoice()
+    return
+  }
+  const channelId = guilds.connectedVoiceChannelId
+  if (!channelId) return
+  disconnectVoice()
+  void handleJoinVoiceChannel(channelId)
+}
+
+function handleLeaveVoiceFromError() {
+  if (guilds.connectedVoiceChannelId) {
+    handleLeaveVoiceChannel(guilds.connectedVoiceChannelId)
+    return
+  }
+  voiceRtc.disconnect()
+}
+
 function handleSelectGuild(guildId: number) {
   clearWorkspaceNotice()
   activeHeaderPanel.value = null
@@ -661,6 +718,7 @@ async function copyInviteCode() {
     :class="{
       'settings-mode': navigation.destination === 'settings',
       'voice-connected': guilds.voiceConnected,
+      'voice-error': Boolean(voiceErrorMessage),
       'friends-mode': navigation.destination === 'friends',
     }"
     :data-gateway-status="gatewayStatus"
@@ -869,6 +927,7 @@ async function copyInviteCode() {
         :input-level="voiceRtc.inputLevel.value"
         :turn-configured="voiceTurnConfigured"
         :voice-connected="guilds.voiceConnected"
+        :constraint-support="voiceRtc.constraintSupport.value"
         @close="navigation.closeSettings"
         @logout="handleLogout"
       />
@@ -1114,11 +1173,13 @@ async function copyInviteCode() {
       :screen-sharing="voiceRtc.isScreenSharing.value"
       :quality-stats="voiceRtc.qualityStats.value"
       :turn-configured="voiceTurnConfigured"
-      :error="voiceRtc.error.value"
+      :error="voiceErrorMessage"
       @toggle="handleToggleVoice"
       @toggle-mute="handleToggleMute"
       @toggle-deafen="handleToggleDeafen"
       @toggle-screen="handleToggleScreenShare"
+      @retry="handleRetryVoiceCapture"
+      @leave="handleLeaveVoiceFromError"
       @cycle-status="cycleUserPresence"
       @open-settings="handleOpenUserSettings"
     />

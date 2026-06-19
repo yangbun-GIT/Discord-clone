@@ -106,6 +106,10 @@
   in the voice panel.
 - Call quality controls completed: microphone mute toggles local audio tracks and the
   voice panel shows an input-level meter.
+- Media permission hardening completed: microphone capture uses supported native
+  audio constraints, media failures map to typed clone UI messages, settings show
+  debug-safe audio-processing support, and page hide/unmount disconnects stop media
+  tracks.
 - Screen sharing completed: frontend captures display video with `getDisplayMedia`,
   adds/removes screen video senders on active peers, renegotiates offers, and renders
   remote screen-share video tiles with connection state.

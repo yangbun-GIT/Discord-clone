@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
+import type { VoiceConstraintSupport } from '../composables/voiceMedia'
 import type { User, UserPresenceStatus } from '../types'
 
 type SettingsPanel =
@@ -37,6 +38,7 @@ const props = defineProps<{
   inputLevel: number
   turnConfigured: boolean
   voiceConnected: boolean
+  constraintSupport: VoiceConstraintSupport
 }>()
 
 defineEmits<{
@@ -76,6 +78,14 @@ const statusLabel = computed(() => {
   if (props.userStatus === 'idle') return t('common.status.idle')
   if (props.userStatus === 'offline') return t('common.status.offline')
   return t('common.status.online')
+})
+const audioProcessingSummary = computed(() => {
+  const enabled = [
+    props.constraintSupport.echoCancellation ? t('settings.echoCancellation') : null,
+    props.constraintSupport.noiseSuppression ? t('settings.noiseSuppression') : null,
+    props.constraintSupport.autoGainControl ? t('settings.autoGainControl') : null,
+  ].filter(Boolean)
+  return enabled.length ? enabled.join(' / ') : t('common.status.unavailable')
 })
 </script>
 
@@ -212,6 +222,10 @@ const statusLabel = computed(() => {
             <div>
               <dt>{{ t('settings.ice') }}</dt>
               <dd>{{ turnConfigured ? t('voice.turnReady') : t('voice.stunOnly') }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('settings.audioProcessing') }}</dt>
+              <dd>{{ audioProcessingSummary }}</dd>
             </div>
           </dl>
         </section>
