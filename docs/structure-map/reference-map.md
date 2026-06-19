@@ -346,9 +346,9 @@ Browser UI
     - `backend/app/realtime/fanout.py`
     - `backend/tests/test_gateway_manager.py`
   - Owns:
-    - Gateway connection lifecycle cleanup, including voice leave fan-out when a
-      connection disconnects, is reaped as a zombie, or is removed after a stale
-      send failure.
+    - Gateway connection lifecycle cleanup, including recoverable voice-disconnect
+      grace for normal websocket closes and immediate voice leave fan-out when a
+      connection is reaped as a zombie or removed after a stale send failure.
     - Voice-state snapshot dispatch for READY and post-join synchronization.
 
 - `backend/app/gateway/connection.py`
@@ -370,6 +370,8 @@ Browser UI
     - `backend/app/gateway/manager.py`
   - `voice_service.py` owns the in-memory voice-state registry used to send
     authoritative `VOICE_STATE_SNAPSHOT` payloads to late-joining clients.
+  - `voice_service.py` also owns pending voice leave scheduling and cancellation
+    when the same guild user rejoins during the normal-disconnect grace window.
 
 - `backend/app/realtime/publisher.py`
   - References:

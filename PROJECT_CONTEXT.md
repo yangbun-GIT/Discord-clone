@@ -209,8 +209,11 @@ and remote screen tiles inside the selected voice workspace, clears remote scree
 tiles after stop, and extends `npm run smoke:realtime:browser` to verify local
 screen preview, remote screen rendering, screen-stop cleanup, and voice leave
 cleanup. Browser refresh still tears down the underlying WebRTC media tracks, but
-the client now uses same-user voice recovery metadata to rejoin the previous voice
-channel automatically after the gateway reconnects.
+the backend now keeps voice state through a short normal-disconnect grace window
+instead of immediately broadcasting leave, and the client uses same-user recovery
+metadata to rejoin the previous voice channel automatically after the gateway
+reconnects. Heartbeat timeout and stale-send cleanup still broadcast leave
+immediately.
 
 Friend relationship implementation is now backend-backed. The Friends Add Friend
 surface no longer relies on a local-only success message or hardcoded fallback
@@ -256,13 +259,17 @@ same-PC browser smoke now verifies exactly one remote sharing user's screen tile
 and zero duplicate remote participant cards, while preserving local screen preview
 and screen-stop cleanup.
 
-Manual QA follow-up Stage M3 is implemented in code. The voice session controller
-now stores safe same-user voice rejoin metadata, automatically rejoins the previous
-voice channel after a refreshed tab reconnects to the gateway, and keeps the
-app-owned rejoin notice as a fallback if microphone recovery fails. Normal leave
-and notice dismissal clear the recovery record. The browser realtime smoke now
-reloads a connected tab, verifies the voice panel returns to connected state, and
-confirms the other tab receives remote audio again after automatic rejoin.
+Manual QA follow-up Stage M3 is implemented in code. The gateway now treats normal
+voice websocket disconnects as recoverable for a short grace period, preserving the
+voice-state snapshot unless the user fails to reconnect or explicitly leaves.
+Heartbeat timeouts and stale gateway connections bypass the grace period and leave
+immediately. The voice session controller stores safe same-user voice rejoin
+metadata, automatically rejoins the previous voice channel after a refreshed tab
+reconnects to the gateway, and keeps the app-owned rejoin notice with Rejoin/Leave
+actions as a fallback if microphone recovery fails. Normal leave and notice
+dismissal clear the recovery record. The browser realtime smoke reloads a connected
+tab, verifies the voice panel returns to connected state, and confirms the other tab
+receives remote audio again after automatic rejoin.
 
 Manual QA follow-up Stage M4 is implemented in code/docs. `frontend/vite.config.ts`
 can start Vite over HTTPS when `VITE_HTTPS_KEY_FILE` and

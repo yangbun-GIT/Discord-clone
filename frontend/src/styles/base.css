@@ -1849,8 +1849,14 @@ select:focus-visible {
   background: #248046;
 }
 
-.voice-rejoin-actions button:not(.primary) {
+.voice-rejoin-actions button:not(.primary, .danger) {
   width: 30px;
+}
+
+.voice-rejoin-actions button.danger {
+  padding: 0 10px;
+  color: #ffffff;
+  background: #da373c;
 }
 
 .voice-rejoin-actions button:hover,
@@ -1862,6 +1868,11 @@ select:focus-visible {
 .voice-rejoin-actions button.primary:hover,
 .voice-rejoin-actions button.primary:focus-visible {
   background: #1a6334;
+}
+
+.voice-rejoin-actions button.danger:hover,
+.voice-rejoin-actions button.danger:focus-visible {
+  background: #a12828;
 }
 
 .content-grid {

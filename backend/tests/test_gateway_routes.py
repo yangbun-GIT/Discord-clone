@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
@@ -15,6 +14,14 @@ def identify_payload(token: str) -> dict[str, object]:
     return {"op": 2, "d": {"token": token, "os": "test", "library": "pytest"}}
 
 
+def receive_disconnect(websocket) -> WebSocketDisconnect:
+    while True:
+        try:
+            websocket.receive_json()
+        except WebSocketDisconnect as exc:
+            return exc
+
+
 def test_gateway_identify_rate_limit_closes_with_policy_code() -> None:
     reset_operation_limits()
     client = TestClient(app)
@@ -29,10 +36,9 @@ def test_gateway_identify_rate_limit_closes_with_policy_code() -> None:
     with client.websocket_connect("/gateway") as websocket:
         assert websocket.receive_json()["op"] == 10
         websocket.send_json(identify_payload(token))
-        with pytest.raises(WebSocketDisconnect) as exc_info:
-            websocket.receive_json()
+        exc_info = receive_disconnect(websocket)
 
-    assert exc_info.value.code == 4008
+    assert exc_info.code == 4008
     reset_operation_limits()
 
 
@@ -43,10 +49,9 @@ def test_gateway_rejects_invalid_identify_token() -> None:
     with client.websocket_connect("/gateway") as websocket:
         assert websocket.receive_json()["op"] == 10
         websocket.send_json(identify_payload("not-a-token"))
-        with pytest.raises(WebSocketDisconnect) as exc_info:
-            websocket.receive_json()
+        exc_info = receive_disconnect(websocket)
 
-    assert exc_info.value.code == 4001
+    assert exc_info.code == 4001
     reset_operation_limits()
 
 
@@ -69,10 +74,9 @@ def test_gateway_rejects_voice_state_for_unsubscribed_channel() -> None:
                 },
             }
         )
-        with pytest.raises(WebSocketDisconnect) as exc_info:
-            websocket.receive_json()
+        exc_info = receive_disconnect(websocket)
 
-    assert exc_info.value.code == 4003
+    assert exc_info.code == 4003
     reset_operation_limits()
 
 
@@ -96,8 +100,7 @@ def test_gateway_rejects_voice_signal_before_voice_join() -> None:
                 },
             }
         )
-        with pytest.raises(WebSocketDisconnect) as exc_info:
-            websocket.receive_json()
+        exc_info = receive_disconnect(websocket)
 
-    assert exc_info.value.code == 4003
+    assert exc_info.code == 4003
     reset_operation_limits()

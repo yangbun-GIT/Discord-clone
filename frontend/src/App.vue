@@ -1107,7 +1107,7 @@ async function handleSendInviteToFriend(friendId: number) {
         <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
           {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
         </div>
-        <div v-else-if="pendingVoiceRejoinSummary" class="voice-rejoin-notice" role="status">
+        <div v-if="pendingVoiceRejoinSummary" class="voice-rejoin-notice" role="status">
           <div>
             <strong>{{ t('voice.rejoinTitle') }}</strong>
             <span>
@@ -1124,12 +1124,13 @@ async function handleSendInviteToFriend(friendId: number) {
               <Radio :size="15" aria-hidden="true" />
               <span>{{ t('voice.rejoinAction') }}</span>
             </button>
-            <button type="button" :aria-label="t('voice.rejoinDismiss')" @click="dismissVoiceRejoin">
-              <X :size="14" aria-hidden="true" />
+            <button type="button" class="danger" :aria-label="t('voice.rejoinDismiss')" @click="dismissVoiceRejoin">
+              <PhoneOff :size="14" aria-hidden="true" />
+              <span>{{ t('voice.leaveSelected') }}</span>
             </button>
           </div>
         </div>
-        <div v-else-if="workspaceNotice" class="app-notice" :class="workspaceNoticeTone" role="status">
+        <div v-if="workspaceNotice" class="app-notice" :class="workspaceNoticeTone" role="status">
           <span>{{ workspaceNotice }}</span>
           <button type="button" :aria-label="t('common.close')" @click="clearWorkspaceNotice">
             <X :size="14" aria-hidden="true" />

@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Any
 
@@ -103,8 +104,8 @@ async def test_broadcast_channel_removes_send_failures() -> None:
     assert manager.size == 0
 
 
-async def test_disconnect_broadcasts_voice_leave_to_channel_subscribers() -> None:
-    manager = GatewayConnectionManager()
+async def test_disconnect_broadcasts_voice_leave_after_grace_to_channel_subscribers() -> None:
+    manager = GatewayConnectionManager(voice_disconnect_grace_seconds=0)
     leaver_websocket = FakeWebSocket()
     observer_websocket = FakeWebSocket()
     leaver = await manager.connect(leaver_websocket)  # type: ignore[arg-type]
@@ -120,6 +121,10 @@ async def test_disconnect_broadcasts_voice_leave_to_channel_subscribers() -> Non
 
     assert manager.size == 1
     assert leaver.voice_channel_id is None
+    assert observer_websocket.sent == []
+
+    await manager.drain_pending_voice_disconnects()
+
     assert observer_websocket.sent == [
         {
             "op": int(Opcode.DISPATCH),
@@ -135,6 +140,99 @@ async def test_disconnect_broadcasts_voice_leave_to_channel_subscribers() -> Non
             "t": "VOICE_STATE_UPDATE",
         }
     ]
+
+
+async def test_disconnect_voice_leave_is_cancelled_by_same_user_rejoin() -> None:
+    manager = GatewayConnectionManager(voice_disconnect_grace_seconds=0.01)
+    leaver_websocket = FakeWebSocket()
+    observer_websocket = FakeWebSocket()
+    rejoin_websocket = FakeWebSocket()
+    leaver = await manager.connect(leaver_websocket)  # type: ignore[arg-type]
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    leaver.user_id = 42
+    leaver.username = "yangbun"
+    leaver.voice_guild_id = 1001
+    leaver.voice_channel_id = 2003
+    leaver.channel_ids.add(2003)
+    observer.channel_ids.add(2003)
+
+    await manager.broadcast_voice_state(
+        previous_channel_id=None,
+        channel_id=2003,
+        data={
+            "guild_id": 1001,
+            "channel_id": 2003,
+            "user_id": 42,
+            "username": "yangbun",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    observer_websocket.sent.clear()
+
+    await manager.disconnect(leaver)
+    rejoin = await manager.connect(rejoin_websocket)  # type: ignore[arg-type]
+    rejoin.user_id = 42
+    rejoin.username = "yangbun"
+    rejoin.channel_ids.add(2003)
+    await manager.broadcast_voice_state(
+        previous_channel_id=None,
+        channel_id=2003,
+        data={
+            "guild_id": 1001,
+            "channel_id": 2003,
+            "user_id": 42,
+            "username": "yangbun",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    await asyncio.sleep(0.02)
+
+    leave_events = [
+        payload for payload in observer_websocket.sent
+        if payload.get("t") == "VOICE_STATE_UPDATE"
+        and isinstance(payload.get("d"), dict)
+        and payload["d"].get("channel_id") is None
+    ]
+    assert leave_events == []
+
+
+async def test_disconnect_voice_leave_is_skipped_when_same_user_connection_remains() -> None:
+    manager = GatewayConnectionManager(voice_disconnect_grace_seconds=0)
+    leaver_websocket = FakeWebSocket()
+    remaining_websocket = FakeWebSocket()
+    observer_websocket = FakeWebSocket()
+    leaver = await manager.connect(leaver_websocket)  # type: ignore[arg-type]
+    remaining = await manager.connect(remaining_websocket)  # type: ignore[arg-type]
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    for connection in (leaver, remaining):
+        connection.user_id = 42
+        connection.username = "yangbun"
+        connection.voice_guild_id = 1001
+        connection.voice_channel_id = 2003
+        connection.channel_ids.add(2003)
+    observer.channel_ids.add(2003)
+
+    await manager.broadcast_voice_state(
+        previous_channel_id=None,
+        channel_id=2003,
+        data={
+            "guild_id": 1001,
+            "channel_id": 2003,
+            "user_id": 42,
+            "username": "yangbun",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    observer_websocket.sent.clear()
+
+    await manager.disconnect(leaver)
+    await manager.drain_pending_voice_disconnects()
+
+    assert manager.size == 2
+    assert observer_websocket.sent == []
 
 
 async def test_broadcast_channel_dispatches_to_subscribers() -> None:

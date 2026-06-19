@@ -6,14 +6,21 @@ from app.gateway.subscriptions import SubscriptionRegistry
 from app.gateway.voice_service import VoiceGatewayService
 from app.gateway.zombie_reaper import GatewayReaper
 
+VOICE_DISCONNECT_GRACE_SECONDS = 8.0
+
 
 class GatewayConnectionManager:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        voice_disconnect_grace_seconds: float = VOICE_DISCONNECT_GRACE_SECONDS,
+    ) -> None:
         self._connections = ConnectionRegistry()
         self._subscriptions = SubscriptionRegistry(self._connections)
         self._broadcaster = GatewayBroadcaster(self._connections)
         self._voice = VoiceGatewayService(self._connections, self._broadcaster)
         self._reaper = GatewayReaper(self._connections)
+        self._voice_disconnect_grace_seconds = voice_disconnect_grace_seconds
 
     @property
     def size(self) -> int:
@@ -22,11 +29,18 @@ class GatewayConnectionManager:
     async def connect(self, websocket: WebSocket) -> ClientConnection:
         return await self._connections.connect(websocket)
 
-    async def disconnect(self, connection: ClientConnection) -> None:
+    async def disconnect(self, connection: ClientConnection, *, voice_grace: bool = True) -> None:
         if not self._connections.disconnect(connection):
             return
-        stale = await self._voice.broadcast_disconnect_leave(connection)
-        await self._disconnect_stale(stale)
+        if voice_grace:
+            self._voice.schedule_disconnect_leave(
+                connection,
+                grace_seconds=self._voice_disconnect_grace_seconds,
+                disconnect_stale=self._disconnect_stale,
+            )
+        else:
+            stale = await self._voice.broadcast_disconnect_leave(connection)
+            await self._disconnect_stale(stale)
         connection.voice_guild_id = None
         connection.voice_channel_id = None
 
@@ -146,12 +160,15 @@ class GatewayConnectionManager:
     async def reap_zombies(self, *, heartbeat_interval_ms: int) -> int:
         return await self._reaper.reap_zombies(
             heartbeat_interval_ms=heartbeat_interval_ms,
-            disconnect=self.disconnect,
+            disconnect=lambda connection: self.disconnect(connection, voice_grace=False),
         )
 
     async def _disconnect_stale(self, connections: list[ClientConnection]) -> None:
         for connection in connections:
-            await self.disconnect(connection)
+            await self.disconnect(connection, voice_grace=False)
+
+    async def drain_pending_voice_disconnects(self) -> None:
+        await self._voice.drain_pending_disconnects()
 
 
 gateway_manager = GatewayConnectionManager()

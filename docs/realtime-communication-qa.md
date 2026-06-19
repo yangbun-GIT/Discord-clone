@@ -112,11 +112,14 @@ Call recording QA result:
   local screen preview video count, remote screen video count, remote screen cleanup,
   voice leave cleanup, and zero browser errors.
 - Refresh recovery update: refreshing a connected tab still tears down the old
-  WebRTC media tracks, but the client stores only same-user voice channel recovery
-  metadata and automatically rejoins the previous channel after the refreshed tab's
-  gateway reaches `connected`. Browser smoke now verifies the connected voice panel,
-  absence of the fallback rejoin prompt, and remote audio recovery after automatic
-  rejoin. Real browser permission prompt behavior remains a manual gate.
+  WebRTC media tracks, but normal websocket disconnects now keep the backend voice
+  state through a short grace window instead of immediately broadcasting leave.
+  Heartbeat timeout and stale-send cleanup bypass that grace and leave immediately.
+  The client stores only same-user voice channel recovery metadata and
+  automatically rejoins the previous channel after the refreshed tab's gateway
+  reaches `connected`. Browser smoke verifies the connected voice panel, absence
+  of the fallback rejoin prompt, and remote audio recovery after automatic rejoin.
+  Real browser permission-expiry/denial behavior remains a manual gate.
 
 Manual QA follow-up result:
 
@@ -127,10 +130,11 @@ Manual QA follow-up result:
 - Real screen sharing starts and stops correctly, but the receiver layout separates
   a sharing user's screen tile from that user's participant state. The next layout
   pass should merge these into one composition per sharing participant.
-- Refresh now automatically rejoins the previous voice channel after gateway
-  reconnect when microphone capture can be reacquired. If capture fails, the
-  explicit app-owned rejoin path remains available. Real permission-prompt
-  behavior remains a manual browser gate.
+- Refresh now keeps voice membership through the backend grace window and
+  automatically rejoins the previous voice channel after gateway reconnect when
+  microphone capture can be reacquired. If capture fails, the explicit app-owned
+  Rejoin/Leave path remains visible. Real permission-prompt behavior remains a
+  manual browser gate.
 - Same-Wi-Fi LAN test failed at voice join because `http://<LAN-IP>` is not a
   secure context for microphone/screen capture.
 - TURN/NAT test has not been run and is not ready to claim while

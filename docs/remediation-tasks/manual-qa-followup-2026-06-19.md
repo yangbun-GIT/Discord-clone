@@ -169,12 +169,16 @@ Tasks:
      joined voice channel.
 2. On reload, restore the same voice-channel membership after the refreshed tab is
    connected to the gateway.
+   - Completed: normal backend websocket disconnects keep the current voice state
+     through a short grace window instead of immediately broadcasting leave.
+   - Completed: heartbeat timeout and stale-send cleanup bypass the grace window
+     and still leave immediately.
    - Completed: the client stores only same-user channel metadata, then
      automatically reacquires microphone access and rejoins the previous channel
      after gateway `READY`.
 3. Keep an app-owned recovery prompt as the fallback when automatic capture fails.
    - Completed: failed automatic recovery leaves the previous-channel notice
-     available so the user can retry or dismiss the recovery state.
+     available so the user can retry or leave from the recovery state.
 4. If the user dismisses, send/confirm a leave state and clear stale local state.
    - Completed: dismissal clears the local recovery record. Normal voice leave also
      clears the recovery record.
@@ -206,6 +210,9 @@ Verification:
 - `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
   `voiceAutoRejoinedAfterReload: true`, `voiceRejoinPromptVisible: false`, and
   `voiceRejoinRecovered: true`.
+- `cd backend; ..\.venv\Scripts\python.exe -m pytest tests/test_gateway_manager.py
+  tests/test_gateway_routes.py -q` passed, including normal-disconnect grace,
+  same-user rejoin cancellation, and timeout leave coverage.
 - Additional regression target: `scripts/realtime_browser_smoke.mjs` records
   `serverWorkspacePreservedAfterReload` and
   `voiceWorkspacePreservedAfterReload`.

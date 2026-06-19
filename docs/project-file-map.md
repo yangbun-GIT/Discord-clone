@@ -275,6 +275,9 @@ For ordinary implementation work:
 - `backend/app/gateway/manager.py`
   - Compatibility facade for gateway connection, subscription, broadcast, voice,
     and reaper operations.
+  - Separates normal voice websocket disconnects, which use a short recoverable
+    grace window, from heartbeat/stale disconnects, which broadcast leave
+    immediately.
 - `backend/app/gateway/connection.py`
   - `ClientConnection` and active WebSocket connection registry.
 - `backend/app/gateway/subscriptions.py`
@@ -282,7 +285,8 @@ For ordinary implementation work:
 - `backend/app/gateway/broadcaster.py`
   - Channel/guild/DM dispatch fan-out and stale connection pruning.
 - `backend/app/gateway/voice_service.py`
-  - Voice state broadcast and targeted voice signal routing.
+  - Voice state broadcast, recoverable voice-disconnect grace scheduling, pending
+    leave cancellation on same-user rejoin, and targeted voice signal routing.
 - `backend/app/gateway/zombie_reaper.py`
   - Heartbeat timeout detection and stale websocket closure.
 - `backend/app/gateway/events.py`
@@ -354,6 +358,9 @@ For ordinary implementation work:
     title/subtitle calculation to focused composables.
   - Restores the last per-user DM/server/voice workspace location during app
     bootstrap before guild and DM state reconciliation.
+  - Triggers automatic voice rejoin when the refreshed gateway reaches connected
+    state and keeps app-owned retry/leave recovery actions visible if media capture
+    fails.
   - Owns the selected voice workspace's local/remote screen-share stage placement.
   - Filters global context-menu invite actions through `guilds.canCreateInvite`.
 - `frontend/src/types.ts`
