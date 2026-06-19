@@ -734,9 +734,10 @@ Browser UI
     - Browser `navigator.mediaDevices`, page lifecycle events, `RTCPeerConnection`,
       and WebRTC APIs.
   - Owns:
-    - Local microphone and screen capture lifecycle, reserved screen-share sender
-      track replacement, screen-share state broadcast, explicit local microphone
-      mute state/setter, and voice RTC cleanup.
+    - Local microphone and screen capture lifecycle, Web Audio input processing
+      lifecycle, voice device settings refresh/update state, reserved screen-share
+      sender track replacement, screen-share state broadcast, explicit local
+      microphone mute state/setter, and voice RTC cleanup.
 
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
@@ -747,10 +748,13 @@ Browser UI
     - `frontend/src/composables/voicePeerConnections.ts`
     - `frontend/src/composables/voiceMedia.test.ts`
   - Talks to:
-    - Browser `navigator.mediaDevices`, `localStorage`, and media stream tracks.
+    - Browser `navigator.mediaDevices`, `localStorage`, `AudioContext`, and media
+      stream tracks.
   - Owns:
     - Typed microphone/screen capture errors, local voice-processing preferences,
-      browser-supported audio constraint detection, and media-track cleanup.
+      local voice device preferences, browser-supported audio constraint detection,
+      microphone input volume/sensitivity/noise-gate processing, and media-track
+      cleanup.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:
@@ -825,23 +829,26 @@ Browser UI
   - Receives members, roles, and permission flags from `frontend/src/App.vue`.
   - Emits role/member actions to `frontend/src/App.vue`.
 - `frontend/src/components/VoicePanel.vue`
-  - Receives selected voice channel, participants, current user, and voice quality
-    stats plus typed media-error copy from `frontend/src/App.vue`.
-  - Emits join/leave/mute/screen-share/retry/settings actions to
+  - Receives selected voice channel, current user, voice quality stats, typed
+    media-error copy, and voice device settings from `frontend/src/App.vue`.
+  - Emits join/leave/mute/screen-share/retry/settings and quick voice device
+    update/refresh actions to
     `frontend/src/App.vue`.
   - Keeps screen sharing and manual microphone mute available while deafened so
     deafen only controls local playback of remote audio.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.
-  - Applies local deafen state to the remote audio element `muted` property.
+  - Applies local deafen state, output volume, and supported output sink selection
+    to the remote audio element.
 - `frontend/src/components/VoiceVideoSink.vue`
   - Receives current-channel local or remote screen/video stream from
     `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/SettingsView.vue`
-  - Receives current user, status controls, and debug-safe voice constraint support
-    from `frontend/src/App.vue`.
-  - Reads/writes local voice-processing preferences through
+  - Receives current user, status controls, debug-safe voice constraint support,
+    and voice device setting state from `frontend/src/App.vue`.
+  - Reads/writes local voice-processing preferences and emits voice device
+    setting changes through
     `frontend/src/composables/voiceMedia.ts`.
   - Emits locale/status/settings actions to `frontend/src/App.vue`.
 

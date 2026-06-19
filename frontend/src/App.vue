@@ -341,6 +341,7 @@ async function reloadWorkspaceState() {
 
 onMounted(async () => {
   preferences.restorePreferences()
+  void voiceRtc.refreshVoiceDevices()
   await session.restoreSession()
   if (session.token) {
     await openWorkspace()
@@ -1158,8 +1159,12 @@ async function handleSendInviteToFriend(friendId: number) {
         :turn-configured="voiceTurnConfigured"
         :voice-connected="guilds.voiceConnected"
         :constraint-support="voiceRtc.constraintSupport.value"
+        :voice-device-settings="voiceRtc.voiceDeviceSettings.value"
+        :voice-devices="voiceRtc.voiceDevices.value"
         @close="navigation.closeSettings"
         @logout="handleLogout"
+        @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
+        @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
       />
 
       <FriendsHome
@@ -1456,6 +1461,8 @@ async function handleSendInviteToFriend(friendId: number) {
       :quality-stats="voiceRtc.qualityStats.value"
       :turn-configured="voiceTurnConfigured"
       :error="voiceErrorMessage"
+      :voice-device-settings="voiceRtc.voiceDeviceSettings.value"
+      :voice-devices="voiceRtc.voiceDevices.value"
       @toggle="handleToggleVoice"
       @toggle-mute="handleToggleMute"
       @toggle-deafen="handleToggleDeafen"
@@ -1464,6 +1471,8 @@ async function handleSendInviteToFriend(friendId: number) {
       @leave="handleLeaveVoiceFromError"
       @cycle-status="cycleUserPresence"
       @open-settings="handleOpenUserSettings"
+      @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
+      @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
     />
     <div class="voice-audio-sinks" aria-hidden="true">
       <VoiceAudioSink
@@ -1471,6 +1480,8 @@ async function handleSendInviteToFriend(friendId: number) {
         :key="`${remote.channelId}:${remote.userId}`"
         :stream="remote.stream"
         :muted="isDeafened"
+        :output-device-id="voiceRtc.voiceDeviceSettings.value.outputDeviceId"
+        :volume="voiceRtc.voiceDeviceSettings.value.outputVolume"
       />
     </div>
     <div

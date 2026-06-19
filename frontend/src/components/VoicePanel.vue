@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
+  ChevronUp,
   Headphones,
   HeadphoneOff,
   Mic,
@@ -10,9 +11,11 @@ import {
   ScreenShare,
   ScreenShareOff,
   Settings,
+  Volume2,
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
+import type { VoiceDeviceList, VoiceDeviceSettings } from '../composables/voiceMedia'
 import type { Channel, User, UserPresenceStatus, VoiceQualityStats } from '../types'
 
 const props = defineProps<{
@@ -31,9 +34,11 @@ const props = defineProps<{
   qualityStats: VoiceQualityStats
   turnConfigured: boolean
   error: string | null
+  voiceDeviceSettings: VoiceDeviceSettings
+  voiceDevices: VoiceDeviceList
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   toggle: []
   toggleMute: []
   toggleDeafen: []
@@ -42,9 +47,12 @@ defineEmits<{
   leave: []
   cycleStatus: []
   openSettings: []
+  updateVoiceDeviceSettings: [settings: Partial<VoiceDeviceSettings>]
+  refreshVoiceDevices: []
 }>()
 
 const { t } = useI18n()
+const audioMenu = ref<'input' | 'output' | null>(null)
 
 const presenceLabel = computed(() => {
   if (props.userStatus === 'dnd') return t('common.status.dnd')
@@ -69,6 +77,32 @@ const connectionDetailLabel = computed(() => {
   }
   return props.turnConfigured ? t('voice.turnReady') : t('voice.stunOnly')
 })
+
+function toggleAudioMenu(menu: 'input' | 'output') {
+  audioMenu.value = audioMenu.value === menu ? null : menu
+  emit('refreshVoiceDevices')
+}
+
+function handleDeviceSelect(key: 'inputDeviceId' | 'outputDeviceId', event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLSelectElement)) return
+  emit('updateVoiceDeviceSettings', { [key]: target.value || null })
+}
+
+function handleDeviceRange(
+  key: 'inputVolume' | 'outputVolume' | 'inputSensitivity',
+  event: Event,
+) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('updateVoiceDeviceSettings', { [key]: Number(target.value) })
+}
+
+function handleNoiseGateChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('updateVoiceDeviceSettings', { noiseGate: target.checked })
+}
 
 </script>
 
@@ -137,6 +171,86 @@ const connectionDetailLabel = computed(() => {
       </div>
     </section>
 
+    <div
+      v-if="audioMenu"
+      class="voice-device-popover"
+      :aria-label="audioMenu === 'input' ? t('voice.inputMenu') : t('voice.outputMenu')"
+    >
+      <template v-if="audioMenu === 'input'">
+        <label class="voice-device-field">
+          <span>{{ t('settings.inputDevice') }}</span>
+          <select
+            :value="voiceDeviceSettings.inputDeviceId ?? ''"
+            @change="handleDeviceSelect('inputDeviceId', $event)"
+          >
+            <option value="">{{ t('settings.defaultDevice') }}</option>
+            <option v-for="device in voiceDevices.inputs" :key="device.id" :value="device.id">
+              {{ device.label }}
+            </option>
+          </select>
+        </label>
+        <label class="voice-device-range">
+          <span>{{ t('settings.inputVolume') }}</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            :value="voiceDeviceSettings.inputVolume"
+            @input="handleDeviceRange('inputVolume', $event)"
+          />
+          <strong>{{ voiceDeviceSettings.inputVolume }}%</strong>
+        </label>
+        <label class="voice-device-range">
+          <span>{{ t('settings.inputSensitivity') }}</span>
+          <input
+            type="range"
+            min="5"
+            max="85"
+            :value="voiceDeviceSettings.inputSensitivity"
+            @input="handleDeviceRange('inputSensitivity', $event)"
+          />
+          <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
+        </label>
+        <label class="voice-device-toggle">
+          <span>{{ t('settings.noiseGate') }}</span>
+          <input
+            type="checkbox"
+            :checked="voiceDeviceSettings.noiseGate"
+            @change="handleNoiseGateChange"
+          />
+        </label>
+      </template>
+      <template v-else>
+        <label class="voice-device-field">
+          <span>{{ t('settings.outputDevice') }}</span>
+          <select
+            :value="voiceDeviceSettings.outputDeviceId ?? ''"
+            @change="handleDeviceSelect('outputDeviceId', $event)"
+          >
+            <option value="">{{ t('settings.defaultDevice') }}</option>
+            <option v-for="device in voiceDevices.outputs" :key="device.id" :value="device.id">
+              {{ device.label }}
+            </option>
+          </select>
+        </label>
+        <label class="voice-device-range">
+          <span>{{ t('settings.outputVolume') }}</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            :value="voiceDeviceSettings.outputVolume"
+            @input="handleDeviceRange('outputVolume', $event)"
+          />
+          <strong>{{ voiceDeviceSettings.outputVolume }}%</strong>
+        </label>
+      </template>
+      <button type="button" class="voice-device-settings-button" @click="$emit('openSettings')">
+        <Settings :size="16" aria-hidden="true" />
+        <span>{{ t('settings.voice') }}</span>
+      </button>
+    </div>
+
     <div class="user-panel" data-context-kind="user-panel" :data-context-label="currentUser?.username">
       <button
         type="button"
@@ -157,27 +271,52 @@ const connectionDetailLabel = computed(() => {
         </span>
       </button>
       <div class="user-panel-actions">
-        <button
-          type="button"
-          :title="muted ? t('voice.unmute') : t('voice.mute')"
-          :aria-label="muted ? t('voice.unmute') : t('voice.mute')"
-          :aria-pressed="muted"
-          :disabled="!connected"
-          @click="$emit('toggleMute')"
-        >
-          <MicOff v-if="muted" :size="17" aria-hidden="true" />
-          <Mic v-else :size="17" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          :title="deafened ? t('voice.undeafen') : t('voice.deafen')"
-          :aria-label="deafened ? t('voice.undeafen') : t('voice.deafen')"
-          :aria-pressed="deafened"
-          @click="$emit('toggleDeafen')"
-        >
-          <HeadphoneOff v-if="deafened" :size="17" aria-hidden="true" />
-          <Headphones v-else :size="17" aria-hidden="true" />
-        </button>
+        <span class="voice-control-cluster">
+          <button
+            type="button"
+            :title="muted ? t('voice.unmute') : t('voice.mute')"
+            :aria-label="muted ? t('voice.unmute') : t('voice.mute')"
+            :aria-pressed="muted"
+            :disabled="!connected"
+            @click="$emit('toggleMute')"
+          >
+            <MicOff v-if="muted" :size="17" aria-hidden="true" />
+            <Mic v-else :size="17" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            class="voice-popover-trigger"
+            :title="t('voice.openInputMenu')"
+            :aria-label="t('voice.openInputMenu')"
+            :aria-expanded="audioMenu === 'input'"
+            @click="toggleAudioMenu('input')"
+          >
+            <ChevronUp :size="13" aria-hidden="true" />
+          </button>
+        </span>
+        <span class="voice-control-cluster">
+          <button
+            type="button"
+            :title="deafened ? t('voice.undeafen') : t('voice.deafen')"
+            :aria-label="deafened ? t('voice.undeafen') : t('voice.deafen')"
+            :aria-pressed="deafened"
+            @click="$emit('toggleDeafen')"
+          >
+            <HeadphoneOff v-if="deafened" :size="17" aria-hidden="true" />
+            <Volume2 v-else-if="connected" :size="17" aria-hidden="true" />
+            <Headphones v-else :size="17" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            class="voice-popover-trigger"
+            :title="t('voice.openOutputMenu')"
+            :aria-label="t('voice.openOutputMenu')"
+            :aria-expanded="audioMenu === 'output'"
+            @click="toggleAudioMenu('output')"
+          >
+            <ChevronUp :size="13" aria-hidden="true" />
+          </button>
+        </span>
         <button
           type="button"
           :title="t('voice.userSettings')"

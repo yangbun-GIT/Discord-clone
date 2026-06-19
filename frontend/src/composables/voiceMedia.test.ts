@@ -3,9 +3,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   buildAudioConstraints,
   normalizeMediaError,
+  readVoiceDeviceSettings,
   readVoiceProcessingSettings,
   VoiceMediaError,
   voiceProcessingPreset,
+  writeVoiceDeviceSettings,
   writeVoiceProcessingSettings,
   type VoiceConstraintSupport,
 } from './voiceMedia'
@@ -155,6 +157,39 @@ describe('voice processing settings', () => {
       sampleRate: { ideal: 48000 },
       sampleSize: { ideal: 16 },
       latency: { ideal: 0.02 },
+    })
+  })
+
+  it('persists device settings and clamps numeric controls', () => {
+    writeVoiceDeviceSettings({
+      inputDeviceId: 'mic-1',
+      outputDeviceId: 'speaker-1',
+      inputVolume: 130,
+      outputVolume: -10,
+      inputSensitivity: 41.4,
+      noiseGate: false,
+    })
+
+    expect(readVoiceDeviceSettings()).toEqual({
+      inputDeviceId: 'mic-1',
+      outputDeviceId: 'speaker-1',
+      inputVolume: 100,
+      outputVolume: 0,
+      inputSensitivity: 41,
+      noiseGate: false,
+    })
+  })
+
+  it('adds a selected microphone device to capture constraints', () => {
+    expect(buildAudioConstraints(fullSupport, voiceProcessingPreset('balanced'), {
+      inputDeviceId: 'mic-selected',
+      outputDeviceId: null,
+      inputVolume: 82,
+      outputVolume: 100,
+      inputSensitivity: 38,
+      noiseGate: true,
+    })).toMatchObject({
+      deviceId: { exact: 'mic-selected' },
     })
   })
 })

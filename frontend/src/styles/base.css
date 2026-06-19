@@ -2150,9 +2150,18 @@ select:focus-visible {
 .settings-toggle span,
 .keybind-row span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: #d7dee8;
+}
+
+.settings-toggle span {
+  display: grid;
+  gap: 3px;
+}
+
+.settings-toggle span small {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .settings-toggle input {
@@ -2169,6 +2178,94 @@ select:focus-visible {
 
 .settings-toggle:has(input:disabled) {
   color: #8b95a5;
+}
+
+.settings-device-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.settings-field {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.settings-field > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #f8fafc;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.settings-field small,
+.settings-device-note {
+  color: #9ca3af;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.settings-select,
+.voice-device-field select {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: #1f2025;
+  padding: 0 10px;
+}
+
+.settings-range-row,
+.voice-device-range {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+}
+
+.settings-range-row span,
+.voice-device-range span {
+  color: #f8fafc;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.settings-range-row input,
+.voice-device-range input {
+  width: 100%;
+  accent-color: #5865f2;
+}
+
+.settings-range-row strong,
+.voice-device-range strong {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.settings-secondary-button {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: rgb(255 255 255 / 7%);
+  padding: 0 11px;
+}
+
+.settings-secondary-button:hover,
+.settings-secondary-button:focus-visible {
+  background: rgb(255 255 255 / 12%);
 }
 
 .settings-radio-list {
@@ -4572,7 +4669,7 @@ select:focus-visible {
   min-width: 0;
   min-height: var(--voice-panel-height);
   max-height: var(--voice-panel-height);
-  overflow: hidden;
+  overflow: visible;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto;
@@ -4694,8 +4791,15 @@ select:focus-visible {
 
 .user-panel-actions {
   display: inline-flex;
-  gap: 5px;
+  gap: 4px;
   padding-right: 2px;
+}
+
+.voice-control-cluster {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  background: transparent;
 }
 
 .user-panel-actions button,
@@ -4708,6 +4812,18 @@ select:focus-visible {
   border-radius: 8px;
   color: #cbd5e1;
   background: transparent;
+}
+
+.user-panel-actions .voice-popover-trigger {
+  width: 18px;
+  margin-left: -5px;
+  border-radius: 6px;
+  color: #9ca3af;
+}
+
+.user-panel-actions .voice-popover-trigger[aria-expanded="true"] {
+  color: #ffffff;
+  background: rgb(255 255 255 / 12%);
 }
 
 .user-panel-actions button:hover,
@@ -4734,6 +4850,73 @@ select:focus-visible {
   box-shadow:
     0 0 0 2px rgb(59 165 93 / 92%),
     0 0 16px rgb(59 165 93 / 54%);
+}
+
+.voice-device-popover {
+  position: absolute;
+  left: 8px;
+  bottom: 58px;
+  z-index: 45;
+  width: min(292px, calc(100vw - 24px));
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: #24252a;
+  padding: 13px;
+  box-shadow:
+    0 20px 50px rgb(0 0 0 / 46%),
+    0 1px 0 rgb(255 255 255 / 8%) inset;
+}
+
+.app-shell.voice-connected .voice-device-popover {
+  bottom: 112px;
+}
+
+.voice-device-field,
+.voice-device-toggle {
+  display: grid;
+  gap: 7px;
+}
+
+.voice-device-field span,
+.voice-device-toggle span {
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.voice-device-toggle {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-top: 1px solid rgb(255 255 255 / 9%);
+  padding-top: 8px;
+}
+
+.voice-device-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #5865f2;
+}
+
+.voice-device-settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 9%);
+  color: #dbe4ef;
+  background: transparent;
+  padding: 10px 0 0;
+  text-align: left;
+}
+
+.voice-device-settings-button:hover,
+.voice-device-settings-button:focus-visible {
+  color: #ffffff;
 }
 
 .voice-connection-card,

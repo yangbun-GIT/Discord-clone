@@ -9,10 +9,17 @@ import type {
 import {
   captureDisplay,
   captureMicrophone,
+  createVoiceInputProcessor,
   getSupportedVoiceConstraints,
+  listVoiceDevices,
   normalizeMediaError,
+  readVoiceDeviceSettings,
   recordVoiceConstraintSupport,
   VoiceMediaError,
+  writeVoiceDeviceSettings,
+  type VoiceDeviceList,
+  type VoiceDeviceSettings,
+  type VoiceInputProcessor,
   type VoiceConstraintSupport,
   type VoiceMediaErrorCode,
   setAudioTracksMuted,
@@ -36,11 +43,14 @@ const inputLevel = ref(0)
 const error = ref<string | null>(null)
 const errorCode = ref<VoiceMediaErrorCode | null>(null)
 const constraintSupport = ref<VoiceConstraintSupport>(getSupportedVoiceConstraints())
+const voiceDeviceSettings = ref<VoiceDeviceSettings>(readVoiceDeviceSettings())
+const voiceDevices = ref<VoiceDeviceList>({ inputs: [], outputs: [] })
 const qualityStats = ref<VoiceQualityStats>(createEmptyQualityStats())
 const voiceStatsCollector = createVoiceStatsCollector()
 const voiceVad = createVoiceVad({ inputLevel, localSpeaking })
 let activeOptions: ConnectOptions | null = null
 let statsTimer: number | null = null
+let inputProcessor: VoiceInputProcessor | null = null
 
 const peerRegistry = createVoicePeerRegistry({
   remoteStreams,
@@ -87,9 +97,12 @@ export function useVoiceRtc() {
       if (!localStream.value) {
         constraintSupport.value = getSupportedVoiceConstraints()
         recordVoiceConstraintSupport(constraintSupport.value)
-        localStream.value = await captureMicrophone()
+        const rawStream = await captureMicrophone(voiceDeviceSettings.value)
+        inputProcessor = createVoiceInputProcessor(rawStream, voiceDeviceSettings.value)
+        localStream.value = inputProcessor.stream
         voiceVad.attach(localStream.value)
         voiceVad.start()
+        void refreshVoiceDevices()
       }
       isCapturing.value = true
       setMuted(isMuted.value)
@@ -106,7 +119,12 @@ export function useVoiceRtc() {
 
   function disconnect() {
     peerRegistry.closeAll()
-    stopMediaStream(localStream.value)
+    if (inputProcessor) {
+      inputProcessor.close()
+      inputProcessor = null
+    } else {
+      stopMediaStream(localStream.value)
+    }
     stopMediaStream(screenStream.value)
     localStream.value = null
     screenStream.value = null
@@ -117,6 +135,23 @@ export function useVoiceRtc() {
     activeOptions = null
     voiceVad.close()
     stopStatsLoop()
+  }
+
+  async function refreshVoiceDevices() {
+    try {
+      voiceDevices.value = await listVoiceDevices()
+    } catch {
+      voiceDevices.value = { inputs: [], outputs: [] }
+    }
+  }
+
+  function updateVoiceDeviceSettings(settings: Partial<VoiceDeviceSettings>) {
+    writeVoiceDeviceSettings({
+      ...voiceDeviceSettings.value,
+      ...settings,
+    })
+    voiceDeviceSettings.value = readVoiceDeviceSettings()
+    inputProcessor?.updateSettings(voiceDeviceSettings.value)
   }
 
   function setMuted(muted: boolean) {
@@ -216,6 +251,8 @@ export function useVoiceRtc() {
     error,
     errorCode,
     constraintSupport,
+    voiceDeviceSettings,
+    voiceDevices,
     qualityStats,
     connect,
     disconnect,
@@ -224,5 +261,7 @@ export function useVoiceRtc() {
     toggleScreenShare,
     syncParticipants,
     handleSignal,
+    refreshVoiceDevices,
+    updateVoiceDeviceSettings,
   }
 }

@@ -396,15 +396,18 @@ For ordinary implementation work:
 - `frontend/src/components/MemberList.vue`
   - Server member list and role/member controls.
 - `frontend/src/components/VoicePanel.vue`
-  - Voice-channel workspace, participant tiles, screen-share state, and controls.
+  - Voice-channel workspace, participant tiles, screen-share state, bottom user
+    controls, and quick input/output device popovers.
   - Keeps manual microphone mute available while deafened so mute and deafen remain
     independent.
 - `frontend/src/components/VoiceAudioSink.vue`
-  - Remote audio stream rendering and local deafen-to-audio-muted binding.
+  - Remote audio stream rendering, output volume, output device sink selection when
+    supported, and local deafen-to-audio-muted binding.
 - `frontend/src/components/VoiceVideoSink.vue`
   - Local and remote video/screen stream rendering.
 - `frontend/src/components/SettingsView.vue`
-  - User settings shell and settings sections.
+  - User settings shell and settings sections, including Voice & Video device,
+    volume, sensitivity, and native audio-processing controls.
 - `frontend/src/components/ServerAddDialog.vue`
   - Server create/join dialog.
 - `frontend/src/components/ServerDiscoveryDialog.vue`
@@ -466,16 +469,21 @@ For ordinary implementation work:
     signal plus presence send/update helpers.
 - `frontend/src/composables/useVoiceRtc.ts`
   - Public WebRTC voice facade used by the app.
-  - Composes media capture, VAD, peer registry, screen share, and stats modules.
-  - Exposes explicit local microphone mute state/setter for voice controls.
+  - Composes media capture, input processing, VAD, peer registry, screen share,
+    output device settings, and stats modules.
+  - Exposes explicit local microphone mute state/setter plus voice device setting
+    state/update/refresh helpers for voice controls.
 - `frontend/src/composables/voiceMedia.ts`
   - Browser microphone/display capture helpers, native audio constraint support
-    detection/storage, typed media error normalization, and media-track helpers.
+    detection/storage, voice device preference storage, typed media error
+    normalization, Web Audio input processing, and media-track helpers.
   - Persists local voice-processing preferences and builds microphone constraints
     from browser support plus user-selected echo/noise/gain settings.
+  - Owns microphone input volume, input sensitivity/noise gate, and input device
+    selection helpers used before WebRTC peer tracks are created.
 - `frontend/src/composables/voiceMedia.test.ts`
   - Unit coverage for typed microphone/screen media error normalization and
-    voice-processing constraint generation.
+    voice-processing/device-setting constraint generation.
 - `frontend/src/composables/voiceVad.ts`
   - Local AudioContext/analyser voice activity detection and input-level sampling.
 - `frontend/src/composables/voicePeerConnections.ts`

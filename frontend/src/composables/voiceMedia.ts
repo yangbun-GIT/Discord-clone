@@ -1,6 +1,7 @@
 const MEDIA_PERMISSION_TIMEOUT_MS = 30_000
 const VOICE_CONSTRAINT_SUPPORT_KEY = 'discord_clone_voice_constraint_support'
 const VOICE_PROCESSING_SETTINGS_KEY = 'discord_clone_voice_processing_settings'
+const VOICE_DEVICE_SETTINGS_KEY = 'discord_clone_voice_device_settings'
 
 type ExtendedMediaTrackSupportedConstraints = MediaTrackSupportedConstraints & {
   latency?: boolean
@@ -42,6 +43,33 @@ export interface VoiceProcessingSettings {
 
 export type VoiceProcessingMode = 'balanced' | 'speech-stability' | 'raw' | 'custom'
 
+export interface VoiceDeviceSettings {
+  inputDeviceId: string | null
+  outputDeviceId: string | null
+  inputVolume: number
+  outputVolume: number
+  inputSensitivity: number
+  noiseGate: boolean
+}
+
+export interface VoiceDeviceOption {
+  id: string
+  label: string
+  kind: 'audioinput' | 'audiooutput'
+  isDefault: boolean
+}
+
+export interface VoiceDeviceList {
+  inputs: VoiceDeviceOption[]
+  outputs: VoiceDeviceOption[]
+}
+
+export interface VoiceInputProcessor {
+  stream: MediaStream
+  updateSettings: (settings: VoiceDeviceSettings) => void
+  close: () => void
+}
+
 export class VoiceMediaError extends Error {
   constructor(
     public readonly code: VoiceMediaErrorCode,
@@ -53,17 +81,66 @@ export class VoiceMediaError extends Error {
   }
 }
 
-export async function captureMicrophone() {
+export async function captureMicrophone(settings: VoiceDeviceSettings = readVoiceDeviceSettings()) {
   assertMicrophoneCaptureAvailable()
   return requestStreamWithTimeout(
     navigator.mediaDevices.getUserMedia({
-      audio: buildAudioConstraints(getSupportedVoiceConstraints(), readVoiceProcessingSettings()),
+      audio: buildAudioConstraints(
+        getSupportedVoiceConstraints(),
+        readVoiceProcessingSettings(),
+        settings,
+      ),
       video: false,
     }),
     'permission-timeout',
   ).catch((error: unknown) => {
     throw normalizeMediaError(error, 'microphone')
   })
+}
+
+export function defaultVoiceDeviceSettings(): VoiceDeviceSettings {
+  return {
+    inputDeviceId: null,
+    outputDeviceId: null,
+    inputVolume: 82,
+    outputVolume: 100,
+    inputSensitivity: 38,
+    noiseGate: true,
+  }
+}
+
+export function readVoiceDeviceSettings(): VoiceDeviceSettings {
+  try {
+    const value = getLocalStorage()?.getItem(VOICE_DEVICE_SETTINGS_KEY)
+    if (!value) return defaultVoiceDeviceSettings()
+    const parsed = JSON.parse(value) as Partial<VoiceDeviceSettings>
+    return normalizeVoiceDeviceSettings(parsed)
+  } catch {
+    return defaultVoiceDeviceSettings()
+  }
+}
+
+export function writeVoiceDeviceSettings(settings: VoiceDeviceSettings) {
+  try {
+    getLocalStorage()?.setItem(
+      VOICE_DEVICE_SETTINGS_KEY,
+      JSON.stringify(normalizeVoiceDeviceSettings(settings)),
+    )
+  } catch {
+    // Voice device preferences are best-effort and should not block voice controls.
+  }
+}
+
+export async function listVoiceDevices(): Promise<VoiceDeviceList> {
+  if (!navigator.mediaDevices?.enumerateDevices) return { inputs: [], outputs: [] }
+  const devices = await navigator.mediaDevices.enumerateDevices()
+  const inputs = devices
+    .filter((device) => device.kind === 'audioinput')
+    .map((device, index) => voiceDeviceOption(device, index, 'audioinput'))
+  const outputs = devices
+    .filter((device) => device.kind === 'audiooutput')
+    .map((device, index) => voiceDeviceOption(device, index, 'audiooutput'))
+  return { inputs, outputs }
 }
 
 export function defaultVoiceProcessingSettings(): VoiceProcessingSettings {
@@ -231,6 +308,121 @@ export function setAudioTracksMuted(stream: MediaStream | null, muted: boolean) 
   })
 }
 
+export function createVoiceInputProcessor(
+  rawStream: MediaStream,
+  initialSettings: VoiceDeviceSettings = readVoiceDeviceSettings(),
+): VoiceInputProcessor {
+  const AudioContextConstructor = window.AudioContext
+  if (!AudioContextConstructor) {
+    return {
+      stream: rawStream,
+      updateSettings: () => {},
+      close: () => stopMediaStream(rawStream),
+    }
+  }
+
+  let context: AudioContext
+  try {
+    context = new AudioContextConstructor({ sampleRate: 48_000 })
+  } catch {
+    context = new AudioContextConstructor()
+  }
+  const source = context.createMediaStreamSource(rawStream)
+  const highpass = context.createBiquadFilter()
+  const compressor = context.createDynamicsCompressor()
+  const inputGain = context.createGain()
+  const gateGain = context.createGain()
+  const analyser = context.createAnalyser()
+  const destination = context.createMediaStreamDestination()
+  const samples = new Uint8Array(256)
+  let settings = normalizeVoiceDeviceSettings(initialSettings)
+  let gateOpen = true
+  let releaseTimer: number | null = null
+  let intervalId: number | null = null
+
+  highpass.type = 'highpass'
+  highpass.frequency.value = 90
+  highpass.Q.value = 0.7
+  compressor.threshold.value = -32
+  compressor.knee.value = 16
+  compressor.ratio.value = 3
+  compressor.attack.value = 0.006
+  compressor.release.value = 0.18
+  analyser.fftSize = 512
+  analyser.smoothingTimeConstant = 0.82
+  gateGain.gain.value = 1
+
+  source.connect(highpass)
+  highpass.connect(compressor)
+  compressor.connect(inputGain)
+  inputGain.connect(gateGain)
+  gateGain.connect(destination)
+  inputGain.connect(analyser)
+
+  function applySettings(nextSettings: VoiceDeviceSettings) {
+    settings = normalizeVoiceDeviceSettings(nextSettings)
+    inputGain.gain.setTargetAtTime(settings.inputVolume / 100, context.currentTime, 0.025)
+    if (!settings.noiseGate) {
+      gateOpen = true
+      gateGain.gain.setTargetAtTime(1, context.currentTime, 0.025)
+    }
+  }
+
+  function inputLevel() {
+    analyser.getByteFrequencyData(samples)
+    const speechBins = samples.slice(2, 96)
+    const average = speechBins.reduce((sum, value) => sum + value, 0) / speechBins.length
+    return Math.min(100, (average / 92) * 100)
+  }
+
+  function openGate() {
+    if (releaseTimer !== null) {
+      window.clearTimeout(releaseTimer)
+      releaseTimer = null
+    }
+    if (!gateOpen) {
+      gateOpen = true
+      gateGain.gain.setTargetAtTime(1, context.currentTime, 0.018)
+    }
+  }
+
+  function scheduleGateClose() {
+    if (releaseTimer !== null || !gateOpen) return
+    releaseTimer = window.setTimeout(() => {
+      releaseTimer = null
+      gateOpen = false
+      gateGain.gain.setTargetAtTime(0.04, context.currentTime, 0.16)
+    }, 320)
+  }
+
+  function tickGate() {
+    if (!settings.noiseGate) return
+    const level = inputLevel()
+    const openThreshold = settings.inputSensitivity
+    const closeThreshold = Math.max(6, settings.inputSensitivity * 0.58)
+    if (level >= openThreshold) {
+      openGate()
+      return
+    }
+    if (level < closeThreshold) scheduleGateClose()
+  }
+
+  applySettings(settings)
+  intervalId = window.setInterval(tickGate, 40)
+
+  return {
+    stream: destination.stream,
+    updateSettings: applySettings,
+    close: () => {
+      if (intervalId !== null) window.clearInterval(intervalId)
+      if (releaseTimer !== null) window.clearTimeout(releaseTimer)
+      stopMediaStream(rawStream)
+      stopMediaStream(destination.stream)
+      void context.close().catch(() => {})
+    },
+  }
+}
+
 export function screenTrackIsActive(stream: MediaStream) {
   return stream.getVideoTracks().some((track) => track.readyState === 'live' && !track.muted)
 }
@@ -270,8 +462,12 @@ function isVoiceProcessingMode(value: unknown): value is VoiceProcessingMode {
 export function buildAudioConstraints(
   support: VoiceConstraintSupport,
   settings: VoiceProcessingSettings = defaultVoiceProcessingSettings(),
+  deviceSettings: VoiceDeviceSettings = defaultVoiceDeviceSettings(),
 ): MediaTrackConstraints {
   const audio: ExtendedMediaTrackConstraints = {}
+  if (deviceSettings.inputDeviceId) {
+    audio.deviceId = { exact: deviceSettings.inputDeviceId }
+  }
   if (support.echoCancellation) audio.echoCancellation = { ideal: settings.echoCancellation }
   if (support.noiseSuppression) audio.noiseSuppression = { ideal: settings.noiseSuppression }
   if (support.autoGainControl) audio.autoGainControl = { ideal: settings.autoGainControl }
@@ -280,6 +476,43 @@ export function buildAudioConstraints(
   if (support.sampleSize) audio.sampleSize = { ideal: 16 }
   if (support.latency) audio.latency = { ideal: 0.02 }
   return audio
+}
+
+function normalizeVoiceDeviceSettings(settings: Partial<VoiceDeviceSettings>): VoiceDeviceSettings {
+  const defaults = defaultVoiceDeviceSettings()
+  return {
+    inputDeviceId: typeof settings.inputDeviceId === 'string' && settings.inputDeviceId
+      ? settings.inputDeviceId
+      : null,
+    outputDeviceId: typeof settings.outputDeviceId === 'string' && settings.outputDeviceId
+      ? settings.outputDeviceId
+      : null,
+    inputVolume: clampPercent(settings.inputVolume, defaults.inputVolume),
+    outputVolume: clampPercent(settings.outputVolume, defaults.outputVolume),
+    inputSensitivity: clampPercent(settings.inputSensitivity, defaults.inputSensitivity),
+    noiseGate: typeof settings.noiseGate === 'boolean' ? settings.noiseGate : defaults.noiseGate,
+  }
+}
+
+function clampPercent(value: unknown, fallback: number) {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(100, Math.max(0, Math.round(value)))
+    : fallback
+}
+
+function voiceDeviceOption(
+  device: MediaDeviceInfo,
+  index: number,
+  kind: 'audioinput' | 'audiooutput',
+): VoiceDeviceOption {
+  const isDefault = device.deviceId === 'default'
+  const fallback = kind === 'audioinput' ? `Microphone ${index + 1}` : `Speaker ${index + 1}`
+  return {
+    id: device.deviceId,
+    label: device.label || (isDefault ? 'Default' : fallback),
+    kind,
+    isDefault,
+  }
 }
 
 function requestStreamWithTimeout(

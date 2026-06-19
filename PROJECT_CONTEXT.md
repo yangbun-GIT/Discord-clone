@@ -1961,6 +1961,17 @@ Completed Stage 2 bridge work:
   sustained-vowel microphone quality, real screen picker layout with multiple
   participants, different-PC HTTPS LAN media, and TURN/NAT internet voice with real
   credentials.
+- Added post-M10 voice input/output settings pass:
+  `voiceMedia.ts` now persists microphone/speaker device settings and builds a
+  Web Audio input-processing stream with high-pass filtering, light compression,
+  input volume, and adjustable sensitivity/noise gate before WebRTC peer tracks
+  are created. `useVoiceRtc.ts` exposes device settings and refresh/update helpers,
+  `SettingsView.vue` adds Voice & Video device/volume/sensitivity controls,
+  `VoicePanel.vue` adds Discord-like quick input/output popovers, and
+  `VoiceAudioSink.vue` applies output volume plus supported `setSinkId` output
+  routing. Frontend lint, production build, and focused `voiceMedia` tests passed.
+  Real sustained-vowel/fan-noise listening remains a manual QA gate because
+  automated tests cannot judge speech intelligibility.
 
 After each stage or meaningful feature:
 

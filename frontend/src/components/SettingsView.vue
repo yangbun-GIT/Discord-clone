@@ -9,7 +9,9 @@ import {
   LogOut,
   Mic,
   Monitor,
+  RefreshCw,
   Shield,
+  Volume2,
   UserRound,
   X,
 } from 'lucide-vue-next'
@@ -20,6 +22,8 @@ import {
   voiceProcessingPreset,
   writeVoiceProcessingSettings,
   type VoiceConstraintSupport,
+  type VoiceDeviceList,
+  type VoiceDeviceSettings,
   type VoiceProcessingMode,
   type VoiceProcessingSettings,
 } from '../composables/voiceMedia'
@@ -46,11 +50,15 @@ const props = defineProps<{
   turnConfigured: boolean
   voiceConnected: boolean
   constraintSupport: VoiceConstraintSupport
+  voiceDeviceSettings: VoiceDeviceSettings
+  voiceDevices: VoiceDeviceList
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
   logout: []
+  updateVoiceDeviceSettings: [settings: Partial<VoiceDeviceSettings>]
+  refreshVoiceDevices: []
 }>()
 
 const activePanel = ref<SettingsPanel>('account')
@@ -101,6 +109,21 @@ const audioProcessingSummary = computed(() => {
   ].filter(Boolean)
   return enabled.length ? enabled.join(' / ') : t('common.status.unavailable')
 })
+const selectedInputDeviceLabel = computed(() => {
+  return deviceLabel(props.voiceDevices.inputs, props.voiceDeviceSettings.inputDeviceId, t('settings.defaultDevice'))
+})
+const selectedOutputDeviceLabel = computed(() => {
+  return deviceLabel(props.voiceDevices.outputs, props.voiceDeviceSettings.outputDeviceId, t('settings.defaultDevice'))
+})
+
+function deviceLabel(
+  devices: VoiceDeviceList['inputs'],
+  selectedId: string | null,
+  fallback: string,
+) {
+  if (!selectedId) return fallback
+  return devices.find((device) => device.id === selectedId)?.label ?? fallback
+}
 
 function setVoiceProcessingOption(key: Exclude<keyof VoiceProcessingSettings, 'mode'>, enabled: boolean) {
   voiceProcessing.value = {
@@ -120,6 +143,33 @@ function handleVoiceProcessingChange(key: Exclude<keyof VoiceProcessingSettings,
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
   setVoiceProcessingOption(key, target.checked)
+}
+
+function handleVoiceDeviceSelect(key: 'inputDeviceId' | 'outputDeviceId', event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLSelectElement)) return
+  emit('updateVoiceDeviceSettings', {
+    [key]: target.value || null,
+  })
+}
+
+function handleVoiceDeviceRange(
+  key: 'inputVolume' | 'outputVolume' | 'inputSensitivity',
+  event: Event,
+) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('updateVoiceDeviceSettings', {
+    [key]: Number(target.value),
+  })
+}
+
+function handleNoiseGateChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('updateVoiceDeviceSettings', {
+    noiseGate: target.checked,
+  })
 }
 </script>
 
@@ -238,6 +288,75 @@ function handleVoiceProcessingChange(key: Exclude<keyof VoiceProcessingSettings,
       </div>
 
       <div v-else-if="activePanel === 'voice'" class="settings-section-grid">
+        <section class="settings-card voice-device-card">
+          <h2>{{ t('settings.voiceDevices') }}</h2>
+          <p>{{ t('settings.voiceDevicesDescription') }}</p>
+          <div class="settings-device-grid">
+            <label class="settings-field">
+              <span>
+                <Mic :size="16" aria-hidden="true" />
+                {{ t('settings.inputDevice') }}
+              </span>
+              <select
+                class="settings-select"
+                :value="voiceDeviceSettings.inputDeviceId ?? ''"
+                @focus="$emit('refreshVoiceDevices')"
+                @change="handleVoiceDeviceSelect('inputDeviceId', $event)"
+              >
+                <option value="">{{ t('settings.defaultDevice') }}</option>
+                <option v-for="device in voiceDevices.inputs" :key="device.id" :value="device.id">
+                  {{ device.label }}
+                </option>
+              </select>
+              <small>{{ selectedInputDeviceLabel }}</small>
+            </label>
+            <label class="settings-field">
+              <span>
+                <Volume2 :size="16" aria-hidden="true" />
+                {{ t('settings.outputDevice') }}
+              </span>
+              <select
+                class="settings-select"
+                :value="voiceDeviceSettings.outputDeviceId ?? ''"
+                @focus="$emit('refreshVoiceDevices')"
+                @change="handleVoiceDeviceSelect('outputDeviceId', $event)"
+              >
+                <option value="">{{ t('settings.defaultDevice') }}</option>
+                <option v-for="device in voiceDevices.outputs" :key="device.id" :value="device.id">
+                  {{ device.label }}
+                </option>
+              </select>
+              <small>{{ selectedOutputDeviceLabel }}</small>
+            </label>
+          </div>
+          <label class="settings-range-row">
+            <span>{{ t('settings.inputVolume') }}</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              :value="voiceDeviceSettings.inputVolume"
+              @input="handleVoiceDeviceRange('inputVolume', $event)"
+            />
+            <strong>{{ voiceDeviceSettings.inputVolume }}%</strong>
+          </label>
+          <label class="settings-range-row">
+            <span>{{ t('settings.outputVolume') }}</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              :value="voiceDeviceSettings.outputVolume"
+              @input="handleVoiceDeviceRange('outputVolume', $event)"
+            />
+            <strong>{{ voiceDeviceSettings.outputVolume }}%</strong>
+          </label>
+          <button type="button" class="settings-secondary-button" @click="$emit('refreshVoiceDevices')">
+            <RefreshCw :size="15" aria-hidden="true" />
+            <span>{{ t('settings.refreshDevices') }}</span>
+          </button>
+          <small class="settings-device-note">{{ t('settings.deviceChangeNote') }}</small>
+        </section>
         <section class="settings-card">
           <h2>{{ t('settings.voice') }}</h2>
           <dl>
@@ -273,6 +392,18 @@ function handleVoiceProcessingChange(key: Exclude<keyof VoiceProcessingSettings,
         <section class="settings-card">
           <h2>{{ t('settings.audioProcessing') }}</h2>
           <p>{{ t('settings.audioProcessingDescription') }}</p>
+          <label class="settings-range-row">
+            <span>{{ t('settings.inputSensitivity') }}</span>
+            <input
+              type="range"
+              min="5"
+              max="85"
+              :value="voiceDeviceSettings.inputSensitivity"
+              @input="handleVoiceDeviceRange('inputSensitivity', $event)"
+            />
+            <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
+          </label>
+          <p>{{ t('settings.inputSensitivityDescription') }}</p>
           <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.audioProcessingPreset')">
             <label>
               <input
@@ -314,6 +445,17 @@ function handleVoiceProcessingChange(key: Exclude<keyof VoiceProcessingSettings,
               </span>
             </label>
           </div>
+          <label class="settings-toggle">
+            <span>
+              <strong>{{ t('settings.noiseGate') }}</strong>
+              <small>{{ t('settings.noiseGateDescription') }}</small>
+            </span>
+            <input
+              type="checkbox"
+              :checked="voiceDeviceSettings.noiseGate"
+              @change="handleNoiseGateChange"
+            />
+          </label>
           <label class="settings-toggle">
             <span>{{ t('settings.echoCancellation') }}</span>
             <input

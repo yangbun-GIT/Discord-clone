@@ -190,8 +190,11 @@ Known 2026-06-19 real-device issue:
   or intermittently cut.
 - Short words can sound acceptable, but a sustained syllable such as "아" can be
   chopped into repeated audible segments.
-- Treat this as a blocker for real voice completion until a manual speech-quality
-  pass succeeds.
+- A 2026-06-20 remediation added app-level input/output device settings, input
+  volume, output volume, input sensitivity, and a local Web Audio sensitivity gate
+  before WebRTC peer tracks are created. Treat real voice completion as blocked
+  until a manual speech-quality pass confirms the new controls solve fan/wind
+  pickup without reintroducing sustained-vowel chopping.
 
 Stage M1 remediation note:
 
@@ -205,17 +208,31 @@ Stage M1 remediation note:
 - Changes apply the next time the user joins a voice channel.
 - The app's local VAD is diagnostic-only. It updates the input meter and speaking
   state but does not gate or disable outgoing microphone audio.
+- The post-M10 voice settings pass adds a separate Web Audio processing path:
+  high-pass filtering, light compression, microphone input volume, and adjustable
+  sensitivity/noise gate. The gate is controlled through User Settings -> Voice &
+  Video or the bottom microphone quick popover. Lower sensitivity if long vowels
+  are chopped; raise sensitivity if fan/wind noise opens the microphone too often.
+- Output volume and supported output-device routing are applied to remote audio
+  sinks through the bottom headphones quick popover or User Settings -> Voice &
+  Video.
 
 Manual sustained-vowel QA:
 
 1. Open User Settings -> Voice & Video.
 2. Select Speech stability.
-3. Leave and rejoin the voice channel so microphone constraints are reacquired.
-4. Say "아" continuously for at least 10 seconds.
-5. Repeat with a normal Korean sentence and a short English sentence.
-6. If sustained audio is still chopped, test Balanced and Near raw, leaving and
-   rejoining after each preset change.
-7. Record only pass/fail notes and visible quality stats. Do not record raw audio,
+3. Confirm Noise Gate is on, set Input Volume near 80%, and start Input
+   Sensitivity around 30-40%.
+4. Leave and rejoin the voice channel if the input device or audio-processing
+   preset changed.
+5. Say "아" continuously for at least 10 seconds.
+6. If the sustained sound is chopped, lower Input Sensitivity by 5-10 points and
+   repeat. If fan/wind noise opens the mic too often, raise Input Sensitivity by
+   5-10 points and repeat.
+7. Repeat with a normal Korean sentence and a short English sentence.
+8. If sustained audio is still chopped after sensitivity tuning, test Balanced and
+   Near raw, leaving and rejoining after each preset change.
+9. Record only pass/fail notes and visible quality stats. Do not record raw audio,
    device labels, ICE candidates, TURN credentials, or user tokens.
 
 ## Call Recording QA 2026-06-19
