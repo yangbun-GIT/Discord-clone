@@ -218,6 +218,14 @@ Use these reference files for a first single-server external QA deployment:
 - `compose.production.example.yaml`
 - `deploy/Caddyfile.example`
 - `deploy/coturn/turnserver.conf.example`
+- `deploy/production.env.example`
+- `docs/external-deployment-runbook.md`
+
+Before starting a VM stack, render the placeholder Compose config locally:
+
+```powershell
+npm run check:deployment:config
+```
 
 After deploying behind HTTPS, run:
 

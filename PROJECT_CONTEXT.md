@@ -2138,6 +2138,16 @@ Completed Stage 2 bridge work:
   share quality should be tuned in P2P first for 1:1/small-room problems; SFU
   evaluation becomes appropriate when multi-viewer or simultaneous screen sharing
   causes sender bandwidth/CPU collapse.
+- External deployment execution preparation is complete for the selected single-VM
+  Docker Compose path. `deploy/production.env.example` is the placeholder-only
+  host environment template, real `deploy/*.env` files are ignored by Git, and
+  `docs/external-deployment-runbook.md` now owns VM preparation, host-only env
+  creation, production Compose startup, readiness checks, manual two-network QA,
+  and rollback. `npm run check:deployment:config` renders the production example
+  with placeholders before a real VM env exists. This is still not a public
+  deployment completion: no VM/VPS, public DNS hostname, real TURN credential,
+  public HTTPS/WSS host, or different-network TURN/NAT media QA is available in
+  the current workspace.
 
 After each stage or meaningful feature:
 

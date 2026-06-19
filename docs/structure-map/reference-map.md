@@ -517,20 +517,34 @@ Browser UI
     - `frontend/Dockerfile`
     - `deploy/Caddyfile.example`
     - `deploy/coturn/turnserver.conf.example`
+    - `deploy/production.env.example` when rendered through `--env-file`
   - Referenced by:
     - `README.md`
     - `docs/deployment.md`
     - `docs/external-deployment-decision.md`
+    - `docs/external-deployment-runbook.md`
     - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - Placeholder-only single-server external QA topology with Caddy HTTPS,
       runtime app containers, PostgreSQL, Redis, and optional coturn.
+
+- `deploy/production.env.example`
+  - Referenced by:
+    - `README.md`
+    - `docs/deployment.md`
+    - `docs/external-deployment-decision.md`
+    - `docs/external-deployment-runbook.md`
+    - `docs/project-file-map.md`
+  - Owns:
+    - Placeholder-only production environment template. Real `deploy/*.env` files
+      are ignored and must stay host-local.
 
 - `deploy/Caddyfile.example`
   - Referenced by:
     - `compose.production.example.yaml`
     - `docs/deployment.md`
     - `docs/external-deployment-decision.md`
+    - `docs/external-deployment-runbook.md`
   - Owns:
     - Public HTTPS reverse-proxy routing for `/api`, `/gateway`, and frontend app
       routes.

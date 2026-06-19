@@ -1847,6 +1847,53 @@ Verification:
   independence, screen-share visibility and cleanup, refresh preservation, and
   voice rejoin recovery with zero browser errors.
 
+## External Deployment Execution Preparation Pass
+
+Date: 2026-06-20.
+
+Scope:
+
+- Prepare the selected single-VM deployment path for actual execution.
+- Keep real VM provisioning, real DNS, real TURN credentials, and two-network media
+  QA marked pending until the user supplies external infrastructure.
+- Preserve the current local and same-Wi-Fi P2P communication path.
+
+Implementation:
+
+- `deploy/production.env.example` now provides a placeholder-only production
+  environment template for the selected single-VM Compose deployment.
+- `.gitignore` now ignores real `deploy/*.env` files while allowing
+  `deploy/*.env.example`.
+- `docs/external-deployment-runbook.md` now owns the actual VM execution sequence:
+  VM preparation, host-only env creation, Compose config rendering, stack startup,
+  readiness check, manual two-network QA, and rollback.
+- `package.json` now exposes `npm run check:deployment:config` to render
+  `compose.production.example.yaml` with placeholder values before a real VM env
+  file exists.
+- `README.md`, `docs/deployment.md`, `docs/external-deployment-decision.md`,
+  `docs/README.md`, `docs/project-file-map.md`, and
+  `docs/structure-map/reference-map.md` were updated to route future deployment
+  work through the runbook and host-only environment flow.
+
+Verification:
+
+- `npm run check:deployment:config` passed with placeholder values.
+- `npm run check:deployment:readiness` passed against the local HTTPS origin with
+  local TLS verification intentionally ignored for the self-signed development
+  certificate. The check still reported `turn_configured: false`, so external
+  TURN/NAT voice remains incomplete.
+- `npm run smoke:realtime:browser:https` passed, preserving the current local HTTPS
+  communication path.
+- `git diff --check` passed.
+
+Pending / not verified:
+
+- No VM/VPS public host was available in this workspace.
+- No public DNS hostname was configured.
+- No real TURN credential was configured.
+- No public HTTPS/WSS deployment was started.
+- No different-network voice or screen-share QA was run.
+
 ## Dependency Decision
 
 No new dependency is selected at the planning stage.

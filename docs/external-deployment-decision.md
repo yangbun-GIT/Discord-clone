@@ -28,6 +28,12 @@ for a first external QA host:
     `/api/meta/voice/readiness`, and `/gateway` HELLO over WSS.
   - Does not print JWTs, message bodies, ICE URLs, TURN credentials, ICE
     candidates, or media device labels.
+- `deploy/production.env.example`
+  - Placeholder-only environment template for the selected single-VM path.
+  - Copy to `deploy/production.env` on the VM and fill real values there only.
+- `docs/external-deployment-runbook.md`
+  - Step-by-step execution guide for VM setup, Compose startup, readiness checks,
+    manual external QA, and rollback.
 
 Reference assumptions checked against primary documentation:
 
@@ -137,23 +143,30 @@ and domain:
 4. Open TCP `80` and `443`.
 5. If self-hosting coturn, open UDP/TCP `3478` and the selected UDP relay range.
 6. Clone the repository on the VM.
-7. Create a VM-local non-committed environment file with production values.
+7. Copy `deploy/production.env.example` to `deploy/production.env` and fill the
+   VM-local non-committed environment file with production values.
 8. Confirm `CORS_ORIGINS` exactly matches `https://<domain>`.
 9. Confirm `WEBRTC_ICE_SERVERS_JSON` includes at least one `turn:` or `turns:`
    entry before external voice is claimed.
-10. Start the stack:
+10. Render the config before startup:
 
     ```powershell
-    docker compose -f compose.production.example.yaml up -d --build
+    docker compose --env-file deploy/production.env -f compose.production.example.yaml config
     ```
 
-11. If self-hosting coturn after firewall/DNS are ready, start the profile:
+11. Start the stack:
 
     ```powershell
-    docker compose -f compose.production.example.yaml --profile turn up -d --build
+    docker compose --env-file deploy/production.env -f compose.production.example.yaml up -d --build
     ```
 
-12. Run the safe readiness check from an operator machine:
+12. If self-hosting coturn after firewall/DNS are ready, start the profile:
+
+    ```powershell
+    docker compose --env-file deploy/production.env -f compose.production.example.yaml --profile turn up -d --build
+    ```
+
+13. Run the safe readiness check from an operator machine:
 
     ```powershell
     $env:DEPLOYMENT_ORIGIN = "https://<domain>"

@@ -737,6 +737,12 @@ the current local voice metadata reports `turn_configured: false`.
   `scripts/deployment_readiness_check.mjs` provide a safe external QA structure for
   HTTPS/WSS/TURN readiness. Actual internet voice remains incomplete until a
   TURN-configured deployment passes a different-network manual test.
+- External deployment execution preparation follow-up: `deploy/production.env.example`
+  and `docs/external-deployment-runbook.md` now define the selected single-VM
+  execution flow with host-only secret handling, Compose config rendering, startup,
+  readiness checks, manual two-network QA, and rollback. Public deployment remains
+  pending because no VM/VPS, public DNS hostname, real TURN credential, or
+  different-network media QA is available in the current workspace.
 
 ## Friend Relationship Workflow
 

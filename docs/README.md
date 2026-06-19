@@ -172,6 +172,10 @@ the project prompt and context files before changing code.
   - Selects single VM Docker Compose with Caddy and TURN configuration while
     keeping external TURN/NAT voice marked pending until real infrastructure and
     two-network QA are available.
+- `docs/external-deployment-runbook.md`
+  - Step-by-step execution guide for the selected single-VM deployment.
+  - Defines VM preparation, host-only env handling, Compose startup, readiness
+    checks, rollback, and the manual two-network external QA gate.
 - `docs/voice-transport-architecture.md`
   - Voice transport boundary and future SFU migration plan.
   - Documents the current P2P WebRTC transport, the shared `VoiceTransport`
@@ -205,6 +209,9 @@ the project prompt and context files before changing code.
 - Update `docs/external-deployment-decision.md` when the external deployment
   provider, topology, TURN strategy, readiness command flow, or pending external
   gate changes.
+- Update `docs/external-deployment-runbook.md` when the selected deployment command
+  flow, VM preparation, host-only environment handling, verification checklist, or
+  rollback procedure changes.
 - Update `docs/voice-transport-architecture.md` when the voice transport boundary,
   P2P transport contract, SFU migration plan, media-token requirements, or
   screen-share quality decision criteria change.

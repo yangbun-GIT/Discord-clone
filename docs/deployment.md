@@ -34,8 +34,10 @@ Reference files for a first external test are:
 
 - `compose.production.example.yaml`
 - `deploy/Caddyfile.example`
+- `deploy/production.env.example`
 - `deploy/coturn/turnserver.conf.example`
 - `scripts/deployment_readiness_check.mjs`
+- `docs/external-deployment-runbook.md`
 
 The example topology is intentionally conservative: production-oriented Compose
 should avoid application-code bind mounts, set deployment-specific environment
@@ -229,34 +231,50 @@ which release gates must remain `Pending / Not Verified`.
 
 Use this only as a starting point for an external QA host. Real secrets must come
 from a non-committed `.env`, the host secret store, or managed provider settings.
+The execution runbook is `docs/external-deployment-runbook.md`.
 
 1. Copy `compose.production.example.yaml` to the deployment host.
-2. Set:
+2. Copy `deploy/production.env.example` to `deploy/production.env` on the host.
+   The real `deploy/production.env` file is ignored by Git and must not be
+   committed.
+3. Set:
    - `APP_DOMAIN`
    - `ACME_EMAIL`
    - `JWT_SECRET`
    - `CORS_ORIGINS=https://<domain>`
    - PostgreSQL variables or managed `DATABASE_URL` equivalent.
    - `WEBRTC_ICE_SERVERS_JSON` with at least one `turn:` or `turns:` entry.
-3. Open host firewall/security-group ports:
-   - TCP `80` and `443` for HTTPS.
-   - UDP/TCP `3478` and UDP relay range `49160-49200` if self-hosting coturn.
-4. Start app services:
+4. Render the Compose config before startup:
 
    ```powershell
-   docker compose -f compose.production.example.yaml up -d --build
+   docker compose --env-file deploy/production.env -f compose.production.example.yaml config
    ```
 
-5. If using the example self-hosted coturn service, copy
+   For a local placeholder-only rendering check, run:
+
+   ```powershell
+   npm run check:deployment:config
+   ```
+
+5. Open host firewall/security-group ports:
+   - TCP `80` and `443` for HTTPS.
+   - UDP/TCP `3478` and UDP relay range `49160-49200` if self-hosting coturn.
+6. Start app services:
+
+   ```powershell
+   docker compose --env-file deploy/production.env -f compose.production.example.yaml up -d --build
+   ```
+
+7. If using the example self-hosted coturn service, copy
    `deploy/coturn/turnserver.conf.example` outside the repository, replace
    placeholders with secret values, and start with the `turn` profile only after
    firewall rules and DNS are ready:
 
    ```powershell
-   docker compose -f compose.production.example.yaml --profile turn up -d --build
+   docker compose --env-file deploy/production.env -f compose.production.example.yaml --profile turn up -d --build
    ```
 
-6. Run the safe deployment readiness check:
+8. Run the safe deployment readiness check:
 
    ```powershell
    $env:DEPLOYMENT_ORIGIN = "https://<domain>"

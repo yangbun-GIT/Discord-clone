@@ -34,8 +34,8 @@ For ordinary implementation work:
 - `package.json`
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
     dev commands, HTTPS LAN frontend dev, Docker HTTP/HTTPS startup, the C8
-    realtime browser smoke, the C4 Redis cross-worker realtime smoke, and the safe
-    voice readiness check.
+    realtime browser smoke, the C4 Redis cross-worker realtime smoke, production
+    Compose config rendering, and safe voice/deployment readiness checks.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.https.yaml`
@@ -84,6 +84,11 @@ For ordinary implementation work:
     `/gateway` HELLO over WSS.
   - Fails when `REQUIRE_TURN=1` and TURN is not configured, without printing ICE
     URLs, TURN credentials, tokens, message content, or media device labels.
+- `deploy/production.env.example`
+  - Placeholder-only production environment template for the selected single-VM
+    deployment.
+  - Copy to `deploy/production.env` on the host, fill real values there, and keep
+    that host-only file out of Git.
 - `.env.example`
   - Non-secret environment variable template, including LAN CORS, HTTPS LAN
     certificate, production-domain placeholders, and STUN/TURN guidance.
@@ -131,6 +136,11 @@ For ordinary implementation work:
     coturn optional.
   - Separates user-prepared resources, Codex-actionable setup, deployment command
     flow, verification checklist, and pending external gates.
+- `docs/external-deployment-runbook.md`
+  - Execution guide for the first public HTTPS/WSS deployment attempt.
+  - Owns VM preparation, host-only `deploy/production.env` handling, Compose
+    startup, readiness command flow, manual external QA, rollback, and current
+    pending external status.
 - `docs/voice-transport-architecture.md`
   - Current voice transport boundary and future SFU migration plan.
   - Defines the `VoiceTransport` contract, current P2P transport ownership,
@@ -173,6 +183,8 @@ For ordinary implementation work:
 - `deploy/`
   - Deployment reference assets that are safe to commit because they contain only
     placeholders.
+  - `deploy/production.env.example` is the placeholder-only environment template
+    for the selected single-VM deployment. Real `deploy/*.env` files are ignored.
   - `deploy/Caddyfile.example` routes `/api` and `/gateway` to the backend and app
     routes to the frontend behind public HTTPS.
   - `deploy/coturn/turnserver.conf.example` is a placeholder-only coturn template.
