@@ -161,6 +161,10 @@ the project prompt and context files before changing code.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.
+  - Current external-readiness reference files are
+    `compose.production.example.yaml`, `deploy/Caddyfile.example`,
+    `deploy/coturn/turnserver.conf.example`, and
+    `scripts/deployment_readiness_check.mjs`.
 - `docs/voice-qa.md`
   - Local two-browser voice smoke test, TURN/NAT test, deployment voice checklist,
     and WebRTC quality signal interpretation.

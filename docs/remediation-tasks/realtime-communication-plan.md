@@ -1686,6 +1686,73 @@ Manual checks that require browser/device permission or another device:
 - LAN access from another PC or mobile device.
 - TURN/NAT test across two networks.
 
+## External Deployment Readiness Pass
+
+Date: 2026-06-20.
+
+Scope:
+
+- Preserve the current local and same-Wi-Fi LAN voice behavior.
+- Add an external deployment/verification structure so the next gate can be tested
+  on a real HTTPS/WSS host with TURN configured.
+- Keep UI/design follow-up out of this pass until external communication is stable.
+
+Decision:
+
+- GitHub Pages or any static-only host is not sufficient for the communication
+  target. Static hosting can serve the Vue bundle, but it cannot run FastAPI,
+  PostgreSQL, Redis fan-out, `/gateway` WebSocket upgrades, or a TURN relay.
+- Recommended first external QA path is a single VM/server with Docker Compose,
+  Caddy HTTPS reverse proxy, backend runtime container, frontend runtime container,
+  PostgreSQL, Redis, and either managed TURN or self-hosted coturn.
+- This keeps the current FastAPI WebSocket plus browser WebRTC architecture intact
+  and avoids a premature SFU migration.
+
+Files added:
+
+- `compose.production.example.yaml`
+  - Example production-like topology with Caddy, frontend, backend, PostgreSQL,
+    Redis, and optional coturn profile.
+- `deploy/Caddyfile.example`
+  - Public HTTPS proxy routing `/api` and `/gateway` to backend and app routes to
+    frontend.
+- `deploy/coturn/turnserver.conf.example`
+  - Placeholder-only coturn configuration. Real secrets must stay outside Git.
+- `scripts/deployment_readiness_check.mjs`
+  - Safe checker for HTTPS origin shape, `/api/health`,
+    `/api/meta/voice/readiness`, and `/gateway` HELLO over WSS.
+
+Acceptance criteria:
+
+- `npm run check:deployment:readiness` exists.
+- The readiness check does not identify, print JWTs, print ICE URLs, print TURN
+  credentials, print media device labels, or print message content.
+- With `REQUIRE_TURN=1`, readiness fails if `turn_configured` is false.
+- Docs clearly state that readiness success is not the same as a completed
+  different-network media test.
+
+Verification:
+
+- `npm run check:deployment:readiness` passed against
+  `https://localhost:5173` with local TLS verification intentionally ignored for
+  the self-signed development certificate. It reported health `ok`, WSS gateway
+  HELLO, one STUN ICE server, and `turn_configured: false`.
+- `docker compose -f compose.production.example.yaml config` passed with
+  placeholder environment values, proving the example topology renders without
+  committing secrets.
+- `npm run check:voice:readiness` passed and still reported STUN-only local
+  configuration.
+- `npm run smoke:realtime:browser:https` passed with server text, DM, invite-DM,
+  voice remote audio sink, mute/deafen, screen-share preview/remote/stop cleanup,
+  reload rejoin recovery, voice leave cleanup, and `browserErrors: 0`.
+- `git diff --check` passed.
+
+Remaining external gate:
+
+- A real TURN credential and HTTPS/WSS deployment are still required.
+- The final internet communication claim requires two different networks to pass
+  text, DM, voice, mute/unmute, screen-share start/stop, and reconnect checks.
+
 ## Dependency Decision
 
 No new dependency is selected at the planning stage.

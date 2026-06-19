@@ -423,3 +423,21 @@ Follow `docs/voice-qa.md#turn--nat-test`. Record:
 
 Do not mark internet voice complete unless TURN is configured and a real
 different-network test passes.
+
+Before the manual two-network call, run the safe external deployment check:
+
+```powershell
+$env:DEPLOYMENT_ORIGIN = "https://<domain>"
+$env:REQUIRE_TURN = "1"
+npm run check:deployment:readiness
+```
+
+Pass criteria for the readiness step:
+
+- `secure_origin` is `true`.
+- `/api/health` returns healthy service data.
+- `/api/meta/voice/readiness.turn_configured` is `true`.
+- `/gateway` sends HELLO over WSS.
+
+This readiness step does not complete the media gate. It only proves the deployed
+origin is ready for the manual different-network voice and screen-share test.

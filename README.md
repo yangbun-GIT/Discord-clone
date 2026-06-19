@@ -190,6 +190,7 @@ npm --prefix frontend run build
 npm run smoke:realtime:browser
 npm run smoke:realtime:browser:https
 npm run smoke:realtime:redis
+npm run check:deployment:readiness
 docker compose exec -T backend pytest
 ```
 
@@ -205,3 +206,28 @@ primary backend at `http://127.0.0.1:8000` and a secondary backend at
 As of the 2026-06-19 Stage C9 gate, the local command suite and Docker/local
 communication smoke pass. Real microphone quality, real screen picker UX,
 different-PC LAN, and TURN/NAT internet voice remain separate manual gates.
+
+## External Deployment Readiness
+
+The project cannot be completed for external voice through GitHub Pages or another
+static-only host. The Vue bundle can be static, but the clone also needs FastAPI,
+PostgreSQL, Redis fan-out, `/gateway` WebSocket upgrade, HTTPS/WSS, and TURN.
+
+Use these reference files for a first single-server external QA deployment:
+
+- `compose.production.example.yaml`
+- `deploy/Caddyfile.example`
+- `deploy/coturn/turnserver.conf.example`
+
+After deploying behind HTTPS, run:
+
+```powershell
+$env:DEPLOYMENT_ORIGIN = "https://<domain>"
+$env:REQUIRE_TURN = "1"
+npm run check:deployment:readiness
+```
+
+This verifies `/api/health`, safe voice readiness, and `/gateway` WSS HELLO without
+printing credentials. A passing readiness check is still not enough by itself:
+internet voice is complete only after two users on different networks can complete
+voice and screen-share QA with `turn_configured: true`.

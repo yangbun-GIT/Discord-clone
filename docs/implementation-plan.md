@@ -729,6 +729,14 @@
   and fake screen-share paths. Real microphone quality, real screen picker UX,
 different-PC LAN, and TURN/NAT internet voice remain separate manual gates because
 the current local voice metadata reports `turn_configured: false`.
+- External deployment readiness follow-up: local same-PC voice, same-Wi-Fi LAN
+  voice, Friends/DM, and server-invite flows are now treated as acceptable for the
+  next gate. Static-only hosting such as GitHub Pages is documented as insufficient
+  for the communication target. `compose.production.example.yaml`,
+  `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`, and
+  `scripts/deployment_readiness_check.mjs` provide a safe external QA structure for
+  HTTPS/WSS/TURN readiness. Actual internet voice remains incomplete until a
+  TURN-configured deployment passes a different-network manual test.
 
 ## Friend Relationship Workflow
 

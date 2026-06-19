@@ -1,0 +1,22 @@
+# Example coturn configuration for Discord Clone external-network QA.
+# Copy this file outside the repository, replace placeholders with host secrets,
+# and do not commit the real TURN secret or generated runtime configuration.
+
+listening-port=3478
+tls-listening-port=5349
+min-port=49160
+max-port=49200
+fingerprint
+lt-cred-mech
+use-auth-secret
+static-auth-secret=replace-with-secret-from-host-secret-store
+realm=turn.example.com
+server-name=turn.example.com
+no-multicast-peers
+no-loopback-peers
+stale-nonce
+log-file=stdout
+
+# Set the public IP on the deployed host. Some containerized deployments can use
+# coturn's DETECT_EXTERNAL_IP environment support instead.
+# external-ip=203.0.113.10

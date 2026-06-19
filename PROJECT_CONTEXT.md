@@ -947,8 +947,8 @@ The app boots in two local modes:
     filters, item detail, inventory, purchase, gift, equip, and mutation responses.
 - `docs/deployment.md`
   - VM/runtime deployment checklist, production environment variables, HTTPS/gateway
-    notes, native/Docker LAN commands, ICE/TURN guidance, voice verification, and
-    hardening notes.
+    notes, native/Docker LAN commands, external Compose/Caddy/coturn reference
+    files, ICE/TURN guidance, voice verification, and hardening notes.
 - `docs/voice-qa.md`
   - Two-browser local smoke test, LAN smoke test, TURN/NAT test, and deployment
     verification checklist for voice, screen sharing, and browser WebRTC stats.
@@ -2095,6 +2095,25 @@ Completed Stage 2 bridge work:
   manual status toggle. Manual browser reload on the A/B HTTPS tabs showed one
   Tae/Joon/Mina row each, one `친구 - 1` heading, and the opposite QA friend online
   on both sides.
+
+- External deployment readiness was added after same-PC voice, same-Wi-Fi LAN
+  voice, and friend/DM/server-invite flows were manually confirmed as acceptable.
+  GitHub Pages/static-only hosting is documented as insufficient for the
+  communication target because the clone requires FastAPI, `/gateway` WebSocket
+  upgrades, PostgreSQL, Redis fan-out, and TURN. `compose.production.example.yaml`,
+  `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`, and
+  `scripts/deployment_readiness_check.mjs` now provide a placeholder-only
+  single-server external QA path using Docker Compose, Caddy HTTPS, runtime
+  frontend/backend containers, PostgreSQL, Redis, and optional coturn. The root
+  script `npm run check:deployment:readiness` verifies HTTPS origin shape,
+  `/api/health`, `/api/meta/voice/readiness`, and `/gateway` HELLO over WSS
+  without printing tokens, ICE URLs, TURN credentials, message content, or media
+  device labels. Verification passed local self-signed HTTPS deployment readiness,
+  production Compose rendering with placeholder values, voice readiness, and
+  `npm run smoke:realtime:browser:https` with `browserErrors: 0`. This is
+  readiness only; final internet communication still requires real TURN credentials
+  and two different networks to pass text, DM, voice, mute/unmute, screen-share
+  start/stop, and reconnect checks.
 
 After each stage or meaningful feature:
 

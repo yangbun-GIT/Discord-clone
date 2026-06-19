@@ -145,9 +145,21 @@ Use this when the local stack is running through Docker Compose.
 
 3. Confirm `turn_configured` is `true`. The readiness check must not print TURN
    credentials, ICE candidates, tokens, or media device labels.
-4. Repeat the two-session voice test across two different networks, such as home
+4. For deployed hosts, run the combined safe readiness check:
+
+   ```powershell
+   $env:DEPLOYMENT_ORIGIN = "https://<domain>"
+   $env:REQUIRE_TURN = "1"
+   npm run check:deployment:readiness
+   ```
+
+   This checks `/api/health`, `/api/meta/voice/readiness`, and `/gateway` over WSS
+   without identifying a user or printing credentials.
+   For local self-signed HTTPS development only, add
+   `DEPLOYMENT_IGNORE_TLS_ERRORS=1`; do not use it for final external QA.
+5. Repeat the two-session voice test across two different networks, such as home
    Wi-Fi and mobile hotspot.
-5. Watch the voice quality line for persistent packet loss, high jitter, or
+6. Watch the voice quality line for persistent packet loss, high jitter, or
    unstable peer counts.
 
 Release gate:
@@ -372,3 +384,10 @@ screen-picker, LAN, or TURN/NAT checks.
 This is still not a real internet voice completion. The current local metadata
 reports `turn_configured: false`, so real microphone quality, real screen picker
 UX, different-PC LAN, and TURN/NAT internet voice remain manual release gates.
+
+## Manual LAN Result 2026-06-20
+
+The same-Wi-Fi notebook HTTPS path passed for real voice after the local root CA and
+host-IP certificate flow was corrected. Treat this as a LAN pass only. It does not
+prove public internet/NAT voice, because the current deployed TURN gate still
+requires a TURN-configured HTTPS/WSS host and two different networks.

@@ -85,8 +85,9 @@ Implemented by:
 - Verification command lists in `README.md`, `PROJECT_CONTEXT.md`, and
   `docs/GITHUB_COLLABORATION_WORKFLOW.md`.
 
-Current status: satisfied. External verification still remains for deployed VM,
-real TURN credentials, and multi-network browser QA.
+Current status: satisfied. External readiness now has placeholder-only Compose,
+Caddy, coturn, and safe WSS/readiness-check files. Actual production VM rollout,
+real TURN credentials, and multi-network browser QA still remain external.
 
 ## Security And Data Policy
 
@@ -118,7 +119,9 @@ These are not repository-structure gaps. They require external resources:
 
 - Real TURN provider credentials.
 - Multi-browser or multi-device voice QA across separate networks.
-- Actual production VM rollout and HTTPS reverse proxy verification.
+- Actual production VM rollout and HTTPS reverse proxy verification. The repository
+  now includes safe reference files and `npm run check:deployment:readiness`, but
+  the external host still has to be provisioned and tested.
 
 Track these as next work in `PROJECT_CONTEXT.md` and relevant task docs until the
 external environment exists.

@@ -10,6 +10,34 @@
 - Put the frontend and backend behind one HTTPS reverse proxy so `/api` and
   `/gateway` share the same origin.
 
+Recommended external-test topology for this project:
+
+1. A small single VM or server running Docker Compose.
+2. Caddy as the public HTTPS reverse proxy for the domain.
+3. Frontend runtime container served through Nginx.
+4. Backend runtime container on the internal Docker network.
+5. PostgreSQL and Redis as managed services or Compose services.
+6. TURN through either a managed TURN provider or a self-hosted coturn service.
+
+This is preferred over GitHub Pages or another static-only host because the clone
+requires a stateful backend API, authenticated WebSocket gateway, PostgreSQL,
+Redis-backed fan-out for multi-worker deployments, and WebRTC ICE/TURN
+configuration. Static hosting can serve the Vue bundle only; it cannot run the
+FastAPI `/api` service, upgrade `/gateway`, or provide TURN relay behavior.
+
+Reference files for a first external test are:
+
+- `compose.production.example.yaml`
+- `deploy/Caddyfile.example`
+- `deploy/coturn/turnserver.conf.example`
+- `scripts/deployment_readiness_check.mjs`
+
+The example topology is intentionally conservative: production-oriented Compose
+should avoid application-code bind mounts, set deployment-specific environment
+variables, and use restart policies. Caddy is selected for HTTPS reverse proxying,
+and coturn is selected as the self-hosted TURN candidate because it is the standard
+open-source STUN/TURN server used for NAT traversal.
+
 ## Required Environment
 
 - `ENVIRONMENT=production`
@@ -18,6 +46,11 @@
 - `DATABASE_URL`: Neon PostgreSQL or a managed PostgreSQL URL.
 - `REDIS_URL`: Upstash Redis or another Redis endpoint for multi-instance fan-out.
 - `WEBRTC_ICE_SERVERS_JSON`: JSON array of STUN/TURN servers.
+- `APP_DOMAIN`: public domain for the HTTPS reverse proxy when using the example
+  Caddy topology.
+- `ACME_EMAIL`: certificate notification email for Caddy/ACME.
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`: only when using the example
+  Compose PostgreSQL service instead of a managed database.
 
 Example ICE JSON:
 
@@ -154,6 +187,14 @@ TURN/NAT internet checklist:
 5. Mark internet voice incomplete if TURN credentials are unavailable or
    `/api/meta/voice/readiness` reports `turn_configured: false`.
 
+For deployed hosts, prefer the combined deployment check:
+
+```powershell
+$env:DEPLOYMENT_ORIGIN = "https://<domain>"
+$env:REQUIRE_TURN = "1"
+npm run check:deployment:readiness
+```
+
 ## VM Checklist
 
 1. Provision a small Oracle Cloud or GCP VM.
@@ -174,6 +215,54 @@ TURN/NAT internet checklist:
    - The voice panel reports connected peers plus RTT, jitter, packet loss, and
      outbound bitrate from browser WebRTC stats.
    - Screen sharing renders a remote screen tile and shows connection state.
+
+## Example Compose Deployment
+
+Use this only as a starting point for an external QA host. Real secrets must come
+from a non-committed `.env`, the host secret store, or managed provider settings.
+
+1. Copy `compose.production.example.yaml` to the deployment host.
+2. Set:
+   - `APP_DOMAIN`
+   - `ACME_EMAIL`
+   - `JWT_SECRET`
+   - `CORS_ORIGINS=https://<domain>`
+   - PostgreSQL variables or managed `DATABASE_URL` equivalent.
+   - `WEBRTC_ICE_SERVERS_JSON` with at least one `turn:` or `turns:` entry.
+3. Open host firewall/security-group ports:
+   - TCP `80` and `443` for HTTPS.
+   - UDP/TCP `3478` and UDP relay range `49160-49200` if self-hosting coturn.
+4. Start app services:
+
+   ```powershell
+   docker compose -f compose.production.example.yaml up -d --build
+   ```
+
+5. If using the example self-hosted coturn service, copy
+   `deploy/coturn/turnserver.conf.example` outside the repository, replace
+   placeholders with secret values, and start with the `turn` profile only after
+   firewall rules and DNS are ready:
+
+   ```powershell
+   docker compose -f compose.production.example.yaml --profile turn up -d --build
+   ```
+
+6. Run the safe deployment readiness check:
+
+   ```powershell
+   $env:DEPLOYMENT_ORIGIN = "https://<domain>"
+   $env:REQUIRE_TURN = "1"
+   npm run check:deployment:readiness
+   ```
+
+The readiness check verifies HTTPS origin shape, `/api/health`,
+`/api/meta/voice/readiness`, and `/gateway` HELLO over WSS. It prints only
+non-secret readiness fields and does not identify, print tokens, print ICE URLs,
+or expose TURN credentials.
+
+For local self-signed HTTPS development only, add
+`DEPLOYMENT_IGNORE_TLS_ERRORS=1`. Do not use that variable for a public deployment
+or final external QA.
 
 ## Hardening
 

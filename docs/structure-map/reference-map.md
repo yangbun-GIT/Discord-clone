@@ -479,6 +479,21 @@ Browser UI
     - Safe operator-facing STUN/TURN readiness output without ICE URLs, TURN
       credentials, candidates, tokens, message content, or media device labels.
 
+- `scripts/deployment_readiness_check.mjs`
+  - References:
+    - `/api/health`
+    - `/api/meta/voice/readiness`
+    - `/gateway`
+    - root `package.json` script `check:deployment:readiness`.
+  - Referenced by:
+    - `README.md`
+    - `docs/deployment.md`
+    - `docs/voice-qa.md`
+    - `docs/realtime-communication-qa.md`
+  - Owns:
+    - Safe external deployment readiness verification for HTTPS origin shape,
+      backend health, TURN readiness, and gateway WSS HELLO without credentials.
+
 - `compose.https.yaml`
   - References:
     - `compose.yaml`
@@ -493,6 +508,35 @@ Browser UI
   - Owns:
     - Docker HTTPS LAN media path for non-localhost microphone and screen-capture
       testing.
+
+- `compose.production.example.yaml`
+  - References:
+    - `backend/Dockerfile`
+    - `frontend/Dockerfile`
+    - `deploy/Caddyfile.example`
+    - `deploy/coturn/turnserver.conf.example`
+  - Referenced by:
+    - `README.md`
+    - `docs/deployment.md`
+    - `docs/remediation-tasks/realtime-communication-plan.md`
+  - Owns:
+    - Placeholder-only single-server external QA topology with Caddy HTTPS,
+      runtime app containers, PostgreSQL, Redis, and optional coturn.
+
+- `deploy/Caddyfile.example`
+  - Referenced by:
+    - `compose.production.example.yaml`
+    - `docs/deployment.md`
+  - Owns:
+    - Public HTTPS reverse-proxy routing for `/api`, `/gateway`, and frontend app
+      routes.
+
+- `deploy/coturn/turnserver.conf.example`
+  - Referenced by:
+    - `compose.production.example.yaml`
+    - `docs/deployment.md`
+  - Owns:
+    - Placeholder-only self-hosted coturn configuration template.
 
 - `scripts/create_lan_https_cert.ps1`
   - References:

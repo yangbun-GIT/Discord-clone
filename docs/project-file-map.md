@@ -42,6 +42,12 @@ For ordinary implementation work:
   - Optional Docker Compose override for same-LAN HTTPS media testing.
   - Runs the frontend Vite dev server with `VITE_HTTPS_PFX_FILE` mounted from
     ignored local `certs/` files.
+- `compose.production.example.yaml`
+  - Example single-server external QA topology.
+  - Uses Caddy for public HTTPS, runtime frontend/backend containers,
+    PostgreSQL, Redis, and an optional coturn profile.
+  - Placeholder-only: real secrets must come from a non-committed deployment
+    environment or host secret store.
 - `compose.redis-smoke.yaml`
   - Optional Redis + secondary backend override for C4 multi-worker realtime smoke.
   - Normal local Docker startup remains Redis-free unless this override is included.
@@ -72,9 +78,15 @@ For ordinary implementation work:
   - Prints only endpoint, ICE server count, STUN readiness, and TURN readiness.
   - Does not print ICE URLs, TURN credentials, candidates, tokens, message content,
     or media device labels.
+- `scripts/deployment_readiness_check.mjs`
+  - Safe external deployment check.
+  - Verifies HTTPS origin shape, `/api/health`, `/api/meta/voice/readiness`, and
+    `/gateway` HELLO over WSS.
+  - Fails when `REQUIRE_TURN=1` and TURN is not configured, without printing ICE
+    URLs, TURN credentials, tokens, message content, or media device labels.
 - `.env.example`
   - Non-secret environment variable template, including LAN CORS, HTTPS LAN
-    certificate, and STUN/TURN guidance.
+    certificate, production-domain placeholders, and STUN/TURN guidance.
 - `.dockerignore`, `backend/.dockerignore`, `frontend/.dockerignore`
   - Docker build-context exclusions.
 
@@ -147,6 +159,13 @@ For ordinary implementation work:
     and generated analysis artifacts are ignored.
 - `docs/qa-artifacts/`
   - Stage QA screenshots already used for verification evidence.
+- `deploy/`
+  - Deployment reference assets that are safe to commit because they contain only
+    placeholders.
+  - `deploy/Caddyfile.example` routes `/api` and `/gateway` to the backend and app
+    routes to the frontend behind public HTTPS.
+  - `deploy/coturn/turnserver.conf.example` is a placeholder-only coturn template.
+    Copy it outside the repository before adding real TURN secrets.
 - `docs/remediation-tasks/`
   - QA-driven defect and remediation backlogs for future implementation passes.
   - Current live QA-derived development plan:
@@ -635,7 +654,9 @@ For ordinary implementation work:
   - `docs/architecture-principles-audit.md`, `PROJECT_CONTEXT.md`, this file.
 - Deployment or Docker:
   - `compose.yaml`, `backend/Dockerfile`, `frontend/Dockerfile`,
-    `frontend/nginx.conf`, `docs/deployment.md`, `README.md`.
+    `frontend/nginx.conf`, `compose.production.example.yaml`,
+    `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`,
+    `scripts/deployment_readiness_check.mjs`, `docs/deployment.md`, `README.md`.
 - Test updates:
   - Backend tests live in `backend/tests`.
   - Frontend unit tests live beside owner modules, for example
