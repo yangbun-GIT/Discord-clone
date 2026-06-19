@@ -247,10 +247,16 @@ returns `201`, member invite creation returns `403`.
 Manual QA follow-up Stage M1 is implemented in code. Voice settings now expose
 speech-stability, balanced, and near-raw browser audio-processing presets; the
 default speech-stability preset disables browser noise suppression and enables auto
-gain to reduce sustained-syllable chopping. The local VAD remains diagnostic-only
-and does not gate outgoing microphone audio. Focused frontend voice media tests,
-frontend lint, and production build passed. Real sustained-vowel listening remains
-a manual gate.
+gain to reduce sustained-syllable chopping. A later voice-quality pass added the
+MIT-licensed `@sapphi-red/web-noise-suppressor` dependency and inserts its
+RNNoise AudioWorklet/WASM processor before the local gain/gate chain when the
+browser supports 48 kHz AudioWorklet processing. The input sensitivity gate now
+uses RMS/time-domain envelope sampling instead of frequency-bin averages, holds
+open longer for sustained vowels, and exposes one combined input-level/threshold
+track in User Settings and the bottom microphone popover. The local VAD remains
+diagnostic-only for speaking state and no longer owns the public input-level meter.
+Focused frontend voice media tests, frontend lint, and production build passed.
+Real sustained-vowel and fan/wind-noise listening remains a manual gate.
 
 Manual QA follow-up Stage M2 is implemented in code. Remote screen-sharing
 participants now render as one screen-share participant composition, and their

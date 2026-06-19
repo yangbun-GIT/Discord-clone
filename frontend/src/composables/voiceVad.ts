@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 interface VoiceVadOptions {
   inputLevel: Ref<number>
   localSpeaking: Ref<boolean>
+  updateInputLevel?: boolean
 }
 
 export function createVoiceVad(options: VoiceVadOptions) {
@@ -30,7 +31,9 @@ export function createVoiceVad(options: VoiceVadOptions) {
       if (!localAnalyser) return
       localAnalyser.getByteFrequencyData(data)
       const average = data.reduce((total, value) => total + value, 0) / data.length
-      options.inputLevel.value = Math.round(Math.min(100, (average / 90) * 100))
+      if (options.updateInputLevel !== false) {
+        options.inputLevel.value = Math.round(Math.min(100, (average / 90) * 100))
+      }
       options.localSpeaking.value = average > 18
     }, 180)
   }
@@ -41,7 +44,7 @@ export function createVoiceVad(options: VoiceVadOptions) {
       vadTimer = null
     }
     options.localSpeaking.value = false
-    options.inputLevel.value = 0
+    if (options.updateInputLevel !== false) options.inputLevel.value = 0
     localAnalyser = null
   }
 

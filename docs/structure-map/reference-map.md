@@ -753,14 +753,18 @@ Browser UI
   - Owns:
     - Typed microphone/screen capture errors, local voice-processing preferences,
       local voice device preferences, browser-supported audio constraint detection,
-      microphone input volume/sensitivity/noise-gate processing, and media-track
-      cleanup.
+      RNNoise AudioWorklet/WASM setup through `@sapphi-red/web-noise-suppressor`,
+      microphone input volume, RMS-based input-level sampling,
+      sensitivity/noise-gate processing, and media-track cleanup.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:
     - `frontend/src/composables/useVoiceRtc.ts`
   - Talks to:
     - Browser `AudioContext`, analyser nodes, and interval timers.
+  - Owns:
+    - Diagnostic speaking-state sampling. Public input-level display is sourced from
+      the `voiceMedia.ts` input processor in current voice sessions.
 
 - `frontend/src/composables/voicePeerConnections.ts`
   - References:

@@ -80,6 +80,10 @@ const connectionDetailLabel = computed(() => {
   }
   return props.turnConfigured ? t('voice.turnReady') : t('voice.stunOnly')
 })
+const inputSensitivityStyle = computed(() => ({
+  '--voice-input-level': `${Math.min(100, Math.max(0, props.inputLevel))}%`,
+  '--voice-input-threshold': `${Math.min(100, Math.max(0, props.voiceDeviceSettings.inputSensitivity))}%`,
+}))
 
 function toggleAudioMenu(menu: 'input' | 'output') {
   audioMenu.value = audioMenu.value === menu ? null : menu
@@ -105,6 +109,12 @@ function handleNoiseGateChange(event: Event) {
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
   emit('updateVoiceDeviceSettings', { noiseGate: target.checked })
+}
+
+function handleRnnoiseChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('updateVoiceDeviceSettings', { rnnoiseSuppression: target.checked })
 }
 
 function openSettings() {
@@ -236,16 +246,33 @@ onBeforeUnmount(() => {
           />
           <strong>{{ voiceDeviceSettings.inputVolume }}%</strong>
         </label>
-        <label class="voice-device-range">
+        <label class="voice-device-range voice-device-sensitivity">
           <span>{{ t('settings.inputSensitivity') }}</span>
+          <span
+            class="voice-sensitivity-control compact"
+            :style="inputSensitivityStyle"
+          >
+            <span class="voice-sensitivity-track" aria-hidden="true">
+              <span class="voice-sensitivity-level"></span>
+            </span>
+            <input
+              type="range"
+              min="5"
+              max="85"
+              :value="voiceDeviceSettings.inputSensitivity"
+              :aria-label="t('settings.inputSensitivity')"
+              @input="handleDeviceRange('inputSensitivity', $event)"
+            />
+          </span>
+          <strong>{{ inputLevel }}%</strong>
+        </label>
+        <label class="voice-device-toggle">
+          <span>{{ t('settings.rnnoiseSuppression') }}</span>
           <input
-            type="range"
-            min="5"
-            max="85"
-            :value="voiceDeviceSettings.inputSensitivity"
-            @input="handleDeviceRange('inputSensitivity', $event)"
+            type="checkbox"
+            :checked="voiceDeviceSettings.rnnoiseSuppression"
+            @change="handleRnnoiseChange"
           />
-          <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
         </label>
         <label class="voice-device-toggle">
           <span>{{ t('settings.noiseGate') }}</span>

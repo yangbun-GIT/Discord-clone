@@ -2251,6 +2251,82 @@ select:focus-visible {
   text-align: right;
 }
 
+.settings-sensitivity-row {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.settings-sensitivity-row > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.settings-sensitivity-row strong {
+  color: #f8fafc;
+  font-size: 0.84rem;
+}
+
+.settings-sensitivity-row small {
+  color: #9ca3af;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.voice-sensitivity-control {
+  --voice-input-level: 0%;
+  --voice-input-threshold: 38%;
+  position: relative;
+  min-width: 0;
+  display: block;
+  height: 28px;
+}
+
+.voice-sensitivity-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(234 179 8 / 78%) 0%,
+      rgb(234 179 8 / 78%) var(--voice-input-threshold),
+      rgb(35 165 89 / 78%) var(--voice-input-threshold),
+      rgb(35 165 89 / 78%) 100%
+    );
+  transform: translateY(-50%);
+}
+
+.voice-sensitivity-level {
+  display: block;
+  width: var(--voice-input-level);
+  height: 100%;
+  border-radius: inherit;
+  background: rgb(0 0 0 / 34%);
+}
+
+.voice-sensitivity-control input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  opacity: 0.98;
+  accent-color: #f8fafc;
+  background: transparent;
+}
+
+.voice-sensitivity-control.compact {
+  height: 24px;
+}
+
+.voice-device-sensitivity strong {
+  font-variant-numeric: tabular-nums;
+}
+
 .settings-secondary-button {
   justify-self: start;
   display: inline-flex;

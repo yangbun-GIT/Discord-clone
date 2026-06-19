@@ -115,6 +115,10 @@ const selectedInputDeviceLabel = computed(() => {
 const selectedOutputDeviceLabel = computed(() => {
   return deviceLabel(props.voiceDevices.outputs, props.voiceDeviceSettings.outputDeviceId, t('settings.defaultDevice'))
 })
+const inputSensitivityStyle = computed(() => ({
+  '--voice-input-level': `${Math.min(100, Math.max(0, props.inputLevel))}%`,
+  '--voice-input-threshold': `${Math.min(100, Math.max(0, props.voiceDeviceSettings.inputSensitivity))}%`,
+}))
 
 function deviceLabel(
   devices: VoiceDeviceList['inputs'],
@@ -169,6 +173,14 @@ function handleNoiseGateChange(event: Event) {
   if (!(target instanceof HTMLInputElement)) return
   emit('updateVoiceDeviceSettings', {
     noiseGate: target.checked,
+  })
+}
+
+function handleRnnoiseChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('updateVoiceDeviceSettings', {
+    rnnoiseSuppression: target.checked,
   })
 }
 </script>
@@ -383,25 +395,30 @@ function handleNoiseGateChange(event: Event) {
           </dl>
         </section>
         <section class="settings-card">
-          <h2>{{ t('settings.inputLevel') }}</h2>
-          <div class="settings-meter-row">
-            <Mic :size="18" aria-hidden="true" />
-            <meter min="0" max="100" :value="inputLevel" :aria-label="t('voice.aria.inputLevel')" />
-          </div>
-        </section>
-        <section class="settings-card">
           <h2>{{ t('settings.audioProcessing') }}</h2>
           <p>{{ t('settings.audioProcessingDescription') }}</p>
-          <label class="settings-range-row">
-            <span>{{ t('settings.inputSensitivity') }}</span>
-            <input
-              type="range"
-              min="5"
-              max="85"
-              :value="voiceDeviceSettings.inputSensitivity"
-              @input="handleVoiceDeviceRange('inputSensitivity', $event)"
-            />
-            <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
+          <label class="settings-sensitivity-row">
+            <span>
+              <strong>{{ t('settings.inputSensitivity') }}</strong>
+              <small>{{ t('settings.inputLevelWithSensitivity') }}</small>
+            </span>
+            <span
+              class="voice-sensitivity-control"
+              :style="inputSensitivityStyle"
+            >
+              <span class="voice-sensitivity-track" aria-hidden="true">
+                <span class="voice-sensitivity-level"></span>
+              </span>
+              <input
+                type="range"
+                min="5"
+                max="85"
+                :value="voiceDeviceSettings.inputSensitivity"
+                :aria-label="t('settings.inputSensitivity')"
+                @input="handleVoiceDeviceRange('inputSensitivity', $event)"
+              />
+            </span>
+            <strong>{{ t('settings.inputLevelValue', { level: inputLevel, threshold: voiceDeviceSettings.inputSensitivity }) }}</strong>
           </label>
           <p>{{ t('settings.inputSensitivityDescription') }}</p>
           <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.audioProcessingPreset')">
@@ -445,6 +462,17 @@ function handleNoiseGateChange(event: Event) {
               </span>
             </label>
           </div>
+          <label class="settings-toggle">
+            <span>
+              <strong>{{ t('settings.rnnoiseSuppression') }}</strong>
+              <small>{{ t('settings.rnnoiseSuppressionDescription') }}</small>
+            </span>
+            <input
+              type="checkbox"
+              :checked="voiceDeviceSettings.rnnoiseSuppression"
+              @change="handleRnnoiseChange"
+            />
+          </label>
           <label class="settings-toggle">
             <span>
               <strong>{{ t('settings.noiseGate') }}</strong>

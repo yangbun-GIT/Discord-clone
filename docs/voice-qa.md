@@ -188,13 +188,16 @@ Known 2026-06-19 real-device issue:
 
 - Keyboard/tap sounds can transmit while spoken language sounds echoing, unstable,
   or intermittently cut.
-- Short words can sound acceptable, but a sustained syllable such as "아" can be
+- Short words can sound acceptable, but a sustained syllable such as "?? can be
   chopped into repeated audible segments.
 - A 2026-06-20 remediation added app-level input/output device settings, input
   volume, output volume, input sensitivity, and a local Web Audio sensitivity gate
-  before WebRTC peer tracks are created. Treat real voice completion as blocked
-  until a manual speech-quality pass confirms the new controls solve fan/wind
-  pickup without reintroducing sustained-vowel chopping.
+  before WebRTC peer tracks are created.
+- A later 2026-06-20 remediation added RNNoise noise reduction through
+  `@sapphi-red/web-noise-suppressor` and replaced frequency-bin gate detection with
+  RMS/time-domain envelope detection. Treat real voice completion as blocked until
+  a manual speech-quality pass confirms this solves fan/wind pickup without
+  reintroducing sustained-vowel chopping.
 
 Stage M1 remediation note:
 
@@ -206,27 +209,36 @@ Stage M1 remediation note:
   - Near raw: echo cancellation, noise suppression, and auto gain all off for
     isolating browser-processing artifacts.
 - Changes apply the next time the user joins a voice channel.
-- The app's local VAD is diagnostic-only. It updates the input meter and speaking
-  state but does not gate or disable outgoing microphone audio.
+- The app's local VAD is diagnostic-only for speaking state and does not own the
+  public input-level meter, gate outgoing microphone audio, or disable outgoing
+  microphone audio.
 - The post-M10 voice settings pass adds a separate Web Audio processing path:
-  high-pass filtering, light compression, microphone input volume, and adjustable
-  sensitivity/noise gate. The gate is controlled through User Settings -> Voice &
-  Video or the bottom microphone quick popover. Lower sensitivity if long vowels
-  are chopped; raise sensitivity if fan/wind noise opens the microphone too often.
+  RNNoise noise reduction when AudioWorklet/WASM is available, high-pass filtering,
+  light compression, microphone input volume, and adjustable sensitivity/noise gate.
+  The gate is controlled through User Settings -> Voice & Video or the bottom
+  microphone quick popover.
+- The input sensitivity control overlays the current input level and transmission
+  threshold on the same track. If the level bar stays below the thumb, the gate
+  will eventually close. If the level bar stays above the thumb during a sustained
+  vowel, the gate should remain open.
+- Lower sensitivity if long vowels are chopped; raise sensitivity if fan/wind noise
+  opens the microphone too often. Keep RNNoise enabled for normal testing.
 - Output volume and supported output-device routing are applied to remote audio
   sinks through the bottom headphones quick popover or User Settings -> Voice &
   Video.
 
-Manual sustained-vowel QA:
+Current sustained-vowel QA:
 
 1. Open User Settings -> Voice & Video.
 2. Select Speech stability.
-3. Confirm Noise Gate is on, set Input Volume near 80%, and start Input
-   Sensitivity around 30-40%.
+3. Confirm RNNoise noise reduction and Noise Gate are on, set Input Volume near
+   80%, and start Input Sensitivity around 30-40%.
 4. Leave and rejoin the voice channel if the input device or audio-processing
    preset changed.
-5. Say "아" continuously for at least 10 seconds.
-6. If the sustained sound is chopped, lower Input Sensitivity by 5-10 points and
+5. Say a single vowel continuously for at least 10 seconds.
+6. Watch the combined input-level/sensitivity track. If the sustained sound is
+   chopped while the level bar is above the thumb, record it as a gate bug. If the
+   level bar drops below the thumb, lower Input Sensitivity by 5-10 points and
    repeat. If fan/wind noise opens the mic too often, raise Input Sensitivity by
    5-10 points and repeat.
 7. Repeat with a normal Korean sentence and a short English sentence.

@@ -2,9 +2,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import {
   buildAudioConstraints,
+  calculateRms,
   normalizeMediaError,
   readVoiceDeviceSettings,
   readVoiceProcessingSettings,
+  rmsToInputLevelPercent,
   VoiceMediaError,
   voiceProcessingPreset,
   writeVoiceDeviceSettings,
@@ -168,6 +170,7 @@ describe('voice processing settings', () => {
       outputVolume: -10,
       inputSensitivity: 41.4,
       noiseGate: false,
+      rnnoiseSuppression: false,
     })
 
     expect(readVoiceDeviceSettings()).toEqual({
@@ -177,6 +180,7 @@ describe('voice processing settings', () => {
       outputVolume: 0,
       inputSensitivity: 41,
       noiseGate: false,
+      rnnoiseSuppression: false,
     })
   })
 
@@ -188,8 +192,23 @@ describe('voice processing settings', () => {
       outputVolume: 100,
       inputSensitivity: 38,
       noiseGate: true,
+      rnnoiseSuppression: true,
     })).toMatchObject({
       deviceId: { exact: 'mic-selected' },
     })
+  })
+})
+
+describe('voice input level helpers', () => {
+  it('calculates RMS for time-domain microphone samples', () => {
+    expect(calculateRms(new Float32Array([0, 0, 0]))).toBe(0)
+    expect(calculateRms(new Float32Array([1, -1, 1, -1]))).toBe(1)
+  })
+
+  it('maps RMS to a bounded Discord-like input meter percentage', () => {
+    expect(rmsToInputLevelPercent(0)).toBe(0)
+    expect(rmsToInputLevelPercent(0.0001)).toBe(0)
+    expect(rmsToInputLevelPercent(0.08)).toBeGreaterThan(60)
+    expect(rmsToInputLevelPercent(1)).toBe(100)
   })
 })

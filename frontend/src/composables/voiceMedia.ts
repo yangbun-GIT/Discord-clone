@@ -1,7 +1,15 @@
+import rnnoiseWasmPath from '@sapphi-red/web-noise-suppressor/rnnoise.wasm?url'
+import rnnoiseSimdWasmPath from '@sapphi-red/web-noise-suppressor/rnnoise_simd.wasm?url'
+import rnnoiseWorkletPath from '@sapphi-red/web-noise-suppressor/rnnoiseWorklet.js?url'
+
 const MEDIA_PERMISSION_TIMEOUT_MS = 30_000
 const VOICE_CONSTRAINT_SUPPORT_KEY = 'discord_clone_voice_constraint_support'
 const VOICE_PROCESSING_SETTINGS_KEY = 'discord_clone_voice_processing_settings'
 const VOICE_DEVICE_SETTINGS_KEY = 'discord_clone_voice_device_settings'
+const SILENCE_DB = -64
+const SPEECH_REFERENCE_DB = -18
+
+type RnnoiseNode = AudioNode & { destroy: () => void }
 
 type ExtendedMediaTrackSupportedConstraints = MediaTrackSupportedConstraints & {
   latency?: boolean
@@ -50,6 +58,7 @@ export interface VoiceDeviceSettings {
   outputVolume: number
   inputSensitivity: number
   noiseGate: boolean
+  rnnoiseSuppression: boolean
 }
 
 export interface VoiceDeviceOption {
@@ -68,6 +77,10 @@ export interface VoiceInputProcessor {
   stream: MediaStream
   updateSettings: (settings: VoiceDeviceSettings) => void
   close: () => void
+}
+
+export interface VoiceInputProcessorOptions {
+  onInputLevel?: (level: number) => void
 }
 
 export class VoiceMediaError extends Error {
@@ -106,6 +119,7 @@ export function defaultVoiceDeviceSettings(): VoiceDeviceSettings {
     outputVolume: 100,
     inputSensitivity: 38,
     noiseGate: true,
+    rnnoiseSuppression: true,
   }
 }
 
@@ -308,10 +322,11 @@ export function setAudioTracksMuted(stream: MediaStream | null, muted: boolean) 
   })
 }
 
-export function createVoiceInputProcessor(
+export async function createVoiceInputProcessor(
   rawStream: MediaStream,
   initialSettings: VoiceDeviceSettings = readVoiceDeviceSettings(),
-): VoiceInputProcessor {
+  options: VoiceInputProcessorOptions = {},
+): Promise<VoiceInputProcessor> {
   const AudioContextConstructor = window.AudioContext
   if (!AudioContextConstructor) {
     return {
@@ -334,26 +349,35 @@ export function createVoiceInputProcessor(
   const gateGain = context.createGain()
   const analyser = context.createAnalyser()
   const destination = context.createMediaStreamDestination()
-  const samples = new Uint8Array(256)
+  const samples = new Float32Array(1024)
   let settings = normalizeVoiceDeviceSettings(initialSettings)
   let gateOpen = true
   let releaseTimer: number | null = null
   let intervalId: number | null = null
+  let smoothedLevel = 0
+  const rnnoiseNode = settings.rnnoiseSuppression
+    ? await createRnnoiseNode(context)
+    : null
 
   highpass.type = 'highpass'
   highpass.frequency.value = 90
   highpass.Q.value = 0.7
-  compressor.threshold.value = -32
-  compressor.knee.value = 16
-  compressor.ratio.value = 3
-  compressor.attack.value = 0.006
-  compressor.release.value = 0.18
-  analyser.fftSize = 512
-  analyser.smoothingTimeConstant = 0.82
+  compressor.threshold.value = -28
+  compressor.knee.value = 12
+  compressor.ratio.value = 2.4
+  compressor.attack.value = 0.004
+  compressor.release.value = 0.28
+  analyser.fftSize = 1024
+  analyser.smoothingTimeConstant = 0
   gateGain.gain.value = 1
 
   source.connect(highpass)
-  highpass.connect(compressor)
+  if (rnnoiseNode) {
+    highpass.connect(rnnoiseNode)
+    rnnoiseNode.connect(compressor)
+  } else {
+    highpass.connect(compressor)
+  }
   compressor.connect(inputGain)
   inputGain.connect(gateGain)
   gateGain.connect(destination)
@@ -369,10 +393,12 @@ export function createVoiceInputProcessor(
   }
 
   function inputLevel() {
-    analyser.getByteFrequencyData(samples)
-    const speechBins = samples.slice(2, 96)
-    const average = speechBins.reduce((sum, value) => sum + value, 0) / speechBins.length
-    return Math.min(100, (average / 92) * 100)
+    analyser.getFloatTimeDomainData(samples)
+    const rms = calculateRms(samples)
+    const level = rmsToInputLevelPercent(rms)
+    const smoothing = level > smoothedLevel ? 0.42 : 0.13
+    smoothedLevel += (level - smoothedLevel) * smoothing
+    return Math.round(smoothedLevel)
   }
 
   function openGate() {
@@ -391,15 +417,16 @@ export function createVoiceInputProcessor(
     releaseTimer = window.setTimeout(() => {
       releaseTimer = null
       gateOpen = false
-      gateGain.gain.setTargetAtTime(0.04, context.currentTime, 0.16)
-    }, 320)
+      gateGain.gain.setTargetAtTime(0.03, context.currentTime, 0.22)
+    }, 1800)
   }
 
   function tickGate() {
-    if (!settings.noiseGate) return
     const level = inputLevel()
+    options.onInputLevel?.(level)
+    if (!settings.noiseGate) return
     const openThreshold = settings.inputSensitivity
-    const closeThreshold = Math.max(6, settings.inputSensitivity * 0.58)
+    const closeThreshold = Math.max(4, settings.inputSensitivity - 16)
     if (level >= openThreshold) {
       openGate()
       return
@@ -416,11 +443,26 @@ export function createVoiceInputProcessor(
     close: () => {
       if (intervalId !== null) window.clearInterval(intervalId)
       if (releaseTimer !== null) window.clearTimeout(releaseTimer)
+      rnnoiseNode?.destroy()
       stopMediaStream(rawStream)
       stopMediaStream(destination.stream)
       void context.close().catch(() => {})
     },
   }
+}
+
+export function calculateRms(samples: Float32Array) {
+  if (samples.length === 0) return 0
+  let total = 0
+  for (const sample of samples) total += sample * sample
+  return Math.sqrt(total / samples.length)
+}
+
+export function rmsToInputLevelPercent(rms: number) {
+  if (!Number.isFinite(rms) || rms <= 0) return 0
+  const db = 20 * Math.log10(Math.max(rms, 0.000_001))
+  const percent = ((db - SILENCE_DB) / (SPEECH_REFERENCE_DB - SILENCE_DB)) * 100
+  return Math.min(100, Math.max(0, Math.round(percent)))
 }
 
 export function screenTrackIsActive(stream: MediaStream) {
@@ -491,6 +533,27 @@ function normalizeVoiceDeviceSettings(settings: Partial<VoiceDeviceSettings>): V
     outputVolume: clampPercent(settings.outputVolume, defaults.outputVolume),
     inputSensitivity: clampPercent(settings.inputSensitivity, defaults.inputSensitivity),
     noiseGate: typeof settings.noiseGate === 'boolean' ? settings.noiseGate : defaults.noiseGate,
+    rnnoiseSuppression: typeof settings.rnnoiseSuppression === 'boolean'
+      ? settings.rnnoiseSuppression
+      : defaults.rnnoiseSuppression,
+  }
+}
+
+async function createRnnoiseNode(context: AudioContext) {
+  if (!context.audioWorklet || context.sampleRate !== 48_000) return null
+  try {
+    const { loadRnnoise, RnnoiseWorkletNode } = await import('@sapphi-red/web-noise-suppressor')
+    const wasmBinary = await loadRnnoise({
+      url: rnnoiseWasmPath,
+      simdUrl: rnnoiseSimdWasmPath,
+    })
+    await context.audioWorklet.addModule(rnnoiseWorkletPath)
+    return new RnnoiseWorkletNode(context, {
+      wasmBinary,
+      maxChannels: 1,
+    }) as RnnoiseNode
+  } catch {
+    return null
   }
 }
 

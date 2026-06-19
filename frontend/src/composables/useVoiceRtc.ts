@@ -47,7 +47,7 @@ const voiceDeviceSettings = ref<VoiceDeviceSettings>(readVoiceDeviceSettings())
 const voiceDevices = ref<VoiceDeviceList>({ inputs: [], outputs: [] })
 const qualityStats = ref<VoiceQualityStats>(createEmptyQualityStats())
 const voiceStatsCollector = createVoiceStatsCollector()
-const voiceVad = createVoiceVad({ inputLevel, localSpeaking })
+const voiceVad = createVoiceVad({ inputLevel, localSpeaking, updateInputLevel: false })
 let activeOptions: ConnectOptions | null = null
 let statsTimer: number | null = null
 let inputProcessor: VoiceInputProcessor | null = null
@@ -98,7 +98,11 @@ export function useVoiceRtc() {
         constraintSupport.value = getSupportedVoiceConstraints()
         recordVoiceConstraintSupport(constraintSupport.value)
         const rawStream = await captureMicrophone(voiceDeviceSettings.value)
-        inputProcessor = createVoiceInputProcessor(rawStream, voiceDeviceSettings.value)
+        inputProcessor = await createVoiceInputProcessor(rawStream, voiceDeviceSettings.value, {
+          onInputLevel: (level) => {
+            inputLevel.value = level
+          },
+        })
         localStream.value = inputProcessor.stream
         voiceVad.attach(localStream.value)
         voiceVad.start()
@@ -131,6 +135,7 @@ export function useVoiceRtc() {
     isCapturing.value = false
     isMuted.value = false
     isScreenSharing.value = false
+    inputLevel.value = 0
     errorCode.value = null
     activeOptions = null
     voiceVad.close()
