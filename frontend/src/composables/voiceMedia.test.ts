@@ -218,7 +218,7 @@ describe('voice processing settings', () => {
     })
   })
 
-  it('persists the selected denoiser candidate independently from the legacy RNNoise flag', () => {
+  it('normalizes removed denoiser candidates back to the safe baseline', () => {
     writeVoiceDeviceSettings({
       inputDeviceId: null,
       outputDeviceId: null,
@@ -227,12 +227,12 @@ describe('voice processing settings', () => {
       inputSensitivity: 38,
       noiseGate: false,
       rnnoiseSuppression: false,
-      noiseSuppressionMode: 'dtln',
+      noiseSuppressionMode: 'legacy-removed-engine' as never,
     })
 
     expect(readVoiceDeviceSettings()).toMatchObject({
       rnnoiseSuppression: false,
-      noiseSuppressionMode: 'dtln',
+      noiseSuppressionMode: 'off',
     })
   })
 })

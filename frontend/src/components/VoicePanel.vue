@@ -109,7 +109,7 @@ function handleNoiseSuppressionModeChange(event: Event) {
   const target = event.target
   if (!(target instanceof HTMLSelectElement)) return
   const mode = target.value
-  if (mode !== 'off' && mode !== 'rnnoise' && mode !== 'speex' && mode !== 'dtln') return
+  if (mode !== 'off' && mode !== 'rnnoise') return
   emit('updateVoiceDeviceSettings', {
     noiseSuppressionMode: mode,
     rnnoiseSuppression: mode === 'rnnoise',
@@ -265,8 +265,6 @@ onBeforeUnmount(() => {
           >
             <option value="off">{{ t('settings.noiseSuppressionOff') }}</option>
             <option value="rnnoise">{{ t('settings.rnnoiseSuppression') }}</option>
-            <option value="speex">{{ t('settings.speexSuppression') }}</option>
-            <option value="dtln">{{ t('settings.dtlnSuppression') }}</option>
           </select>
         </label>
         <label class="voice-device-toggle">

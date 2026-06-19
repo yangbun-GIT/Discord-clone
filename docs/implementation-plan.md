@@ -111,9 +111,8 @@
 - Call quality controls completed: microphone mute toggles local audio tracks and the
   voice panel shows an input-level meter.
 - Client-side audio cleanup is selectable and optional: Off keeps the stable
-  baseline path, while RNNoise, SpeexDSP preprocess, and DTLN/LiteRT AudioWorklet
-  can be enabled for manual quality comparison without changing gateway/WebRTC
-  signaling.
+  baseline path, while RNNoise can be enabled for fan/keyboard noise reduction
+  without changing gateway/WebRTC signaling.
 - Media permission hardening completed: microphone capture uses supported native
   audio constraints, media failures map to typed clone UI messages, settings show
   debug-safe audio-processing support, and page hide/unmount disconnects stop media

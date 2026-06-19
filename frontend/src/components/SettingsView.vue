@@ -185,7 +185,7 @@ function handleNoiseSuppressionModeChange(event: Event) {
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
   const mode = target.value
-  if (mode !== 'off' && mode !== 'rnnoise' && mode !== 'speex' && mode !== 'dtln') return
+  if (mode !== 'off' && mode !== 'rnnoise') return
   emit('updateVoiceDeviceSettings', {
     noiseSuppressionMode: mode,
     rnnoiseSuppression: mode === 'rnnoise',
@@ -495,32 +495,6 @@ function handleNoiseSuppressionModeChange(event: Event) {
               <span>
                 <strong>{{ t('settings.rnnoiseSuppression') }}</strong>
                 <small>{{ t('settings.rnnoiseSuppressionDescription') }}</small>
-              </span>
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="noise-suppression-mode"
-                value="speex"
-                :checked="voiceDeviceSettings.noiseSuppressionMode === 'speex'"
-                @change="handleNoiseSuppressionModeChange"
-              />
-              <span>
-                <strong>{{ t('settings.speexSuppression') }}</strong>
-                <small>{{ t('settings.speexSuppressionDescription') }}</small>
-              </span>
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="noise-suppression-mode"
-                value="dtln"
-                :checked="voiceDeviceSettings.noiseSuppressionMode === 'dtln'"
-                @change="handleNoiseSuppressionModeChange"
-              />
-              <span>
-                <strong>{{ t('settings.dtlnSuppression') }}</strong>
-                <small>{{ t('settings.dtlnSuppressionDescription') }}</small>
               </span>
             </label>
           </div>
