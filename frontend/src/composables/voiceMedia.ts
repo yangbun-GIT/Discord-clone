@@ -6,10 +6,11 @@ const MEDIA_PERMISSION_TIMEOUT_MS = 30_000
 const VOICE_CONSTRAINT_SUPPORT_KEY = 'discord_clone_voice_constraint_support'
 const VOICE_PROCESSING_SETTINGS_KEY = 'discord_clone_voice_processing_settings'
 const VOICE_DEVICE_SETTINGS_KEY = 'discord_clone_voice_device_settings'
+const VOICE_DEVICE_STABILITY_MIGRATION_KEY = 'discord_clone_voice_device_stability_migrated'
 const SILENCE_DB = -64
 const SPEECH_REFERENCE_DB = -18
-const GATE_HOLD_MS = 4_800
-const GATE_ATTENUATED_GAIN = 0.38
+const GATE_HOLD_MS = 8_000
+const GATE_ATTENUATED_GAIN = 0.7
 
 type RnnoiseNode = AudioNode & { destroy: () => void }
 
@@ -120,8 +121,8 @@ export function defaultVoiceDeviceSettings(): VoiceDeviceSettings {
     inputVolume: 82,
     outputVolume: 100,
     inputSensitivity: 38,
-    noiseGate: true,
-    rnnoiseSuppression: true,
+    noiseGate: false,
+    rnnoiseSuppression: false,
   }
 }
 
@@ -130,6 +131,7 @@ export function readVoiceDeviceSettings(): VoiceDeviceSettings {
     const value = getLocalStorage()?.getItem(VOICE_DEVICE_SETTINGS_KEY)
     if (!value) return defaultVoiceDeviceSettings()
     const parsed = JSON.parse(value) as Partial<VoiceDeviceSettings>
+    migrateStabilityDefaults(parsed)
     return normalizeVoiceDeviceSettings(parsed)
   } catch {
     return defaultVoiceDeviceSettings()
@@ -182,9 +184,9 @@ export function voiceProcessingPreset(mode: Exclude<VoiceProcessingMode, 'custom
   }
   return {
     mode,
-    echoCancellation: true,
+    echoCancellation: false,
     noiseSuppression: false,
-    autoGainControl: true,
+    autoGainControl: false,
   }
 }
 
@@ -193,6 +195,7 @@ export function readVoiceProcessingSettings(): VoiceProcessingSettings {
     const value = getLocalStorage()?.getItem(VOICE_PROCESSING_SETTINGS_KEY)
     if (!value) return defaultVoiceProcessingSettings()
     const parsed = JSON.parse(value) as Partial<VoiceProcessingSettings>
+    if (parsed.mode === 'speech-stability') return voiceProcessingPreset('speech-stability')
     return {
       mode: isVoiceProcessingMode(parsed.mode) ? parsed.mode : 'custom',
       echoCancellation: typeof parsed.echoCancellation === 'boolean'
@@ -541,6 +544,19 @@ function normalizeVoiceDeviceSettings(settings: Partial<VoiceDeviceSettings>): V
     rnnoiseSuppression: typeof settings.rnnoiseSuppression === 'boolean'
       ? settings.rnnoiseSuppression
       : defaults.rnnoiseSuppression,
+  }
+}
+
+function migrateStabilityDefaults(settings: Partial<VoiceDeviceSettings>) {
+  const storage = getLocalStorage()
+  if (!storage || storage.getItem(VOICE_DEVICE_STABILITY_MIGRATION_KEY)) return
+  settings.noiseGate = false
+  settings.rnnoiseSuppression = false
+  try {
+    storage.setItem(VOICE_DEVICE_STABILITY_MIGRATION_KEY, '1')
+    storage.setItem(VOICE_DEVICE_SETTINGS_KEY, JSON.stringify(normalizeVoiceDeviceSettings(settings)))
+  } catch {
+    // Migration is best-effort; defaults still apply for new sessions.
   }
 }
 

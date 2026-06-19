@@ -1165,13 +1165,12 @@ select:focus-visible {
   left: 0;
   top: 50%;
   width: 3px;
-  height: max(10px, var(--voice-channel-input-level, 0%));
+  height: 12px;
   border-radius: 999px;
   background: #3ba55d;
   opacity: 0.46;
   transform: translateY(-50%);
   transition:
-    height 90ms ease,
     opacity 90ms ease,
     box-shadow 90ms ease;
 }
@@ -1375,14 +1374,12 @@ select:focus-visible {
   left: 0;
   top: 50%;
   width: 3px;
-  height: max(8px, var(--voice-channel-input-level, 0%));
+  height: 10px;
   border-radius: 999px;
   background: #3ba55d;
   opacity: 0.28;
   transform: translateY(-50%);
-  transition:
-    height 90ms ease,
-    opacity 90ms ease;
+  transition: opacity 90ms ease;
 }
 
 .voice-sidebar-member.self.speaking::before {
@@ -4696,16 +4693,9 @@ select:focus-visible {
   bottom: 12px;
   width: 3px;
   border-radius: 999px;
-  background:
-    linear-gradient(
-      to top,
-      #3ba55d 0,
-      #3ba55d var(--voice-channel-input-level, 0%),
-      rgb(255 255 255 / 10%) var(--voice-channel-input-level, 0%),
-      rgb(255 255 255 / 10%) 100%
-    );
-  opacity: 0.72;
-  transition: background 90ms ease, opacity 90ms ease;
+  background: #3ba55d;
+  opacity: 0.26;
+  transition: opacity 90ms ease, box-shadow 90ms ease;
 }
 
 .voice-tile.local.speaking::before {

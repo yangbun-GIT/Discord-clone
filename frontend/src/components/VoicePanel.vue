@@ -28,7 +28,6 @@ const props = defineProps<{
   connectedElsewhere: boolean
   signalingReady: boolean
   localSpeaking: boolean
-  inputLevel: number
   muted: boolean
   deafened: boolean
   screenSharing: boolean
@@ -80,11 +79,6 @@ const connectionDetailLabel = computed(() => {
   }
   return props.turnConfigured ? t('voice.turnReady') : t('voice.stunOnly')
 })
-const inputSensitivityStyle = computed(() => ({
-  '--voice-input-level': `${Math.min(100, Math.max(0, props.inputLevel))}%`,
-  '--voice-input-threshold': `${Math.min(100, Math.max(0, props.voiceDeviceSettings.inputSensitivity))}%`,
-}))
-
 function toggleAudioMenu(menu: 'input' | 'output') {
   audioMenu.value = audioMenu.value === menu ? null : menu
   emit('refreshVoiceDevices')
@@ -248,23 +242,15 @@ onBeforeUnmount(() => {
         </label>
         <label class="voice-device-range voice-device-sensitivity">
           <span>{{ t('settings.inputSensitivity') }}</span>
-          <span
-            class="voice-sensitivity-control compact"
-            :style="inputSensitivityStyle"
-          >
-            <span class="voice-sensitivity-track" aria-hidden="true">
-              <span class="voice-sensitivity-level"></span>
-            </span>
-            <input
-              type="range"
-              min="5"
-              max="85"
-              :value="voiceDeviceSettings.inputSensitivity"
-              :aria-label="t('settings.inputSensitivity')"
-              @input="handleDeviceRange('inputSensitivity', $event)"
-            />
-          </span>
-          <strong>{{ inputLevel }}%</strong>
+          <input
+            type="range"
+            min="5"
+            max="85"
+            :value="voiceDeviceSettings.inputSensitivity"
+            :aria-label="t('settings.inputSensitivity')"
+            @input="handleDeviceRange('inputSensitivity', $event)"
+          />
+          <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
         </label>
         <label class="voice-device-toggle">
           <span>{{ t('settings.rnnoiseSuppression') }}</span>

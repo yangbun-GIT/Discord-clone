@@ -400,6 +400,8 @@ For ordinary implementation work:
     controls, and quick input/output device popovers.
   - Keeps manual microphone mute available while deafened so mute and deafen remain
     independent.
+  - Quick microphone popovers show configured device/sensitivity settings only; do
+    not expose exact live microphone input level outside the settings screen.
   - Closes quick input/output popovers on outside click or Escape and orders the
     connected voice-session card below the user status card.
 - `frontend/src/components/VoiceAudioSink.vue`
@@ -409,7 +411,8 @@ For ordinary implementation work:
   - Local and remote video/screen stream rendering.
 - `frontend/src/components/SettingsView.vue`
   - User settings shell and settings sections, including Voice & Video device,
-    volume, sensitivity, and native audio-processing controls.
+    volume, sensitivity, live input-level meter, and native audio-processing
+    controls.
 - `frontend/src/components/ServerAddDialog.vue`
   - Server create/join dialog.
 - `frontend/src/components/ServerDiscoveryDialog.vue`
@@ -481,11 +484,14 @@ For ordinary implementation work:
     normalization, Web Audio input processing, and media-track helpers.
   - Persists local voice-processing preferences and builds microphone constraints
     from browser support plus user-selected echo/noise/gain settings.
+  - Defaults the speech-stability path to minimal browser auto-processing for
+    sustained input stability, and migrates default RNNoise/gate settings off so
+    noise reduction and sensitivity gating remain explicit user choices.
   - Owns RNNoise AudioWorklet/WASM loading through
     `@sapphi-red/web-noise-suppressor`, microphone input volume, RMS-based input
-    level sampling from the pre-gate microphone path, soft input sensitivity/noise
-    gate behavior, and input device selection helpers used before WebRTC peer
-    tracks are created.
+    level sampling from the pre-gate microphone path, optional soft input
+    sensitivity/noise gate behavior, and input device selection helpers used
+    before WebRTC peer tracks are created.
 - `frontend/src/composables/voiceMedia.test.ts`
   - Unit coverage for typed microphone/screen media error normalization and
     voice-processing/device-setting constraint generation plus RMS input-level

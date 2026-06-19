@@ -264,23 +264,24 @@ check on 2026-06-19 confirmed backend invite enforcement: owner invite creation
 returns `201`, member invite creation returns `403`.
 
 Manual QA follow-up Stage M1 is implemented in code. Voice settings now expose
-speech-stability, balanced, and near-raw browser audio-processing presets; the
-default speech-stability preset disables browser noise suppression and enables auto
-gain to reduce sustained-syllable chopping. A later voice-quality pass added the
+speech-stability, balanced, and near-raw browser audio-processing presets. A
+2026-06-20 OBS comparison found the raw microphone capture stayed continuous while
+the clone's desktop-audio output had repeated short silent gaps, so the default
+speech-stability preset now minimizes browser echo cancellation, noise suppression,
+and auto gain instead of relying on browser auto-processing. A voice-quality pass
+also added the
 MIT-licensed `@sapphi-red/web-noise-suppressor` dependency and inserts its
 RNNoise AudioWorklet/WASM processor before the local gain/gate chain when the
-browser supports 48 kHz AudioWorklet processing. The input sensitivity gate now
-uses RMS/time-domain envelope sampling from a pre-gate microphone level path
-instead of frequency-bin averages, holds open longer for sustained vowels, and
-attenuates softly instead of hard-cutting audio when the gate closes. The same
-input-level path now drives local speaking feedback directly, so the voice tile,
-sidebar voice channel, and bottom user card react when speech enters the mic.
-Remote WebRTC audio streams are also analyzed locally in
-`voicePeerConnections.ts`, updating remote `speaking` state for voice workspace
-cards. User Settings and the bottom microphone popover expose one combined
-input-level/threshold track. Focused frontend voice media tests, frontend lint,
-production build, and browser realtime smoke passed. Real sustained-vowel and
-fan/wind-noise listening remains a manual gate.
+browser supports 48 kHz AudioWorklet processing. For the stable default path, app
+RNNoise and the app input gate are off by default and existing default local
+settings migrate once to that baseline. The input-level path still drives local
+speaking feedback, but exact input amount is only visible inside Voice & Video
+settings; the main workspace, sidebar, lower user card, and remote participant
+cards expose only binary speaking feedback. Remote WebRTC audio streams are
+analyzed locally in `voicePeerConnections.ts` only for binary `speaking` state.
+Focused frontend voice media tests, frontend lint, production build, and browser
+realtime smoke passed. Real sustained-vowel and fan/wind-noise listening remains a
+manual gate.
 
 Manual QA follow-up Stage M2 is implemented in code. Remote screen-sharing
 participants now render as one screen-share participant composition, and their
@@ -2002,6 +2003,19 @@ Completed Stage 2 bridge work:
   routing. Frontend lint, production build, and focused `voiceMedia` tests passed.
   Real sustained-vowel/fan-noise listening remains a manual QA gate because
   automated tests cannot judge speech intelligibility.
+- Added post-M10 sustained-input stability and privacy pass:
+  OBS comparison of `마이크_실제입력.mp4` and `마이크_데스크탑 오디오.mp4`
+  showed continuous raw microphone input but repeated desktop-output gaps in the
+  clone path. To avoid browser/app processing repeatedly closing on long vowels,
+  the speech-stability preset now disables browser echo cancellation, noise
+  suppression, and auto gain by default; the local RNNoise worklet and input
+  sensitivity gate also default off and existing default settings migrate once to
+  that safer baseline. Quick voice popovers show configured sensitivity percent,
+  not live input level. Live input amount remains visible only in Voice & Video
+  settings, while the main workspace, sidebar, lower user card, and remote
+  participant cards show only binary speaking feedback. Frontend voice media tests,
+  lint, build, and browser realtime smoke passed; real sustained-vowel listening
+  remains a manual gate.
 - Added post-M10 overlay dismissal and bottom voice-panel layout polish:
   `VoicePanel.vue` now closes input/output quick settings on outside click or
   Escape, and the connected voice-session card is ordered below the user status

@@ -174,6 +174,31 @@ Voice input feedback and gate update:
   fan/wind-noise listening test because fake-device automation cannot judge speech
   intelligibility.
 
+Sustained input stability and input-level privacy update:
+
+- Date: 2026-06-20.
+- Source: user-provided OBS recordings
+  `C:/Users/yangbun/Videos/OBS/마이크_실제입력.mp4` and
+  `C:/Users/yangbun/Videos/OBS/마이크_데스크탑 오디오.mp4`.
+- Finding: ffmpeg `silencedetect` found the raw microphone recording stayed
+  continuous except for start/end silence, while the desktop-audio capture had
+  repeated short silent gaps throughout the spoken segment. This points to the
+  clone/browser/app processing path, not the raw microphone, as the primary
+  dropout source.
+- Fix: the speech-stability preset now disables browser echo cancellation, noise
+  suppression, and auto gain by default. RNNoise and the app input sensitivity
+  gate default off, with a one-time migration for existing default local settings.
+  This keeps the outgoing microphone path more continuous for long vowels and
+  leaves noise reduction/gating as explicit user choices.
+- Privacy: exact live input amount is visible only inside Voice & Video settings.
+  Main voice workspace tiles, the server sidebar voice row, the lower user card,
+  and remote participant cards expose only binary speaking feedback. The quick
+  microphone popover displays configured sensitivity percent instead of live input
+  level.
+- Remaining manual gate: real listening is still required for sustained vowel,
+  fan/wind noise, and echo behavior because automated fake-device tests cannot
+  evaluate speech intelligibility.
+
 Screen-share participant composition update:
 
 - Date: 2026-06-19.

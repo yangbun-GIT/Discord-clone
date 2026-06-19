@@ -102,9 +102,9 @@ describe('voice processing settings', () => {
 
     expect(readVoiceProcessingSettings()).toEqual({
       mode: 'speech-stability',
-      echoCancellation: true,
+      echoCancellation: false,
       noiseSuppression: false,
-      autoGainControl: true,
+      autoGainControl: false,
     })
   })
 
@@ -133,9 +133,9 @@ describe('voice processing settings', () => {
     })
     expect(voiceProcessingPreset('speech-stability')).toEqual({
       mode: 'speech-stability',
-      echoCancellation: true,
+      echoCancellation: false,
       noiseSuppression: false,
-      autoGainControl: true,
+      autoGainControl: false,
     })
     expect(voiceProcessingPreset('raw')).toEqual({
       mode: 'raw',
@@ -191,8 +191,8 @@ describe('voice processing settings', () => {
       inputVolume: 82,
       outputVolume: 100,
       inputSensitivity: 38,
-      noiseGate: true,
-      rnnoiseSuppression: true,
+      noiseGate: false,
+      rnnoiseSuppression: false,
     })).toMatchObject({
       deviceId: { exact: 'mic-selected' },
     })

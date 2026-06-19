@@ -743,7 +743,8 @@ Browser UI
   - Referenced by:
     - `frontend/src/App.vue` for media error translation keys.
     - `frontend/src/components/SettingsView.vue` for safe constraint-support display
-      and voice-processing preference toggles.
+      and voice-processing preference toggles plus the only exact live input-level
+      meter.
     - `frontend/src/composables/useVoiceRtc.ts`
     - `frontend/src/composables/voicePeerConnections.ts`
     - `frontend/src/composables/voiceMedia.test.ts`
@@ -755,7 +756,8 @@ Browser UI
       local voice device preferences, browser-supported audio constraint detection,
       RNNoise AudioWorklet/WASM setup through `@sapphi-red/web-noise-suppressor`,
       microphone input volume, pre-gate RMS-based input-level sampling,
-      soft sensitivity/noise-gate processing, and media-track cleanup.
+      optional soft sensitivity/noise-gate processing, sustained-input stable
+      defaults, one-time default setting migration, and media-track cleanup.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:
@@ -838,12 +840,15 @@ Browser UI
   - Emits role/member actions to `frontend/src/App.vue`.
 - `frontend/src/components/VoicePanel.vue`
   - Receives selected voice channel, current user, voice quality stats, typed
-    media-error copy, and voice device settings from `frontend/src/App.vue`.
+    media-error copy, binary local speaking state, and voice device settings from
+    `frontend/src/App.vue`.
   - Emits join/leave/mute/screen-share/retry/settings and quick voice device
     update/refresh actions to
     `frontend/src/App.vue`.
   - Keeps screen sharing and manual microphone mute available while deafened so
     deafen only controls local playback of remote audio.
+  - Shows configured quick voice settings but does not receive or display exact
+    live input level.
   - Owns quick input/output popover state, outside-click/Escape dismissal, and the
     lower-left user-status/connected-session card ordering.
 - `frontend/src/components/VoiceAudioSink.vue`
@@ -856,10 +861,13 @@ Browser UI
     `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/SettingsView.vue`
   - Receives current user, status controls, debug-safe voice constraint support,
-    and voice device setting state from `frontend/src/App.vue`.
+    voice device setting state, and the exact live input level from
+    `frontend/src/App.vue`.
   - Reads/writes local voice-processing preferences and emits voice device
     setting changes through
     `frontend/src/composables/voiceMedia.ts`.
+  - Owns the only user-facing exact microphone input-level meter; other workspace
+    surfaces use binary speaking state only.
   - Emits locale/status/settings actions to `frontend/src/App.vue`.
 
 ## High-Risk Dependency Clusters

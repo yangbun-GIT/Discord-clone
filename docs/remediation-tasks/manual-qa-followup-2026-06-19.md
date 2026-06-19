@@ -81,8 +81,12 @@ Tasks:
 3. Add or tune visible audio-processing options for echo cancellation, noise
    suppression, auto gain, and optionally default processing presets.
    - Completed: settings now expose speech-stability, balanced, and near-raw
-     processing presets. The default is speech-stability, which disables browser
-     noise suppression and enables auto gain to reduce sustained-syllable chopping.
+     processing presets.
+   - 2026-06-20 follow-up: OBS comparison showed the raw microphone recording
+     stayed continuous while the clone desktop-audio capture had repeated short
+     silent gaps. The default speech-stability preset now minimizes browser echo
+     cancellation, noise suppression, and auto gain instead of relying on browser
+     auto-processing for long vowels.
 4. Add a manual sustained-vowel QA script with expected pass criteria.
    - Completed in `docs/voice-qa.md`.
 5. Record selected processing values in local preferences without logging device
@@ -108,6 +112,12 @@ Verification:
   hard cutting, and remote received-audio streams update remote speaking feedback.
   Frontend lint, frontend tests, production build, and
   `npm run smoke:realtime:browser` passed.
+- 2026-06-20 sustained-input follow-up: the app now defaults RNNoise and the local
+  input sensitivity gate off, migrates existing default device settings once to
+  that stable baseline, and keeps live input amount private to Voice & Video
+  settings. Workspace/sidebar/user-card/remote-card UI shows binary speaking
+  feedback only, and the quick microphone popover shows configured sensitivity
+  percent instead of live input level.
 - Real sustained-vowel listening remains a manual gate because fake-device tests do
   not prove speech quality.
 

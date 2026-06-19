@@ -968,7 +968,6 @@ async function handleSendInviteToFriend(friendId: number) {
       :connected-voice-channel-id="activeGuildConnectedVoiceChannelId"
       :current-user-id="session.user?.id ?? null"
       :local-speaking="voiceRtc.localSpeaking.value"
-      :input-level="voiceRtc.inputLevel.value"
       :muted="voiceRtc.isMuted.value"
       :deafened="isDeafened"
       :can-create-invite="guilds.canCreateInvite"
@@ -1272,7 +1271,6 @@ async function handleSendInviteToFriend(friendId: number) {
           <article
             class="voice-tile local"
             :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
-            :style="{ '--voice-channel-input-level': `${Math.min(100, Math.max(0, voiceRtc.inputLevel.value))}%` }"
           >
             <span class="voice-tile-avatar">{{ session.user?.username.slice(0, 2).toUpperCase() ?? 'YA' }}</span>
             <div>
@@ -1468,7 +1466,6 @@ async function handleSendInviteToFriend(friendId: number) {
       :connected-elsewhere="voiceConnectedElsewhere"
       :signaling-ready="gatewayStatus === 'connected'"
       :local-speaking="voiceRtc.localSpeaking.value"
-      :input-level="voiceRtc.inputLevel.value"
       :muted="voiceRtc.isMuted.value"
       :deafened="isDeafened"
       :screen-sharing="voiceRtc.isScreenSharing.value"

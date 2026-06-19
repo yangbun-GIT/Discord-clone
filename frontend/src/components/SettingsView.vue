@@ -418,7 +418,7 @@ function handleRnnoiseChange(event: Event) {
                 @input="handleVoiceDeviceRange('inputSensitivity', $event)"
               />
             </span>
-            <strong>{{ t('settings.inputLevelValue', { level: inputLevel, threshold: voiceDeviceSettings.inputSensitivity }) }}</strong>
+            <strong>{{ t('settings.inputSensitivityValue', { threshold: voiceDeviceSettings.inputSensitivity }) }}</strong>
           </label>
           <p>{{ t('settings.inputSensitivityDescription') }}</p>
           <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.audioProcessingPreset')">
