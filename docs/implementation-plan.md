@@ -701,4 +701,21 @@
   returns, `compose.redis-smoke.yaml` provides Redis plus a secondary backend, and
   `scripts/realtime_redis_smoke.py` verifies primary REST to secondary WebSocket
   server/DM dispatch.
-- Next stage: C5 Voice media constraints and permission states.
+- Completed Stage C5: native microphone/display capture handling now uses explicit
+  audio constraints, typed media error normalization, app-owned recovery UI, settings
+  visibility for browser-supported audio processing, and media cleanup on leave or
+  page unload.
+- Completed Stage C6: WebRTC peer lifecycle is channel-scoped, queues ICE until
+  remote description exists, ignores stale signals, retries one bounded failed peer,
+  tears down remote streams by channel, and renders current-channel peer detail plus
+  audio/video sinks.
+- Completed Stage C7: LAN/TURN readiness is documented and scriptable through native
+  LAN dev commands, Docker LAN notes, CORS guidance, secure-context media caveats,
+  and separate LAN versus TURN/NAT release gates.
+- Completed Stage C8: `docs/realtime-communication-qa.md`,
+  `scripts/realtime_browser_smoke.mjs`, and root `npm run smoke:realtime:browser`
+  provide a two-browser same-PC communication smoke for server text, DM, voice peer,
+  remote audio sink, mute/deafen, and fake screen-share UI paths. Frontend store
+  tests and backend gateway route tests cover additional gateway idempotency and
+  auth/authorization edges.
+- Next stage: C9 final communication release gate.

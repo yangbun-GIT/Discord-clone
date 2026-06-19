@@ -1249,6 +1249,36 @@ Verification:
 - Screen share with permission.
 - Fake-device voice smoke result is labeled separately from real-device manual QA.
 
+Implementation and verification result:
+
+- Added `docs/realtime-communication-qa.md` as the repeatable manual and automated
+  communication QA checklist.
+- Added root script `npm run smoke:realtime:browser`, backed by
+  `scripts/realtime_browser_smoke.mjs`, using official project-local Playwright.
+- The browser smoke creates temporary local dev sessions, a shared guild/invite, and
+  a DM, then verifies server text, DM, voice peer visibility, remote audio sink,
+  mute/deafen controls, and fake screen-share visibility across two isolated browser
+  contexts.
+- The smoke output is payload-safe: it does not print JWTs, message bodies, ICE
+  candidates, TURN credentials, media device labels, or DM contents, and it masks
+  synthetic smoke message identifiers on failure.
+- Added frontend store coverage in `frontend/src/stores/gatewayIdempotency.test.ts`
+  for voice-state replacement/removal and gateway guild-update replacement without
+  duplicate guilds or active-channel loss.
+- Added backend gateway route coverage for invalid identify token close code and
+  unsubscribed voice-channel close code in `backend/tests/test_gateway_routes.py`.
+- Verification passed:
+  - `npm run smoke:realtime:browser`
+  - `npm --prefix frontend run lint`
+  - `npm --prefix frontend run test`
+  - `npm --prefix frontend run build`
+  - `cd backend; ..\\.venv\\Scripts\\python.exe -m pytest tests/test_gateway_routes.py tests/test_gateway_manager.py tests/test_realtime_fanout.py`
+  - `git diff --check`
+- `git diff --check` emitted Windows CRLF conversion warnings only.
+- Same-PC fake-device voice remains code-path/signaling coverage, not real
+  microphone quality completion. Different-PC LAN and TURN/NAT internet voice remain
+  separate external release gates.
+
 ### Stage C9: Final Communication Release Gate
 
 Goal: declare what is production-ready and what remains manual.

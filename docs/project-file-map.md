@@ -33,7 +33,7 @@ For ordinary implementation work:
     commands.
 - `package.json`
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
-    dev commands, and Docker.
+    dev commands, Docker, and the C8 realtime browser smoke.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.redis-smoke.yaml`
@@ -42,6 +42,13 @@ For ordinary implementation work:
 - `scripts/realtime_redis_smoke.py`
   - C4 two-worker smoke: connects WebSocket to the secondary backend and creates
     server/DM messages through the primary backend.
+  - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
+    device labels, or DM contents.
+- `scripts/realtime_browser_smoke.mjs`
+  - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
+    and a DM, then verifies server text, DM, voice peer visibility, remote audio
+    sink, mute/deafen, and fake screen-share paths through the app UI.
+  - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
 - `.env.example`
@@ -91,6 +98,10 @@ For ordinary implementation work:
   - Staged implementation plan for WebSocket gateway, realtime text/DM, WebRTC
     voice/screen sharing, Redis fan-out, LAN/TURN access, security, observability,
     and communication verification.
+- `docs/realtime-communication-qa.md`
+  - C8 and later communication QA checklist.
+  - Owns automated two-browser smoke instructions, same-PC manual QA, LAN QA,
+    TURN/NAT QA, privacy guardrails, and latest communication QA result notes.
 - `docs/reference-screenshots/`
   - Private local visual-reference screenshot folders.
   - Do not commit real screenshot content unless explicitly approved.
@@ -275,7 +286,8 @@ For ordinary implementation work:
 - `backend/tests/test_gateway_manager.py`
   - Gateway manager behavior.
 - `backend/tests/test_gateway_routes.py`
-  - Gateway WebSocket route close-code, authorization, and rate-limit behavior.
+  - Gateway WebSocket route close-code, authentication, authorization, rate-limit,
+    voice-state, and voice-signal validation behavior.
 - `backend/tests/test_realtime_fanout.py`
   - Shared realtime fan-out, local subscription synchronization, Redis publish
     fallback, and subscriber payload decoding behavior.
@@ -424,8 +436,9 @@ For ordinary implementation work:
 ## Frontend Runtime And Build
 
 - `frontend/package.json`
-  - Frontend lint, typecheck/build, unit test, localhost Vite dev, and LAN-bound
-    Vite dev scripts.
+  - Frontend lint, typecheck/build, unit test, localhost Vite dev, LAN-bound Vite
+    dev scripts, and the official Playwright devDependency used by the root
+    realtime browser smoke.
 - `frontend/vite.config.ts`
   - Vite config.
 - `frontend/index.html`
@@ -446,8 +459,8 @@ For ordinary implementation work:
 - `frontend/src/stores/guildVisibility.test.ts`
   - Guild, channel, and server-message visibility policy.
 - `frontend/src/stores/gatewayIdempotency.test.ts`
-  - Server-message and DM-message gateway dispatch idempotency for REST/gateway
-    reconciliation races.
+  - Server-message, DM-message, voice-state, and guild-update gateway dispatch
+    idempotency for REST/gateway reconciliation races.
 
 ## Common Task Routing
 

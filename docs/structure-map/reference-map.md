@@ -404,6 +404,32 @@ Browser UI
     - C4 repeatable primary-worker REST to secondary-worker WebSocket dispatch
       verification for server text and DM events.
 
+- `scripts/realtime_browser_smoke.mjs`
+  - References:
+    - root `package.json` script `smoke:realtime:browser`.
+    - `frontend/package.json` for the official Playwright devDependency.
+    - `/api/dev/session`
+    - `/api/guilds`
+    - `/api/guilds/{guild_id}/invites`
+    - `/api/guilds/invites/{code}/join`
+    - `/api/dms`
+    - `frontend/src/App.vue`
+    - `frontend/src/components/ServerRail.vue`
+    - `frontend/src/components/PrivateChannelSidebar.vue`
+    - `frontend/src/components/ChannelSidebar.vue`
+    - `frontend/src/components/ChatView.vue`
+    - `frontend/src/components/DirectMessageView.vue`
+    - `frontend/src/components/VoicePanel.vue`
+  - Referenced by:
+    - `docs/realtime-communication-qa.md`
+    - `docs/remediation-tasks/realtime-communication-plan.md`
+  - Owns:
+    - C8 repeatable two-browser same-PC communication smoke for server text, DM,
+      voice peer visibility, remote audio sink, mute/deafen, and fake screen-share
+      UI paths.
+    - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
+      TURN credentials, media device labels, and DM contents.
+
 ## Frontend References
 
 ### App Entry

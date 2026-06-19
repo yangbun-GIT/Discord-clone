@@ -125,7 +125,9 @@ internet voice complete unless `/api/meta/voice` reports `turn_configured: true`
 two users on different networks can complete a real voice/screen-share test.
 
 Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
-in `docs/voice-qa.md`. The documentation index is maintained in `docs/README.md`.
+in `docs/voice-qa.md`, and communication QA steps are maintained in
+`docs/realtime-communication-qa.md`. The documentation index is maintained in
+`docs/README.md`.
 Git workflow notes are maintained in `docs/GITHUB_COLLABORATION_WORKFLOW.md`, and
 prompt-alignment status is maintained in `docs/PROMPT_COMPLIANCE.md`.
 The current Discord app clone roadmap is maintained in
@@ -140,5 +142,11 @@ npm run test:backend
 npm run lint:backend
 npm run lint:frontend
 npm --prefix frontend run build
+npm run smoke:realtime:browser
 docker compose exec -T backend pytest
 ```
+
+`npm run smoke:realtime:browser` expects the backend at `http://127.0.0.1:8000`
+and the frontend at `http://127.0.0.1:5173`. It is a same-PC fake-device smoke for
+server text, DM, voice peer, and screen-share code paths, not a LAN/TURN release
+gate.

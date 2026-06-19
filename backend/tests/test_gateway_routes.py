@@ -36,6 +36,46 @@ def test_gateway_identify_rate_limit_closes_with_policy_code() -> None:
     reset_operation_limits()
 
 
+def test_gateway_rejects_invalid_identify_token() -> None:
+    reset_operation_limits()
+    client = TestClient(app)
+
+    with client.websocket_connect("/gateway") as websocket:
+        assert websocket.receive_json()["op"] == 10
+        websocket.send_json(identify_payload("not-a-token"))
+        with pytest.raises(WebSocketDisconnect) as exc_info:
+            websocket.receive_json()
+
+    assert exc_info.value.code == 4001
+    reset_operation_limits()
+
+
+def test_gateway_rejects_voice_state_for_unsubscribed_channel() -> None:
+    reset_operation_limits()
+    client = TestClient(app)
+
+    with client.websocket_connect("/gateway") as websocket:
+        assert websocket.receive_json()["op"] == 10
+        websocket.send_json(identify_payload(auth_token()))
+        assert websocket.receive_json()["t"] == "READY"
+        websocket.send_json(
+            {
+                "op": 4,
+                "d": {
+                    "guild_id": 1001,
+                    "channel_id": 999999,
+                    "self_mute": False,
+                    "self_deaf": False,
+                },
+            }
+        )
+        with pytest.raises(WebSocketDisconnect) as exc_info:
+            websocket.receive_json()
+
+    assert exc_info.value.code == 4003
+    reset_operation_limits()
+
+
 def test_gateway_rejects_voice_signal_before_voice_join() -> None:
     reset_operation_limits()
     client = TestClient(app)

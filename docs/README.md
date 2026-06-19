@@ -96,6 +96,10 @@ the project prompt and context files before changing code.
   - Current staged development plan for production-like realtime messaging,
     WebSocket gateway hardening, WebRTC voice/screen sharing, LAN/TURN access,
     security, observability, and communication QA.
+- `docs/realtime-communication-qa.md`
+  - Stage C8 and later communication QA checklist.
+  - Documents the automated two-browser smoke, same-PC manual QA, LAN QA, TURN/NAT
+    QA, privacy constraints, and the latest C8 automated result.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
@@ -164,6 +168,8 @@ the project prompt and context files before changing code.
   HTTPS, WebSocket, or TURN assumptions change.
 - Update `docs/voice-qa.md` when voice, screen sharing, TURN, or WebRTC quality QA
   steps change.
+- Update `docs/realtime-communication-qa.md` when automated communication smoke,
+  same-PC manual QA, LAN QA, TURN/NAT QA, or communication privacy rules change.
 - Update `docs/stage-7-11-responsive-qa.md` when responsive QA viewport coverage or
   screenshot artifacts change.
 - Update `docs/stage-7-12-final-qa.md` when the final Discord app smoke suite,

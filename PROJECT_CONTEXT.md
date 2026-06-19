@@ -118,9 +118,9 @@ verification recovery is complete: `.venv` is a valid Python 3.14.3 environment
 when run through approved execution, backend checks should use
 `cd backend; ..\.venv\Scripts\python.exe -m pytest` and
 `cd backend; ..\.venv\Scripts\python.exe -m ruff check app tests`, frontend checks
-should use bundled Node plus `frontend/node_modules/.bin`, and browser automation
-should use the Codex Node REPL Playwright Chrome path unless project-local
-Playwright is added deliberately. Stage C1 communication baseline is complete:
+should use bundled Node plus `frontend/node_modules/.bin`; C8 also adds
+project-local official Playwright for the repeatable browser smoke. Stage C1
+communication baseline is complete:
 backend/frontend command checks passed, API health and voice metadata passed,
 gateway `HELLO`/`IDENTIFY`/`READY`/`HEARTBEAT_ACK` passed, two-session server text
 and DM WebSocket dispatch passed, and fake-media browser voice join plus
@@ -138,7 +138,23 @@ local operation buckets for gateway and message mutations, REST message create/e
 delete and DM message create return 429 when limited, gateway identify/heartbeat/
 voice state/voice signal paths enforce close-code rate limits, privacy-safe gateway
 logs were added, and gateway route tests cover identify rate limiting plus
-unauthorized voice signal rejection.
+unauthorized voice signal rejection. Stage C4 Redis multi-instance fan-out
+verification is complete through `compose.redis-smoke.yaml` and
+`scripts/realtime_redis_smoke.py`. Stage C5 voice media permission handling is
+complete with native audio constraints, typed media errors, app-owned recovery UI,
+settings visibility, and media cleanup. Stage C6 WebRTC peer lifecycle hardening is
+complete with channel-scoped peers, pending ICE queueing, stale-signal filtering,
+bounded failed-peer retry, current-channel remote stream filtering, and peer detail
+UI. Stage C7 LAN/TURN readiness is complete with native LAN scripts, CORS/firewall
+notes, HTTPS secure-context caveats, and separate LAN versus TURN/NAT release gates.
+Stage C8 two-session realtime QA is complete: `docs/realtime-communication-qa.md`,
+`scripts/realtime_browser_smoke.mjs`, and root `npm run smoke:realtime:browser`
+verify same-PC two-browser server text, DM, voice peer, remote audio sink,
+mute/deafen, and fake screen-share paths while keeping payload output private.
+`gatewayIdempotency.test.ts` now also covers voice-state and guild-update
+idempotency, and `backend/tests/test_gateway_routes.py` covers invalid identify and
+unsubscribed voice-channel rejection. Next stage is C9 final communication release
+gate.
 
 The app boots in two local modes:
 
@@ -158,6 +174,8 @@ The app boots in two local modes:
   - Runs backend tests/lint through `.venv`.
   - Runs frontend dev/lint/build through `frontend/package.json`.
   - Adds `dev:backend:lan` and `dev:frontend:lan` for same-LAN browser testing.
+  - Adds `smoke:realtime:browser` for the C8 same-PC two-browser communication
+    smoke.
   - Runs Docker Compose through `docker:up`, `docker:down`, and `docker:logs`.
 - `compose.yaml`
   - Docker Compose development stack for PostgreSQL, backend, and frontend.
@@ -211,6 +229,10 @@ The app boots in two local modes:
     hardening rather than replacement, and defines staged work for reconnect,
     duplicate suppression, Redis fan-out verification, native audio constraints,
     WebRTC lifecycle hardening, LAN/TURN readiness, and two-session QA.
+- `docs/realtime-communication-qa.md`
+  - Stage C8 and later communication QA checklist.
+  - Documents automated two-browser same-PC smoke, same-PC manual QA, LAN QA,
+    TURN/NAT QA, privacy rules, and latest communication QA result notes.
 - `docs/remediation-tasks/discord-clone-qa-remediation-2026-06-19.md`
   - QA-derived UI/workflow remediation development plan.
   - Promotes the QA findings into implementation-ready work items with development
@@ -1696,6 +1718,34 @@ Completed Stage 2 bridge work:
   Backend lint and focused realtime tests passed; Docker Redis smoke evidence is
   recorded in
   `docs/remediation-tasks/realtime-communication-plan.md`.
+- Completed Stage C5 voice media constraints and permission states:
+  `frontend/src/composables/voiceMedia.ts` applies supported native audio
+  constraints, normalizes microphone/screen media errors, stores supported
+  constraint visibility for settings, and cleans media tracks on leave/unload.
+  `VoicePanel.vue`, `SettingsView.vue`, and `voiceMedia.test.ts` cover app-owned
+  recovery UI and unit behavior.
+- Completed Stage C6 WebRTC peer lifecycle hardening:
+  `frontend/src/composables/voicePeerConnections.ts` now scopes peers by
+  channel/user, queues ICE until remote description exists, filters stale channel
+  signals, retries one bounded failed peer, and tears down remote streams by channel.
+  `App.vue`, `VoicePanel.vue`, `VoiceAudioSink.vue`, `VoiceVideoSink.vue`, and
+  `voiceStats.ts` only render/aggregate current-channel peer state.
+- Completed Stage C7 LAN/TURN readiness:
+  `package.json`, `frontend/package.json`, `.env.example`, `README.md`,
+  `docs/deployment.md`, and `docs/voice-qa.md` document native LAN commands,
+  Docker LAN access, CORS/firewall requirements, secure-context media caveats, and
+  separate LAN/TURN release gates.
+- Completed Stage C8 two-session realtime QA suite:
+  `docs/realtime-communication-qa.md` and `scripts/realtime_browser_smoke.mjs`
+  define a repeatable two-browser same-PC smoke for server text, DM, voice peer
+  visibility, remote audio sink, mute/deafen, and fake screen-share paths.
+  `frontend/package.json` includes official Playwright as a devDependency for that
+  smoke; root `package.json` exposes `npm run smoke:realtime:browser`.
+  `frontend/src/stores/gatewayIdempotency.test.ts` now covers voice-state and
+  guild-update idempotency, and `backend/tests/test_gateway_routes.py` covers
+  invalid identify and unsubscribed voice-channel rejection. Verification passed
+  frontend lint/test/build, focused backend gateway/realtime tests, the browser
+  smoke, and `git diff --check`.
 
 After each stage or meaningful feature:
 

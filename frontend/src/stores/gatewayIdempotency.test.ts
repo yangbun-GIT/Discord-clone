@@ -88,4 +88,68 @@ describe('gateway dispatch idempotency', () => {
     expect(store.dms[0].messages).toHaveLength(1)
     expect(store.dms[0].messages[0]).toEqual(dmMessage)
   })
+
+  it('replaces one voice state per guild user and removes leave events', () => {
+    const store = useGuildStore()
+
+    store.handleGatewayDispatch('VOICE_STATE_UPDATE', {
+      guild_id: 1001,
+      channel_id: 2003,
+      user_id: 701,
+      username: 'Mina',
+      self_mute: false,
+      self_deaf: false,
+    })
+    store.handleGatewayDispatch('VOICE_STATE_UPDATE', {
+      guild_id: 1001,
+      channel_id: 2003,
+      user_id: 701,
+      username: 'Mina',
+      self_mute: true,
+      self_deaf: false,
+    })
+
+    expect(store.voiceStates).toHaveLength(1)
+    expect(store.voiceStates[0]).toMatchObject({
+      guild_id: 1001,
+      channel_id: 2003,
+      user_id: 701,
+      self_mute: true,
+    })
+
+    store.handleGatewayDispatch('VOICE_STATE_UPDATE', {
+      guild_id: 1001,
+      channel_id: null,
+      user_id: 701,
+      username: 'Mina',
+      self_mute: false,
+      self_deaf: false,
+    })
+
+    expect(store.voiceStates).toHaveLength(0)
+  })
+
+  it('replaces gateway guild updates without duplicating guilds or losing valid active channel', () => {
+    const store = useGuildStore()
+    const updatedGuild: Guild = {
+      ...guild,
+      name: 'Study Hall Updated',
+      channels: [
+        ...guild.channels,
+        { id: 2002, guild_id: 1001, name: 'planning', type: 0, position: 1 },
+      ],
+    }
+
+    store.guilds = [{ ...guild }]
+    store.activeGuildId = guild.id
+    store.activeChannelId = 2001
+
+    store.handleGatewayDispatch('GUILD_UPDATE', updatedGuild)
+    store.handleGatewayDispatch('GUILD_UPDATE', updatedGuild)
+
+    expect(store.guilds).toHaveLength(1)
+    expect(store.guilds[0].name).toBe('Study Hall Updated')
+    expect(store.guilds[0].channels).toHaveLength(2)
+    expect(store.activeChannelId).toBe(2001)
+  })
 })
