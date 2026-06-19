@@ -221,6 +221,17 @@ sessions, and the frontend DM store/Friends UI applies those events idempotently
 Focused backend and frontend tests pass; the remaining follow-up is a two-profile
 browser smoke that proves A's request appears in B's Pending tab without refresh.
 
+The latest manual QA follow-up is tracked in
+`docs/remediation-tasks/manual-qa-followup-2026-06-19.md`. It records real-device
+issues not covered by fake-device smoke: sustained-syllable audio dropout,
+screen-share receiver card duplication, refresh rejoin absence, HTTP LAN
+secure-context failure, TURN readiness uncertainty, Friends Pending copy ambiguity,
+friend presence not updating, DM identity mismatch on receipt, invite modal global
+copy state, missing DM-based friend invite delivery, deafen behavior not muting
+remote audio, and owner/member invite permission browser QA. An API permission
+check on 2026-06-19 confirmed backend invite enforcement: owner invite creation
+returns `201`, member invite creation returns `403`.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

@@ -32,6 +32,21 @@ Missing today:
 - Realtime relationship updates across two browser sessions.
 - Tests proving user A sends a request and user B can accept or reject it.
 
+Update, 2026-06-19:
+
+- Backend-backed friend requests, incoming/outgoing pending state, accept/reject,
+  cancel, remove, block/unblock, and realtime relationship events have since been
+  implemented.
+- Manual QA confirmed friend adding works.
+- Remaining UX/product issues are tracked in
+  `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`:
+  - Pending tab copy is ambiguous because it can be read as presence state rather
+    than friend-request state.
+  - Friend online/offline/idle/away presence does not update.
+  - DM receive identity can mismatch the direct-message list entry.
+  - Friend-targeted server invite should send a DM invite/link rather than only
+    copying a raw code.
+
 Important current behavior:
 
 - `FriendsHome.vue` currently sets `addFriendResult` locally and clears the input.

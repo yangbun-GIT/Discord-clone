@@ -106,6 +106,12 @@ For ordinary implementation work:
   - Documents the current UI-only add-friend gap and staged backend, frontend,
     realtime, persistence, and QA work for real friend requests, accept/reject,
     cancel, remove friend, block, and unblock.
+- `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
+  - Latest manual QA follow-up development plan.
+  - Routes sustained speech dropout, screen-share participant composition, refresh
+    rejoin, LAN secure-context, TURN readiness, Friends pending/presence, DM
+    identity, invite delivery/copy state, deafen behavior, and invite permission
+    browser QA work.
 - `docs/realtime-communication-qa.md`
   - C8 and later communication QA checklist.
   - Owns automated two-browser smoke instructions, same-PC manual QA, LAN QA,

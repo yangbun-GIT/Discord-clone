@@ -1551,6 +1551,19 @@ Remaining manual QA before claiming real voice completion:
 - Owner/member invite behavior must be checked in-browser: owner sees invite
   controls and member without `CREATE_INSTANT_INVITE` does not.
 
+Manual QA follow-up, 2026-06-19:
+
+- Sustained syllable speech can be chopped even though short words sound acceptable.
+- Receiver-side screen share should merge the shared screen and participant state
+  into one composition per sharing user.
+- Refresh still requires an explicit rejoin/recovery flow.
+- Same-Wi-Fi LAN voice join failed because HTTP LAN origins are not secure contexts
+  for microphone/screen capture.
+- TURN/NAT remains untested and cannot be claimed while `turn_configured` is false.
+- Deafen/소리 차단 does not yet mute remote audio as expected.
+- Full staged follow-up lives in
+  `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`.
+
 ## Voice Architecture Decision Update
 
 Date: 2026-06-19.

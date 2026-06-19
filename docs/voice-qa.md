@@ -137,6 +137,8 @@ Known 2026-06-19 real-device issue:
 
 - Keyboard/tap sounds can transmit while spoken language sounds echoing, unstable,
   or intermittently cut.
+- Short words can sound acceptable, but a sustained syllable such as "아" can be
+  chopped into repeated audible segments.
 - Treat this as a blocker for real voice completion until a manual speech-quality
   pass succeeds.
 
@@ -179,6 +181,10 @@ Remaining manual gate:
   human listener using two real accounts and real microphones.
 - Refreshing a page still leaves the active call. A separate voice rejoin/recovery
   flow is needed if refresh persistence is required.
+- Same-Wi-Fi LAN access over `http://<LAN-IP>` can fail media capture because the
+  browser does not treat that origin as a secure context. Use localhost for local
+  media tests or add a documented HTTPS LAN development path before claiming LAN
+  voice support.
 
 ## Stage 11.12 QA Note
 

@@ -115,6 +115,28 @@ Call recording QA result:
   session. A future stage must decide whether to restore a voice preview/rejoin
   prompt after reload or intentionally require manual rejoin.
 
+Manual QA follow-up result:
+
+- Date: 2026-06-19.
+- Real microphone capture starts, and short words can sound acceptable.
+- Sustained single-syllable speech is not stable: a long "아" can be heard as
+  repeated cut segments instead of one continuous sound.
+- Real screen sharing starts and stops correctly, but the receiver layout separates
+  a sharing user's screen tile from that user's participant state. The next layout
+  pass should merge these into one composition per sharing participant.
+- Refresh still does not preserve or recover the active call.
+- Same-Wi-Fi LAN test failed at voice join because `http://<LAN-IP>` is not a
+  secure context for microphone/screen capture.
+- TURN/NAT test has not been run and is not ready to claim while
+  `/api/meta/voice.turn_configured` is `false`.
+- Deafen/소리 차단 does not currently satisfy user expectation; remote audio should
+  be muted locally while deafen is active.
+- API-level owner/member invite permission was checked: owner invite creation
+  returned `201`; normal member invite creation returned `403`. Browser
+  visibility/disabled-state QA remains pending.
+- Detailed staged follow-up is tracked in
+  `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`.
+
 Manual two-account product-flow result:
 
 - Date: 2026-06-19.

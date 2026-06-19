@@ -100,6 +100,12 @@ the project prompt and context files before changing code.
   - Development plan for turning the current UI-only Add Friend form into real
     friend request, accept/reject/cancel, remove, block/unblock, realtime
     relationship updates, and browser QA workflows.
+- `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
+  - Latest user-run manual QA follow-up plan.
+  - Owns sustained speech dropout, screen-share participant composition, refresh
+    rejoin, LAN secure-context, TURN readiness, Friends pending/presence, DM
+    identity, invite delivery/copy state, deafen behavior, and invite permission
+    browser QA follow-up stages.
 - `docs/realtime-communication-qa.md`
   - Stage C8 and later communication QA checklist.
   - Documents the automated two-browser smoke, same-PC manual QA, LAN QA, TURN/NAT
