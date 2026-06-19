@@ -134,8 +134,9 @@
 - Dockerfile baseline is complete.
 - Backend runtime image now starts Gunicorn with Uvicorn workers.
 - `docs/deployment.md` documents Oracle Cloud / GCP VM deployment flow, production
-  environment variables, HTTPS/WebSocket requirements, CORS, logging, health checks,
-  Redis, WebRTC TURN guidance, and voice verification using browser WebRTC stats.
+  environment variables, native/Docker LAN commands, HTTPS/WebSocket requirements,
+  CORS, logging, health checks, Redis, WebRTC TURN guidance, and voice verification
+  using browser WebRTC stats.
 
 ## Stage 6: Discord Store-Like Shop
 

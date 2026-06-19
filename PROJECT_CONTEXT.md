@@ -157,6 +157,7 @@ The app boots in two local modes:
   - Root script entrypoint.
   - Runs backend tests/lint through `.venv`.
   - Runs frontend dev/lint/build through `frontend/package.json`.
+  - Adds `dev:backend:lan` and `dev:frontend:lan` for same-LAN browser testing.
   - Runs Docker Compose through `docker:up`, `docker:down`, and `docker:logs`.
 - `compose.yaml`
   - Docker Compose development stack for PostgreSQL, backend, and frontend.
@@ -706,10 +707,11 @@ The app boots in two local modes:
     filters, item detail, inventory, purchase, gift, equip, and mutation responses.
 - `docs/deployment.md`
   - VM/runtime deployment checklist, production environment variables, HTTPS/gateway
-    notes, ICE/TURN guidance, voice verification, and hardening notes.
+    notes, native/Docker LAN commands, ICE/TURN guidance, voice verification, and
+    hardening notes.
 - `docs/voice-qa.md`
-  - Two-browser local smoke test, TURN/NAT test, and deployment verification checklist
-    for voice, screen sharing, and browser WebRTC stats.
+  - Two-browser local smoke test, LAN smoke test, TURN/NAT test, and deployment
+    verification checklist for voice, screen sharing, and browser WebRTC stats.
 - `backend/Dockerfile`
   - `dev` target installs backend dev dependencies and runs Uvicorn with reload.
   - `runtime` target installs production dependencies and runs Gunicorn with Uvicorn

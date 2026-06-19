@@ -29,9 +29,11 @@ For ordinary implementation work:
   - Read before implementation to understand completed stages, integrations, and
     known residual risks.
 - `README.md`
-  - Setup, Docker, local development, and verification commands.
+  - Setup, Docker, local/LAN development, TURN release-gate notes, and verification
+    commands.
 - `package.json`
-  - Root npm scripts for backend lint/tests, frontend lint/build/tests, and Docker.
+  - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
+    dev commands, and Docker.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.redis-smoke.yaml`
@@ -43,7 +45,8 @@ For ordinary implementation work:
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
 - `.env.example`
-  - Non-secret environment variable template.
+  - Non-secret environment variable template, including LAN CORS and STUN/TURN
+    guidance.
 - `.dockerignore`, `backend/.dockerignore`, `frontend/.dockerignore`
   - Docker build-context exclusions.
 
@@ -421,7 +424,8 @@ For ordinary implementation work:
 ## Frontend Runtime And Build
 
 - `frontend/package.json`
-  - Frontend lint, typecheck/build, unit test, and Vite scripts.
+  - Frontend lint, typecheck/build, unit test, localhost Vite dev, and LAN-bound
+    Vite dev scripts.
 - `frontend/vite.config.ts`
   - Vite config.
 - `frontend/index.html`

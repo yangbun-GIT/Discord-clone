@@ -1202,6 +1202,29 @@ Verification:
 - Different network TURN smoke.
 - Explicitly mark internet voice incomplete if TURN credentials are unavailable.
 
+Result 2026-06-19:
+
+- Added native LAN scripts:
+  - `npm run dev:backend:lan`
+  - `npm run dev:frontend:lan`
+  - `npm --prefix frontend run dev:lan`
+- `README.md`, `.env.example`, `docs/deployment.md`, and `docs/voice-qa.md` now
+  document host IP discovery, LAN URLs, CORS origin additions, Windows firewall
+  ports, Docker LAN access, and the HTTPS secure-context caveat for microphone and
+  screen capture from non-localhost origins.
+- LAN and TURN/NAT release gates are explicitly separated. LAN reachability is not
+  enough to mark internet voice complete; TURN/NAT completion requires
+  `turn_configured: true` and a real different-network voice/screen-share pass.
+- Verification passed:
+  - `npm --prefix frontend run lint`
+  - `npm --prefix frontend run test`
+  - `npm --prefix frontend run build`
+  - `GET http://127.0.0.1:8000/api/meta/voice` returned voice metadata in the
+    current Docker stack.
+- Different-PC LAN and different-network TURN/NAT tests remain manual external
+  release gates because this local environment only provides one host/network and no
+  real TURN credentials.
+
 ### Stage C8: Two-Session Realtime QA Suite
 
 Goal: make communication regressions easier to catch.

@@ -38,6 +38,19 @@ npm run dev:frontend
 
 Open `http://127.0.0.1:5173`.
 
+For same-LAN testing from another PC or mobile device, bind both dev servers to all
+interfaces:
+
+```powershell
+npm run dev:backend:lan
+npm run dev:frontend:lan
+```
+
+Find the host IPv4 address with `ipconfig`, then open
+`http://<host-ip>:5173` from the second device. If you bypass the Vite proxy and call
+the backend directly from the browser, add `http://<host-ip>:5173` to
+`CORS_ORIGINS`. Windows firewall must allow ports `5173` and `8000`.
+
 The frontend starts at the login/register screen when no saved session exists. Use
 the Demo user button for the seeded local workspace.
 
@@ -66,6 +79,9 @@ Docker exposes the same local URLs:
 
 - Frontend: `http://127.0.0.1:5173`
 - Backend health: `http://127.0.0.1:8000/api/health`
+
+For Docker LAN access, open `http://<host-ip>:5173`; Compose already publishes
+ports `5173` and `8000` on the host.
 
 Useful backend auth endpoints:
 
@@ -103,6 +119,10 @@ Screen sharing uses the browser display-capture permission prompt and works only
 connected to a voice channel.
 The backend voice metadata also reports whether TURN is configured, and the voice
 panel shows peer count, RTT, jitter, packet loss, and outbound bitrate while connected.
+
+LAN success and TURN/NAT internet success are separate release gates. Do not mark
+internet voice complete unless `/api/meta/voice` reports `turn_configured: true` and
+two users on different networks can complete a real voice/screen-share test.
 
 Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
 in `docs/voice-qa.md`. The documentation index is maintained in `docs/README.md`.

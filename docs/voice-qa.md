@@ -25,6 +25,40 @@ complete production voice check.
    - Screen share prompts for browser display capture and renders a remote screen
      tile in the other session.
 
+## LAN Smoke Test
+
+Use this when another PC or mobile device must connect to the development host.
+
+1. Start LAN-bound services:
+
+   ```powershell
+   npm run dev:backend:lan
+   npm run dev:frontend:lan
+   ```
+
+2. Find the host IPv4 address:
+
+   ```powershell
+   ipconfig
+   Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '169.254*' }
+   ```
+
+3. Open `http://<host-ip>:5173` from the second device.
+4. If the browser calls the backend directly instead of through the Vite proxy, add
+   `http://<host-ip>:5173` to `CORS_ORIGINS` and restart the backend.
+5. Confirm:
+   - `http://<host-ip>:5173/api/health` returns the backend health payload.
+   - `/gateway` connects without repeated reconnects.
+   - Two users can exchange text messages through the same server or DM.
+   - Two users can join the same voice channel and see each other in the participant
+     list.
+6. Treat LAN success as a LAN-only result. It does not prove TURN/NAT internet
+   voice.
+
+If microphone or screen sharing is blocked from `http://<host-ip>`, use HTTPS for
+the LAN origin or run media-capture checks from localhost. Browser media APIs require
+a secure context except for localhost-class origins.
+
 ## TURN / NAT Test
 
 1. Set production-like ICE servers in `.env` or the host secret store:
@@ -39,6 +73,13 @@ complete production voice check.
    Wi-Fi and mobile hotspot.
 5. Watch the voice quality line for persistent packet loss, high jitter, or
    unstable peer counts.
+
+Release gate:
+
+- LAN pass: same network, same development host, text/gateway/voice reachable.
+- TURN/NAT pass: different networks, `/api/meta/voice.turn_configured` is `true`,
+  and media works through a configured TURN-capable ICE list.
+- Do not mark internet voice complete from fake-device or LAN-only tests.
 
 ## Deployment Verification
 
@@ -74,8 +115,9 @@ The 2026-06-18 Stage 11.12 pass verified backend health, `/api/meta/voice`, and 
 gateway HELLO handshake in the local Docker stack. Browser DOM checks also confirmed
 that the clone page exposes voice controls without native JavaScript dialogs.
 
-Direct automated microphone and screen-capture execution was not completed because
-the browser automation runtime did not expose `navigator.mediaDevices` permission or
-capture APIs. Treat microphone join, same-server/cross-server voice switching, and
-screen-share start/stop as manual browser-permission checks using the checklist
-above. TURN/NAT behavior remains unverified until a real TURN server is supplied.
+Stage C5/C6 browser automation later verified fake-device microphone join,
+two-user voice presence, remote audio sink creation, mute/deafen toggles, and a fake
+screen-share path in system Chrome. This remains a code-path smoke only. Treat
+real microphone quality, real screen picker UX, LAN media capture, and TURN/NAT
+behavior as manual checks using the sections above until a real TURN server and
+two physical networks are available.
