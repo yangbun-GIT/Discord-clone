@@ -69,6 +69,7 @@ const {
   status: gatewayStatus,
 } = useGateway()
 const voiceRtc = useVoiceRtc()
+const settingsInitialPanel = ref<'account' | 'voice'>('account')
 let removeDocumentKeyDown: (() => void) | null = null
 
 const activeGuild = computed(() => guilds.activeGuild)
@@ -833,10 +834,15 @@ function cycleUserPresence() {
   updatePresence({ status: nextStatus, activity: null })
 }
 
-function handleOpenUserSettings() {
+function handleOpenUserSettings(panel: 'account' | 'voice' = 'account') {
   workspaceError.value = null
   clearWorkspaceNotice()
+  settingsInitialPanel.value = panel
   navigation.openSettings()
+}
+
+function handleOpenVoiceSettings() {
+  handleOpenUserSettings('voice')
 }
 
 function openJoinGuild() {
@@ -1155,6 +1161,7 @@ async function handleSendInviteToFriend(friendId: number) {
       <SettingsView
         v-if="navigation.destination === 'settings'"
         :current-user="session.user"
+        :initial-panel="settingsInitialPanel"
         :user-status="userPresenceStatus"
         :muted="voiceRtc.isMuted.value"
         :deafened="isDeafened"
@@ -1481,7 +1488,7 @@ async function handleSendInviteToFriend(friendId: number) {
       @retry="handleRetryVoiceCapture"
       @leave="handleLeaveVoiceFromError"
       @cycle-status="cycleUserPresence"
-      @open-settings="handleOpenUserSettings"
+      @open-settings="handleOpenVoiceSettings"
       @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
       @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
     />

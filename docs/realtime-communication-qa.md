@@ -217,6 +217,23 @@ Voice option behavior audit:
 - Settings copy must keep this distinction visible so users do not expect the
   stable default path to behave like a live noise gate.
 
+Voice settings input-meter usability update:
+
+- Date: 2026-06-20.
+- Source reference: user-provided Discord input-sensitivity recording
+  `C:/Users/yangbun/Videos/OBS/디스코드 입력감도.mp4`.
+- Discord behavior observed: the input sensitivity threshold is shown on the same
+  horizontal control as a live input/activity meter, so users can see ambient room
+  noise and move the threshold above that baseline.
+- Clone behavior: Voice & Video settings now use a clearer live input-level
+  overlay on the sensitivity track and show `input / sensitivity` values in
+  settings only. Workspace, sidebar, lower user card, and remote participant UI
+  still expose only binary speaking feedback.
+- Routing: voice input/output popover setting buttons open the Voice & Video
+  settings panel directly instead of landing on My Account.
+- Layout: lower-left input/output popovers align both left and right edges with
+  the lower user status card.
+
 Screen-share participant composition update:
 
 - Date: 2026-06-19.

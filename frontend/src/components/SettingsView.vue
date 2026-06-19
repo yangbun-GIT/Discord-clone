@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   Accessibility,
   BellOff,
@@ -43,6 +43,7 @@ type SettingsGroup = 'account' | 'experience' | 'session'
 
 const props = defineProps<{
   currentUser: User | null
+  initialPanel?: SettingsPanel
   userStatus: UserPresenceStatus
   muted: boolean
   deafened: boolean
@@ -61,13 +62,17 @@ const emit = defineEmits<{
   refreshVoiceDevices: []
 }>()
 
-const activePanel = ref<SettingsPanel>('account')
+const activePanel = ref<SettingsPanel>(props.initialPanel ?? 'account')
 const compactMode = ref(false)
 const reduceMotion = ref(false)
 const dmSafety = ref(true)
 const timeFormat = ref<'auto' | '24h'>('auto')
 const voiceProcessing = ref<VoiceProcessingSettings>(readVoiceProcessingSettings())
 const { language, setLanguage, t } = useI18n()
+
+watch(() => props.initialPanel, (panel) => {
+  if (panel) activePanel.value = panel
+})
 
 const settingsGroups = computed<Array<{ id: SettingsGroup; label: string }>>(() => [
   { id: 'account', label: t('settings.groupAccount') },
@@ -418,7 +423,7 @@ function handleRnnoiseChange(event: Event) {
                 @input="handleVoiceDeviceRange('inputSensitivity', $event)"
               />
             </span>
-            <strong>{{ t('settings.inputSensitivityValue', { threshold: voiceDeviceSettings.inputSensitivity }) }}</strong>
+            <strong>{{ t('settings.inputLevelValue', { level: inputLevel, threshold: voiceDeviceSettings.inputSensitivity }) }}</strong>
           </label>
           <p>{{ t('settings.inputSensitivityDescription') }}</p>
           <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.audioProcessingPreset')">
@@ -485,7 +490,10 @@ function handleRnnoiseChange(event: Event) {
             />
           </label>
           <label class="settings-toggle">
-            <span>{{ t('settings.echoCancellation') }}</span>
+            <span>
+              <strong>{{ t('settings.echoCancellation') }}</strong>
+              <small>{{ t('settings.echoCancellationDescription') }}</small>
+            </span>
             <input
               type="checkbox"
               :checked="voiceProcessing.echoCancellation"
@@ -494,7 +502,10 @@ function handleRnnoiseChange(event: Event) {
             />
           </label>
           <label class="settings-toggle">
-            <span>{{ t('settings.noiseSuppression') }}</span>
+            <span>
+              <strong>{{ t('settings.noiseSuppression') }}</strong>
+              <small>{{ t('settings.noiseSuppressionDescription') }}</small>
+            </span>
             <input
               type="checkbox"
               :checked="voiceProcessing.noiseSuppression"
@@ -503,7 +514,10 @@ function handleRnnoiseChange(event: Event) {
             />
           </label>
           <label class="settings-toggle">
-            <span>{{ t('settings.autoGainControl') }}</span>
+            <span>
+              <strong>{{ t('settings.autoGainControl') }}</strong>
+              <small>{{ t('settings.autoGainControlDescription') }}</small>
+            </span>
             <input
               type="checkbox"
               :checked="voiceProcessing.autoGainControl"

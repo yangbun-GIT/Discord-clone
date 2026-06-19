@@ -366,6 +366,8 @@ For ordinary implementation work:
     state and keeps app-owned retry/leave recovery actions visible if media capture
     fails.
   - Owns the selected voice workspace's local/remote screen-share stage placement.
+  - Routes voice-panel setting actions directly into the Voice & Video settings
+    panel while keeping generic settings entry on My Account.
   - Filters global context-menu invite actions through `guilds.canCreateInvite`.
 - `frontend/src/types.ts`
   - Shared frontend DTO and state types.
@@ -402,6 +404,7 @@ For ordinary implementation work:
     independent.
   - Quick microphone popovers show configured device/sensitivity settings only; do
     not expose exact live microphone input level outside the settings screen.
+  - Its quick setting actions open the Voice & Video settings panel directly.
   - Closes quick input/output popovers on outside click or Escape and orders the
     connected voice-session card below the user status card.
 - `frontend/src/components/VoiceAudioSink.vue`
@@ -413,6 +416,8 @@ For ordinary implementation work:
   - User settings shell and settings sections, including Voice & Video device,
     volume, sensitivity, live input-level meter, and native audio-processing
     controls.
+  - Accepts an initial panel from `App.vue` so voice controls can land directly on
+    Voice & Video instead of My Account.
 - `frontend/src/components/ServerAddDialog.vue`
   - Server create/join dialog.
 - `frontend/src/components/ServerDiscoveryDialog.vue`

@@ -2025,6 +2025,15 @@ Completed Stage 2 bridge work:
   echo/noise/auto-gain constraints apply on the next voice join because those are
   part of the capture/AudioWorklet setup. Settings copy now states that the
   sensitivity slider affects audio only when the gate is enabled.
+- Added voice settings usability pass:
+  the Voice & Video input sensitivity row now shows a clearer Discord-like live
+  input-level overlay against the selected threshold so users can see baseline
+  room noise before choosing a gate value. The exact input meter remains confined
+  to settings. Voice-panel input/output popover setting buttons now open the Voice
+  & Video panel directly, and the lower-left popover width is aligned with the
+  user status card. Settings copy explains RNNoise, echo cancellation, browser
+  noise suppression, and auto gain behavior plus their next-join application
+  boundary.
 - Added post-M10 overlay dismissal and bottom voice-panel layout polish:
   `VoicePanel.vue` now closes input/output quick settings on outside click or
   Escape, and the connected voice-session card is ordered below the user status
