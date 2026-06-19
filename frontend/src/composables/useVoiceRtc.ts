@@ -30,6 +30,10 @@ import {
   type ConnectOptions,
 } from './voicePeerConnections'
 import { createEmptyQualityStats, createVoiceStatsCollector } from './voiceStats'
+import {
+  P2P_VOICE_TRANSPORT_KIND,
+  type VoiceTransport,
+} from './voiceTransport'
 
 const localStream = shallowRef<MediaStream | null>(null)
 const screenStream = shallowRef<MediaStream | null>(null)
@@ -81,7 +85,7 @@ function stopStatsLoop() {
   qualityStats.value = createEmptyQualityStats()
 }
 
-export function useVoiceRtc() {
+export function useVoiceRtc(): VoiceTransport {
   function handlePageHide() {
     disconnect()
   }
@@ -273,6 +277,7 @@ export function useVoiceRtc() {
   }
 
   return {
+    kind: P2P_VOICE_TRANSPORT_KIND,
     localStream,
     screenStream,
     remoteStreams,

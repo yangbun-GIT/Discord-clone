@@ -2125,6 +2125,19 @@ Completed Stage 2 bridge work:
   This pass did not provision a VM, configure DNS, configure real TURN credentials,
   or run an external different-network media test; those items remain
   pending/unverified.
+- Voice transport expansion preparation is complete in
+  `docs/voice-transport-architecture.md`. The active implementation remains
+  P2P WebRTC plus gateway signaling; no LiveKit, mediasoup, or SFU dependency was
+  added. `frontend/src/composables/voiceTransport.ts` now defines the shared
+  `VoiceTransport` contract and current `p2p-webrtc` transport kind,
+  `useVoiceRtc.ts` explicitly returns that contract, and
+  `voicePeerConnections.ts` reuses the shared transport connect/signal types while
+  keeping P2P offer/answer/ICE behavior unchanged. Future SFU work should add a
+  separate transport implementation behind this boundary, plus backend token
+  issuing, room mapping, deployment service configuration, and QA gates. Screen
+  share quality should be tuned in P2P first for 1:1/small-room problems; SFU
+  evaluation becomes appropriate when multi-viewer or simultaneous screen sharing
+  causes sender bandwidth/CPU collapse.
 
 After each stage or meaningful feature:
 

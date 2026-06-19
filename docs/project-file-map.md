@@ -131,6 +131,11 @@ For ordinary implementation work:
     coturn optional.
   - Separates user-prepared resources, Codex-actionable setup, deployment command
     flow, verification checklist, and pending external gates.
+- `docs/voice-transport-architecture.md`
+  - Current voice transport boundary and future SFU migration plan.
+  - Defines the `VoiceTransport` contract, current P2P transport ownership,
+    future LiveKit/mediasoup backend/deployment requirements, and screen-share
+    quality decision criteria.
 - `docs/voice-qa.md`
   - Voice, screen sharing, TURN, and WebRTC QA procedure.
 - `docs/remediation-tasks/realtime-communication-plan.md`
@@ -518,9 +523,15 @@ For ordinary implementation work:
     output device settings, and stats modules.
   - Exposes explicit local microphone mute state/setter plus voice device setting
     state/update/refresh helpers for voice controls.
+- `frontend/src/composables/voiceTransport.ts`
+  - Voice transport contract used to keep the current P2P implementation
+    replaceable by a future SFU-backed implementation.
+  - Exposes the current `p2p-webrtc` transport kind, shared connect options, state
+    shape, and operation signatures for join media, mute, screen share,
+    participant sync, signal handling, device refresh, and quality stats.
 - `frontend/src/composables/voiceMedia.ts`
   - Browser microphone/display capture helpers, native audio constraint support
-    detection/storage, voice device preference storage, typed media error
+  detection/storage, voice device preference storage, typed media error
     normalization, Web Audio input processing, and media-track helpers.
   - Persists local voice-processing preferences and builds microphone constraints
     from browser support plus user-selected echo/noise/gain settings.

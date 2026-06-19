@@ -203,6 +203,12 @@ Use these values as diagnostics, not strict pass/fail thresholds. Typical follow
 work is to collect stats over longer sessions and adapt screen-share frame rate or
 resolution when packet loss and jitter stay high.
 
+For screen-share quality triage and the P2P-versus-SFU decision tree, read
+`docs/voice-transport-architecture.md`. In short: tune P2P capture constraints,
+sender bitrate/framerate, and CSS rendering first when 1:1 screen share is poor;
+consider SFU only when multi-viewer or simultaneous screen-share load breaks an
+otherwise acceptable P2P baseline.
+
 ## Real Speech Quality Checklist
 
 Use this checklist for the next voice remediation pass. Fake-device smoke does not

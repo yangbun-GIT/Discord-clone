@@ -1,7 +1,11 @@
 import type { ShallowRef } from 'vue'
 
-import type { RemoteVoiceStream, VoiceIceServer, VoiceSignal, VoiceState } from '../types'
+import type { RemoteVoiceStream, VoiceSignal, VoiceState } from '../types'
 import { calculateRms, rmsToInputLevelPercent, screenTrackIsActive } from './voiceMedia'
+import type {
+  SendVoiceTransportSignal,
+  VoiceTransportConnectOptions,
+} from './voiceTransport'
 
 const PEER_RETRY_DELAY_MS = 1_000
 const MAX_PEER_RETRY_COUNT = 1
@@ -11,22 +15,9 @@ const REMOTE_SPEAKING_RELEASE_MS = 900
 
 type PeerKey = `${number}:${number}`
 
-export type SendVoiceSignal = (payload: {
-  channel_id: number
-  target_user_id: number
-  type: 'offer' | 'answer' | 'ice' | 'screen'
-  description?: Record<string, unknown> | null
-  candidate?: Record<string, unknown> | null
-  screen_sharing?: boolean | null
-}) => void
+export type SendVoiceSignal = SendVoiceTransportSignal
 
-export type ConnectOptions = {
-  channelId: number
-  currentUserId: number
-  participants: VoiceState[]
-  iceServers: VoiceIceServer[]
-  sendSignal: SendVoiceSignal
-}
+export type ConnectOptions = VoiceTransportConnectOptions
 
 export type PeerEntry = {
   channelId: number

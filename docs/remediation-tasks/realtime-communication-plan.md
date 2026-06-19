@@ -1796,6 +1796,57 @@ Pending / not verified:
 - No real TURN credential has been configured in this pass.
 - No different-network voice or screen-share QA has been run in this pass.
 
+## Voice Transport Boundary Pass
+
+Date: 2026-06-20.
+
+Scope:
+
+- Keep the current P2P WebRTC plus gateway signaling path as the active transport.
+- Do not add LiveKit, mediasoup, or any SFU dependency.
+- Create a code and documentation boundary so a future SFU transport can be added
+  without rewriting the voice UI first.
+
+Implementation:
+
+- `docs/voice-transport-architecture.md` now records the voice transport boundary,
+  current P2P ownership, SFU migration requirements, and screen-share quality
+  decision criteria.
+- `frontend/src/composables/voiceTransport.ts` defines the shared
+  `VoiceTransport` contract and the current `p2p-webrtc` transport kind.
+- `frontend/src/composables/useVoiceRtc.ts` now explicitly returns a
+  `VoiceTransport` and identifies itself as the `p2p-webrtc` implementation.
+- `frontend/src/composables/voicePeerConnections.ts` now reuses the shared
+  transport connect/signal option types while keeping all P2P offer/answer/ICE
+  behavior unchanged.
+
+Decision:
+
+- P2P plus TURN remains the release path for the next external communication gate.
+- LiveKit is the preferred first SFU candidate only if the project moves beyond
+  small-room P2P needs.
+- mediasoup remains a lower-level SFU candidate when the project needs custom media
+  server behavior and can absorb the additional integration cost.
+- Screen-share quality should be tuned in P2P first for 1:1 or small-room issues.
+  SFU becomes the stronger answer when quality collapses with multiple viewers or
+  simultaneous screen shares.
+
+Pending / not verified:
+
+- No SFU dependency was installed.
+- No SFU backend token issuing API was added.
+- No external TURN/NAT or multi-viewer screen-share test was run.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm run test:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser:https` passed. The smoke covered text/DM
+  realtime, invite realtime, voice remote audio sink creation, mute/deafen
+  independence, screen-share visibility and cleanup, refresh preservation, and
+  voice rejoin recovery with zero browser errors.
+
 ## Dependency Decision
 
 No new dependency is selected at the planning stage.

@@ -803,7 +803,7 @@ Browser UI
     - `frontend/src/composables/voiceMedia.ts`
     - `frontend/src/composables/voicePeerConnections.ts`
     - `frontend/src/composables/voiceStats.ts`
-    - `frontend/src/composables/voiceVad.ts`
+    - `frontend/src/composables/voiceTransport.ts`
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
@@ -816,6 +816,21 @@ Browser UI
       lifecycle, voice device settings refresh/update state, reserved screen-share
       sender track replacement, screen-share state broadcast, explicit local
       microphone mute state/setter, and voice RTC cleanup.
+    - Current `p2p-webrtc` implementation of the shared `VoiceTransport` contract.
+
+- `frontend/src/composables/voiceTransport.ts`
+  - References:
+    - Vue `Ref`/`ShallowRef` types.
+    - `frontend/src/types.ts`
+    - `frontend/src/composables/voiceMedia.ts` types.
+  - Referenced by:
+    - `frontend/src/composables/useVoiceRtc.ts`
+    - `frontend/src/composables/voicePeerConnections.ts`
+    - `docs/voice-transport-architecture.md`
+  - Owns:
+    - Voice transport kind, shared connect options, state shape, and operation
+      signatures that allow the current P2P implementation to remain replaceable
+      by a future SFU-backed transport.
 
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
@@ -850,6 +865,7 @@ Browser UI
 - `frontend/src/composables/voicePeerConnections.ts`
   - References:
     - `frontend/src/composables/voiceMedia.ts`
+    - `frontend/src/composables/voiceTransport.ts`
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/composables/useVoiceRtc.ts`
