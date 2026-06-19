@@ -453,6 +453,37 @@ Browser UI
 
 ## Frontend References
 
+### Runtime Config
+
+- `frontend/package.json`
+  - References:
+    - `frontend/scripts/ensureHttpsCertEnv.mjs`
+    - Vite CLI.
+  - Referenced by:
+    - root `package.json` frontend scripts.
+  - Owns:
+    - Frontend dev/build/test/lint commands, including HTTPS LAN dev startup.
+
+- `frontend/scripts/ensureHttpsCertEnv.mjs`
+  - References:
+    - `VITE_HTTPS_KEY_FILE`
+    - `VITE_HTTPS_CERT_FILE`
+  - Referenced by:
+    - `frontend/package.json` script `dev:lan:https`.
+  - Owns:
+    - Early failure for missing local HTTPS LAN certificate configuration.
+
+- `frontend/vite.config.ts`
+  - References:
+    - `VITE_BACKEND_PROXY_TARGET`
+    - `VITE_HTTPS_KEY_FILE`
+    - `VITE_HTTPS_CERT_FILE`
+  - Referenced by:
+    - Vite dev/build commands.
+  - Owns:
+    - Vue plugin setup, `/api` and `/gateway` proxy targets, and optional HTTPS
+      LAN certificate loading.
+
 ### App Entry
 
 - `frontend/src/main.ts`

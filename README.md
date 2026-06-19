@@ -51,6 +51,22 @@ Find the host IPv4 address with `ipconfig`, then open
 the backend directly from the browser, add `http://<host-ip>:5173` to
 `CORS_ORIGINS`. Windows firewall must allow ports `5173` and `8000`.
 
+Browser microphone and screen-capture APIs treat `localhost` as secure, but they
+usually block `http://<host-ip>` LAN origins. For same-LAN media testing, use a
+locally trusted development certificate and run the HTTPS LAN frontend:
+
+```powershell
+$env:VITE_HTTPS_KEY_FILE="C:\path\to\host-ip-key.pem"
+$env:VITE_HTTPS_CERT_FILE="C:\path\to\host-ip-cert.pem"
+$env:VITE_BACKEND_PROXY_TARGET="http://127.0.0.1:8000"
+npm run dev:backend:lan
+npm run dev:frontend:lan:https
+```
+
+Then open `https://<host-ip>:5173` from the second device. The certificate must be
+trusted on that device, and the certificate subject/SAN must match the host name or
+IP used in the browser. Do not commit local certificate keys.
+
 The frontend starts at the login/register screen when no saved session exists. Use
 the Demo user button for the seeded local workspace.
 

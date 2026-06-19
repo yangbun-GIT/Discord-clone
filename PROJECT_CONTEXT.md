@@ -254,6 +254,15 @@ confirms rejoin. Normal leave and notice dismissal clear the recovery record. Th
 browser realtime smoke now reloads a connected tab, verifies the rejoin prompt, and
 confirms the other tab receives remote audio again after rejoin.
 
+Manual QA follow-up Stage M4 is implemented in code/docs. `frontend/vite.config.ts`
+can start Vite over HTTPS when `VITE_HTTPS_KEY_FILE` and
+`VITE_HTTPS_CERT_FILE` point at trusted local development certificate files, and
+`npm run dev:frontend:lan:https` validates those inputs before binding the frontend
+to the LAN. `README.md`, `docs/deployment.md`, and `docs/voice-qa.md` now separate
+HTTP LAN text/gateway reachability from HTTPS LAN media-capture testing. Real
+same-LAN media capture still requires a manually trusted certificate on the second
+device.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

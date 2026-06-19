@@ -43,7 +43,8 @@ Use this when another PC or mobile device must connect to the development host.
    Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '169.254*' }
    ```
 
-3. Open `http://<host-ip>:5173` from the second device.
+3. Open `http://<host-ip>:5173` from the second device for text/gateway reachability
+   only.
 4. If the browser calls the backend directly instead of through the Vite proxy, add
    `http://<host-ip>:5173` to `CORS_ORIGINS` and restart the backend.
 5. Confirm:
@@ -55,9 +56,38 @@ Use this when another PC or mobile device must connect to the development host.
 6. Treat LAN success as a LAN-only result. It does not prove TURN/NAT internet
    voice.
 
-If microphone or screen sharing is blocked from `http://<host-ip>`, use HTTPS for
-the LAN origin or run media-capture checks from localhost. Browser media APIs require
-a secure context except for localhost-class origins.
+If microphone or screen sharing is blocked from `http://<host-ip>`, this is expected
+for many browsers because LAN HTTP is not a secure context. Use the HTTPS LAN media
+path below or run media-capture checks from localhost.
+
+### HTTPS LAN Media Path
+
+Use this path when the second device must test real microphone or screen capture.
+
+1. Prepare a locally trusted development certificate for the host IP or DNS name
+   that the second device will open. The certificate subject/SAN must match that
+   address. Do not commit certificate private keys.
+2. Trust the certificate on the second device.
+3. Start the backend:
+
+   ```powershell
+   npm run dev:backend:lan
+   ```
+
+4. Start the HTTPS LAN frontend in another shell:
+
+   ```powershell
+   $env:VITE_HTTPS_KEY_FILE="C:\path\to\host-ip-key.pem"
+   $env:VITE_HTTPS_CERT_FILE="C:\path\to\host-ip-cert.pem"
+   $env:VITE_BACKEND_PROXY_TARGET="http://127.0.0.1:8000"
+   npm run dev:frontend:lan:https
+   ```
+
+5. Open `https://<host-ip>:5173` from the second device.
+6. Confirm the browser reports a secure origin, then test login, gateway,
+   server/DM text, voice join, mute/unmute, deafen, and screen share.
+7. If the browser still reports an insecure context, fix certificate trust or SAN
+   mismatch before testing media again.
 
 ## TURN / NAT Test
 

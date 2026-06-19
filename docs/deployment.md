@@ -88,6 +88,33 @@ LAN checklist:
    HTTPS reverse proxy or test media from localhost and reserve LAN for text/gateway
    reachability.
 
+HTTPS LAN media path:
+
+1. Create or obtain a locally trusted development certificate for the exact host
+   name or IP that the second device will open. Do not use production certificates
+   or commit private keys.
+2. Trust the certificate authority or certificate on the second device.
+3. Start the backend on all interfaces:
+
+   ```powershell
+   npm run dev:backend:lan
+   ```
+
+4. In a separate shell, point Vite at the certificate files and backend proxy:
+
+   ```powershell
+   $env:VITE_HTTPS_KEY_FILE="C:\path\to\host-ip-key.pem"
+   $env:VITE_HTTPS_CERT_FILE="C:\path\to\host-ip-cert.pem"
+   $env:VITE_BACKEND_PROXY_TARGET="http://127.0.0.1:8000"
+   npm run dev:frontend:lan:https
+   ```
+
+5. Open `https://<host-ip>:5173` from the second device.
+6. Confirm `https://<host-ip>:5173/api/health` works and the browser shows a
+   secure origin before attempting microphone or screen sharing.
+7. If the browser still reports an insecure context, fix certificate trust/SAN
+   mismatch first. Do not mark LAN voice complete from `http://<host-ip>`.
+
 TURN/NAT internet checklist:
 
 1. Configure `WEBRTC_ICE_SERVERS_JSON` with at least one `turn:` or `turns:` URL.

@@ -33,8 +33,8 @@ For ordinary implementation work:
     commands.
 - `package.json`
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
-    dev commands, Docker, the C8 realtime browser smoke, and the C4 Redis
-    cross-worker realtime smoke.
+    dev commands, HTTPS LAN frontend dev, Docker, the C8 realtime browser smoke,
+    and the C4 Redis cross-worker realtime smoke.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.redis-smoke.yaml`
@@ -479,10 +479,15 @@ For ordinary implementation work:
 
 - `frontend/package.json`
   - Frontend lint, typecheck/build, unit test, localhost Vite dev, LAN-bound Vite
-    dev scripts, and the official Playwright devDependency used by the root
-    realtime browser smoke.
+    dev scripts, HTTPS LAN dev script, and the official Playwright devDependency
+    used by the root realtime browser smoke.
 - `frontend/vite.config.ts`
-  - Vite config.
+  - Vite config, backend/gateway dev proxy config, and optional HTTPS LAN
+    certificate loading through `VITE_HTTPS_KEY_FILE` and
+    `VITE_HTTPS_CERT_FILE`.
+- `frontend/scripts/ensureHttpsCertEnv.mjs`
+  - Validates local HTTPS LAN certificate environment variables before running the
+    Vite HTTPS LAN dev server.
 - `frontend/index.html`
   - HTML entry.
 - `frontend/Dockerfile`

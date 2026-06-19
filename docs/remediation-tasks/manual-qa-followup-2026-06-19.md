@@ -196,6 +196,8 @@ Verification:
 
 ### Stage M4: LAN Secure-Context Development Path
 
+Status: implemented, pending real same-LAN HTTPS device QA.
+
 Owner files:
 
 - `README.md`
@@ -208,15 +210,29 @@ Tasks:
 
 1. Document why `http://<LAN-IP>` blocks microphone/screen capture in modern
    browsers.
+   - Completed in `README.md`, `docs/deployment.md`, and `docs/voice-qa.md`.
 2. Add a local HTTPS LAN path, preferably using a documented dev certificate flow.
+   - Completed: `npm run dev:frontend:lan:https` validates local certificate env
+     vars and Vite reads `VITE_HTTPS_KEY_FILE`/`VITE_HTTPS_CERT_FILE`.
 3. Ensure backend CORS and gateway URLs work from the LAN origin.
+   - Completed for the Vite-proxy path: `/api` and `/gateway` stay same-origin
+     behind the HTTPS frontend, and `VITE_BACKEND_PROXY_TARGET` documents the
+     backend target.
 4. Add a LAN checklist for backend health, frontend load, gateway connection,
    text/DM, voice join, and screen share.
+   - Completed in `docs/voice-qa.md`.
 
 Acceptance:
 
 - Another PC can open the clone over a secure origin and attempt microphone capture.
 - The docs clearly separate localhost-only, HTTP LAN, and HTTPS LAN capabilities.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- Same-LAN HTTPS media capture remains a manual gate because it requires a trusted
+  certificate installed on the second device.
 
 ### Stage M5: TURN/NAT Readiness
 
