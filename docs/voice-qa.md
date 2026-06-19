@@ -109,6 +109,37 @@ Use these values as diagnostics, not strict pass/fail thresholds. Typical follow
 work is to collect stats over longer sessions and adapt screen-share frame rate or
 resolution when packet loss and jitter stay high.
 
+## Real Speech Quality Checklist
+
+Use this checklist for the next voice remediation pass. Fake-device smoke does not
+cover these items.
+
+1. Join the same voice channel with two real accounts and real microphones.
+2. Verify both clients show the same participant list in the sidebar, workspace,
+   bottom panel, and server rail before testing audio.
+3. Speak a short phrase for at least 30 seconds from each side:
+   - normal volume.
+   - quiet speech.
+   - louder speech without shouting.
+   - short Korean sentence and short English sentence.
+4. While speaking, type on the keyboard and confirm keyboard noise does not dominate
+   speech.
+5. Watch the voice quality line for connected peer count, RTT, jitter, packet loss,
+   and outbound bitrate.
+6. Toggle mute/unmute on each side and confirm audio state is reflected on the other
+   side.
+7. Refresh one client while the other remains connected and confirm the late joiner
+   receives the current participant snapshot.
+8. Record the result as pass/fail notes only. Do not record raw audio, media device
+   labels, ICE candidates, TURN credentials, or user tokens.
+
+Known 2026-06-19 real-device issue:
+
+- Keyboard/tap sounds can transmit while spoken language sounds echoing, unstable,
+  or intermittently cut.
+- Treat this as a blocker for real voice completion until a manual speech-quality
+  pass succeeds.
+
 ## Stage 11.12 QA Note
 
 The 2026-06-18 Stage 11.12 pass verified backend health, `/api/meta/voice`, and the

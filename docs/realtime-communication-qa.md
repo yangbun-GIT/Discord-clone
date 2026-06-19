@@ -107,6 +107,32 @@ Manual two-account product-flow result:
 - Related product-flow defects and implementation requirements are tracked in
   `docs/remediation-tasks/friend-relationship-implementation-plan.md`.
 
+Manual two-account voice/product recheck:
+
+- Date: 2026-06-19.
+- Scope: same-PC Chrome tabs using user A at `localhost:5173`, user B at
+  `127.0.0.1:5173`, plus a controlled B tab where the user's second Chrome profile
+  was not automatable.
+- User-reported real microphone result: keyboard/tap sounds were transmitted, but
+  spoken language sounded echoing, unstable, or intermittently cut. This remains a
+  real-device audio-quality blocker and is not covered by fake-device smoke.
+- Server text passed both directions after both accounts were in the server.
+- Existing DM passed both directions; inactive-recipient unread and later message
+  visibility worked.
+- Voice participant synchronization failed the user-visible quality bar: B could
+  show only itself in the voice workspace while A/B were both connected or while A
+  could see B elsewhere in the voice UI.
+- Code review found a likely root cause: gateway voice state is event-only and does
+  not provide a current voice-state snapshot to late joiners or newly identified
+  clients.
+- A controlled B tab could select the voice channel but remain in preview/pre-join
+  state without a prominent workspace Join action.
+- Member invite controls exposed a raw English permission error
+  `create invite permission required`; this should become localized app-owned UX and
+  unauthorized invite controls should be hidden or disabled.
+- Follow-up implementation stages C10-C13 are tracked in
+  `docs/remediation-tasks/realtime-communication-plan.md`.
+
 ## Manual Same-PC QA
 
 1. Open two isolated browser profiles.

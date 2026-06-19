@@ -1407,6 +1407,107 @@ Remaining external gates:
 - TURN/NAT internet voice and screen-share QA with
   `/api/meta/voice.turn_configured: true`.
 
+## Post-C9 Manual Voice/Product QA Findings
+
+Date: 2026-06-19.
+
+Scenario:
+
+- User A was connected at `http://localhost:5173`.
+- User B was connected at `http://127.0.0.1:5173` in a second profile, with a
+  controlled same-origin B tab opened for repeatable interaction checks.
+- Both users belonged to the same `test` server.
+- This pass intentionally avoided printing passwords, tokens, invite codes, message
+  bodies beyond synthetic QA markers, ICE candidates, media device labels, and TURN
+  credentials.
+
+Confirmed working behavior:
+
+- Server text messages delivered in both directions after both users were in the
+  same server and channel.
+- Existing DM messages delivered in both directions; when user A was outside the DM,
+  user B's DM created an unread badge and the message appeared after opening the DM.
+- No browser console errors were observed during text/DM checks.
+
+New defects:
+
+1. Real microphone quality is not acceptable yet.
+   - User-observed behavior: keyboard/tap noise is transmitted, but spoken language
+     sounds echoing, unstable, or intermittently cut.
+   - Existing code enables supported browser constraints such as echo cancellation,
+     noise suppression, auto gain control, mono channel count, 48 kHz sample rate,
+     16-bit sample size, and low latency, but there is no user-facing device,
+     processing, input-sensitivity, or diagnostics workflow that can isolate the
+     failure.
+   - Required fix: add a real-device audio-quality stage that records WebRTC stats
+     over a timed call, surfaces local track settings and processing support, offers
+     device/processing toggles where browser support allows, tunes local speaking
+     threshold separately from transmitted audio, and documents pass/fail speech
+     test phrases for manual QA.
+2. Late joiners can miss existing voice participants.
+   - User-observed behavior: A can see B in the voice sidebar, but B's voice
+     workspace can show only B and an "no other participants" empty state.
+   - Code review confirms the gateway broadcasts `VOICE_STATE_UPDATE` events when a
+     user changes voice state, but does not send a current voice-state snapshot to a
+     newly identified client or a newly joined voice client.
+   - Required fix: add an authoritative in-memory voice-state registry in the
+     gateway manager, include current channel voice states in READY or send a
+     channel-scoped snapshot immediately after `UPDATE_VOICE_STATE`, and reconcile
+     frontend voice-state arrays from that snapshot.
+3. Voice workspace and sidebar can disagree.
+   - The sidebar and workspace derive from selected/connected voice state in
+     different UI paths. When the local selected channel is not synchronized with
+     the connected channel, a user can see connected indicators but an incomplete
+     participant grid.
+   - Required fix: normalize participant derivation so sidebar, workspace, bottom
+     panel, and server rail all render from the same connected-channel snapshot when
+     the user is connected, while still allowing a clear preview mode for a different
+     selected channel.
+4. Controlled B voice join can remain in preview.
+   - In a controlled B tab, selecting `voice-room` produced `선택됨 / 참여 전`,
+     disabled screen share, and no obvious main-workspace Join action.
+   - Required fix: if voice channel click is intended to join immediately, media
+     capture errors must show an app-owned recovery state. If preview mode is
+     intended, the voice workspace must show a prominent Join Voice action.
+5. Permission errors are raw and poorly localized.
+   - A member pressing invite controls can receive `create invite permission
+     required` as an English raw backend message.
+   - Required fix: map permission errors to localized app-owned notices and hide or
+     disable invite actions when the current user cannot create invites.
+6. Member invite controls do not match permission state.
+   - The B member account still sees invite affordances in voice/server surfaces but
+     cannot create invites.
+   - Required fix: expose permission-aware UI metadata or use existing role/member
+     data to suppress unauthorized controls, with a localized disabled explanation
+     when the control remains visible.
+
+Additional implementation stages required before claiming real voice completion:
+
+- Stage C10: Authoritative voice-state snapshot.
+  - Backend stores current voice states by guild/channel/user in the gateway manager.
+  - READY or post-voice-join dispatch sends existing voice occupants to the joining
+    client.
+  - Leave, disconnect, zombie reap, stale-send cleanup, and logout remove the stored
+    state and broadcast a delete/null update.
+  - Frontend treats the snapshot as a replace operation and keeps incremental
+    `VOICE_STATE_UPDATE` idempotent.
+- Stage C11: Voice workspace/sidebar unification.
+  - Workspace, sidebar, bottom voice panel, and server rail use one connected-channel
+    participant source.
+  - Preview mode has a visible Join action and cannot masquerade as connected.
+  - Regression test verifies A-joins-first/B-joins-later and B-joins-first/A-joins-
+    later both show two participants on both sides.
+- Stage C12: Real microphone quality remediation.
+  - Add device/processing visibility and user controls for supported browser audio
+    constraints.
+  - Add a timed manual speech QA checklist covering echo, clipping, dropouts,
+    keyboard-noise handling, mute/unmute, and reconnect.
+  - Store no raw audio and print no media device labels in logs or documentation.
+- Stage C13: Permission-aware voice/invite UX.
+  - Hide or disable unauthorized invite controls.
+  - Localize permission errors.
+  - Add browser QA for member and owner invite behavior.
+
 ## Verification Matrix
 
 | Scenario | Text | DM | Gateway reconnect | Voice | Screen share | Required |

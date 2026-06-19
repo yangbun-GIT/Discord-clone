@@ -181,6 +181,13 @@ are demo friends rather than real accepted friends, invite join lacks clear
 success/error routing, and the second account can select but not clearly join the
 shared voice channel.
 
+A later 2026-06-19 two-account voice/product recheck added communication follow-up
+stages C10-C13 to `docs/remediation-tasks/realtime-communication-plan.md`. New
+blockers are real speech quality, missing voice-state snapshots for late joiners,
+workspace/sidebar participant divergence, preview mode without a clear Join action,
+and raw/unlocalized invite permission errors for member accounts. Server text and
+existing DM delivery passed in both directions during this recheck.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
