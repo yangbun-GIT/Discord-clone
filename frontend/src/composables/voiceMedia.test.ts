@@ -8,6 +8,7 @@ import {
   readVoiceProcessingSettings,
   rmsToInputLevelPercent,
   VoiceMediaError,
+  voiceGateThresholds,
   voiceProcessingPreset,
   writeVoiceDeviceSettings,
   writeVoiceProcessingSettings,
@@ -210,5 +211,16 @@ describe('voice input level helpers', () => {
     expect(rmsToInputLevelPercent(0.0001)).toBe(0)
     expect(rmsToInputLevelPercent(0.08)).toBeGreaterThan(60)
     expect(rmsToInputLevelPercent(1)).toBe(100)
+  })
+
+  it('raises the optional input gate threshold as sensitivity increases', () => {
+    expect(voiceGateThresholds(20)).toEqual({
+      openThreshold: 20,
+      closeThreshold: 12,
+    })
+    expect(voiceGateThresholds(80)).toEqual({
+      openThreshold: 80,
+      closeThreshold: 72,
+    })
   })
 })

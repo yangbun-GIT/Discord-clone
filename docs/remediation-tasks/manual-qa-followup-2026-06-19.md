@@ -118,6 +118,11 @@ Verification:
   settings. Workspace/sidebar/user-card/remote-card UI shows binary speaking
   feedback only, and the quick microphone popover shows configured sensitivity
   percent instead of live input level.
+- 2026-06-20 option audit follow-up: the default stable path remains unchanged,
+  but the optional input sensitivity gate now makes the sensitivity slider affect
+  the actual transmit threshold. The gate strongly attenuates below-threshold input
+  when enabled, while RNNoise and native browser echo/noise/auto-gain options still
+  apply on the next voice join because they are capture/AudioWorklet setup options.
 - Real sustained-vowel listening remains a manual gate because fake-device tests do
   not prove speech quality.
 

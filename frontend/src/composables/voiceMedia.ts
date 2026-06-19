@@ -9,8 +9,8 @@ const VOICE_DEVICE_SETTINGS_KEY = 'discord_clone_voice_device_settings'
 const VOICE_DEVICE_STABILITY_MIGRATION_KEY = 'discord_clone_voice_device_stability_migrated'
 const SILENCE_DB = -64
 const SPEECH_REFERENCE_DB = -18
-const GATE_HOLD_MS = 8_000
-const GATE_ATTENUATED_GAIN = 0.7
+const GATE_CLOSE_DELAY_MS = 650
+const GATE_ATTENUATED_GAIN = 0.06
 
 type RnnoiseNode = AudioNode & { destroy: () => void }
 
@@ -357,7 +357,7 @@ export async function createVoiceInputProcessor(
   const destination = context.createMediaStreamDestination()
   const samples = new Float32Array(1024)
   let settings = normalizeVoiceDeviceSettings(initialSettings)
-  let gateOpen = true
+  let gateOpen = !settings.noiseGate
   let releaseTimer: number | null = null
   let intervalId: number | null = null
   let smoothedLevel = 0
@@ -375,7 +375,7 @@ export async function createVoiceInputProcessor(
   compressor.release.value = 0.28
   analyser.fftSize = 1024
   analyser.smoothingTimeConstant = 0
-  gateGain.gain.value = 1
+  gateGain.gain.value = settings.noiseGate ? GATE_ATTENUATED_GAIN : 1
 
   source.connect(highpass)
   highpass.connect(levelGain)
@@ -391,12 +391,26 @@ export async function createVoiceInputProcessor(
   gateGain.connect(destination)
 
   function applySettings(nextSettings: VoiceDeviceSettings) {
+    const wasNoiseGateEnabled = settings.noiseGate
     settings = normalizeVoiceDeviceSettings(nextSettings)
     inputGain.gain.setTargetAtTime(settings.inputVolume / 100, context.currentTime, 0.025)
     levelGain.gain.setTargetAtTime(settings.inputVolume / 100, context.currentTime, 0.025)
     if (!settings.noiseGate) {
+      if (releaseTimer !== null) {
+        window.clearTimeout(releaseTimer)
+        releaseTimer = null
+      }
       gateOpen = true
       gateGain.gain.setTargetAtTime(1, context.currentTime, 0.025)
+      return
+    }
+    if (!wasNoiseGateEnabled) {
+      if (releaseTimer !== null) {
+        window.clearTimeout(releaseTimer)
+        releaseTimer = null
+      }
+      gateOpen = false
+      gateGain.gain.setTargetAtTime(GATE_ATTENUATED_GAIN, context.currentTime, 0.04)
     }
   }
 
@@ -425,16 +439,15 @@ export async function createVoiceInputProcessor(
     releaseTimer = window.setTimeout(() => {
       releaseTimer = null
       gateOpen = false
-      gateGain.gain.setTargetAtTime(GATE_ATTENUATED_GAIN, context.currentTime, 0.55)
-    }, GATE_HOLD_MS)
+      gateGain.gain.setTargetAtTime(GATE_ATTENUATED_GAIN, context.currentTime, 0.08)
+    }, GATE_CLOSE_DELAY_MS)
   }
 
   function tickGate() {
     const level = inputLevel()
     options.onInputLevel?.(level)
     if (!settings.noiseGate) return
-    const openThreshold = Math.max(5, settings.inputSensitivity - 10)
-    const closeThreshold = Math.max(3, settings.inputSensitivity - 28)
+    const { openThreshold, closeThreshold } = voiceGateThresholds(settings.inputSensitivity)
     if (level >= openThreshold) {
       openGate()
       return
@@ -471,6 +484,14 @@ export function rmsToInputLevelPercent(rms: number) {
   const db = 20 * Math.log10(Math.max(rms, 0.000_001))
   const percent = ((db - SILENCE_DB) / (SPEECH_REFERENCE_DB - SILENCE_DB)) * 100
   return Math.min(100, Math.max(0, Math.round(percent)))
+}
+
+export function voiceGateThresholds(inputSensitivity: number) {
+  const sensitivity = clampPercent(inputSensitivity, defaultVoiceDeviceSettings().inputSensitivity)
+  return {
+    openThreshold: Math.max(5, sensitivity),
+    closeThreshold: Math.max(3, sensitivity - 8),
+  }
 }
 
 export function screenTrackIsActive(stream: MediaStream) {

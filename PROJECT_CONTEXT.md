@@ -2016,6 +2016,15 @@ Completed Stage 2 bridge work:
   participant cards show only binary speaking feedback. Frontend voice media tests,
   lint, build, and browser realtime smoke passed; real sustained-vowel listening
   remains a manual gate.
+- Added voice-option behavior audit and optional gate correction:
+  the stable default remains unchanged with RNNoise and the input sensitivity gate
+  off. When a user explicitly enables the input sensitivity gate, the sensitivity
+  slider now raises the actual transmit gate threshold and the closed gate strongly
+  attenuates input, so high sensitivity can block quiet speech/background sound.
+  Input volume and gate settings update during an active call; RNNoise and browser
+  echo/noise/auto-gain constraints apply on the next voice join because those are
+  part of the capture/AudioWorklet setup. Settings copy now states that the
+  sensitivity slider affects audio only when the gate is enabled.
 - Added post-M10 overlay dismissal and bottom voice-panel layout polish:
   `VoicePanel.vue` now closes input/output quick settings on outside click or
   Escape, and the connected voice-session card is ordered below the user status

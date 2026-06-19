@@ -199,6 +199,24 @@ Sustained input stability and input-level privacy update:
   fan/wind noise, and echo behavior because automated fake-device tests cannot
   evaluate speech intelligibility.
 
+Voice option behavior audit:
+
+- Date: 2026-06-20.
+- Default baseline: keep RNNoise and the input sensitivity gate off by default
+  because this is the stable real-microphone path for sustained speech.
+- Input volume: updates the Web Audio input gain during the active call.
+- Input sensitivity: changes the speaking threshold and, when the input
+  sensitivity gate is enabled, the actual transmit gate threshold.
+- Input sensitivity gate: optional. When enabled, the selected sensitivity now
+  strongly attenuates input below the threshold; higher sensitivity can block quiet
+  speech/background sound, while lower sensitivity keeps more sound open.
+- RNNoise: optional. It is created as an AudioWorklet during microphone processor
+  setup, so changes apply on the next voice join.
+- Echo cancellation, noise suppression, and auto gain: browser capture constraints;
+  changes are stored immediately but apply on the next microphone capture.
+- Settings copy must keep this distinction visible so users do not expect the
+  stable default path to behave like a live noise gate.
+
 Screen-share participant composition update:
 
 - Date: 2026-06-19.
