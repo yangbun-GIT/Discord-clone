@@ -39,8 +39,6 @@ $resolvedOutDir = Join-Path $resolvedOutDir $OutDir
 New-Item -ItemType Directory -Force -Path $resolvedOutDir | Out-Null
 
 $pfxPath = Join-Path $resolvedOutDir "lan-dev.pfx"
-$certPath = Join-Path $resolvedOutDir "lan-dev-cert.pem"
-$cerPath = Join-Path $resolvedOutDir "lan-dev-cert.cer"
 $rootCerPath = Join-Path $resolvedOutDir "lan-dev-root-ca.cer"
 
 $serverRsa = [System.Security.Cryptography.RSA]::Create(2048)
@@ -89,15 +87,11 @@ $notBefore = [System.DateTimeOffset]::UtcNow.AddDays(-1)
 $notAfter = $notBefore.AddYears(2)
 $certificate = $request.CreateSelfSigned($notBefore, $notAfter)
 
-Set-Content -LiteralPath $certPath -Value (Convert-ToPem "CERTIFICATE" $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)) -NoNewline
 [System.IO.File]::WriteAllBytes($pfxPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx, $PfxPassphrase))
-[System.IO.File]::WriteAllBytes($cerPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
 [System.IO.File]::WriteAllBytes($rootCerPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
 
 Write-Host "Created HTTPS LAN certificate for $HostName"
 Write-Host "PFX:  $pfxPath"
-Write-Host "Cert: $certPath"
-Write-Host "Server cert: $cerPath"
 Write-Host "Trust this Root CA on other devices: $rootCerPath"
 Write-Host "Trust thumbprint: $($certificate.Thumbprint)"
 

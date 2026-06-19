@@ -99,9 +99,8 @@ Use this when the local stack is running through Docker Compose.
    .\scripts\create_lan_https_cert.ps1 -HostName <host-ip>
    ```
 
-   The script writes `certs/lan-dev.pfx`, `certs/lan-dev-cert.pem`,
-   `certs/lan-dev-cert.cer`, and `certs/lan-dev-root-ca.cer`, then prints the
-   trust thumbprint. The `certs/` folder is ignored by Git.
+   The script writes `certs/lan-dev.pfx` and `certs/lan-dev-root-ca.cer`, then
+   prints the trust thumbprint. The `certs/` folder is ignored by Git.
 
 2. Copy `certs/lan-dev-root-ca.cer` to the notebook and trust it under
    `Trusted Root Certification Authorities` for browser/server authentication.
