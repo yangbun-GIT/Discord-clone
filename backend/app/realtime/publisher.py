@@ -107,11 +107,13 @@ async def publish_relationship_delete(
 
 async def publish_presence_update(
     *,
-    user_id: int,
+    user_id: int | None = None,
+    guild_id: int | None = None,
     presence: PresenceUpdateRead,
 ) -> None:
     event = RealtimeGatewayEvent(
         user_id=user_id,
+        guild_id=guild_id,
         event="PRESENCE_UPDATE",
         data=presence.model_dump(),
     )

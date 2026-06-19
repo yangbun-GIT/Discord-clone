@@ -3,7 +3,7 @@ import { Laugh, Send } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
-import type { DirectMessage, User, UserPresenceStatus } from '../types'
+import type { DirectMessage, User } from '../types'
 
 const props = defineProps<{
   dm: DirectMessage | null
@@ -36,10 +36,6 @@ const otherParticipants = computed(() =>
   props.dm?.participants.filter((participant) => participant.id !== props.currentUser?.id) ?? [],
 )
 
-function statusLabel(status: UserPresenceStatus) {
-  return t(`common.status.${status}`)
-}
-
 function messageTime(index: number) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
     new Date(2026, 4, 18, 8, 54 + index),
@@ -66,18 +62,17 @@ watch(
     <div class="message-list">
       <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
         <div class="dm-intro-heading">
-          <div class="dm-placeholder-avatar" :class="dm.status">
+          <div class="dm-placeholder-avatar">
             {{ dm.display_name.slice(0, 1).toUpperCase() }}
           </div>
           <div class="dm-intro-title">
             <h2>{{ dm.display_name }}</h2>
             <p v-if="dm.is_group">{{ t('dm.groupDescription', { count: dm.member_count }) }}</p>
-            <p v-else>{{ dm.activity ?? t('dm.beginning') }}</p>
+            <p v-else>{{ t('dm.beginning') }}</p>
           </div>
         </div>
         <div v-if="otherParticipants.length" class="dm-participant-strip" :aria-label="t('dm.participants')">
           <span v-for="participant in otherParticipants" :key="participant.id">
-            <span class="presence-dot" :class="participant.status" aria-hidden="true"></span>
             {{ participant.username }}
           </span>
         </div>

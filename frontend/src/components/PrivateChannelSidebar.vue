@@ -4,7 +4,7 @@ import { MessageCircle, Plus, Search } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import { addDocumentEventListener } from '../services/browserApi'
-import type { DirectMessage, UserPresenceStatus } from '../types'
+import type { DirectMessage } from '../types'
 
 const props = defineProps<{
   dms: DirectMessage[]
@@ -37,10 +37,6 @@ const filteredDms = computed(() => {
     ),
   ).slice(0, 8)
 })
-
-function statusLabel(status: UserPresenceStatus) {
-  return t(`common.status.${status}`)
-}
 
 function unreadLabel(count: number) {
   return count > 99 ? '99+' : String(count)
@@ -105,10 +101,10 @@ onBeforeUnmount(() => {
           type="button"
           @click="openDmFromSearch(dm.id)"
         >
-          <span class="dm-avatar" :class="dm.status">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
+          <span class="dm-avatar">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
           <span>
             <strong>{{ dm.display_name }}</strong>
-            <small>{{ dm.activity ?? statusLabel(dm.status) }}</small>
+            <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
           </span>
         </button>
         <button type="button" class="quick-create" @click="$emit('createDm'); searchOpen = false">
@@ -152,17 +148,15 @@ onBeforeUnmount(() => {
         @click="$emit('openDm', dm.id)"
       >
         <span class="dm-avatar-wrap">
-          <span class="dm-avatar" :class="dm.status">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
-          <span class="presence-dot" :class="dm.status" aria-hidden="true"></span>
+          <span class="dm-avatar">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
         </span>
         <span class="dm-copy">
           <span class="dm-title-line">
             <strong>{{ dm.display_name }}</strong>
             <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
           </span>
-          <span v-if="dm.activity" class="dm-state-line">
-            <small>{{ statusLabel(dm.status) }}</small>
-            <small>{{ dm.activity }}</small>
+          <span v-if="dm.is_group" class="dm-state-line">
+            <small>{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
           </span>
         </span>
         <span v-if="dm.unread_count" class="dm-badge">{{ unreadLabel(dm.unread_count) }}</span>

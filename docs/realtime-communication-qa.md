@@ -36,7 +36,9 @@ and a DM. It verifies:
 - Server text message appears in a second browser context through gateway dispatch.
 - DM message appears in a second browser context through gateway dispatch.
 - Friend presence changes dispatch as `PRESENCE_UPDATE` so a second accepted-friend
-  session can update Friends and DM presence without a refresh.
+  session can update Friends presence, and shared server sessions can update
+  member-list presence, without a refresh. DM sidebar and DM intro surfaces
+  intentionally do not repaint status/activity from lightweight presence updates.
 - Two users join the same voice channel with fake microphone devices.
 - Remote audio sink appears.
 - Voice peer count appears in the voice panel.

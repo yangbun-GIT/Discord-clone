@@ -123,7 +123,7 @@ describe('gateway dispatch idempotency', () => {
     expect(store.dms[0].unread_count).toBe(0)
   })
 
-  it('syncs relationship presence updates into existing DM rows', () => {
+  it('syncs relationship identity updates into existing DM rows without mutating DM presence', () => {
     const store = useDmStore()
     store.setCurrentUserId(42)
     store.dms = [{ ...dm, participants: dm.participants.map((participant) => ({ ...participant })) }]
@@ -135,15 +135,16 @@ describe('gateway dispatch idempotency', () => {
       status: 'idle',
       activity: 'Reviewing requests',
     })
-    expect(store.dms[0].status).toBe('idle')
-    expect(store.dms[0].activity).toBe('Reviewing requests')
+    expect(store.dms[0].status).toBe('online')
+    expect(store.dms[0].activity).toBeNull()
     expect(store.dms[0].participants.find((participant) => participant.id === 701)).toMatchObject({
-      status: 'idle',
-      activity: 'Reviewing requests',
+      handle: 'mina.study',
+      status: 'online',
+      activity: null,
     })
   })
 
-  it('syncs lightweight presence updates into relationships and existing DM rows', () => {
+  it('syncs lightweight presence updates into relationships without mutating DM rows', () => {
     const store = useDmStore()
     store.setCurrentUserId(42)
     store.relationships = [{ ...relationship, status: 'online', activity: null }]
@@ -161,11 +162,32 @@ describe('gateway dispatch idempotency', () => {
       status: 'dnd',
       activity: 'Focusing',
     })
-    expect(store.dms[0].status).toBe('dnd')
-    expect(store.dms[0].activity).toBe('Focusing')
+    expect(store.dms[0].status).toBe('online')
+    expect(store.dms[0].activity).toBeNull()
     expect(store.dms[0].participants.find((participant) => participant.id === 701)).toMatchObject({
+      status: 'online',
+      activity: null,
+    })
+  })
+
+  it('syncs lightweight presence updates into guild member rows', () => {
+    const store = useGuildStore()
+    store.guilds = [{
+      ...guild,
+      members: [{ id: 701, username: 'Mina', status: 1, role: 'Member', role_ids: [] }],
+    }]
+
+    store.handleGatewayDispatch('PRESENCE_UPDATE', {
+      user_id: 701,
+      username: 'Mina',
       status: 'dnd',
-      activity: 'Focusing',
+      activity: null,
+    })
+
+    expect(store.guilds[0].members[0]).toMatchObject({
+      id: 701,
+      status: 1,
+      presence_status: 'dnd',
     })
   })
 

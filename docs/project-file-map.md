@@ -272,7 +272,8 @@ For ordinary implementation work:
 - `backend/app/gateway/router.py`
   - WebSocket gateway endpoint and payload handling.
   - Handles presence update opcode 6 by persisting profile status and publishing
-    user-targeted `PRESENCE_UPDATE` dispatches to accepted friends.
+    user-targeted `PRESENCE_UPDATE` dispatches to accepted friends plus
+    guild-targeted presence dispatches to shared server subscribers.
   - Relays offer/answer/ICE voice signals and screen-share state signals.
 - `backend/app/gateway/manager.py`
   - Compatibility facade for gateway connection, subscription, broadcast, voice,
@@ -419,7 +420,7 @@ For ordinary implementation work:
     `browserStorage` so refresh returns to the previous DM/server/voice page.
 - `frontend/src/stores/guilds.ts`
   - Guild list, active guild/channel, local message state, admin state reflection,
-    and gateway state application.
+    guild member presence updates, and gateway state application.
 - `frontend/src/stores/guildVisibility.ts`
   - Guild/channel/message visibility filtering for visual-test/demo noise.
 - `frontend/src/stores/voicePresence.ts`
@@ -434,10 +435,10 @@ For ordinary implementation work:
 - `frontend/src/stores/dms.ts`
   - Public Direct Message Pinia facade and state.
   - Owns relationship mutation actions and idempotent relationship update/delete
-    state application, relationship presence sync into matching DM rows, and
+    state application, relationship identity sync into matching DM rows, and
     current-user DM identity normalization for REST/gateway payloads.
-  - Applies lightweight `PRESENCE_UPDATE` gateway dispatches to relationship rows,
-    DM participants, and normalized DM sidebar status/activity.
+  - Applies lightweight `PRESENCE_UPDATE` gateway dispatches to relationship rows
+    only; DM sidebar rows and DM intro surfaces do not repaint status/activity.
 - `frontend/src/stores/dmApi.ts`
   - Direct-message REST loaders and mutations used by `dms.ts`.
   - Wraps relationship mutation REST calls for Add Friend, pending, friend, block,

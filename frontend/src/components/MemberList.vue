@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { Circle, Plus, RefreshCw, Settings, UserMinus, X } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
-import type { Member, Role } from '../types'
+import type { Member, Role, UserPresenceStatus } from '../types'
 
 const props = defineProps<{
   members: Member[]
@@ -57,8 +57,15 @@ function canRemoveMember(member: Member) {
   return props.canManageRoles && member.id !== props.ownerId && member.id !== props.currentUserId
 }
 
+function memberPresence(member: Member): UserPresenceStatus {
+  return member.presence_status ?? (member.status === 1 ? 'online' : 'offline')
+}
+
 function memberStatus(member: Member) {
-  return member.status === 1 ? t('members.status.online') : t('members.status.offline')
+  const status = memberPresence(member)
+  return status === 'online'
+    ? t('members.status.online')
+    : t(`common.status.${status}`)
 }
 </script>
 
@@ -109,7 +116,7 @@ function memberStatus(member: Member) {
       </form>
     </section>
     <div v-for="member in members" :key="member.id" class="member-row">
-      <span class="member-avatar" :class="{ online: member.status === 1 }">
+      <span class="member-avatar">
         {{ member.username.slice(0, 1).toUpperCase() }}
       </span>
       <span class="member-copy">
@@ -118,7 +125,7 @@ function memberStatus(member: Member) {
       </span>
       <Circle
         :size="10"
-        :class="member.status === 1 ? 'online-dot' : 'offline-dot'"
+        :class="`member-presence-dot ${memberPresence(member)}`"
         fill="currentColor"
         :aria-label="memberStatus(member)"
       />

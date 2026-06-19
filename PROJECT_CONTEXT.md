@@ -292,13 +292,13 @@ credentials are supplied and tested.
 Manual QA follow-up Stage M6 is implemented in code/docs. The Friends view now
 labels the pending tab as friend requests, keeps Online/All scoped to actual
 friends, and groups pending incoming/outgoing friend requests with separate counts.
-Existing `RELATIONSHIP_UPDATE` gateway dispatches now sync relationship presence
-into matching DM rows and participants, so Friends and DM surfaces do not diverge
-when relationship status data changes. A dedicated gateway `PRESENCE_UPDATE` flow
-now persists the current user's `dm_profiles.presence_status` in PostgreSQL/demo
-storage and publishes user-targeted presence updates to accepted friends, while
-`frontend/src/components/VoicePanel.vue` keeps the large self avatar visually
-stable and moves online/idle/dnd/offline color changes to the small status dot.
+Relationship updates now keep DM identity data stable without repainting DM
+presence, and the dedicated gateway `PRESENCE_UPDATE` flow persists the current
+user's `dm_profiles.presence_status` in PostgreSQL/demo storage, publishes
+user-targeted updates to accepted friends, and publishes guild-targeted updates to
+shared server members. Friends rows and server member rows show status through
+small presence dots only; DM sidebar/DM intro/invite rows no longer use realtime
+presence color or activity, and large avatars remain visually stable.
 
 Manual QA follow-up Stage M7 is implemented in code/docs. `frontend/src/stores/dms.ts`
 now tracks the current user ID and normalizes direct-message payloads from REST or
@@ -795,8 +795,9 @@ The app boots in two local modes:
     messages immutably, and resets on logout.
   - Applies `DM_CREATE` and `DM_MESSAGE_CREATE` gateway dispatches with idempotent
     upsert/append behavior.
-  - Applies `PRESENCE_UPDATE` gateway dispatches into matching relationship rows,
-    DM participants, and normalized DM sidebar status/activity.
+  - Applies `PRESENCE_UPDATE` gateway dispatches only into matching relationship
+    rows; DM sidebar rows and DM intro surfaces intentionally do not repaint
+    presence/activity from lightweight status updates.
 - `frontend/src/stores/navigation.ts`
   - Pinia app destination store for the Discord-like shell.
   - Tracks `friends`, `dm`, `server_channel`, `voice_channel`, and `settings`

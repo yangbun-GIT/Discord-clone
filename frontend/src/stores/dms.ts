@@ -103,7 +103,7 @@ export const useDmStore = defineStore('dms', () => {
     relationships.value = exists
       ? relationships.value.map((item) => (item.id === cleanedRelationship.id ? cleanedRelationship : item))
       : [...relationships.value, cleanedRelationship]
-    syncRelationshipPresence(cleanedRelationship)
+    syncRelationshipIdentity(cleanedRelationship)
   }
 
   function removeRelationship(relationship: { id: number }) {
@@ -118,26 +118,12 @@ export const useDmStore = defineStore('dms', () => {
             username: presence.username ?? relationship.username,
             status: presence.status,
             activity: presence.activity,
-          }
+        }
         : relationship
     ))
-    dms.value = dms.value.map((dm) => {
-      if (!dm.participants.some((participant) => participant.id === presence.user_id)) return dm
-      const participants = dm.participants.map((participant) => (
-        participant.id === presence.user_id
-          ? {
-              ...participant,
-              username: presence.username ?? participant.username,
-              status: presence.status,
-              activity: presence.activity,
-            }
-          : participant
-      ))
-      return normalizeDmIdentity({ ...dm, participants })
-    })
   }
 
-  function syncRelationshipPresence(relationship: Friend) {
+  function syncRelationshipIdentity(relationship: Friend) {
     dms.value = dms.value.map((dm) => {
       if (!dm.participants.some((participant) => participant.id === relationship.id)) return dm
       const participants = dm.participants.map((participant) => (
@@ -145,8 +131,6 @@ export const useDmStore = defineStore('dms', () => {
           ? {
               ...participant,
               handle: relationship.handle,
-              status: relationship.status,
-              activity: relationship.activity,
             }
           : participant
       ))

@@ -1374,7 +1374,7 @@ async function handleSendInviteToFriend(friendId: number) {
         </label>
         <div class="invite-friend-list">
           <article v-for="friend in inviteFriends" :key="friend.id" class="invite-friend-row">
-            <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
+            <span class="friend-avatar">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
             <span>
               <strong>{{ friend.username }}</strong>
               <small>{{ friend.activity ?? friend.handle }}</small>

@@ -163,11 +163,15 @@ async def gateway(websocket: WebSocket) -> None:
                 )
                 for friend_user_id in friend_user_ids:
                     await publish_presence_update(user_id=friend_user_id, presence=presence)
+                for guild_id in connection.guild_ids:
+                    await publish_presence_update(guild_id=guild_id, presence=presence)
                 logger.info(
-                    "gateway presence update user_id=%s status=%s targets=%s",
+                    "gateway presence update user_id=%s status=%s "
+                    "friend_targets=%s guild_targets=%s",
                     connection.user_id,
                     presence.status,
                     len(friend_user_ids),
+                    len(connection.guild_ids),
                 )
                 continue
 

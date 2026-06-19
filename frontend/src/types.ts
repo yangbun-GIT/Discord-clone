@@ -80,6 +80,7 @@ export type Member = {
   id: number
   username: string
   status: number
+  presence_status?: UserPresenceStatus
   role: string
   role_ids: number[]
 }

@@ -3,7 +3,7 @@ import { computed, shallowRef, ref } from 'vue'
 
 import { apiGet, apiPost } from '../services/api'
 import { runDocumentViewTransition } from '../services/browserApi'
-import type { Channel, Guild, Message, MessageDelete } from '../types'
+import type { Channel, Guild, Message, MessageDelete, PresenceUpdate } from '../types'
 import { deleteChannelMessage, editChannelMessage, sendChannelMessage } from './channelMessages'
 import {
   assignGuildRole,
@@ -347,6 +347,24 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  function updatePresence(presence: PresenceUpdate) {
+    guilds.value = guilds.value.map((guild) => {
+      if (!guild.members.some((member) => member.id === presence.user_id)) return guild
+      return {
+        ...guild,
+        members: guild.members.map((member) => (
+          member.id === presence.user_id
+            ? {
+                ...member,
+                username: presence.username ?? member.username,
+                presence_status: presence.status,
+              }
+            : member
+        )),
+      }
+    })
+  }
+
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
     handleGuildGatewayDispatch(event, data, {
       appendMessage,
@@ -357,6 +375,7 @@ export const useGuildStore = defineStore('guilds', () => {
       syncVoiceSnapshot,
       syncGuildUpdate,
       setLastVoiceSignal,
+      updatePresence,
     })
   }
 

@@ -3,6 +3,7 @@ import type {
   Guild,
   Message,
   MessageDelete,
+  PresenceUpdate,
   VoiceSignal,
   VoiceState,
   VoiceStateSnapshot,
@@ -17,6 +18,7 @@ interface GuildGatewayHandlerContext {
   syncVoiceSnapshot: (snapshot: VoiceStateSnapshot) => void
   syncGuildUpdate: (guild: Guild) => void
   setLastVoiceSignal: (signal: VoiceSignal) => void
+  updatePresence: (presence: PresenceUpdate) => void
 }
 
 type GuildGatewayHandler = (
@@ -72,6 +74,14 @@ function isVoiceSignal(data: Record<string, unknown>): data is VoiceSignal {
     && ['offer', 'answer', 'ice', 'screen'].includes(data.type)
 }
 
+function isPresenceUpdate(data: Record<string, unknown>): data is PresenceUpdate {
+  return typeof data.user_id === 'number'
+    && (data.username === null || typeof data.username === 'string' || typeof data.username === 'undefined')
+    && typeof data.status === 'string'
+    && ['online', 'idle', 'dnd', 'offline'].includes(data.status)
+    && (data.activity === null || typeof data.activity === 'string' || typeof data.activity === 'undefined')
+}
+
 function isGuild(data: Record<string, unknown>): data is Guild {
   return typeof data.id === 'number'
     && typeof data.name === 'string'
@@ -104,6 +114,14 @@ const handlers: Record<string, GuildGatewayHandler> = {
   },
   GUILD_UPDATE(data, context) {
     if (isGuild(data)) context.syncGuildUpdate(data)
+  },
+  PRESENCE_UPDATE(data, context) {
+    if (isPresenceUpdate(data)) context.updatePresence({
+      user_id: data.user_id,
+      username: data.username ?? null,
+      status: data.status,
+      activity: data.activity ?? null,
+    })
   },
 }
 

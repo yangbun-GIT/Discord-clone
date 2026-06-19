@@ -524,7 +524,7 @@ def test_channel_create_fans_out_to_gateway_subscribers() -> None:
     assert event["d"]["name"] == "live-channel"
 
 
-def test_presence_update_fans_out_to_friend_subscribers() -> None:
+def test_presence_update_fans_out_to_friend_and_guild_subscribers() -> None:
     reset_operation_limits()
     with TestClient(app) as client:
         client.post(
@@ -534,34 +534,45 @@ def test_presence_update_fans_out_to_friend_subscribers() -> None:
         )
         with (
             client.websocket_connect("/gateway") as sender,
-            client.websocket_connect("/gateway") as receiver,
+            client.websocket_connect("/gateway") as friend_receiver,
+            client.websocket_connect("/gateway") as guild_receiver,
         ):
             sender.receive_json()
             sender.send_json({"op": 2, "d": {"token": auth_token()}})
             sender.receive_json()
-            receiver.receive_json()
-            receiver.send_json(
+            friend_receiver.receive_json()
+            friend_receiver.send_json(
                 {
                     "op": 2,
                     "d": {"token": auth_token(user_id=701, username="Mina")},
                 }
             )
-            receiver.receive_json()
+            friend_receiver.receive_json()
+            guild_receiver.receive_json()
+            guild_receiver.send_json(
+                {
+                    "op": 2,
+                    "d": {"token": auth_token(user_id=43, username="codex")},
+                }
+            )
+            guild_receiver.receive_json()
 
             sender.send_json({"op": 6, "d": {"status": "idle", "activity": None}})
-            event = receive_gateway_event(receiver, "PRESENCE_UPDATE")
+            friend_event = receive_gateway_event(friend_receiver, "PRESENCE_UPDATE")
+            guild_event = receive_gateway_event(guild_receiver, "PRESENCE_UPDATE")
 
             relationships = client.get(
                 "/api/users/me/relationships",
                 headers=auth_headers(user_id=701, username="Mina"),
             )
 
-    assert event["d"] == {
+    assert friend_event["d"] == {
         "user_id": 42,
         "username": "yangbun",
         "status": "idle",
         "activity": None,
     }
+    assert guild_event["d"] == friend_event["d"]
     assert relationships.status_code == 200
     assert any(
         relationship["id"] == 42 and relationship["status"] == "idle"

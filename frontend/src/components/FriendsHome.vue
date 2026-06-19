@@ -309,7 +309,7 @@ watch(
                 @click="selectedFriendId = friend.id"
                 @contextmenu.stop.prevent="openFriendMenu($event, friend, 'context')"
               >
-                <span class="friend-avatar" :class="friend.status">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
+                <span class="friend-avatar">{{ friend.username.slice(0, 1).toUpperCase() }}</span>
                 <span class="friend-copy">
                   <span class="friend-name-line">
                     <strong>{{ friend.username }}</strong>
@@ -390,12 +390,15 @@ watch(
         <aside v-if="selectedFriend" class="friend-activity-panel" :aria-label="t('friends.selectedProfile')">
           <h2>{{ t('friends.activityNow') }}</h2>
           <article class="activity-card selected">
-            <span class="friend-avatar" :class="selectedFriend.status">
+            <span class="friend-avatar">
               {{ selectedFriend.username.slice(0, 1).toUpperCase() }}
             </span>
             <div>
               <strong>{{ selectedFriend.username }}</strong>
-              <small>{{ selectedFriend.activity ?? statusLabel(selectedFriend.status) }}</small>
+              <small class="friend-status-line">
+                <span class="presence-dot" :class="selectedFriend.status" aria-hidden="true"></span>
+                <span>{{ selectedFriend.activity ?? statusLabel(selectedFriend.status) }}</span>
+              </small>
               <small>{{ selectedFriend.handle }}</small>
             </div>
             <button

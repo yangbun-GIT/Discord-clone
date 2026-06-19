@@ -776,13 +776,6 @@ select:focus-visible {
   height: 38px;
 }
 
-.dm-avatar-wrap .presence-dot {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  border: 2px solid #1e2026;
-}
-
 .presence-dot {
   flex: 0 0 auto;
   width: 9px;
@@ -806,21 +799,6 @@ select:focus-visible {
 
 .presence-dot.offline {
   background: #6b7280;
-}
-
-.dm-avatar.online,
-.friend-avatar.online {
-  background: #86efac;
-}
-
-.dm-avatar.idle,
-.friend-avatar.idle {
-  background: #fde68a;
-}
-
-.dm-avatar.dnd,
-.friend-avatar.dnd {
-  background: #fca5a5;
 }
 
 .dm-copy {
@@ -4265,10 +4243,6 @@ select:focus-visible {
   font-weight: 800;
 }
 
-.member-avatar.online {
-  background: #86efac;
-}
-
 .member-copy {
   min-width: 0;
   display: grid;
@@ -4331,12 +4305,22 @@ select:focus-visible {
   background: rgb(248 113 113 / 13%);
 }
 
-.online-dot {
+.online-dot,
+.member-presence-dot.online {
   color: #22c55e;
 }
 
-.offline-dot {
+.offline-dot,
+.member-presence-dot.offline {
   color: #64748b;
+}
+
+.member-presence-dot.idle {
+  color: #f59e0b;
+}
+
+.member-presence-dot.dnd {
+  color: #ef4444;
 }
 
 .voice-workspace {

@@ -612,6 +612,9 @@ Browser UI
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/stores/gatewayIdempotency.test.ts`
+  - Owns:
+    - Guild aggregate state, gateway state application, and guild member
+      presence-state updates from `PRESENCE_UPDATE` dispatches.
 
 - `frontend/src/stores/voicePresence.ts`
   - References:
@@ -633,8 +636,9 @@ Browser UI
     - `frontend/src/stores/gatewayIdempotency.test.ts`
   - Owns:
     - DM list/message state, active-DM unread clearing, inactive-DM unread
-      incrementing for gateway message dispatch, relationship presence sync into
-      matching DM rows, and lightweight presence update application.
+      incrementing for gateway message dispatch, relationship identity sync into
+      matching DM rows, and relationship-only lightweight presence update
+      application.
     - Current-user DM identity normalization so sidebar rows display recipients
       while message rows preserve actual authors.
 
