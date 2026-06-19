@@ -15,6 +15,14 @@ export type Friend = {
   relationship: 'friend' | 'pending_incoming' | 'pending_outgoing' | 'blocked'
 }
 
+export type RelationshipRequestCreate = {
+  username: string
+}
+
+export type RelationshipDelete = {
+  id: number
+}
+
 export type DirectMessage = {
   id: number
   recipient_ids: number[]

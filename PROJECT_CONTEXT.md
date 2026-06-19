@@ -196,6 +196,16 @@ Voice transport should remain WebRTC media with WebSocket signaling for C10-C13.
 Raw WebSocket audio is rejected, and SFU-backed WebRTC is the preferred future
 architecture if the clone moves toward larger Discord-like voice rooms.
 
+Friend relationship implementation is now backend-backed. The Friends Add Friend
+surface no longer relies on a local-only success message or hardcoded fallback
+friend rows for accounts with no relationships. Backend relationship reads and
+mutations now cover request send, accept, reject, cancel, remove, block, and
+unblock across PostgreSQL and demo fallback storage. User-targeted gateway dispatch
+now publishes `RELATIONSHIP_UPDATE` and `RELATIONSHIP_DELETE` to the affected
+sessions, and the frontend DM store/Friends UI applies those events idempotently.
+Focused backend and frontend tests pass; the remaining follow-up is a two-profile
+browser smoke that proves A's request appears in B's Pending tab without refresh.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

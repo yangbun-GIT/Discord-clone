@@ -1,10 +1,73 @@
 from app.schemas.auth import UserPublic
-from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageRead, DmRead, RelationshipRead
+from app.schemas.dm import (
+    DmCreate,
+    DmMessageCreate,
+    DmMessageRead,
+    DmRead,
+    RelationshipDeleteRead,
+    RelationshipRead,
+)
 from app.services.dm_storage import get_dm_storage
 
 
 async def list_relationships(user: UserPublic) -> list[RelationshipRead]:
     return await get_dm_storage().list_relationships(user)
+
+
+async def send_friend_request(
+    *,
+    actor: UserPublic,
+    target_username: str,
+) -> tuple[RelationshipRead, RelationshipRead]:
+    return await get_dm_storage().send_friend_request(actor=actor, target_username=target_username)
+
+
+async def accept_friend_request(
+    *,
+    actor: UserPublic,
+    target_user_id: int,
+) -> tuple[RelationshipRead, RelationshipRead]:
+    return await get_dm_storage().accept_friend_request(actor=actor, target_user_id=target_user_id)
+
+
+async def reject_friend_request(
+    *,
+    actor: UserPublic,
+    target_user_id: int,
+) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+    return await get_dm_storage().reject_friend_request(actor=actor, target_user_id=target_user_id)
+
+
+async def cancel_friend_request(
+    *,
+    actor: UserPublic,
+    target_user_id: int,
+) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+    return await get_dm_storage().cancel_friend_request(actor=actor, target_user_id=target_user_id)
+
+
+async def remove_friend(
+    *,
+    actor: UserPublic,
+    target_user_id: int,
+) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+    return await get_dm_storage().remove_friend(actor=actor, target_user_id=target_user_id)
+
+
+async def block_user(
+    *,
+    actor: UserPublic,
+    target_user_id: int,
+) -> tuple[RelationshipRead, RelationshipDeleteRead]:
+    return await get_dm_storage().block_user(actor=actor, target_user_id=target_user_id)
+
+
+async def unblock_user(
+    *,
+    actor: UserPublic,
+    target_user_id: int,
+) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+    return await get_dm_storage().unblock_user(actor=actor, target_user_id=target_user_id)
 
 
 async def list_dms(user: UserPublic) -> list[DmRead]:

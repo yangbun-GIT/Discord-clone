@@ -724,5 +724,25 @@
   frontend HTTP smoke passed, and `npm run smoke:realtime:browser` passed for
   same-PC two-browser server text, DM, voice peer, remote audio sink, mute/deafen,
   and fake screen-share paths. Real microphone quality, real screen picker UX,
-  different-PC LAN, and TURN/NAT internet voice remain separate manual gates because
-  the current local voice metadata reports `turn_configured: false`.
+different-PC LAN, and TURN/NAT internet voice remain separate manual gates because
+the current local voice metadata reports `turn_configured: false`.
+
+## Friend Relationship Workflow
+
+- Status: backend/frontend implementation complete; two-profile browser UI smoke
+  remains as follow-up QA.
+- Plan document:
+  `docs/remediation-tasks/friend-relationship-implementation-plan.md`.
+- Completed scope:
+  - Add Friend now calls backend relationship mutation APIs instead of setting a
+    local-only success result.
+  - PostgreSQL and demo fallback storage support friend request send, incoming and
+    outgoing pending state, accept, reject, cancel, remove, block, and unblock.
+  - Gateway/realtime supports user-targeted relationship update/delete dispatches.
+  - The Friends UI applies pending/friend/blocked actions and no longer shows
+    hardcoded fallback friend rows for accounts with no relationships.
+- Verification summary:
+  - Frontend lint/build and frontend unit tests passed.
+  - Backend lint and focused DM/demo-store relationship tests passed.
+  - Manual two-profile UI smoke is still required to prove visible pending updates
+    across the user's Chrome profiles.

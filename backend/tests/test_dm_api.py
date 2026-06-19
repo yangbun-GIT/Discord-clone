@@ -130,3 +130,53 @@ def test_create_dm_message_rejects_payload_mismatch() -> None:
     )
 
     assert response.status_code == 400
+
+
+def test_friend_request_endpoint_creates_pending_state() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/users/me/relationships/requests",
+        json={"username": "Nora"},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["id"] == 705
+    assert payload["relationship"] == "pending_outgoing"
+
+
+def test_friend_request_accept_endpoint_turns_rows_into_friends() -> None:
+    client = TestClient(app)
+
+    client.post(
+        "/api/users/me/relationships/requests",
+        json={"username": "yangbun"},
+        headers=auth_headers(user_id=705, username="Nora"),
+    )
+    response = client.post(
+        "/api/users/me/relationships/705/accept",
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["relationship"] == "friend"
+
+
+def test_block_and_unblock_relationship_endpoints() -> None:
+    client = TestClient(app)
+
+    block_response = client.post(
+        "/api/users/me/relationships/704/block",
+        headers=auth_headers(),
+    )
+    unblock_response = client.delete(
+        "/api/users/me/relationships/704/block",
+        headers=auth_headers(),
+    )
+
+    assert block_response.status_code == 200
+    assert block_response.json()["relationship"] == "blocked"
+    assert unblock_response.status_code == 200
+    assert unblock_response.json()["id"] == 704

@@ -22,6 +22,18 @@ class GatewayBroadcaster:
             data,
         )
 
+    async def broadcast_user(
+        self,
+        user_id: int,
+        event: str,
+        data: dict[str, object],
+    ) -> list[ClientConnection]:
+        return await self._broadcast(
+            lambda connection: connection.user_id == user_id,
+            event,
+            data,
+        )
+
     async def broadcast_guild(
         self,
         guild_id: int,

@@ -18,6 +18,22 @@ class RelationshipRead(BaseModel):
     relationship: RelationshipState
 
 
+class RelationshipRequestCreate(BaseModel):
+    username: str = Field(min_length=2, max_length=80)
+
+    @field_validator("username")
+    @classmethod
+    def normalize_username(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("username cannot be empty")
+        return normalized
+
+
+class RelationshipDeleteRead(BaseModel):
+    id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
+
+
 class DmParticipantRead(BaseModel):
     id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
     username: str = Field(min_length=1, max_length=80)

@@ -56,6 +56,10 @@ class GatewayConnectionManager:
         stale = await self._broadcaster.broadcast_channel(channel_id, event, data)
         await self._disconnect_stale(stale)
 
+    async def broadcast_user(self, user_id: int, event: str, data: dict[str, object]) -> None:
+        stale = await self._broadcaster.broadcast_user(user_id, event, data)
+        await self._disconnect_stale(stale)
+
     async def broadcast_guild(self, guild_id: int, event: str, data: dict[str, object]) -> None:
         stale = await self._broadcaster.broadcast_guild(guild_id, event, data)
         await self._disconnect_stale(stale)

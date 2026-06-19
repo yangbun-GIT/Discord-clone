@@ -3,11 +3,18 @@ import { computed, ref, shallowRef } from 'vue'
 
 import type { DirectMessage, DmMessage, Friend } from '../types'
 import {
+  acceptRelationshipRequest,
+  blockRelationshipUser,
+  cancelRelationshipRequest,
   createDmChannel,
   createDmChannelMessage,
   loadDirectMessages,
   loadDmRelationships,
   loadDmWorkspace,
+  rejectRelationshipRequest,
+  removeRelationshipFriend,
+  sendRelationshipRequest,
+  unblockRelationshipUser,
 } from './dmApi'
 import { handleDmGatewayDispatch } from './dmGatewayHandlers'
 import {
@@ -88,6 +95,19 @@ export const useDmStore = defineStore('dms', () => {
       : [cleanedDm, ...dms.value]
   }
 
+  function upsertRelationship(relationship: Friend) {
+    const [cleanedRelationship] = cleanVisibleRelationships([relationship])
+    if (!cleanedRelationship) return
+    const exists = relationships.value.some((item) => item.id === cleanedRelationship.id)
+    relationships.value = exists
+      ? relationships.value.map((item) => (item.id === cleanedRelationship.id ? cleanedRelationship : item))
+      : [...relationships.value, cleanedRelationship]
+  }
+
+  function removeRelationship(relationship: { id: number }) {
+    relationships.value = relationships.value.filter((item) => item.id !== relationship.id)
+  }
+
   function setActiveDm(dmId: number | null) {
     activeDmId.value = dmId
     if (dmId === null) return
@@ -115,7 +135,115 @@ export const useDmStore = defineStore('dms', () => {
   }
 
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
-    handleDmGatewayDispatch(event, data, { upsertDm, appendMessage })
+    handleDmGatewayDispatch(event, data, {
+      upsertDm,
+      appendMessage,
+      upsertRelationship,
+      removeRelationship,
+    })
+  }
+
+  async function sendFriendRequest(token: string | null, username: string) {
+    const trimmedUsername = username.trim()
+    if (!trimmedUsername) return null
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await sendRelationshipRequest(token, trimmedUsername)
+      upsertRelationship(relationship)
+      return relationship
+    } catch (cause) {
+      setError(cause, 'Failed to send friend request')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function acceptRequest(token: string | null, userId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await acceptRelationshipRequest(token, userId)
+      upsertRelationship(relationship)
+      return relationship
+    } catch (cause) {
+      setError(cause, 'Failed to accept friend request')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function rejectRequest(token: string | null, userId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await rejectRelationshipRequest(token, userId)
+      removeRelationship(relationship)
+    } catch (cause) {
+      setError(cause, 'Failed to reject friend request')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function cancelRequest(token: string | null, userId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await cancelRelationshipRequest(token, userId)
+      removeRelationship(relationship)
+    } catch (cause) {
+      setError(cause, 'Failed to cancel friend request')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function removeFriend(token: string | null, userId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await removeRelationshipFriend(token, userId)
+      removeRelationship(relationship)
+    } catch (cause) {
+      setError(cause, 'Failed to remove friend')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function blockUser(token: string | null, userId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await blockRelationshipUser(token, userId)
+      upsertRelationship(relationship)
+      return relationship
+    } catch (cause) {
+      setError(cause, 'Failed to block user')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function unblockUser(token: string | null, userId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const relationship = await unblockRelationshipUser(token, userId)
+      removeRelationship(relationship)
+    } catch (cause) {
+      setError(cause, 'Failed to unblock user')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
   }
 
   async function createDm(token: string | null, recipientIds: number[]) {
@@ -174,6 +302,13 @@ export const useDmStore = defineStore('dms', () => {
     setActiveDm,
     createDm,
     sendDmMessage,
+    sendFriendRequest,
+    acceptRequest,
+    rejectRequest,
+    cancelRequest,
+    removeFriend,
+    blockUser,
+    unblockUser,
     handleGatewayDispatch,
     resetDms,
   }

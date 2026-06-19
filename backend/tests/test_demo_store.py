@@ -61,3 +61,66 @@ def test_demo_store_creates_dm_for_known_recipient() -> None:
 
     assert dm.display_name == "Haru"
     assert dm.recipient_ids == [704]
+
+
+def test_demo_store_friend_request_accept_and_remove() -> None:
+    store = DemoStore()
+    actor = UserPublic(id=42, username="yangbun", status=1)
+
+    outgoing, incoming = store.send_friend_request(actor=actor, target_username="Haru")
+
+    assert outgoing.relationship == "friend"
+    assert incoming.relationship == "friend"
+
+    actor_delete, target_delete = store.remove_friend(actor=actor, target_user_id=704)
+
+    assert actor_delete.id == 704
+    assert target_delete.id == 42
+    assert all(item.id != 704 for item in store.list_relationships(42))
+
+
+def test_demo_store_pending_request_lifecycle() -> None:
+    store = DemoStore()
+    actor = UserPublic(id=42, username="yangbun", status=1)
+
+    outgoing, incoming = store.send_friend_request(actor=actor, target_username="Nora")
+
+    assert outgoing.relationship == "pending_outgoing"
+    assert incoming.relationship == "pending_incoming"
+
+    canceled, target_delete = store.cancel_friend_request(actor=actor, target_user_id=705)
+
+    assert canceled.id == 705
+    assert target_delete.id == 42
+    assert all(item.id != 705 for item in store.list_relationships(42))
+    assert all(item.id != 42 for item in store.list_relationships(705))
+
+
+def test_demo_store_accepts_incoming_request() -> None:
+    store = DemoStore()
+    nora = UserPublic(id=705, username="Nora", status=1)
+    actor = UserPublic(id=42, username="yangbun", status=1)
+
+    store.send_friend_request(actor=nora, target_username="yangbun")
+    actor_relationship, target_relationship = store.accept_friend_request(
+        actor=actor,
+        target_user_id=705,
+    )
+
+    assert actor_relationship.relationship == "friend"
+    assert target_relationship.relationship == "friend"
+
+
+def test_demo_store_blocks_and_unblocks_user() -> None:
+    store = DemoStore()
+    actor = UserPublic(id=42, username="yangbun", status=1)
+
+    blocked, target_delete = store.block_user(actor=actor, target_user_id=704)
+
+    assert blocked.relationship == "blocked"
+    assert target_delete.id == 42
+
+    unblocked, _ = store.unblock_user(actor=actor, target_user_id=704)
+
+    assert unblocked.id == 704
+    assert all(item.id != 704 for item in store.list_relationships(42))

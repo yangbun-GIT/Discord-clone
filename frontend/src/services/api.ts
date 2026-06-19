@@ -4,6 +4,8 @@ import type {
   DmMessage,
   DmMessageCreate,
   Friend,
+  RelationshipDelete,
+  RelationshipRequestCreate,
   StoreCatalog,
   StoreItemDetail,
 } from '../types'
@@ -106,6 +108,63 @@ export function fetchStoreItemDetail(
 
 export function fetchRelationships(token?: string | null): Promise<Friend[]> {
   return apiGet<Friend[]>('/api/users/me/relationships', token)
+}
+
+export function createFriendRequest(
+  payload: RelationshipRequestCreate,
+  token?: string | null,
+): Promise<Friend> {
+  return apiPost<Friend, RelationshipRequestCreate>(
+    '/api/users/me/relationships/requests',
+    payload,
+    token,
+  )
+}
+
+export function acceptFriendRequest(userId: number, token?: string | null): Promise<Friend> {
+  return apiPost<Friend, Record<string, never>>(
+    `/api/users/me/relationships/${userId}/accept`,
+    {},
+    token,
+  )
+}
+
+export function rejectFriendRequest(
+  userId: number,
+  token?: string | null,
+): Promise<RelationshipDelete> {
+  return apiPost<RelationshipDelete, Record<string, never>>(
+    `/api/users/me/relationships/${userId}/reject`,
+    {},
+    token,
+  )
+}
+
+export function cancelFriendRequest(
+  userId: number,
+  token?: string | null,
+): Promise<RelationshipDelete> {
+  return apiPost<RelationshipDelete, Record<string, never>>(
+    `/api/users/me/relationships/${userId}/cancel`,
+    {},
+    token,
+  )
+}
+
+export function removeFriend(userId: number, token?: string | null): Promise<RelationshipDelete> {
+  return apiDelete<RelationshipDelete>(`/api/users/me/relationships/${userId}`, token)
+}
+
+export function blockFriend(userId: number, token?: string | null): Promise<Friend> {
+  return apiPost<Friend, Record<string, never>>(
+    `/api/users/me/relationships/${userId}/block`,
+    {},
+    token,
+  )
+}
+
+export function unblockFriend(userId: number, token?: string | null): Promise<RelationshipDelete> {
+  return apiDelete<RelationshipDelete>(`/api/users/me/relationships/${userId}/block`, token)
 }
 
 export function fetchDirectMessages(token?: string | null): Promise<DirectMessage[]> {

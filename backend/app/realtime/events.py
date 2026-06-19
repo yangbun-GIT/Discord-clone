@@ -6,6 +6,7 @@ GATEWAY_EVENTS_CHANNEL = "discord_clone:gateway_events"
 
 
 class RealtimeGatewayEvent(BaseModel):
+    user_id: int | None = None
     channel_id: int | None = None
     guild_id: int | None = None
     dm_id: int | None = None
@@ -14,6 +15,11 @@ class RealtimeGatewayEvent(BaseModel):
 
     @model_validator(mode="after")
     def require_target(self) -> RealtimeGatewayEvent:
-        if self.channel_id is None and self.guild_id is None and self.dm_id is None:
-            raise ValueError("channel_id, guild_id, or dm_id is required")
+        if (
+            self.user_id is None
+            and self.channel_id is None
+            and self.guild_id is None
+            and self.dm_id is None
+        ):
+            raise ValueError("user_id, channel_id, guild_id, or dm_id is required")
         return self

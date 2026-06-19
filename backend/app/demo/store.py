@@ -14,7 +14,9 @@ from app.schemas.dm import (
     DmMessageRead,
     DmParticipantRead,
     DmRead,
+    RelationshipDeleteRead,
     RelationshipRead,
+    RelationshipState,
 )
 from app.schemas.guild import (
     ChannelCreate,
@@ -275,6 +277,103 @@ class DemoStore:
         with self._lock:
             return deepcopy(self._relationships_by_user.get(user_id, []))
 
+    def send_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_username: str,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        with self._lock:
+            self._ensure_user_profile(actor)
+            target = self._find_dm_profile_by_username(target_username)
+            if target.id == actor.id:
+                raise ValueError("cannot send a friend request to yourself")
+            existing = self._relationship(actor.id, target.id)
+            reverse = self._relationship(target.id, actor.id)
+            if existing == "blocked" or reverse == "blocked":
+                raise PermissionError("relationship is blocked")
+            if existing == "friend" or reverse == "friend":
+                self._set_relationship(actor.id, target.id, "friend")
+                self._set_relationship(target.id, actor.id, "friend")
+                return self._relationship_pair(actor.id, target.id)
+            if existing == "pending_incoming" and reverse == "pending_outgoing":
+                return self._accept_friend_request_locked(actor.id, target.id)
+            self._set_relationship(actor.id, target.id, "pending_outgoing")
+            self._set_relationship(target.id, actor.id, "pending_incoming")
+            return self._relationship_pair(actor.id, target.id)
+
+    def accept_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        with self._lock:
+            self._ensure_user_profile(actor)
+            return self._accept_friend_request_locked(actor.id, target_user_id)
+
+    def reject_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        with self._lock:
+            self._require_relationship(actor.id, target_user_id, "pending_incoming")
+            self._delete_relationship_pair(actor.id, target_user_id)
+            return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
+    def cancel_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        with self._lock:
+            self._require_relationship(actor.id, target_user_id, "pending_outgoing")
+            self._delete_relationship_pair(actor.id, target_user_id)
+            return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
+    def remove_friend(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        with self._lock:
+            self._require_relationship(actor.id, target_user_id, "friend")
+            self._delete_relationship_pair(actor.id, target_user_id)
+            return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
+    def block_user(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipRead, RelationshipDeleteRead]:
+        with self._lock:
+            if target_user_id == actor.id:
+                raise ValueError("cannot block yourself")
+            self._ensure_user_profile(actor)
+            self._find_dm_profile(target_user_id)
+            self._set_relationship(actor.id, target_user_id, "blocked")
+            self._delete_relationship(target_user_id, actor.id)
+            return (
+                self._relationship_read(actor.id, target_user_id),
+                RelationshipDeleteRead(id=actor.id),
+            )
+
+    def unblock_user(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        with self._lock:
+            self._require_relationship(actor.id, target_user_id, "blocked")
+            self._delete_relationship(actor.id, target_user_id)
+            return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
     def list_dms(self, user: UserPublic) -> list[DmRead]:
         with self._lock:
             return [
@@ -387,6 +486,13 @@ class DemoStore:
             raise KeyError(user_id)
         return profile
 
+    def _find_dm_profile_by_username(self, username: str) -> DmParticipantRead:
+        normalized = username.casefold()
+        for profile in self._dm_profiles.values():
+            if profile.username.casefold() == normalized or profile.handle.casefold() == normalized:
+                return profile
+        raise KeyError(username)
+
     def _ensure_user_profile(self, user: UserPublic) -> None:
         if user.id in self._dm_profiles:
             return
@@ -396,6 +502,97 @@ class DemoStore:
             handle=user.username.lower(),
             status="online" if user.status else "offline",
             activity=None,
+        )
+
+    def _relationship(self, user_id: int, related_user_id: int) -> RelationshipState | None:
+        for relationship in self._relationships_by_user.get(user_id, []):
+            if relationship.id == related_user_id:
+                return relationship.relationship
+        return None
+
+    def _set_relationship(
+        self,
+        user_id: int,
+        related_user_id: int,
+        relationship: RelationshipState,
+    ) -> None:
+        next_relationship = self._relationship_read(
+            user_id,
+            related_user_id,
+            relationship_override=relationship,
+        )
+        relationships = [
+            item
+            for item in self._relationships_by_user.get(user_id, [])
+            if item.id != related_user_id
+        ]
+        relationships.append(next_relationship)
+        relationships.sort(key=lambda item: item.username.casefold())
+        self._relationships_by_user[user_id] = relationships
+
+    def _delete_relationship(self, user_id: int, related_user_id: int) -> None:
+        self._relationships_by_user[user_id] = [
+            relationship
+            for relationship in self._relationships_by_user.get(user_id, [])
+            if relationship.id != related_user_id
+        ]
+
+    def _delete_relationship_pair(self, first_user_id: int, second_user_id: int) -> None:
+        self._delete_relationship(first_user_id, second_user_id)
+        self._delete_relationship(second_user_id, first_user_id)
+
+    def _require_relationship(
+        self,
+        user_id: int,
+        related_user_id: int,
+        relationship: RelationshipState,
+    ) -> None:
+        if self._relationship(user_id, related_user_id) != relationship:
+            raise ValueError(f"{relationship} relationship required")
+
+    def _accept_friend_request_locked(
+        self,
+        actor_id: int,
+        target_user_id: int,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        existing = self._relationship(actor_id, target_user_id)
+        reverse = self._relationship(target_user_id, actor_id)
+        if existing == "friend" and reverse == "friend":
+            return self._relationship_pair(actor_id, target_user_id)
+        if existing != "pending_incoming" or reverse != "pending_outgoing":
+            raise ValueError("incoming friend request required")
+        self._set_relationship(actor_id, target_user_id, "friend")
+        self._set_relationship(target_user_id, actor_id, "friend")
+        return self._relationship_pair(actor_id, target_user_id)
+
+    def _relationship_pair(
+        self,
+        actor_id: int,
+        target_user_id: int,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        return (
+            self._relationship_read(actor_id, target_user_id),
+            self._relationship_read(target_user_id, actor_id),
+        )
+
+    def _relationship_read(
+        self,
+        user_id: int,
+        related_user_id: int,
+        *,
+        relationship_override: RelationshipState | None = None,
+    ) -> RelationshipRead:
+        profile = self._find_dm_profile(related_user_id)
+        relationship = relationship_override or self._relationship(user_id, related_user_id)
+        if relationship is None:
+            raise KeyError(related_user_id)
+        return RelationshipRead(
+            id=profile.id,
+            username=profile.username,
+            handle=profile.handle,
+            status=profile.status,
+            activity=profile.activity,
+            relationship=relationship,
         )
 
     def _dm_view_for_user(self, dm: DmRead, user_id: int) -> DmRead:

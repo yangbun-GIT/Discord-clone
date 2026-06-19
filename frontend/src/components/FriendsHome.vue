@@ -2,11 +2,13 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   BellOff,
+  Check,
   MoreHorizontal,
   Phone,
   Search,
   Send,
   UserRound,
+  UserMinus,
   UserX,
   X,
 } from 'lucide-vue-next'
@@ -17,10 +19,18 @@ import type { Friend, UserPresenceStatus } from '../types'
 
 const props = defineProps<{
   friends: Friend[]
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
   messageFriend: [friendId: number]
+  addFriend: [username: string]
+  acceptFriend: [friendId: number]
+  rejectFriend: [friendId: number]
+  cancelFriend: [friendId: number]
+  removeFriend: [friendId: number]
+  blockFriend: [friendId: number]
+  unblockFriend: [friendId: number]
 }>()
 
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('all')
@@ -38,50 +48,7 @@ const friendMenu = ref<{
 } | null>(null)
 const { t } = useI18n()
 
-const visualFallbackFriends: Friend[] = [
-  {
-    id: 701,
-    username: 'Mina',
-    handle: 'mina.study',
-    status: 'online',
-    activity: 'Reading in voice',
-    relationship: 'friend',
-  },
-  {
-    id: 702,
-    username: 'Joon',
-    handle: 'joon.dev',
-    status: 'online',
-    activity: 'Working on layout',
-    relationship: 'friend',
-  },
-  {
-    id: 703,
-    username: 'Rina',
-    handle: 'rina.notes',
-    status: 'idle',
-    activity: 'Reviewing notes',
-    relationship: 'friend',
-  },
-  {
-    id: 704,
-    username: 'Haru',
-    handle: 'haru.music',
-    status: 'offline',
-    activity: null,
-    relationship: 'friend',
-  },
-  {
-    id: 705,
-    username: 'Nora',
-    handle: 'nora.design',
-    status: 'offline',
-    activity: null,
-    relationship: 'pending_incoming',
-  },
-]
-
-const visualFriends = computed(() => (props.friends.length ? props.friends : visualFallbackFriends))
+const visualFriends = computed(() => props.friends)
 
 const visibleFriends = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -126,7 +93,8 @@ function relationshipLabel(friend: Friend) {
 function submitAddFriend() {
   const handle = addFriendName.value.trim()
   if (!handle) return
-  addFriendResult.value = t('friends.addResult', { handle })
+  addFriendResult.value = t('friends.addSending', { handle })
+  emit('addFriend', handle)
   addFriendName.value = ''
 }
 
@@ -146,9 +114,20 @@ function closeFriendMenu() {
   friendMenu.value = null
 }
 
-function handleMenuAction(action: 'message' | 'local') {
+function handleMenuAction(
+  action: 'message' | 'local' | 'remove' | 'block' | 'unblock',
+) {
   if (action === 'message' && openMenuFriend.value) {
     emit('messageFriend', openMenuFriend.value.id)
+  }
+  if (action === 'remove' && openMenuFriend.value) {
+    emit('removeFriend', openMenuFriend.value.id)
+  }
+  if (action === 'block' && openMenuFriend.value) {
+    emit('blockFriend', openMenuFriend.value.id)
+  }
+  if (action === 'unblock' && openMenuFriend.value) {
+    emit('unblockFriend', openMenuFriend.value.id)
   }
   closeFriendMenu()
 }
@@ -252,7 +231,7 @@ watch(
         </div>
         <form class="add-friend-form" @submit.prevent="submitAddFriend">
           <input v-model="addFriendName" :placeholder="t('friends.addPlaceholder')" autocomplete="off" />
-          <button type="submit" :disabled="!addFriendName.trim()">
+          <button type="submit" :disabled="props.disabled || !addFriendName.trim()">
             {{ t('friends.addSubmit') }}
           </button>
         </form>
@@ -303,12 +282,53 @@ watch(
                 </span>
               </span>
               <button
+                v-if="friend.relationship === 'friend'"
                 type="button"
                 class="friend-action-button"
                 :aria-label="t('friends.sendMessage')"
                 @click.stop="$emit('messageFriend', friend.id)"
               >
                 <Send :size="17" aria-hidden="true" />
+              </button>
+              <button
+                v-if="friend.relationship === 'pending_incoming'"
+                type="button"
+                class="friend-action-button accept"
+                :aria-label="t('friends.acceptRequest')"
+                :disabled="props.disabled"
+                @click.stop="$emit('acceptFriend', friend.id)"
+              >
+                <Check :size="17" aria-hidden="true" />
+              </button>
+              <button
+                v-if="friend.relationship === 'pending_incoming'"
+                type="button"
+                class="friend-action-button danger"
+                :aria-label="t('friends.rejectRequest')"
+                :disabled="props.disabled"
+                @click.stop="$emit('rejectFriend', friend.id)"
+              >
+                <X :size="17" aria-hidden="true" />
+              </button>
+              <button
+                v-if="friend.relationship === 'pending_outgoing'"
+                type="button"
+                class="friend-action-button danger"
+                :aria-label="t('friends.cancelRequest')"
+                :disabled="props.disabled"
+                @click.stop="$emit('cancelFriend', friend.id)"
+              >
+                <X :size="17" aria-hidden="true" />
+              </button>
+              <button
+                v-if="friend.relationship === 'blocked'"
+                type="button"
+                class="friend-action-button accept"
+                :aria-label="t('friends.unblockUser')"
+                :disabled="props.disabled"
+                @click.stop="$emit('unblockFriend', friend.id)"
+              >
+                <UserRound :size="17" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -334,7 +354,11 @@ watch(
               <small>{{ selectedFriend.activity ?? statusLabel(selectedFriend.status) }}</small>
               <small>{{ selectedFriend.handle }}</small>
             </div>
-            <button type="button" @click="$emit('messageFriend', selectedFriend.id)">
+            <button
+              v-if="selectedFriend.relationship === 'friend'"
+              type="button"
+              @click="$emit('messageFriend', selectedFriend.id)"
+            >
               <Send :size="16" aria-hidden="true" />
               <span>{{ t('friends.sendMessage') }}</span>
             </button>
@@ -360,7 +384,12 @@ watch(
           <X :size="15" aria-hidden="true" />
         </button>
       </header>
-      <button type="button" role="menuitem" @click="handleMenuAction('message')">
+      <button
+        v-if="openMenuFriend.relationship === 'friend'"
+        type="button"
+        role="menuitem"
+        @click="handleMenuAction('message')"
+      >
         <Send :size="15" aria-hidden="true" />
         <span>{{ t('friends.sendMessage') }}</span>
       </button>
@@ -376,9 +405,34 @@ watch(
         <BellOff :size="15" aria-hidden="true" />
         <span>{{ t('friends.muteConversation') }}</span>
       </button>
-      <button type="button" role="menuitem" class="danger" @click="handleMenuAction('local')">
+      <button
+        v-if="openMenuFriend.relationship === 'friend'"
+        type="button"
+        role="menuitem"
+        class="danger"
+        @click="handleMenuAction('remove')"
+      >
+        <UserMinus :size="15" aria-hidden="true" />
+        <span>{{ t('friends.removeFriend') }}</span>
+      </button>
+      <button
+        v-if="openMenuFriend.relationship !== 'blocked'"
+        type="button"
+        role="menuitem"
+        class="danger"
+        @click="handleMenuAction('block')"
+      >
         <UserX :size="15" aria-hidden="true" />
         <span>{{ t('friends.blockUser') }}</span>
+      </button>
+      <button
+        v-else
+        type="button"
+        role="menuitem"
+        @click="handleMenuAction('unblock')"
+      >
+        <UserRound :size="15" aria-hidden="true" />
+        <span>{{ t('friends.unblockUser') }}</span>
       </button>
     </div>
   </section>

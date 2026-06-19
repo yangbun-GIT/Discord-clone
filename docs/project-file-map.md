@@ -170,6 +170,8 @@ For ordinary implementation work:
   - Direct-message list/create/message routes.
 - `backend/app/api/routes/users.py`
   - Relationship/friend-oriented user routes.
+  - Owns relationship reads plus friend request, accept, reject, cancel, remove,
+    block, and unblock endpoints.
 - `backend/app/api/routes/store.py`
   - Demo Store catalog and item read routes.
 
@@ -185,10 +187,12 @@ For ordinary implementation work:
     interface to `guild_service.py`.
 - `backend/app/services/dm_service.py`
   - Direct-message service facade.
+  - Owns Friends/Add Friend relationship mutation service calls.
 - `backend/app/services/dm_storage.py`
   - Service-facing DM storage provider boundary.
   - Selects PostgreSQL or demo DM storage once and exposes a common async
     interface to `dm_service.py`.
+  - Provides the PostgreSQL/demo boundary for relationship mutation workflows.
 - `backend/app/services/store_service.py`
   - Demo Store service facade.
 
@@ -214,6 +218,8 @@ For ordinary implementation work:
   - Own channel, invite, member, message, and role SQL respectively.
 - `backend/app/repositories/dms.py`
   - Direct-message persistence.
+  - Owns PostgreSQL relationship reads and paired-row relationship mutation
+    transitions for Add Friend, pending, friend, block, and unblock states.
 - `backend/app/repositories/dm_seed.py`
   - PostgreSQL DM demo relationship/workspace seed support used by `dms.py`.
 
@@ -264,6 +270,7 @@ For ordinary implementation work:
 - `backend/app/realtime/publisher.py`
   - Redis-backed gateway event publishing with local fan-out fallback when Redis is
     absent or publish fails.
+  - Publishes user-targeted relationship update/delete dispatches.
 - `backend/app/realtime/subscriber.py`
   - Redis-backed gateway event consumption with privacy-safe startup, stop, invalid
     payload, and restart logs.
@@ -274,6 +281,7 @@ For ordinary implementation work:
   - Optional Redis Pub/Sub wrapper.
 - `backend/app/realtime/events.py`
   - Realtime event payload helpers.
+  - Supports channel, guild, DM, and user-targeted gateway-event envelopes.
 
 ## Backend Tests
 
@@ -337,6 +345,8 @@ For ordinary implementation work:
     panels.
 - `frontend/src/components/FriendsHome.vue`
   - Friends tabs, friend list, add-friend flow, and activity panel.
+  - Emits real Add Friend, pending accept/reject/cancel, remove, block, and unblock
+    actions instead of local-only UI results.
 - `frontend/src/components/DirectMessageView.vue`
   - DM intro, message timeline, and composer.
 - `frontend/src/components/ChatView.vue`
@@ -379,10 +389,15 @@ For ordinary implementation work:
   - Typed gateway-event validation and event-to-store callback dispatch.
 - `frontend/src/stores/dms.ts`
   - Public Direct Message Pinia facade and state.
+  - Owns relationship mutation actions and idempotent relationship update/delete
+    state application.
 - `frontend/src/stores/dmApi.ts`
   - Direct-message REST loaders and mutations used by `dms.ts`.
+  - Wraps relationship mutation REST calls for Add Friend, pending, friend, block,
+    and unblock workflows.
 - `frontend/src/stores/dmGatewayHandlers.ts`
   - Direct-message gateway event validation and state callback dispatch.
+  - Handles relationship update/delete gateway events.
 - `frontend/src/stores/dmVisibility.ts`
   - Direct-message relationship/participant/message visibility filtering.
 - `frontend/src/stores/preferences.ts`

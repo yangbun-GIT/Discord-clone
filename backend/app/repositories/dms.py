@@ -13,7 +13,9 @@ from app.schemas.dm import (
     DmMessageRead,
     DmParticipantRead,
     DmRead,
+    RelationshipDeleteRead,
     RelationshipRead,
+    RelationshipState,
     UserPresenceStatus,
 )
 
@@ -84,6 +86,110 @@ class DmRepository:
             )
             for row in rows
         ]
+
+    async def send_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_username: str,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        await ensure_dm_repository_user(database, actor)
+        target = await self._find_user_by_username(target_username)
+        if target is None:
+            raise KeyError("target user not found")
+        target_id = int(target["id"])
+        if target_id == actor.id:
+            raise ValueError("cannot send a friend request to yourself")
+
+        existing = await self._relationship(actor.id, target_id)
+        reverse = await self._relationship(target_id, actor.id)
+        if existing == "blocked" or reverse == "blocked":
+            raise PermissionError("relationship is blocked")
+        if existing == "friend" or reverse == "friend":
+            await self._set_relationship(actor.id, target_id, "friend")
+            await self._set_relationship(target_id, actor.id, "friend")
+            return await self._relationship_pair(actor.id, target_id)
+        if existing == "pending_incoming" and reverse == "pending_outgoing":
+            return await self.accept_friend_request(actor=actor, target_user_id=target_id)
+
+        await self._set_relationship(actor.id, target_id, "pending_outgoing")
+        await self._set_relationship(target_id, actor.id, "pending_incoming")
+        return await self._relationship_pair(actor.id, target_id)
+
+    async def accept_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        await ensure_dm_repository_user(database, actor)
+        existing = await self._relationship(actor.id, target_user_id)
+        reverse = await self._relationship(target_user_id, actor.id)
+        if existing == "friend" and reverse == "friend":
+            return await self._relationship_pair(actor.id, target_user_id)
+        if existing != "pending_incoming" or reverse != "pending_outgoing":
+            raise ValueError("incoming friend request required")
+
+        await self._set_relationship(actor.id, target_user_id, "friend")
+        await self._set_relationship(target_user_id, actor.id, "friend")
+        return await self._relationship_pair(actor.id, target_user_id)
+
+    async def reject_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        await self._require_relationship(actor.id, target_user_id, "pending_incoming")
+        await self._delete_relationship_pair(actor.id, target_user_id)
+        return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
+    async def cancel_friend_request(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        await self._require_relationship(actor.id, target_user_id, "pending_outgoing")
+        await self._delete_relationship_pair(actor.id, target_user_id)
+        return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
+    async def remove_friend(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        await self._require_relationship(actor.id, target_user_id, "friend")
+        await self._delete_relationship_pair(actor.id, target_user_id)
+        return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
+
+    async def block_user(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipRead, RelationshipDeleteRead]:
+        if target_user_id == actor.id:
+            raise ValueError("cannot block yourself")
+        await ensure_dm_repository_user(database, actor)
+        target = await self._profile_by_user_id(target_user_id)
+        if target is None:
+            raise KeyError("target user not found")
+        await self._set_relationship(actor.id, target_user_id, "blocked")
+        await self._delete_relationship(target_user_id, actor.id)
+        actor_relationship = await self._relationship_read(actor.id, target_user_id)
+        return actor_relationship, RelationshipDeleteRead(id=actor.id)
+
+    async def unblock_user(
+        self,
+        *,
+        actor: UserPublic,
+        target_user_id: int,
+    ) -> tuple[RelationshipDeleteRead, RelationshipDeleteRead]:
+        await self._require_relationship(actor.id, target_user_id, "blocked")
+        await self._delete_relationship(actor.id, target_user_id)
+        return RelationshipDeleteRead(id=target_user_id), RelationshipDeleteRead(id=actor.id)
 
     async def list_dms(self, user: UserPublic) -> list[DmRead]:
         await self.ensure_demo_workspace(user)
@@ -316,6 +422,139 @@ class DmRepository:
             )
             for row in rows
         ]
+
+    async def _find_user_by_username(self, username: str) -> object | None:
+        return await database.fetchrow(
+            """
+            SELECT id, username, status
+            FROM users
+            WHERE lower(username) = lower($1)
+            """,
+            username,
+        )
+
+    async def _relationship(
+        self,
+        user_id: int,
+        related_user_id: int,
+    ) -> RelationshipState | None:
+        row = await database.fetchrow(
+            """
+            SELECT relationship
+            FROM relationships
+            WHERE user_id = $1 AND related_user_id = $2
+            """,
+            user_id,
+            related_user_id,
+        )
+        if row is None:
+            return None
+        return row["relationship"]  # type: ignore[return-value]
+
+    async def _set_relationship(
+        self,
+        user_id: int,
+        related_user_id: int,
+        relationship: RelationshipState,
+    ) -> None:
+        await database.execute(
+            """
+            INSERT INTO relationships (user_id, related_user_id, relationship)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (user_id, related_user_id)
+            DO UPDATE SET relationship = EXCLUDED.relationship
+            """,
+            user_id,
+            related_user_id,
+            relationship,
+        )
+
+    async def _delete_relationship(self, user_id: int, related_user_id: int) -> None:
+        await database.execute(
+            """
+            DELETE FROM relationships
+            WHERE user_id = $1 AND related_user_id = $2
+            """,
+            user_id,
+            related_user_id,
+        )
+
+    async def _delete_relationship_pair(self, first_user_id: int, second_user_id: int) -> None:
+        await self._delete_relationship(first_user_id, second_user_id)
+        await self._delete_relationship(second_user_id, first_user_id)
+
+    async def _require_relationship(
+        self,
+        user_id: int,
+        related_user_id: int,
+        relationship: RelationshipState,
+    ) -> None:
+        existing = await self._relationship(user_id, related_user_id)
+        if existing != relationship:
+            raise ValueError(f"{relationship} relationship required")
+
+    async def _relationship_pair(
+        self,
+        actor_id: int,
+        target_id: int,
+    ) -> tuple[RelationshipRead, RelationshipRead]:
+        return (
+            await self._relationship_read(actor_id, target_id),
+            await self._relationship_read(target_id, actor_id),
+        )
+
+    async def _relationship_read(self, user_id: int, related_user_id: int) -> RelationshipRead:
+        row = await self._profile_by_user_id(related_user_id, viewer_user_id=user_id)
+        if row is None:
+            raise KeyError("target user not found")
+        return RelationshipRead(
+            id=int(row["id"]),
+            username=str(row["username"]),
+            handle=str(row["handle"]),
+            status=_status_from_row(row["presence_status"]),
+            activity=row["activity"],
+            relationship=row["relationship"],
+        )
+
+    async def _profile_by_user_id(
+        self,
+        user_id: int,
+        *,
+        viewer_user_id: int | None = None,
+    ) -> object | None:
+        if viewer_user_id is None:
+            return await database.fetchrow(
+                """
+                SELECT
+                    u.id,
+                    u.username,
+                    COALESCE(p.handle, u.username) AS handle,
+                    COALESCE(p.presence_status, u.status::text) AS presence_status,
+                    p.activity,
+                    'friend' AS relationship
+                FROM users u
+                LEFT JOIN dm_profiles p ON p.user_id = u.id
+                WHERE u.id = $1
+                """,
+                user_id,
+            )
+        return await database.fetchrow(
+            """
+            SELECT
+                u.id,
+                u.username,
+                COALESCE(p.handle, u.username) AS handle,
+                COALESCE(p.presence_status, u.status::text) AS presence_status,
+                p.activity,
+                r.relationship
+            FROM relationships r
+            JOIN users u ON u.id = r.related_user_id
+            LEFT JOIN dm_profiles p ON p.user_id = u.id
+            WHERE r.user_id = $1 AND r.related_user_id = $2
+            """,
+            viewer_user_id,
+            user_id,
+        )
 
     async def _find_existing_dm(self, participant_ids: list[int]) -> int | None:
         rows = await database.fetch("SELECT dm_id, user_id FROM direct_message_members")

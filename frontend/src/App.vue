@@ -504,6 +504,68 @@ async function handleMessageFriend(friendId: number) {
   }
 }
 
+async function runRelationshipMutation(
+  action: () => Promise<unknown>,
+  successMessage: string,
+) {
+  workspaceError.value = null
+  try {
+    await action()
+    setWorkspaceNotice(successMessage, 'success')
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.relationshipFailed')
+  }
+}
+
+function handleAddFriend(username: string) {
+  void runRelationshipMutation(
+    () => dms.sendFriendRequest(session.token, username),
+    t('friends.requestSent'),
+  )
+}
+
+function handleAcceptFriend(friendId: number) {
+  void runRelationshipMutation(
+    () => dms.acceptRequest(session.token, friendId),
+    t('friends.requestAccepted'),
+  )
+}
+
+function handleRejectFriend(friendId: number) {
+  void runRelationshipMutation(
+    () => dms.rejectRequest(session.token, friendId),
+    t('friends.requestRejected'),
+  )
+}
+
+function handleCancelFriend(friendId: number) {
+  void runRelationshipMutation(
+    () => dms.cancelRequest(session.token, friendId),
+    t('friends.requestCanceled'),
+  )
+}
+
+function handleRemoveFriend(friendId: number) {
+  void runRelationshipMutation(
+    () => dms.removeFriend(session.token, friendId),
+    t('friends.friendRemoved'),
+  )
+}
+
+function handleBlockFriend(friendId: number) {
+  void runRelationshipMutation(
+    () => dms.blockUser(session.token, friendId),
+    t('friends.userBlocked'),
+  )
+}
+
+function handleUnblockFriend(friendId: number) {
+  void runRelationshipMutation(
+    () => dms.unblockUser(session.token, friendId),
+    t('friends.userUnblocked'),
+  )
+}
+
 function openAddServer(mode: 'create' | 'join' = 'create') {
   workspaceError.value = null
   clearWorkspaceNotice()
@@ -956,6 +1018,14 @@ async function copyInviteCode() {
       <FriendsHome
         v-else-if="navigation.destination === 'friends'"
         :friends="dms.relationships"
+        :disabled="dms.isMutating"
+        @add-friend="handleAddFriend"
+        @accept-friend="handleAcceptFriend"
+        @reject-friend="handleRejectFriend"
+        @cancel-friend="handleCancelFriend"
+        @remove-friend="handleRemoveFriend"
+        @block-friend="handleBlockFriend"
+        @unblock-friend="handleUnblockFriend"
         @message-friend="handleMessageFriend"
       />
 

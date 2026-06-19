@@ -112,11 +112,16 @@ Browser UI
 - `backend/app/api/routes/users.py`
   - References:
     - `backend/app/api/dependencies.py`
+    - `backend/app/api/errors.py`
+    - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`
     - `backend/app/services/dm_service.py`
   - Referenced by:
     - `backend/app/api/router.py`
+  - Owns:
+    - Relationship reads plus Add Friend request, accept, reject, cancel, remove,
+      block, and unblock REST endpoints.
 
 - `backend/app/api/routes/store.py`
   - References:
@@ -256,6 +261,9 @@ Browser UI
   - Referenced by:
     - `backend/app/services/dm_storage.py`
     - `backend/tests/test_dm_repository.py`
+  - Owns:
+    - Direct-message persistence and PostgreSQL paired-row relationship mutation
+      transitions.
 
 - `backend/app/repositories/dm_seed.py`
   - References:
@@ -380,7 +388,7 @@ Browser UI
     - `backend/app/realtime/subscriber.py`
     - `backend/tests/test_realtime_fanout.py`
   - Owns:
-    - Gateway-event fan-out to channel/guild/DM subscribers.
+    - Gateway-event fan-out to channel/guild/DM/user subscribers.
     - Local subscription synchronization for DM create, channel create, and guild
       update events.
 

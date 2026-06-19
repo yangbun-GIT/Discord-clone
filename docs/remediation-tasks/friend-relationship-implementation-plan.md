@@ -479,6 +479,47 @@ Additional browser checks:
 7. User B receives the DM message in realtime.
 8. Repeat with reject, cancel, block, and unblock.
 
+## Implementation Result
+
+Date: 2026-06-19.
+
+Implemented scope:
+
+- Backend relationship mutation schemas were added in `backend/app/schemas/dm.py`.
+- `backend/app/api/routes/users.py` now exposes backend-backed friend request,
+  accept, reject, cancel, remove, block, and unblock endpoints.
+- `backend/app/services/dm_service.py` and `backend/app/services/dm_storage.py`
+  own the relationship mutation boundary for PostgreSQL and demo fallback modes.
+- `backend/app/repositories/dms.py` implements paired-row relationship transitions
+  with self-request prevention, blocked-state protection, idempotent existing-friend
+  normalization, and case-insensitive username lookup.
+- `backend/app/demo/store.py` mirrors the same relationship lifecycle for native
+  no-database development.
+- User-targeted realtime relationship dispatch was added through
+  `RealtimeGatewayEvent.user_id`, `gateway_manager.broadcast_user()`, and
+  relationship update/delete publisher helpers.
+- `frontend/src/services/api.ts`, `frontend/src/stores/dmApi.ts`, and
+  `frontend/src/stores/dms.ts` now expose relationship mutation actions and apply
+  `RELATIONSHIP_UPDATE` / `RELATIONSHIP_DELETE` gateway events idempotently.
+- `frontend/src/components/FriendsHome.vue` no longer falls back to hardcoded demo
+  friends when the current account has no relationships, and now wires Add Friend,
+  pending accept/reject/cancel, remove, block, and unblock controls to real actions.
+
+Verification completed:
+
+- `npm run lint:frontend`
+- `npm --prefix frontend run build`
+- `npm run lint:backend`
+- `cd backend; ..\\.venv\\Scripts\\python.exe -m pytest tests/test_dm_api.py tests/test_demo_store.py`
+- `npm run test:frontend -- --run`
+
+Residual follow-up:
+
+- A full two-browser manual/product smoke should still verify that account A's
+  request appears in account B's Pending tab without refresh, because the local
+  automated browser smoke has not yet been extended to exercise the visible Friends
+  UI end to end.
+
 ## Documentation Update Requirements
 
 When implementing this plan, update:

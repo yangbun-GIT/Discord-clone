@@ -4,7 +4,9 @@ from app.realtime.events import RealtimeGatewayEvent
 
 async def fanout_gateway_event(event: RealtimeGatewayEvent) -> None:
     sync_local_subscriptions(event)
-    if event.channel_id is not None:
+    if event.user_id is not None:
+        await gateway_manager.broadcast_user(event.user_id, event.event, event.data)
+    elif event.channel_id is not None:
         await gateway_manager.broadcast_channel(event.channel_id, event.event, event.data)
     elif event.guild_id is not None:
         await gateway_manager.broadcast_guild(event.guild_id, event.event, event.data)
