@@ -101,8 +101,8 @@ ports `5173` and `8000` on the host.
 
 For Docker LAN media testing from another PC, HTTP is not enough because browsers
 block microphone and screen capture on non-localhost insecure origins. Generate a
-local certificate for the host IP, trust the exported `.cer` file on the second
-device, and run the HTTPS Compose override:
+local development certificate for the host IP, trust the exported root CA `.cer`
+file on the second device, and run the HTTPS Compose override:
 
 ```powershell
 .\scripts\create_lan_https_cert.ps1 -HostName <host-ip>
@@ -113,8 +113,8 @@ Then open `https://<host-ip>:5173` from the notebook. The frontend remains
 same-origin for `/api` and `/gateway`; Vite terminates HTTPS and proxies to the
 backend container over the internal Docker network. Docker HTTPS uses
 `certs/lan-dev.pfx`; generated files under `certs/` are ignored by Git and must
-not be committed. When installing `certs/lan-dev-cert.cer` on the notebook, compare
-the Windows warning thumbprint with the script output before accepting.
+not be committed. When installing `certs/lan-dev-root-ca.cer` on the notebook,
+compare the Windows warning thumbprint with the script output before accepting.
 
 Useful backend auth endpoints:
 

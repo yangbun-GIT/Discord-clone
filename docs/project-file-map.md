@@ -46,9 +46,9 @@ For ordinary implementation work:
   - Optional Redis + secondary backend override for C4 multi-worker realtime smoke.
   - Normal local Docker startup remains Redis-free unless this override is included.
 - `scripts/create_lan_https_cert.ps1`
-  - Generates an ignored local PFX certificate plus a `.cer` trust file for HTTPS
-    LAN testing from another PC.
-  - Keep the PFX on the development host; copy only the `.cer` trust file to the
+  - Generates an ignored local PFX certificate plus a root-CA `.cer` trust file
+    for HTTPS LAN testing from another PC.
+  - Keep the PFX on the development host; copy only `lan-dev-root-ca.cer` to the
     notebook.
 - `scripts/realtime_redis_smoke.py`
   - C4 two-worker smoke: connects WebSocket to the secondary backend and creates

@@ -41,12 +41,13 @@ New-Item -ItemType Directory -Force -Path $resolvedOutDir | Out-Null
 $pfxPath = Join-Path $resolvedOutDir "lan-dev.pfx"
 $certPath = Join-Path $resolvedOutDir "lan-dev-cert.pem"
 $cerPath = Join-Path $resolvedOutDir "lan-dev-cert.cer"
+$rootCerPath = Join-Path $resolvedOutDir "lan-dev-root-ca.cer"
 
-$rsa = [System.Security.Cryptography.RSA]::Create(2048)
-$subject = "CN=$HostName"
+$serverRsa = [System.Security.Cryptography.RSA]::Create(2048)
+$serverSubject = "CN=$HostName"
 $request = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
-  $subject,
-  $rsa,
+  $serverSubject,
+  $serverRsa,
   [System.Security.Cryptography.HashAlgorithmName]::SHA256,
   [System.Security.Cryptography.RSASignaturePadding]::Pkcs1
 )
@@ -62,12 +63,13 @@ $san.AddDnsName("localhost")
 $san.AddIpAddress([System.Net.IPAddress]::Parse("127.0.0.1"))
 $request.CertificateExtensions.Add($san.Build())
 $request.CertificateExtensions.Add(
-  [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($false, $false, 0, $true)
+  [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($true, $false, 0, $true)
 )
 $request.CertificateExtensions.Add(
   [System.Security.Cryptography.X509Certificates.X509KeyUsageExtension]::new(
     [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::DigitalSignature -bor
-      [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::KeyEncipherment,
+      [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::KeyEncipherment -bor
+      [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::KeyCertSign,
     $true
   )
 )
@@ -79,6 +81,9 @@ $eku = [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtens
 )
 $eku.EnhancedKeyUsages.Add($serverAuthOid) | Out-Null
 $request.CertificateExtensions.Add($eku)
+$request.CertificateExtensions.Add(
+  [System.Security.Cryptography.X509Certificates.X509SubjectKeyIdentifierExtension]::new($request.PublicKey, $false)
+)
 
 $notBefore = [System.DateTimeOffset]::UtcNow.AddDays(-1)
 $notAfter = $notBefore.AddYears(2)
@@ -87,16 +92,18 @@ $certificate = $request.CreateSelfSigned($notBefore, $notAfter)
 Set-Content -LiteralPath $certPath -Value (Convert-ToPem "CERTIFICATE" $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)) -NoNewline
 [System.IO.File]::WriteAllBytes($pfxPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx, $PfxPassphrase))
 [System.IO.File]::WriteAllBytes($cerPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+[System.IO.File]::WriteAllBytes($rootCerPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
 
 Write-Host "Created HTTPS LAN certificate for $HostName"
 Write-Host "PFX:  $pfxPath"
 Write-Host "Cert: $certPath"
-Write-Host "Trust file for other devices: $cerPath"
-Write-Host "Thumbprint: $($certificate.Thumbprint)"
+Write-Host "Server cert: $cerPath"
+Write-Host "Trust this Root CA on other devices: $rootCerPath"
+Write-Host "Trust thumbprint: $($certificate.Thumbprint)"
 
 Write-Host ""
 Write-Host "Run Docker HTTPS LAN with:"
 Write-Host "  docker compose -f compose.yaml -f compose.https.yaml up -d --build"
 Write-Host ""
-Write-Host "Open from another device after trusting lan-dev-cert.cer:"
+Write-Host "Open from another device after trusting lan-dev-root-ca.cer:"
 Write-Host "  https://$HostName`:5173"
