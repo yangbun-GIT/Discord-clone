@@ -207,6 +207,15 @@ longer fit the current signaling state, and applies answers only while a local
 offer is pending. Frontend lint, frontend tests, production build, and
 `npm run smoke:realtime:browser` passed with `browserErrors: 0`.
 
+A 2026-06-20 A-account voice rejoin warning showed Chrome rejecting
+`setLocalDescription(offer)` with an SDP m-line order mismatch. The local fix keeps
+outbound offer creation and renegotiation in the same per-peer signal queue used
+for incoming offer/answer/ICE processing, preventing screen-share renegotiation or
+participant sync from racing with inbound signaling. If Chrome still reports an
+m-line-order error for a corrupted `RTCPeerConnection`, the affected peer is closed
+and rebuilt before the lower user ID sends a fresh offer. Frontend lint, frontend
+tests, production build, and browser realtime smoke passed with `browserErrors: 0`.
+
 The same recheck also clarified browser QA setup and voice architecture direction.
 The two user tabs may live in separate Chrome profiles; the current local mapping is
 `minruel` for `localhost:5173` and `jbnu.ac.kr` for `127.0.0.1:5173`, so future

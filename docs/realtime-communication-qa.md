@@ -277,6 +277,25 @@ WebRTC signaling collision update:
   `voicePeerDetailVisible: true`, `voiceRejoinRecovered: true`, and
   `browserErrors: 0`.
 
+WebRTC m-line order recovery update:
+
+- Date: 2026-06-20.
+- User-visible issue: the A account could show
+  `Failed to execute 'setLocalDescription' ... The order of m-lines in subsequent
+  offer doesn't match order from previous offer/answer` when joining voice after
+  prior peer negotiation activity.
+- Cause: outbound offer creation and renegotiation were not serialized with the
+  existing per-peer incoming signal queue, so participant sync or screen-share
+  renegotiation could race with inbound offer/answer processing on the same
+  `RTCPeerConnection`.
+- Fix: `voicePeerConnections.ts` now queues outbound offer creation and
+  renegotiation per peer. If Chrome still rejects an offer because the peer's SDP
+  m-line order is corrupted, the affected peer is closed and rebuilt before the
+  lower user ID attempts a fresh offer.
+- Verification: frontend lint, frontend tests, production build, and
+  `CHROME_EXECUTABLE="C:/Program Files/Google/Chrome/Application/chrome.exe"
+  npm run smoke:realtime:browser` passed with `browserErrors: 0`.
+
 Manual two-account product-flow result:
 
 - Date: 2026-06-19.

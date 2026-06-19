@@ -107,6 +107,10 @@ function canApplyAnswer(connection: RTCPeerConnection) {
   )
 }
 
+function isMLineOrderError(error: unknown) {
+  return error instanceof Error && error.message.includes('m-lines')
+}
+
 async function rollbackLocalDescription(connection: RTCPeerConnection) {
   try {
     await connection.setLocalDescription({ type: 'rollback' } as RTCSessionDescriptionInit)
@@ -382,29 +386,44 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     const activeOptions = options.getActiveOptions()
     if (!activeOptions) return
     const peer = ensurePeer(userId, username)
-    if (peer.channelId !== activeOptions.channelId) return
-    if (!(await waitForStableSignaling(peer.connection))) return
-    const offer = await peer.connection.createOffer()
-    await peer.connection.setLocalDescription(offer)
-    activeOptions.sendSignal({
-      channel_id: activeOptions.channelId,
-      target_user_id: userId,
-      type: 'offer',
-      description: { type: offer.type, sdp: offer.sdp ?? '' },
+    await runQueuedSignal(peer, async () => {
+      const currentOptions = options.getActiveOptions()
+      if (!currentOptions || peer.channelId !== currentOptions.channelId) return
+      if (!(await waitForStableSignaling(peer.connection))) return
+      const offer = await peer.connection.createOffer()
+      try {
+        await peer.connection.setLocalDescription(offer)
+      } catch (error) {
+        handleLocalOfferFailure(peer, error)
+        return
+      }
+      currentOptions.sendSignal({
+        channel_id: currentOptions.channelId,
+        target_user_id: userId,
+        type: 'offer',
+        description: { type: offer.type, sdp: offer.sdp ?? '' },
+      })
     })
   }
 
   async function renegotiatePeer(peer: PeerEntry) {
-    const activeOptions = options.getActiveOptions()
-    if (!activeOptions || peer.channelId !== activeOptions.channelId) return
-    if (!(await waitForStableSignaling(peer.connection))) return
-    const offer = await peer.connection.createOffer()
-    await peer.connection.setLocalDescription(offer)
-    activeOptions.sendSignal({
-      channel_id: peer.channelId,
-      target_user_id: peer.userId,
-      type: 'offer',
-      description: { type: offer.type, sdp: offer.sdp ?? '' },
+    await runQueuedSignal(peer, async () => {
+      const activeOptions = options.getActiveOptions()
+      if (!activeOptions || peer.channelId !== activeOptions.channelId) return
+      if (!(await waitForStableSignaling(peer.connection))) return
+      const offer = await peer.connection.createOffer()
+      try {
+        await peer.connection.setLocalDescription(offer)
+      } catch (error) {
+        handleLocalOfferFailure(peer, error)
+        return
+      }
+      activeOptions.sendSignal({
+        channel_id: peer.channelId,
+        target_user_id: peer.userId,
+        type: 'offer',
+        description: { type: offer.type, sdp: offer.sdp ?? '' },
+      })
     })
   }
 
@@ -462,6 +481,19 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     })
     signalQueues.set(key, current.catch(() => undefined))
     await current
+  }
+
+  function handleLocalOfferFailure(peer: PeerEntry, error: unknown) {
+    if (!isMLineOrderError(error)) throw error
+    closePeer(peerKey(peer.channelId, peer.userId))
+    const activeOptions = options.getActiveOptions()
+    if (!activeOptions || activeOptions.channelId !== peer.channelId) return
+    if (activeOptions.currentUserId >= peer.userId) return
+    window.setTimeout(() => {
+      const currentOptions = options.getActiveOptions()
+      if (!currentOptions || currentOptions.channelId !== peer.channelId) return
+      void createOfferFor(peer.userId, peer.username)
+    }, 0)
   }
 
   async function handleSignal(signal: VoiceSignal) {
