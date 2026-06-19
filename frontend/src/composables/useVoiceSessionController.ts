@@ -14,6 +14,8 @@ type SessionStore = ReturnType<typeof useSessionStore>
 type VoiceRtc = ReturnType<typeof useVoiceRtc>
 type Gateway = ReturnType<typeof useGateway>
 
+const VOICE_REJOIN_STORAGE_KEY = 'discord_clone_voice_rejoin'
+
 interface VoiceSessionControllerOptions {
   guilds: GuildStore
   session: SessionStore
@@ -26,9 +28,16 @@ interface VoiceSessionControllerOptions {
   t: (key: TranslationKey) => string
 }
 
+interface StoredVoiceRejoin {
+  userId: number
+  guildId: number
+  channelId: number
+}
+
 export function useVoiceSessionController(options: VoiceSessionControllerOptions) {
   const isDeafened = ref(false)
   const pendingVoiceSwitchChannelId = ref<number | null>(null)
+  const pendingVoiceRejoinChannelId = ref<number | null>(null)
   const skipVoiceSwitchConfirm = ref(browserStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
   const rememberVoiceSwitchChoice = ref(false)
   const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
@@ -67,11 +76,82 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     }
     return options.t('voice.selectToPreview')
   })
+  const pendingVoiceRejoinSummary = computed(() => {
+    if (!pendingVoiceRejoinChannelId.value) return null
+    return findVoiceChannel(pendingVoiceRejoinChannelId.value)
+  })
 
   async function loadVoiceConfig() {
     const config = await apiGet<VoiceConfig>('/api/meta/voice')
     voiceIceServers.value = config.ice_servers
     voiceTurnConfigured.value = config.turn_configured
+  }
+
+  function readStoredVoiceRejoin(): StoredVoiceRejoin | null {
+    const rawValue = browserStorage.getItem(VOICE_REJOIN_STORAGE_KEY)
+    if (!rawValue) return null
+    try {
+      const parsed = JSON.parse(rawValue) as Partial<StoredVoiceRejoin>
+      if (
+        typeof parsed.userId === 'number'
+        && typeof parsed.guildId === 'number'
+        && typeof parsed.channelId === 'number'
+      ) {
+        return {
+          userId: parsed.userId,
+          guildId: parsed.guildId,
+          channelId: parsed.channelId,
+        }
+      }
+    } catch {
+      // Ignore malformed local recovery metadata and clear it below.
+    }
+    browserStorage.removeItem(VOICE_REJOIN_STORAGE_KEY)
+    return null
+  }
+
+  function rememberVoiceChannel(target: { guild: Guild; channel: Channel }) {
+    const userId = options.session.user?.id
+    if (!userId) return
+    browserStorage.setItem(VOICE_REJOIN_STORAGE_KEY, JSON.stringify({
+      userId,
+      guildId: target.guild.id,
+      channelId: target.channel.id,
+    }))
+  }
+
+  function clearVoiceRejoinRecovery() {
+    pendingVoiceRejoinChannelId.value = null
+    browserStorage.removeItem(VOICE_REJOIN_STORAGE_KEY)
+  }
+
+  function restoreVoiceRejoinPrompt() {
+    const stored = readStoredVoiceRejoin()
+    if (!stored) return
+    if (options.guilds.voiceConnected || stored.userId !== options.session.user?.id) {
+      clearVoiceRejoinRecovery()
+      return
+    }
+    const target = findVoiceChannel(stored.channelId)
+    if (!target || target.guild.id !== stored.guildId) {
+      clearVoiceRejoinRecovery()
+      return
+    }
+    pendingVoiceRejoinChannelId.value = stored.channelId
+  }
+
+  function dismissVoiceRejoin() {
+    clearVoiceRejoinRecovery()
+  }
+
+  async function confirmVoiceRejoin() {
+    const channelId = pendingVoiceRejoinChannelId.value
+    pendingVoiceRejoinChannelId.value = null
+    if (!channelId) return
+    await connectVoiceToChannel(channelId)
+    if (!options.guilds.voiceConnected) {
+      pendingVoiceRejoinChannelId.value = channelId
+    }
   }
 
   function disconnectVoice() {
@@ -85,6 +165,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     }
     options.voiceRtc.disconnect()
     options.guilds.setVoiceConnected(false)
+    clearVoiceRejoinRecovery()
   }
 
   function voiceParticipantsForChannel(channelId: number): VoiceState[] {
@@ -119,6 +200,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     }
 
     options.guilds.setVoiceConnected(true, target.channel)
+    rememberVoiceChannel(target)
     options.updateVoiceState({
       guild_id: target.guild.id,
       channel_id: target.channel.id,
@@ -229,6 +311,8 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
   return {
     isDeafened,
     pendingVoiceSwitchChannelId,
+    pendingVoiceRejoinChannelId,
+    pendingVoiceRejoinSummary,
     rememberVoiceSwitchChoice,
     voiceTurnConfigured,
     connectedVoiceChannelId,
@@ -240,6 +324,9 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     selectedVoiceConnected,
     voiceWorkspaceStatus,
     loadVoiceConfig,
+    restoreVoiceRejoinPrompt,
+    confirmVoiceRejoin,
+    dismissVoiceRejoin,
     disconnectVoice,
     handleToggleVoice,
     handleJoinVoiceChannel,

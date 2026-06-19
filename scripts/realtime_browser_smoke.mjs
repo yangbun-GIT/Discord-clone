@@ -260,6 +260,17 @@ async function run() {
       { timeout: 10_000 },
     )
     const remoteScreenCleared = await pageB.page.locator('.screen-share-tile video').count() === 0
+    await pageB.page.reload({ waitUntil: 'networkidle', timeout: 30_000 })
+    const rejoinButton = pageB.page.getByRole('button', { name: /Rejoin voice/i }).first()
+    await rejoinButton.waitFor({ state: 'visible', timeout: 10_000 })
+    const voiceRejoinPromptVisible = await rejoinButton.isVisible()
+    await rejoinButton.click()
+    await pageA.page.waitForFunction(
+      () => document.querySelectorAll('.voice-audio-sinks audio').length >= 1,
+      null,
+      { timeout: 15_000 },
+    )
+    const voiceRejoinRecovered = await pageA.page.locator('.voice-audio-sinks audio').count() >= 1
     await clickVoiceAction(pageB.page, /Disconnect voice/i)
     await pageA.page.waitForFunction(
       () => document.querySelectorAll('.voice-audio-sinks audio').length === 0,
@@ -281,6 +292,8 @@ async function run() {
       remoteSharingUserScreenTiles,
       duplicateRemoteSharingParticipantCards,
       remoteScreenCleared,
+      voiceRejoinPromptVisible,
+      voiceRejoinRecovered,
       voiceLeaveCleaned,
       browserErrors: [...pageA.events, ...pageB.events].length,
     }
@@ -298,6 +311,8 @@ async function run() {
       || result.remoteSharingUserScreenTiles !== 1
       || result.duplicateRemoteSharingParticipantCards !== 0
       || !result.remoteScreenCleared
+      || !result.voiceRejoinPromptVisible
+      || !result.voiceRejoinRecovered
       || !result.voiceLeaveCleaned
       || result.browserErrors > 0
     ) {

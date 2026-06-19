@@ -111,9 +111,12 @@ Call recording QA result:
 - Automated result after the fix: `npm run smoke:realtime:browser` passed with
   local screen preview video count, remote screen video count, remote screen cleanup,
   voice leave cleanup, and zero browser errors.
-- Remaining communication risk: refreshing a tab still ends the active WebRTC media
-  session. A future stage must decide whether to restore a voice preview/rejoin
-  prompt after reload or intentionally require manual rejoin.
+- Refresh recovery update: refreshing a connected tab no longer silently claims
+  the microphone. The client stores only same-user voice channel recovery metadata,
+  shows an app-owned rejoin prompt after reload, and reacquires microphone access
+  only after the user confirms. Browser smoke now verifies the prompt and remote
+  audio recovery after rejoin. Real browser permission prompt behavior remains a
+  manual gate.
 
 Manual QA follow-up result:
 
@@ -124,7 +127,9 @@ Manual QA follow-up result:
 - Real screen sharing starts and stops correctly, but the receiver layout separates
   a sharing user's screen tile from that user's participant state. The next layout
   pass should merge these into one composition per sharing participant.
-- Refresh still does not preserve or recover the active call.
+- Refresh now provides an explicit app-owned rejoin path instead of silently
+  restoring microphone capture. Real permission-prompt behavior remains a manual
+  browser gate.
 - Same-Wi-Fi LAN test failed at voice join because `http://<LAN-IP>` is not a
   secure context for microphone/screen capture.
 - TURN/NAT test has not been run and is not ready to claim while

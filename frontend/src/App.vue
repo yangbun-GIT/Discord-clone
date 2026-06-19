@@ -150,6 +150,8 @@ const userPresenceStatus = ref<UserPresenceStatus>('online')
 const {
   isDeafened,
   pendingVoiceSwitchChannelId,
+  pendingVoiceRejoinChannelId,
+  pendingVoiceRejoinSummary,
   rememberVoiceSwitchChoice,
   voiceTurnConfigured,
   connectedVoiceChannelId,
@@ -160,6 +162,9 @@ const {
   selectedVoiceConnected,
   voiceWorkspaceStatus,
   loadVoiceConfig,
+  restoreVoiceRejoinPrompt,
+  confirmVoiceRejoin,
+  dismissVoiceRejoin,
   disconnectVoice,
   handleToggleVoice,
   handleJoinVoiceChannel,
@@ -245,6 +250,7 @@ watch(
 async function openWorkspace() {
   if (!session.token) return
   await reloadWorkspaceState()
+  restoreVoiceRejoinPrompt()
   navigation.openFriends()
   connectGateway(session.token, {
     onDispatch: (event, data) => {
@@ -377,9 +383,20 @@ function handleWorkspacePointerDown(event: MouseEvent) {
 
 function handleDocumentKeyDown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return
+  if (pendingVoiceRejoinChannelId.value) dismissVoiceRejoin()
   if (pendingVoiceSwitchChannelId.value) cancelVoiceSwitch()
   closeGlobalContextMenu()
   if (workspaceNotice.value) clearWorkspaceNotice()
+}
+
+async function handleConfirmVoiceRejoin() {
+  const target = pendingVoiceRejoinSummary.value
+  if (target) {
+    guilds.selectGuild(target.guild.id)
+    guilds.selectChannel(target.channel.id)
+    navigation.openVoiceChannel()
+  }
+  await confirmVoiceRejoin()
 }
 
 async function runAuth(action: () => Promise<void>) {
@@ -409,6 +426,7 @@ function handleDemo() {
 
 function handleLogout() {
   disconnectVoice()
+  dismissVoiceRejoin()
   disconnectGateway()
   authError.value = null
   workspaceError.value = null
@@ -1001,6 +1019,28 @@ async function copyInviteCode() {
       <div class="workspace-alerts">
         <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
           {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
+        </div>
+        <div v-else-if="pendingVoiceRejoinSummary" class="voice-rejoin-notice" role="status">
+          <div>
+            <strong>{{ t('voice.rejoinTitle') }}</strong>
+            <span>
+              {{
+                t('voice.rejoinDescription', {
+                  guild: pendingVoiceRejoinSummary.guild.name,
+                  channel: pendingVoiceRejoinSummary.channel.name,
+                })
+              }}
+            </span>
+          </div>
+          <div class="voice-rejoin-actions">
+            <button type="button" class="primary" @click="handleConfirmVoiceRejoin">
+              <Radio :size="15" aria-hidden="true" />
+              <span>{{ t('voice.rejoinAction') }}</span>
+            </button>
+            <button type="button" :aria-label="t('voice.rejoinDismiss')" @click="dismissVoiceRejoin">
+              <X :size="14" aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <div v-else-if="workspaceNotice" class="app-notice" :class="workspaceNoticeTone" role="status">
           <span>{{ workspaceNotice }}</span>

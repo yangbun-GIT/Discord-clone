@@ -247,6 +247,13 @@ same-PC browser smoke now verifies exactly one remote sharing user's screen tile
 and zero duplicate remote participant cards, while preserving local screen preview
 and screen-stop cleanup.
 
+Manual QA follow-up Stage M3 is implemented in code. The voice session controller
+now stores safe same-user voice rejoin metadata, shows a clone-owned previous voice
+channel notice after reload, and reacquires microphone access only after the user
+confirms rejoin. Normal leave and notice dismissal clear the recovery record. The
+browser realtime smoke now reloads a connected tab, verifies the rejoin prompt, and
+confirms the other tab receives remote audio again after rejoin.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

@@ -1794,6 +1794,76 @@ select:focus-visible {
   background: rgb(255 255 255 / 10%);
 }
 
+.voice-rejoin-notice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgb(35 165 89 / 36%);
+  border-radius: 10px;
+  padding: 12px;
+  color: #dcfce7;
+  background: linear-gradient(135deg, rgb(20 83 45 / 96%), rgb(17 24 39 / 96%));
+  box-shadow: var(--shadow-panel);
+  pointer-events: auto;
+}
+
+.voice-rejoin-notice > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.voice-rejoin-notice strong {
+  color: #ffffff;
+  font-size: 0.88rem;
+}
+
+.voice-rejoin-notice span {
+  min-width: 0;
+  color: #bbf7d0;
+  font-size: 0.82rem;
+}
+
+.voice-rejoin-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voice-rejoin-actions button {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  color: #e5e7eb;
+  background: rgb(255 255 255 / 10%);
+}
+
+.voice-rejoin-actions button.primary {
+  padding: 0 10px;
+  color: #ffffff;
+  background: #248046;
+}
+
+.voice-rejoin-actions button:not(.primary) {
+  width: 30px;
+}
+
+.voice-rejoin-actions button:hover,
+.voice-rejoin-actions button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 16%);
+}
+
+.voice-rejoin-actions button.primary:hover,
+.voice-rejoin-actions button.primary:focus-visible {
+  background: #1a6334;
+}
+
 .content-grid {
   min-height: 0;
   display: grid;

@@ -49,8 +49,8 @@ For ordinary implementation work:
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
     and a DM, then verifies server text, DM, voice peer visibility, remote audio
     sink, mute/deafen, fake screen-share paths, local screen-preview rendering,
-    remote screen-video rendering, screen-share stop cleanup, and voice leave
-    cleanup through the app UI.
+    remote screen-video rendering, screen-share stop cleanup, connected-tab reload
+    rejoin recovery, and voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
@@ -461,8 +461,9 @@ For ordinary implementation work:
 - `frontend/src/composables/useVoiceSessionController.ts`
   - Voice session orchestration facade.
   - Owns voice config loading, join/leave/switch flow, mute/deafen gateway sync,
-    screen-share toggling, and voice participant/signal synchronization while
-    composing the guild store, gateway composable, and WebRTC facade.
+    safe reload rejoin recovery metadata, screen-share toggling, and voice
+    participant/signal synchronization while composing the guild store, gateway
+    composable, and WebRTC facade.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
   - Keep as the public i18n facade until the split plan in

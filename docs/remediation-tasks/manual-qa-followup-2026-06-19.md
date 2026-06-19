@@ -148,6 +148,8 @@ Verification:
 
 ### Stage M3: Refresh Rejoin Recovery
 
+Status: implemented, pending real-browser permission regression QA.
+
 Owner files:
 
 - `frontend/src/composables/useVoiceSessionController.ts`
@@ -161,17 +163,36 @@ Owner files:
 Tasks:
 
 1. Persist the last connected voice guild/channel in a safe local client state.
+   - Completed: client storage records only user/guild/channel IDs for the last
+     joined voice channel.
 2. On reload, do not silently claim the microphone. Show an app-owned "rejoin
    voice" recovery prompt.
+   - Completed: the workspace shows a clone-owned previous voice channel notice
+     after reload when a valid same-user channel can be restored.
 3. If the user confirms, reacquire microphone permission and rejoin the channel.
+   - Completed: confirming the notice opens the voice channel workspace and joins
+     the previous channel through the normal microphone capture path.
 4. If the user dismisses, send/confirm a leave state and clear stale local state.
+   - Completed: dismissal clears the local recovery record. Normal voice leave also
+     clears the recovery record.
 5. Add automated coverage for reload state reconciliation where feasible.
+   - Completed: browser smoke reloads a connected tab, verifies the rejoin prompt,
+     rejoins, and confirms the other tab receives a remote audio sink again.
 
 Acceptance:
 
 - Refresh does not leave stale connected UI.
 - User can intentionally rejoin the previous voice channel after reload.
 - The other participant sees a consistent leave/rejoin transition.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
+  `voiceRejoinPromptVisible: true` and `voiceRejoinRecovered: true`.
+- Real browser permission prompt behavior remains a manual gate because automated
+  fake-device media cannot prove the user's actual microphone permission flow.
 
 ### Stage M4: LAN Secure-Context Development Path
 

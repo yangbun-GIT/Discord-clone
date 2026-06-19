@@ -446,7 +446,8 @@ Browser UI
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
       voice peer visibility, remote audio sink, mute/deafen, fake screen-share UI,
       local screen-preview rendering, remote screen-video rendering, screen-share
-      stop cleanup, and voice leave cleanup paths.
+      stop cleanup, connected-tab reload rejoin recovery, and voice leave cleanup
+      paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
 
@@ -709,8 +710,8 @@ Browser UI
     - `frontend/src/App.vue`
   - Owns:
     - Voice config loading, voice join/leave/switch orchestration, mute/deafen
-      gateway updates, screen-share toggle orchestration, voice participant sync,
-      and incoming voice-signal handling.
+      gateway updates, safe reload rejoin recovery metadata, screen-share toggle
+      orchestration, voice participant sync, and incoming voice-signal handling.
 
 - `frontend/src/i18n/index.ts`
   - References:
