@@ -205,7 +205,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       await options.voiceRtc.connect({
         channelId: target.channel.id,
         currentUserId: user.id,
-        participants: voiceParticipantsForChannel(target.channel.id),
+        participants: [],
         iceServers: voiceIceServers.value,
         sendSignal: options.sendVoiceSignal,
       })

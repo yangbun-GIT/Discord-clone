@@ -188,6 +188,16 @@ workspace/sidebar participant divergence, preview mode without a clear Join acti
 and raw/unlocalized invite permission errors for member accounts. Server text and
 existing DM delivery passed in both directions during this recheck.
 
+A 2026-06-20 voice participant consistency fix changed the client join order so
+`useVoiceSessionController.ts` no longer passes existing participants into
+`voiceRtc.connect()` before the backend has accepted the user's
+`UPDATE_VOICE_STATE`. Peer creation now waits for gateway
+`VOICE_STATE_UPDATE`/`VOICE_STATE_SNAPSHOT` reconciliation, preventing one-sided
+participant visibility and backend `voice signal rejected reason=voice-channel`
+logs caused by offers sent before the sender was registered in the voice channel.
+`npm run smoke:realtime:browser` passed after the change with one remote audio
+sink, visible peer detail, voice rejoin recovery, and zero browser errors.
+
 The same recheck also clarified browser QA setup and voice architecture direction.
 The two user tabs may live in separate Chrome profiles; the current local mapping is
 `minruel` for `localhost:5173` and `jbnu.ac.kr` for `127.0.0.1:5173`, so future

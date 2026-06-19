@@ -161,6 +161,24 @@ Screen-share participant composition update:
 - `npm run smoke:realtime:browser` verifies `remoteSharingUserScreenTiles: 1` and
   `duplicateRemoteSharingParticipantCards: 0`.
 
+Voice participant consistency update:
+
+- Date: 2026-06-20.
+- User-visible issue: after two accounts joined the same voice channel, one account
+  could show both participants while the other showed only itself.
+- Root cause fixed in the client join order: the browser previously started
+  WebRTC peer sync from any locally known participants before the backend had
+  accepted that user's `UPDATE_VOICE_STATE`. This could send offers before the
+  backend considered the sender connected to the voice channel.
+- Fix: `useVoiceSessionController.ts` now starts local media with an empty initial
+  participant list. Peer creation waits for gateway `VOICE_STATE_UPDATE` and
+  `VOICE_STATE_SNAPSHOT` reconciliation after the user's voice state is registered.
+- Verification: `CHROME_EXECUTABLE="C:/Program Files/Google/Chrome/Application/chrome.exe"
+  npm run smoke:realtime:browser` passed with `voiceRemoteAudioSinks: 1`,
+  `voicePeerDetailVisible: true`, `voiceRejoinRecovered: true`, and
+  `browserErrors: 0`. Backend logs for the post-fix window showed no new
+  `voice signal rejected` entries.
+
 Manual two-account product-flow result:
 
 - Date: 2026-06-19.
