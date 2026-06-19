@@ -4,7 +4,9 @@ import { ref, watch } from 'vue'
 const props = defineProps<{
   stream: MediaStream
   label: string
+  subtitle?: string
   state: string
+  userId?: number
 }>()
 
 const video = ref<HTMLVideoElement | null>(null)
@@ -21,10 +23,11 @@ watch(
 </script>
 
 <template>
-  <article class="screen-share-tile" :data-state="state">
+  <article class="screen-share-tile" :data-state="state" :data-user-id="userId ?? null">
     <video ref="video" autoplay playsinline />
     <div>
       <strong>{{ label }}</strong>
+      <span v-if="subtitle">{{ subtitle }}</span>
     </div>
   </article>
 </template>

@@ -242,6 +242,8 @@ async function run() {
       .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''))
     const remoteAudioSinks = await pageA.page.locator('.voice-audio-sinks audio').count()
     const remoteScreenVideos = await countRemoteScreenVideos(pageB.page)
+    const remoteSharingUserScreenTiles = await pageB.page.locator(`.screen-share-tile[data-user-id="${userA.user.id}"]`).count()
+    const duplicateRemoteSharingParticipantCards = await pageB.page.locator(`.voice-tile.remote[data-user-id="${userA.user.id}"]`).count()
     const mutePressed = await pageA.page
       .getByRole('button', { name: /Unmute microphone|Mute microphone/i })
       .first()
@@ -276,6 +278,8 @@ async function run() {
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
       localScreenPreviewVideos,
       remoteScreenVideos,
+      remoteSharingUserScreenTiles,
+      duplicateRemoteSharingParticipantCards,
       remoteScreenCleared,
       voiceLeaveCleaned,
       browserErrors: [...pageA.events, ...pageB.events].length,
@@ -291,6 +295,8 @@ async function run() {
       || !result.fakeScreenShareVisible
       || result.localScreenPreviewVideos < 1
       || result.remoteScreenVideos < 1
+      || result.remoteSharingUserScreenTiles !== 1
+      || result.duplicateRemoteSharingParticipantCards !== 0
       || !result.remoteScreenCleared
       || !result.voiceLeaveCleaned
       || result.browserErrors > 0

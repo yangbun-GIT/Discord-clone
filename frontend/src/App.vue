@@ -79,6 +79,10 @@ const activeRemoteVoiceStreams = computed(() =>
 const remoteScreenStreams = computed(() =>
   activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
 )
+const remoteScreenUserIds = computed(() => new Set(remoteScreenStreams.value.map((remote) => remote.userId)))
+const visibleSelectedVoicePeers = computed(() =>
+  selectedVoicePeers.value.filter((participant) => !remoteScreenUserIds.value.has(participant.user_id)),
+)
 const voiceLocationSummary = computed(() => {
   if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
   const state = isDeafened.value
@@ -1106,14 +1110,18 @@ async function copyInviteCode() {
             class="local-screen-share-tile"
             :stream="voiceRtc.screenStream.value"
             :label="t('voice.screenPreview')"
+            :subtitle="session.user?.username ?? t('common.demoUser')"
+            :user-id="session.user?.id"
             state="connected"
           />
           <VoiceVideoSink
             v-for="remote in remoteScreenStreams"
             :key="`${remote.channelId}:${remote.userId}`"
             :stream="remote.stream"
-            :label="remote.username ? `${remote.username}'s screen` : `User ${remote.userId}'s screen`"
+            :label="t('voice.remoteScreenLabel', { user: remote.username ?? `User ${remote.userId}` })"
+            :subtitle="remote.connectionState === 'connected' ? t('common.status.connected') : remote.connectionState"
             :state="remote.connectionState"
+            :user-id="remote.userId"
           />
         </div>
 
@@ -1130,7 +1138,7 @@ async function copyInviteCode() {
             <small v-if="voiceRtc.isScreenSharing.value">{{ t('voice.screenLive') }}</small>
           </article>
 
-          <article v-if="!selectedVoicePeers.length" class="voice-tile empty">
+          <article v-if="!visibleSelectedVoicePeers.length && !remoteScreenStreams.length" class="voice-tile empty">
             <UserRound :size="34" aria-hidden="true" />
             <div>
               <strong>{{ t('voice.noRemoteParticipants') }}</strong>
@@ -1138,7 +1146,12 @@ async function copyInviteCode() {
             </div>
           </article>
 
-          <article v-for="participant in selectedVoicePeers" :key="participant.user_id" class="voice-tile remote">
+          <article
+            v-for="participant in visibleSelectedVoicePeers"
+            :key="participant.user_id"
+            class="voice-tile remote"
+            :data-user-id="participant.user_id"
+          >
             <span class="voice-tile-avatar remote">
               {{ (participant.username ?? `U${participant.user_id}`).slice(0, 2).toUpperCase() }}
             </span>

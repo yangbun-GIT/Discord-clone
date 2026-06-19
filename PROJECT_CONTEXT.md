@@ -240,6 +240,13 @@ and does not gate outgoing microphone audio. Focused frontend voice media tests,
 frontend lint, and production build passed. Real sustained-vowel listening remains
 a manual gate.
 
+Manual QA follow-up Stage M2 is implemented in code. Remote screen-sharing
+participants now render as one screen-share participant composition, and their
+separate normal remote participant cards are omitted while they are sharing. The
+same-PC browser smoke now verifies exactly one remote sharing user's screen tile
+and zero duplicate remote participant cards, while preserving local screen preview
+and screen-stop cleanup.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

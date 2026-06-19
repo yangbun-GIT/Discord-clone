@@ -137,6 +137,14 @@ Manual QA follow-up result:
 - Detailed staged follow-up is tracked in
   `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`.
 
+Screen-share participant composition update:
+
+- Date: 2026-06-19.
+- Remote sharing users now render as one screen-share participant composition, not
+  both a screen tile and a duplicate participant tile.
+- `npm run smoke:realtime:browser` verifies `remoteSharingUserScreenTiles: 1` and
+  `duplicateRemoteSharingParticipantCards: 0`.
+
 Manual two-account product-flow result:
 
 - Date: 2026-06-19.

@@ -105,6 +105,8 @@ Verification:
 
 ### Stage M2: Screen-Share Participant Composition
 
+Status: implemented, pending manual multi-user real screen-share layout QA.
+
 Owner files:
 
 - `frontend/src/App.vue`
@@ -117,17 +119,32 @@ Tasks:
 
 1. Redesign receiver view so a remote user's screen share and participant state are
    one composition.
+   - Completed: remote sharing users render as screen-share participant
+     compositions instead of a separate screen tile plus a duplicate participant
+     tile.
 2. Keep sharer-side local preview available, but avoid duplicate remote user cards.
+   - Completed.
 3. Define multi-share layout rules: one tile per sharing participant, with status
    overlay or side metadata.
+   - Completed for current layout: one `screen-share-tile` per remote sharing user
+     with user label and connection state.
 4. Update browser smoke to assert that a remote sharing user does not produce both a
    separate screen tile and a separate duplicate participant card in the same stage.
+   - Completed.
 
 Acceptance:
 
 - Receiver sees one primary card per sharing participant.
 - Four sharing users produce four share/participant compositions, not eight cards.
 - Local preview and local participant state remain understandable for the sharer.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser` passed with
+  `remoteSharingUserScreenTiles: 1` and
+  `duplicateRemoteSharingParticipantCards: 0`.
 
 ### Stage M3: Refresh Rejoin Recovery
 
