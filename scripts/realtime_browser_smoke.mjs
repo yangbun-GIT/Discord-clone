@@ -235,6 +235,7 @@ async function run() {
     await clickVoiceAction(pageA.page, /^Share screen$/i)
     await pageA.page.waitForTimeout(2_500)
     await waitForRemoteScreenTile(pageB.page, pageA.page)
+    const localScreenPreviewVideos = await countRemoteScreenVideos(pageA.page)
 
     const detailLabels = await pageA.page
       .locator('.voice-connection-card small')
@@ -250,6 +251,13 @@ async function run() {
       .first()
       .getAttribute('aria-pressed')
     const bodyA = await pageA.page.locator('body').innerText()
+    await clickVoiceAction(pageA.page, /^Stop screen share$/i)
+    await pageB.page.waitForFunction(
+      () => document.querySelectorAll('.screen-share-tile video').length === 0,
+      null,
+      { timeout: 10_000 },
+    )
+    const remoteScreenCleared = await pageB.page.locator('.screen-share-tile video').count() === 0
     await clickVoiceAction(pageB.page, /Disconnect voice/i)
     await pageA.page.waitForFunction(
       () => document.querySelectorAll('.voice-audio-sinks audio').length === 0,
@@ -266,7 +274,9 @@ async function run() {
       mutePressed: mutePressed === 'true',
       deafenPressed: deafenPressed === 'true',
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
+      localScreenPreviewVideos,
       remoteScreenVideos,
+      remoteScreenCleared,
       voiceLeaveCleaned,
       browserErrors: [...pageA.events, ...pageB.events].length,
     }
@@ -279,7 +289,9 @@ async function run() {
       || !result.mutePressed
       || !result.deafenPressed
       || !result.fakeScreenShareVisible
+      || result.localScreenPreviewVideos < 1
       || result.remoteScreenVideos < 1
+      || !result.remoteScreenCleared
       || !result.voiceLeaveCleaned
       || result.browserErrors > 0
     ) {

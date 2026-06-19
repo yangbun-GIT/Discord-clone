@@ -12,9 +12,10 @@ type PeerKey = `${number}:${number}`
 export type SendVoiceSignal = (payload: {
   channel_id: number
   target_user_id: number
-  type: 'offer' | 'answer' | 'ice'
+  type: 'offer' | 'answer' | 'ice' | 'screen'
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
+  screen_sharing?: boolean | null
 }) => void
 
 export type ConnectOptions = {
@@ -310,6 +311,20 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     await Promise.all([...peers.values()].map((peer) => renegotiatePeer(peer)))
   }
 
+  function broadcastScreenState(sharingScreen: boolean) {
+    const activeOptions = options.getActiveOptions()
+    if (!activeOptions) return
+    for (const peer of peers.values()) {
+      if (peer.channelId !== activeOptions.channelId) continue
+      activeOptions.sendSignal({
+        channel_id: peer.channelId,
+        target_user_id: peer.userId,
+        type: 'screen',
+        screen_sharing: sharingScreen,
+      })
+    }
+  }
+
   async function syncParticipants(participants: VoiceState[]) {
     const activeOptions = options.getActiveOptions()
     if (!activeOptions || !options.getLocalStream()) return
@@ -343,6 +358,10 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     if (signal.channel_id !== activeOptions.channelId) return
 
     const peer = ensurePeer(signal.from_user_id, signal.from_username)
+    if (signal.type === 'screen') {
+      replaceRemoteStream(peer, { sharingScreen: Boolean(signal.screen_sharing) })
+      return
+    }
     if (signal.type === 'offer' && signal.description) {
       if (peer.connection.signalingState !== 'stable') {
         if (activeOptions.currentUserId < signal.from_user_id) return
@@ -389,6 +408,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   return {
     peers,
     closeAll,
+    broadcastScreenState,
     renegotiateAllPeers,
     syncParticipants,
     handleSignal,

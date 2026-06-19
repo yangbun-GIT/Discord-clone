@@ -69,7 +69,7 @@ function isVoiceSignal(data: Record<string, unknown>): data is VoiceSignal {
     && typeof data.from_user_id === 'number'
     && typeof data.target_user_id === 'number'
     && typeof data.type === 'string'
-    && ['offer', 'answer', 'ice'].includes(data.type)
+    && ['offer', 'answer', 'ice', 'screen'].includes(data.type)
 }
 
 function isGuild(data: Record<string, unknown>): data is Guild {

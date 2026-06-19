@@ -196,6 +196,21 @@ Voice transport should remain WebRTC media with WebSocket signaling for C10-C13.
 Raw WebSocket audio is rejected, and SFU-backed WebRTC is the preferred future
 architecture if the clone moves toward larger Discord-like voice rooms.
 
+A 2026-06-19 call-recording QA pass used a local, ignored video under
+`docs/reference-videos/voice-call/` to inspect screen-share and voice behavior
+without committing private media. Automatic audio analysis found very low average
+volume across the recording (`mean_volume` about -39.5 dB) and long low-volume
+sections, so real speech clarity remains a manual blocker. The visual pass
+confirmed that screen-share tiles could remain on the other participant after stop,
+that remote share placement was too detached from the voice workspace, and that the
+sharer could not see a local preview. The local implementation now sends a typed
+gateway `VOICE_SIGNAL` with `type: "screen"` and `screen_sharing`, renders local
+and remote screen tiles inside the selected voice workspace, clears remote screen
+tiles after stop, and extends `npm run smoke:realtime:browser` to verify local
+screen preview, remote screen rendering, screen-stop cleanup, and voice leave
+cleanup. Refresh still leaves the active WebRTC call because media capture and voice
+rejoin after page reload require a separate explicit rejoin/recovery flow.
+
 Friend relationship implementation is now backend-backed. The Friends Add Friend
 surface no longer relies on a local-only success message or hardcoded fallback
 friend rows for accounts with no relationships. Backend relationship reads and

@@ -40,7 +40,10 @@ and a DM. It verifies:
 - Voice peer count appears in the voice panel.
 - Mute/deafen controls toggle.
 - Fake screen-share path becomes visible locally.
+- Local screen-share preview appears in the sharing browser context.
 - A remote screen-share video tile appears in the second browser context.
+- Stopping screen share removes the remote screen-share tile from the second
+  browser context.
 - Leaving voice removes the remote audio sink from the other browser context.
 
 Privacy rules:
@@ -78,6 +81,9 @@ Post-C9 remediation result:
   remote screen-share/voice-leave browser smoke checks.
 - Fixed the remote screen-share stage render condition so a received live video
   track is visible from the selected voice workspace.
+- A later screen-share cleanup pass added explicit `VOICE_SIGNAL` screen-state
+  dispatch, local screen-share preview rendering, in-workspace screen-share
+  placement, and automated stop-cleanup verification.
 - Current automated command baseline is:
   - `npm run test:backend`
   - `npm run test:frontend`
@@ -86,6 +92,28 @@ Post-C9 remediation result:
   - `npm --prefix frontend run build`
   - `npm run smoke:realtime:browser`
   - `npm run smoke:realtime:redis`
+
+Call recording QA result:
+
+- Date: 2026-06-19.
+- Source: local ignored recording under `docs/reference-videos/voice-call/`.
+- Privacy: recording and generated analysis frames are ignored by Git and must not
+  be committed.
+- Container facts: about 100 seconds, 1920x1080, 60 fps, three AAC stereo audio
+  tracks at 48 kHz.
+- Automatic audio signal result: all three audio tracks had `mean_volume` around
+  -39.5 dB and `max_volume` around -11.1 dB, with repeated low-volume/silence
+  sections. This supports the user's report that spoken language is not reliable;
+  actual intelligibility still requires human listening on the user's machine.
+- Visual result before the fix: after screen share stopped, remote screen-share
+  tiles could remain visible; remote screen share appeared as a detached lower
+  stage; the sharer did not get an actual local screen preview.
+- Automated result after the fix: `npm run smoke:realtime:browser` passed with
+  local screen preview video count, remote screen video count, remote screen cleanup,
+  voice leave cleanup, and zero browser errors.
+- Remaining communication risk: refreshing a tab still ends the active WebRTC media
+  session. A future stage must decide whether to restore a voice preview/rejoin
+  prompt after reload or intentionally require manual rejoin.
 
 Manual two-account product-flow result:
 

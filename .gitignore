@@ -47,3 +47,7 @@ docs/reference-screenshots/real-discord/*
 docs/reference-screenshots/clone-current/*
 !docs/reference-screenshots/real-discord/.gitkeep
 !docs/reference-screenshots/clone-current/.gitkeep
+
+# Local voice/video QA recordings
+docs/reference-videos/voice-call/*
+!docs/reference-videos/voice-call/.gitkeep

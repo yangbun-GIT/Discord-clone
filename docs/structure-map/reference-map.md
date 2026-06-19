@@ -445,7 +445,8 @@ Browser UI
   - Owns:
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
       voice peer visibility, remote audio sink, mute/deafen, fake screen-share UI,
-      remote screen-video rendering, and voice leave cleanup paths.
+      local screen-preview rendering, remote screen-video rendering, screen-share
+      stop cleanup, and voice leave cleanup paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
 
@@ -497,8 +498,9 @@ Browser UI
     - `frontend/src/main.ts`
   - Owns:
     - App shell composition, global workflow wiring, gateway reconnect
-      reconciliation callback, voice workspace selection, remote screen-share stage
-      render conditions, and QA-only `data-gateway-status` state attribute.
+      reconciliation callback, voice workspace selection, local/remote
+      screen-share stage placement, remote screen-share render conditions, and
+      QA-only `data-gateway-status` state attribute.
 
 ### Stores And API
 
@@ -657,7 +659,8 @@ Browser UI
       and WebRTC APIs.
   - Owns:
     - Local microphone and screen capture lifecycle, reserved screen-share sender
-      track replacement, mute/deafen media state, and voice RTC cleanup.
+      track replacement, screen-share state broadcast, mute/deafen media state, and
+      voice RTC cleanup.
 
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
@@ -689,7 +692,8 @@ Browser UI
     - Channel-scoped peer connection registry, remote stream mutation,
       offer/answer/ICE handling, pending ICE candidate queueing, stale signal
       filtering, bounded failed-peer retry, reserved video transceivers for screen
-      sharing, remote screen-track state refresh, and participant synchronization.
+      sharing, explicit screen-share state signal handling, remote screen-track
+      state refresh, and participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:
@@ -749,7 +753,7 @@ Browser UI
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/VoiceVideoSink.vue`
-  - Receives current-channel remote screen/video stream from
+  - Receives current-channel local or remote screen/video stream from
     `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/SettingsView.vue`
   - Receives current user, status controls, and debug-safe voice constraint support

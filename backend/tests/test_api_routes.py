@@ -603,6 +603,18 @@ def test_voice_signal_routes_to_target_voice_peer() -> None:
                 }
             )
             signal_event = receive_gateway_event(receiver, "VOICE_SIGNAL")
+            sender.send_json(
+                {
+                    "op": 5,
+                    "d": {
+                        "channel_id": 2003,
+                        "target_user_id": 43,
+                        "type": "screen",
+                        "screen_sharing": False,
+                    },
+                }
+            )
+            screen_event = receive_gateway_event(receiver, "VOICE_SIGNAL")
 
     assert signal_event["t"] == "VOICE_SIGNAL"
     assert signal_event["d"]["channel_id"] == 2003
@@ -610,6 +622,8 @@ def test_voice_signal_routes_to_target_voice_peer() -> None:
     assert signal_event["d"]["target_user_id"] == 43
     assert signal_event["d"]["type"] == "offer"
     assert signal_event["d"]["description"] == {"type": "offer", "sdp": "fake-sdp"}
+    assert screen_event["d"]["type"] == "screen"
+    assert screen_event["d"]["screen_sharing"] is False
     reset_operation_limits()
 
 

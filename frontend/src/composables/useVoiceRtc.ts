@@ -154,6 +154,7 @@ export function useVoiceRtc() {
         }
       }
       await peerRegistry.renegotiateAllPeers()
+      peerRegistry.broadcastScreenState(true)
     } catch (cause) {
       const mediaError = cause instanceof VoiceMediaError ? normalizeMediaError(cause, 'screen') : null
       errorCode.value = mediaError?.code ?? null
@@ -178,6 +179,7 @@ export function useVoiceRtc() {
         peer.screenSender = null
       }
     }
+    peerRegistry.broadcastScreenState(false)
     await peerRegistry.renegotiateAllPeers()
   }
 

@@ -26,6 +26,7 @@ class VoiceStatePayload(BaseModel):
 class VoiceSignalPayload(BaseModel):
     channel_id: int
     target_user_id: int
-    type: str = Field(pattern="^(offer|answer|ice)$")
+    type: str = Field(pattern="^(offer|answer|ice|screen)$")
     description: dict[str, Any] | None = None
     candidate: dict[str, Any] | None = None
+    screen_sharing: bool | None = None

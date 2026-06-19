@@ -140,6 +140,46 @@ Known 2026-06-19 real-device issue:
 - Treat this as a blocker for real voice completion until a manual speech-quality
   pass succeeds.
 
+## Call Recording QA 2026-06-19
+
+The user-provided call recording is stored only in the ignored local folder
+`docs/reference-videos/voice-call/`; do not commit recordings or generated analysis
+frames.
+
+Automatic checks found:
+
+- Recording length: about 100 seconds.
+- Audio tracks: three AAC stereo tracks at 48 kHz.
+- Volume: `mean_volume` around -39.5 dB and `max_volume` around -11.1 dB on each
+  track.
+- Low-volume detection: repeated low-volume/silence sections were present across
+  the recording.
+
+Visual checks found before remediation:
+
+- Stopping screen share could leave the previously shared screen visible on the
+  other participant.
+- Remote screen share was positioned as a detached lower tile instead of being
+  integrated into the selected voice workspace.
+- The sharing user could not see a real local preview of the shared screen.
+
+Implemented local fix:
+
+- Screen sharing now sends an explicit gateway `VOICE_SIGNAL` screen-state payload.
+- Local and remote screen-share video tiles render inside the selected voice
+  workspace.
+- Stopping screen share clears remote screen tiles.
+- `npm run smoke:realtime:browser` now verifies local screen preview, remote screen
+  rendering, and remote screen cleanup.
+
+Remaining manual gate:
+
+- The low average volume and long low-volume sections make speech quality suspect,
+  but actual Korean/English speech intelligibility must still be judged by a
+  human listener using two real accounts and real microphones.
+- Refreshing a page still leaves the active call. A separate voice rejoin/recovery
+  flow is needed if refresh persistence is required.
+
 ## Stage 11.12 QA Note
 
 The 2026-06-18 Stage 11.12 pass verified backend health, `/api/meta/voice`, and the

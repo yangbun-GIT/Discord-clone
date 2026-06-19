@@ -144,9 +144,10 @@ export type VoiceSignal = {
   from_user_id: number
   from_username: string | null
   target_user_id: number
-  type: 'offer' | 'answer' | 'ice'
+  type: 'offer' | 'answer' | 'ice' | 'screen'
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
+  screen_sharing?: boolean | null
 }
 
 export type VoiceIceServer = {

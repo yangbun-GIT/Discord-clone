@@ -77,10 +77,7 @@ const activeRemoteVoiceStreams = computed(() =>
   voiceRtc.remoteStreams.value.filter((remote) => remote.channelId === guilds.connectedVoiceChannelId),
 )
 const remoteScreenStreams = computed(() =>
-  activeRemoteVoiceStreams.value.filter((remote) =>
-    remote.sharingScreen
-    || remote.stream.getVideoTracks().some((track) => track.readyState === 'live' && !track.muted),
-  ),
+  activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
 )
 const voiceLocationSummary = computed(() => {
   if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
@@ -1099,16 +1096,28 @@ async function copyInviteCode() {
           </div>
         </header>
 
-        <div class="voice-workspace-grid">
-          <article v-if="voiceRtc.isScreenSharing.value" class="voice-tile screen-preview connected">
-            <ScreenShare :size="38" aria-hidden="true" />
-            <div>
-              <strong>{{ t('voice.screenLive') }}</strong>
-              <span>{{ t('voice.screenPreview') }}</span>
-            </div>
-            <small>{{ session.user?.username ?? t('common.demoUser') }}</small>
-          </article>
+        <div
+          v-if="voiceRtc.screenStream.value || remoteScreenStreams.length"
+          class="screen-share-stage"
+          aria-label="Screen shares"
+        >
+          <VoiceVideoSink
+            v-if="voiceRtc.screenStream.value"
+            class="local-screen-share-tile"
+            :stream="voiceRtc.screenStream.value"
+            :label="t('voice.screenPreview')"
+            state="connected"
+          />
+          <VoiceVideoSink
+            v-for="remote in remoteScreenStreams"
+            :key="`${remote.channelId}:${remote.userId}`"
+            :stream="remote.stream"
+            :label="remote.username ? `${remote.username}'s screen` : `User ${remote.userId}'s screen`"
+            :state="remote.connectionState"
+          />
+        </div>
 
+        <div class="voice-workspace-grid">
           <article
             class="voice-tile local"
             :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
@@ -1296,19 +1305,6 @@ async function copyInviteCode() {
       @cycle-status="cycleUserPresence"
       @open-settings="handleOpenUserSettings"
     />
-    <div
-      v-if="selectedVoiceChannel && remoteScreenStreams.length"
-      class="screen-share-stage"
-      aria-label="Screen shares"
-    >
-      <VoiceVideoSink
-        v-for="remote in remoteScreenStreams"
-        :key="`${remote.channelId}:${remote.userId}`"
-        :stream="remote.stream"
-        :label="remote.username ? `${remote.username}'s screen` : `User ${remote.userId}'s screen`"
-        :state="remote.connectionState"
-      />
-    </div>
     <div class="voice-audio-sinks" aria-hidden="true">
       <VoiceAudioSink
         v-for="remote in activeRemoteVoiceStreams"

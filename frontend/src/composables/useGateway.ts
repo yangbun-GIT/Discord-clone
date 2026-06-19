@@ -29,9 +29,10 @@ type VoiceStatePayload = {
 type VoiceSignalPayload = {
   channel_id: number
   target_user_id: number
-  type: 'offer' | 'answer' | 'ice'
+  type: 'offer' | 'answer' | 'ice' | 'screen'
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
+  screen_sharing?: boolean | null
 }
 
 const socket = ref<WebSocket | null>(null)

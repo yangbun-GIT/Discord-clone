@@ -258,6 +258,7 @@ async def gateway(websocket: WebSocket) -> None:
                         "type": voice_signal.type,
                         "description": voice_signal.description,
                         "candidate": voice_signal.candidate,
+                        "screen_sharing": voice_signal.screen_sharing,
                     },
                 )
                 logger.info(

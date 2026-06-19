@@ -48,8 +48,9 @@ For ordinary implementation work:
 - `scripts/realtime_browser_smoke.mjs`
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
     and a DM, then verifies server text, DM, voice peer visibility, remote audio
-    sink, mute/deafen, fake screen-share paths, remote screen-video rendering, and
-    voice leave cleanup through the app UI.
+    sink, mute/deafen, fake screen-share paths, local screen-preview rendering,
+    remote screen-video rendering, screen-share stop cleanup, and voice leave
+    cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
@@ -112,6 +113,10 @@ For ordinary implementation work:
 - `docs/reference-screenshots/`
   - Private local visual-reference screenshot folders.
   - Do not commit real screenshot content unless explicitly approved.
+- `docs/reference-videos/`
+  - Private local call/video QA reference folders.
+  - `docs/reference-videos/voice-call/` keeps only `.gitkeep` in Git; recordings
+    and generated analysis artifacts are ignored.
 - `docs/qa-artifacts/`
   - Stage QA screenshots already used for verification evidence.
 - `docs/remediation-tasks/`
@@ -248,6 +253,7 @@ For ordinary implementation work:
   - Demo Store catalog data.
 - `backend/app/gateway/router.py`
   - WebSocket gateway endpoint and payload handling.
+  - Relays offer/answer/ICE voice signals and screen-share state signals.
 - `backend/app/gateway/manager.py`
   - Compatibility facade for gateway connection, subscription, broadcast, voice,
     and reaper operations.
@@ -262,7 +268,8 @@ For ordinary implementation work:
 - `backend/app/gateway/zombie_reaper.py`
   - Heartbeat timeout detection and stale websocket closure.
 - `backend/app/gateway/events.py`
-  - Gateway event naming/contracts.
+  - Gateway event naming/contracts, including voice signal payload validation for
+    offer/answer/ICE and screen-share state messages.
 - `backend/app/gateway/opcodes.py`
   - Discord-style gateway opcodes.
 - `backend/app/gateway/reaper.py`
@@ -327,6 +334,7 @@ For ordinary implementation work:
   - Top-level app shell and remaining global workflow orchestration.
   - Delegates global notices, app context menus, invite modal state, and workspace
     title/subtitle calculation to focused composables.
+  - Owns the selected voice workspace's local/remote screen-share stage placement.
 - `frontend/src/types.ts`
   - Shared frontend DTO and state types.
 - `frontend/src/env.d.ts`
@@ -359,7 +367,7 @@ For ordinary implementation work:
 - `frontend/src/components/VoiceAudioSink.vue`
   - Remote audio stream rendering.
 - `frontend/src/components/VoiceVideoSink.vue`
-  - Remote video/screen stream rendering.
+  - Local and remote video/screen stream rendering.
 - `frontend/src/components/SettingsView.vue`
   - User settings shell and settings sections.
 - `frontend/src/components/ServerAddDialog.vue`
@@ -432,7 +440,7 @@ For ordinary implementation work:
 - `frontend/src/composables/voicePeerConnections.ts`
   - Channel-scoped peer connection registry, offer/answer/ICE handling, pending
     candidate queueing, stale-signal filtering, remote stream tracking,
-    participant sync, retry, and peer renegotiation.
+    participant sync, screen-share state signaling, retry, and peer renegotiation.
 - `frontend/src/composables/voiceStats.ts`
   - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`;
     consumes channel-scoped peer registry entries.

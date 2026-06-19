@@ -181,6 +181,26 @@ describe('gateway dispatch idempotency', () => {
     expect(store.voiceStates[0].user_id).toBe(702)
   })
 
+  it('accepts screen-sharing voice signals from the gateway', () => {
+    const store = useGuildStore()
+
+    store.handleGatewayDispatch('VOICE_SIGNAL', {
+      channel_id: 2003,
+      from_user_id: 701,
+      from_username: 'Mina',
+      target_user_id: 42,
+      type: 'screen',
+      screen_sharing: false,
+    })
+
+    expect(store.lastVoiceSignal).toMatchObject({
+      channel_id: 2003,
+      from_user_id: 701,
+      type: 'screen',
+      screen_sharing: false,
+    })
+  })
+
   it('replaces gateway guild updates without duplicating guilds or losing valid active channel', () => {
     const store = useGuildStore()
     const updatedGuild: Guild = {
