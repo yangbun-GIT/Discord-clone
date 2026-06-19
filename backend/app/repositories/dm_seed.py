@@ -93,6 +93,8 @@ async def ensure_postgres_dm_demo_workspace(
     )
     if relationship_count is not None and int(relationship_count["count"]) == 0:
         for related_user_id, relationship in DEMO_RELATIONSHIPS:
+            if related_user_id == user_id:
+                continue
             await database.execute(
                 """
                 INSERT INTO relationships (user_id, related_user_id, relationship)

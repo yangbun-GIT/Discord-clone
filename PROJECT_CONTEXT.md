@@ -120,7 +120,14 @@ when run through approved execution, backend checks should use
 `cd backend; ..\.venv\Scripts\python.exe -m ruff check app tests`, frontend checks
 should use bundled Node plus `frontend/node_modules/.bin`, and browser automation
 should use the Codex Node REPL Playwright Chrome path unless project-local
-Playwright is added deliberately.
+Playwright is added deliberately. Stage C1 communication baseline is complete:
+backend/frontend command checks passed, API health and voice metadata passed,
+gateway `HELLO`/`IDENTIFY`/`READY`/`HEARTBEAT_ACK` passed, two-session server text
+and DM WebSocket dispatch passed, and fake-media browser voice join plus
+app-owned cross-server voice switch dialog smoke passed. A C1 blocker where
+PostgreSQL DM seed logic attempted to insert self-relationships for seeded profile
+users was fixed in `backend/app/repositories/dm_seed.py` and covered by
+`backend/tests/test_dm_seed.py`.
 
 The app boots in two local modes:
 

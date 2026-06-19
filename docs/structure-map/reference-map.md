@@ -262,6 +262,7 @@ Browser UI
     - `backend/app/schemas/auth.py`
   - Referenced by:
     - `backend/app/repositories/dms.py`
+    - `backend/tests/test_dm_seed.py`
   - Owns:
     - PostgreSQL DM demo user, relationship, direct-message, and message bootstrap
       support.

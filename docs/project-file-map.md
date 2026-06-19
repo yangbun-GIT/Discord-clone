@@ -251,6 +251,9 @@ For ordinary implementation work:
   - DM API behavior.
 - `backend/tests/test_dm_repository.py`
   - PostgreSQL DM repository behavior.
+- `backend/tests/test_dm_seed.py`
+  - PostgreSQL DM demo workspace seed safety, including self-relationship
+    prevention for seeded profile users.
 - `backend/tests/test_dm_storage.py`
   - DM storage provider selection behavior.
 - `backend/tests/test_gateway_manager.py`

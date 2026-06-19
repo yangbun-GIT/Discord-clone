@@ -738,6 +738,70 @@ Stage C0 verification:
 - Playwright installed Chrome launch smoke through Node REPL: passed.
 - `git diff --check`: passed.
 
+### Stage C1 Result: Completed 2026-06-19
+
+Baseline checks were run against the local services at `127.0.0.1:8000` and
+`127.0.0.1:5173`.
+
+Command verification:
+
+- Backend lint: `cd backend; ..\.venv\Scripts\python.exe -m ruff check app tests`
+  passed.
+- Backend tests: `cd backend; ..\.venv\Scripts\python.exe -m pytest` passed before
+  the C1 fix with 110 tests. After the C1 fix, focused DM tests and the full
+  backend suite passed with the added DM seed test.
+- Frontend lint: bundled Node plus `frontend/node_modules/.bin/oxlint.cmd .`
+  passed.
+- Frontend unit tests: bundled Node plus `vitest.cmd run` passed with 3 files and
+  11 tests.
+- Frontend build: bundled Node plus `vue-tsc.cmd -b` and `vite.cmd build` passed
+  from `frontend/`.
+
+API and gateway smoke:
+
+- `GET /api/health` returned `status: ok`, database configured/connected, Redis not
+  configured.
+- `GET /api/meta/voice` returned one STUN ICE server and `turn_configured: false`.
+- Direct gateway smoke observed `HELLO`, `IDENTIFY`, `READY`, and `HEARTBEAT_ACK`.
+
+Two-session realtime baseline:
+
+- Server text realtime passed with user `42` sending to channel `2001` in guild
+  `1001`; user `43` received the matching `MESSAGE_CREATE` dispatch over WebSocket.
+- Direct-message realtime passed with user `701` sending in DM `803`; user `42`
+  received the matching `DM_MESSAGE_CREATE` dispatch over WebSocket.
+
+C1.1 discovered issue and fix:
+
+- Issue: PostgreSQL DM demo seeding attempted to create a self-relationship when a
+  seeded DM profile user such as `701` opened `/api/dms`. The database rejected
+  `(701, 701)` through the `relationships_check` constraint, causing `/api/dms` and
+  gateway `IDENTIFY` for that user to fail with a server error.
+- Fix: `backend/app/repositories/dm_seed.py` now skips self-relationships while
+  seeding demo relationships for any current user.
+- Regression: `backend/tests/test_dm_seed.py` verifies that demo workspace seeding
+  never inserts self-relationships.
+
+Voice baseline:
+
+- Fake-media browser smoke through Node REPL Playwright Chrome opened the app,
+  selected the Study Hall server, clicked `voice-room`, and observed the connected
+  lower voice card.
+- Cross-server voice switch baseline passed: while connected to Study Hall
+  `voice-room`, selecting the SRS Lab `voice-room` showed the app-owned switch
+  dialog and did not show browser-native dialog text.
+- Direct gateway voice state smoke passed for user `42`: `UPDATE_VOICE_STATE`
+  joined channel `2003` and then left with `channel_id: null`, both observed as
+  `VOICE_STATE_UPDATE` dispatches.
+
+Residual C1 notes:
+
+- Browser fake-device smoke proves only the join/state UI and permission path, not
+  real microphone quality.
+- `/api/meta/voice` is STUN-only. TURN/NAT remains a C7/C9 release gate.
+- Redis is not configured in the current local stack; multi-worker fan-out remains
+  a C4 target.
+
 ### Stage C0: Environment And Verification Recovery
 
 Goal: remove local tooling blockers before changing communication behavior.

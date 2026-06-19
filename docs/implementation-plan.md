@@ -657,3 +657,21 @@
   - Backend tests/lint could not be re-run because the local `.venv` Python
     executable failed to create a process and the bundled Python lacks backend test
     dependencies.
+
+## Realtime Communication Hardening C0-C9
+
+- Status: in progress.
+- Plan document: `docs/remediation-tasks/realtime-communication-plan.md`.
+- Target: make text chat, DMs, WebSocket gateway behavior, voice state, WebRTC voice,
+  screen sharing, LAN access, and TURN readiness verifiable for real multi-session
+  use.
+- Completed Stage C0: environment and verification recovery. The `.venv` Python
+  3.14.3 runtime works through approved execution, frontend checks use bundled Node
+  plus local frontend binaries, and browser automation uses the Codex Node REPL
+  Playwright Chrome path.
+- Completed Stage C1: communication baseline. Backend/frontend checks passed,
+  `/api/health`, `/api/meta/voice`, gateway HELLO/IDENTIFY/READY/HEARTBEAT_ACK,
+  two-session server text dispatch, two-session DM dispatch, fake-media voice join
+  UI, app-owned cross-server voice switch dialog, and direct voice join/leave state
+  smoke passed. The C1 DM seed self-relationship blocker was fixed.
+- Next stage: C2 gateway reconnect and REST reconciliation.
