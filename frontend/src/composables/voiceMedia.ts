@@ -34,10 +34,13 @@ export interface VoiceConstraintSupport {
 }
 
 export interface VoiceProcessingSettings {
+  mode: VoiceProcessingMode
   echoCancellation: boolean
   noiseSuppression: boolean
   autoGainControl: boolean
 }
+
+export type VoiceProcessingMode = 'balanced' | 'speech-stability' | 'raw' | 'custom'
 
 export class VoiceMediaError extends Error {
   constructor(
@@ -64,10 +67,31 @@ export async function captureMicrophone() {
 }
 
 export function defaultVoiceProcessingSettings(): VoiceProcessingSettings {
+  return voiceProcessingPreset('speech-stability')
+}
+
+export function voiceProcessingPreset(mode: Exclude<VoiceProcessingMode, 'custom'>): VoiceProcessingSettings {
+  if (mode === 'raw') {
+    return {
+      mode,
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+    }
+  }
+  if (mode === 'balanced') {
+    return {
+      mode,
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: false,
+    }
+  }
   return {
+    mode,
     echoCancellation: true,
-    noiseSuppression: true,
-    autoGainControl: false,
+    noiseSuppression: false,
+    autoGainControl: true,
   }
 }
 
@@ -77,15 +101,16 @@ export function readVoiceProcessingSettings(): VoiceProcessingSettings {
     if (!value) return defaultVoiceProcessingSettings()
     const parsed = JSON.parse(value) as Partial<VoiceProcessingSettings>
     return {
+      mode: isVoiceProcessingMode(parsed.mode) ? parsed.mode : 'custom',
       echoCancellation: typeof parsed.echoCancellation === 'boolean'
         ? parsed.echoCancellation
-        : true,
+        : defaultVoiceProcessingSettings().echoCancellation,
       noiseSuppression: typeof parsed.noiseSuppression === 'boolean'
         ? parsed.noiseSuppression
-        : true,
+        : defaultVoiceProcessingSettings().noiseSuppression,
       autoGainControl: typeof parsed.autoGainControl === 'boolean'
         ? parsed.autoGainControl
-        : false,
+        : defaultVoiceProcessingSettings().autoGainControl,
     }
   } catch {
     return defaultVoiceProcessingSettings()
@@ -236,6 +261,10 @@ function assertDisplayCaptureAvailable() {
 
 function getLocalStorage(): Storage | null {
   return typeof globalThis.localStorage === 'undefined' ? null : globalThis.localStorage
+}
+
+function isVoiceProcessingMode(value: unknown): value is VoiceProcessingMode {
+  return value === 'balanced' || value === 'speech-stability' || value === 'raw' || value === 'custom'
 }
 
 export function buildAudioConstraints(

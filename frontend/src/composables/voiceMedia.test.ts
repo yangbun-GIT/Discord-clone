@@ -5,6 +5,7 @@ import {
   normalizeMediaError,
   readVoiceProcessingSettings,
   VoiceMediaError,
+  voiceProcessingPreset,
   writeVoiceProcessingSettings,
   type VoiceConstraintSupport,
 } from './voiceMedia'
@@ -92,32 +93,57 @@ describe('voice processing settings', () => {
     latency: true,
   }
 
-  it('defaults to echo and noise processing without forcing auto gain', () => {
+  it('defaults to speech-stability processing for sustained speech', () => {
     globalThis.localStorage.clear()
 
     expect(readVoiceProcessingSettings()).toEqual({
+      mode: 'speech-stability',
       echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: false,
+      noiseSuppression: false,
+      autoGainControl: true,
     })
   })
 
   it('persists user-selected processing toggles', () => {
     writeVoiceProcessingSettings({
+      mode: 'custom',
       echoCancellation: false,
       noiseSuppression: true,
       autoGainControl: true,
     })
 
     expect(readVoiceProcessingSettings()).toEqual({
+      mode: 'custom',
       echoCancellation: false,
       noiseSuppression: true,
       autoGainControl: true,
     })
   })
 
+  it('provides named processing presets', () => {
+    expect(voiceProcessingPreset('balanced')).toEqual({
+      mode: 'balanced',
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: false,
+    })
+    expect(voiceProcessingPreset('speech-stability')).toEqual({
+      mode: 'speech-stability',
+      echoCancellation: true,
+      noiseSuppression: false,
+      autoGainControl: true,
+    })
+    expect(voiceProcessingPreset('raw')).toEqual({
+      mode: 'raw',
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+    })
+  })
+
   it('builds microphone constraints from browser support and user settings', () => {
     expect(buildAudioConstraints(fullSupport, {
+      mode: 'custom',
       echoCancellation: false,
       noiseSuppression: true,
       autoGainControl: false,

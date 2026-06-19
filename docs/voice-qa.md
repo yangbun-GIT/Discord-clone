@@ -142,6 +142,31 @@ Known 2026-06-19 real-device issue:
 - Treat this as a blocker for real voice completion until a manual speech-quality
   pass succeeds.
 
+Stage M1 remediation note:
+
+- The clone no longer relies on only individual browser audio-processing toggles.
+  User settings now provide three microphone processing presets:
+  - Speech stability: echo cancellation on, noise suppression off, auto gain on.
+    Use this first when sustained vowels are chopped.
+  - Balanced: echo cancellation on, noise suppression on, auto gain off.
+  - Near raw: echo cancellation, noise suppression, and auto gain all off for
+    isolating browser-processing artifacts.
+- Changes apply the next time the user joins a voice channel.
+- The app's local VAD is diagnostic-only. It updates the input meter and speaking
+  state but does not gate or disable outgoing microphone audio.
+
+Manual sustained-vowel QA:
+
+1. Open User Settings -> Voice & Video.
+2. Select Speech stability.
+3. Leave and rejoin the voice channel so microphone constraints are reacquired.
+4. Say "아" continuously for at least 10 seconds.
+5. Repeat with a normal Korean sentence and a short English sentence.
+6. If sustained audio is still chopped, test Balanced and Near raw, leaving and
+   rejoining after each preset change.
+7. Record only pass/fail notes and visible quality stats. Do not record raw audio,
+   device labels, ICE candidates, TURN credentials, or user tokens.
+
 ## Call Recording QA 2026-06-19
 
 The user-provided call recording is stored only in the ignored local folder

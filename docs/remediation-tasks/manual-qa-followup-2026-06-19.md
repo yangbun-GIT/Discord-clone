@@ -58,6 +58,8 @@
 
 ### Stage M1: Real Speech Dropout Diagnostics And Fix
 
+Status: implemented, pending real-microphone sustained-vowel manual QA.
+
 Owner files:
 
 - `frontend/src/composables/voiceMedia.ts`
@@ -70,12 +72,20 @@ Owner files:
 Tasks:
 
 1. Inspect current audio constraints, track enabled state, and VAD interaction.
+   - Completed: VAD only drives input meter/speaking state and does not disable or
+     gate outgoing microphone tracks.
 2. Confirm no app code gates outgoing microphone audio based on VAD/speaking state.
+   - Completed.
 3. Add or tune visible audio-processing options for echo cancellation, noise
    suppression, auto gain, and optionally default processing presets.
+   - Completed: settings now expose speech-stability, balanced, and near-raw
+     processing presets. The default is speech-stability, which disables browser
+     noise suppression and enables auto gain to reduce sustained-syllable chopping.
 4. Add a manual sustained-vowel QA script with expected pass criteria.
+   - Completed in `docs/voice-qa.md`.
 5. Record selected processing values in local preferences without logging device
    labels or raw audio.
+   - Completed.
 
 Acceptance:
 
@@ -83,6 +93,15 @@ Acceptance:
   under at least one documented local processing preset.
 - Short words and normal sentences remain intelligible.
 - Mute/unmute still works and is reflected remotely.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run test -- --run src/composables/voiceMedia.test.ts`
+  passed.
+- `npm --prefix frontend run build` passed.
+- Real sustained-vowel listening remains a manual gate because fake-device tests do
+  not prove speech quality.
 
 ### Stage M2: Screen-Share Participant Composition
 

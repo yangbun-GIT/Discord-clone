@@ -2132,7 +2132,25 @@ select:focus-visible {
 
 .settings-radio-list span {
   min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.settings-radio-list strong {
+  min-width: 0;
   overflow: hidden;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-radio-list small {
+  min-width: 0;
+  overflow: hidden;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -17,8 +17,10 @@ import {
 import { useI18n } from '../i18n'
 import {
   readVoiceProcessingSettings,
+  voiceProcessingPreset,
   writeVoiceProcessingSettings,
   type VoiceConstraintSupport,
+  type VoiceProcessingMode,
   type VoiceProcessingSettings,
 } from '../composables/voiceMedia'
 import type { User, UserPresenceStatus } from '../types'
@@ -100,15 +102,21 @@ const audioProcessingSummary = computed(() => {
   return enabled.length ? enabled.join(' / ') : t('common.status.unavailable')
 })
 
-function setVoiceProcessingOption(key: keyof VoiceProcessingSettings, enabled: boolean) {
+function setVoiceProcessingOption(key: Exclude<keyof VoiceProcessingSettings, 'mode'>, enabled: boolean) {
   voiceProcessing.value = {
     ...voiceProcessing.value,
+    mode: 'custom',
     [key]: enabled,
   }
   writeVoiceProcessingSettings(voiceProcessing.value)
 }
 
-function handleVoiceProcessingChange(key: keyof VoiceProcessingSettings, event: Event) {
+function setVoiceProcessingMode(mode: Exclude<VoiceProcessingMode, 'custom'>) {
+  voiceProcessing.value = voiceProcessingPreset(mode)
+  writeVoiceProcessingSettings(voiceProcessing.value)
+}
+
+function handleVoiceProcessingChange(key: Exclude<keyof VoiceProcessingSettings, 'mode'>, event: Event) {
   const target = event.target
   if (!(target instanceof HTMLInputElement)) return
   setVoiceProcessingOption(key, target.checked)
@@ -265,6 +273,47 @@ function handleVoiceProcessingChange(key: keyof VoiceProcessingSettings, event: 
         <section class="settings-card">
           <h2>{{ t('settings.audioProcessing') }}</h2>
           <p>{{ t('settings.audioProcessingDescription') }}</p>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.audioProcessingPreset')">
+            <label>
+              <input
+                type="radio"
+                name="voice-processing-mode"
+                value="speech-stability"
+                :checked="voiceProcessing.mode === 'speech-stability'"
+                @change="setVoiceProcessingMode('speech-stability')"
+              />
+              <span>
+                <strong>{{ t('settings.audioPresetSpeech') }}</strong>
+                <small>{{ t('settings.audioPresetSpeechDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="voice-processing-mode"
+                value="balanced"
+                :checked="voiceProcessing.mode === 'balanced'"
+                @change="setVoiceProcessingMode('balanced')"
+              />
+              <span>
+                <strong>{{ t('settings.audioPresetBalanced') }}</strong>
+                <small>{{ t('settings.audioPresetBalancedDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="voice-processing-mode"
+                value="raw"
+                :checked="voiceProcessing.mode === 'raw'"
+                @change="setVoiceProcessingMode('raw')"
+              />
+              <span>
+                <strong>{{ t('settings.audioPresetRaw') }}</strong>
+                <small>{{ t('settings.audioPresetRawDescription') }}</small>
+              </span>
+            </label>
+          </div>
           <label class="settings-toggle">
             <span>{{ t('settings.echoCancellation') }}</span>
             <input

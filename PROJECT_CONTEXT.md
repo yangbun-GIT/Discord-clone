@@ -232,6 +232,14 @@ remote audio, and owner/member invite permission browser QA. An API permission
 check on 2026-06-19 confirmed backend invite enforcement: owner invite creation
 returns `201`, member invite creation returns `403`.
 
+Manual QA follow-up Stage M1 is implemented in code. Voice settings now expose
+speech-stability, balanced, and near-raw browser audio-processing presets; the
+default speech-stability preset disables browser noise suppression and enables auto
+gain to reduce sustained-syllable chopping. The local VAD remains diagnostic-only
+and does not gate outgoing microphone audio. Focused frontend voice media tests,
+frontend lint, and production build passed. Real sustained-vowel listening remains
+a manual gate.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
