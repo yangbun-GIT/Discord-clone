@@ -241,9 +241,14 @@ class DmRepository:
             user.id,
         )
         dms: list[DmRead] = []
+        seen_recipient_sets: set[tuple[int, ...]] = set()
         for row in rows:
             dm = await self.get_dm_for_user(int(row["dm_id"]), user.id)
             if dm is not None:
+                recipient_key = tuple(sorted(dm.recipient_ids))
+                if recipient_key in seen_recipient_sets:
+                    continue
+                seen_recipient_sets.add(recipient_key)
                 dms.append(dm)
         return dms
 

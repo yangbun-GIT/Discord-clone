@@ -65,6 +65,10 @@ describe('dm visibility policy', () => {
     expect(cleanVisibleRelationships([friend, { ...friend, username: 'QA Smoke' }])).toEqual([friend])
   })
 
+  it('deduplicates relationships by user id', () => {
+    expect(cleanVisibleRelationships([friend, { ...friend, status: 'idle' }])).toEqual([friend])
+  })
+
   it('filters visual-test participants and messages inside a DM', () => {
     const cleanDm = cleanVisibleDirectMessage(dm)
 
@@ -76,6 +80,18 @@ describe('dm visibility policy', () => {
 
   it('drops whole direct messages that are visual-test surfaces', () => {
     expect(cleanVisibleDirectMessages([dm, { ...dm, display_name: 'Stage 13 Smoke' }])).toHaveLength(1)
+  })
+
+  it('deduplicates one-to-one DMs by recipient set', () => {
+    const cleanDm = cleanVisibleDirectMessage(dm)
+    expect(cleanVisibleDirectMessages([
+      dm,
+      {
+        ...dm,
+        id: 9002,
+        unread_count: 5,
+      },
+    ])).toEqual(cleanDm ? [cleanDm] : [])
   })
 
   it('recognizes visible and hidden messages', () => {

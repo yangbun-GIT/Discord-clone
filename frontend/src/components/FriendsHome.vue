@@ -298,7 +298,7 @@ watch(
               class="friend-request-group"
               :aria-label="group.label"
             >
-              <h3 class="friend-group-heading">{{ group.label }}</h3>
+              <h3 v-if="activeTab === 'pending'" class="friend-group-heading">{{ group.label }}</h3>
               <article
                 v-for="friend in group.friends"
                 :key="friend.id"

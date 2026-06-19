@@ -90,10 +90,14 @@ export const useDmStore = defineStore('dms', () => {
   function upsertDm(dm: DirectMessage) {
     const cleanedDm = cleanVisibleDirectMessage(normalizeDmIdentity(dm))
     if (!cleanedDm) return
-    const exists = dms.value.some((item) => item.id === cleanedDm.id)
+    const recipientKey = dmRecipientKey(cleanedDm)
+    const exists = dms.value.some((item) => item.id === cleanedDm.id || dmRecipientKey(item) === recipientKey)
     dms.value = exists
-      ? dms.value.map((item) => (item.id === cleanedDm.id ? cleanedDm : item))
+      ? dms.value.map((item) => (
+          item.id === cleanedDm.id || dmRecipientKey(item) === recipientKey ? cleanedDm : item
+        ))
       : [cleanedDm, ...dms.value]
+    dms.value = cleanVisibleDirectMessages(dms.value)
   }
 
   function upsertRelationship(relationship: Friend) {
@@ -161,6 +165,10 @@ export const useDmStore = defineStore('dms', () => {
       is_group: dm.participants.length > 2,
       member_count: dm.participants.length,
     }
+  }
+
+  function dmRecipientKey(dm: DirectMessage) {
+    return dm.recipient_ids.slice().sort((left, right) => left - right).join(':')
   }
 
   function setCurrentUserId(userId: number | null) {

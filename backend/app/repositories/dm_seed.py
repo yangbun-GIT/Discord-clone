@@ -36,6 +36,8 @@ DEMO_DM_MESSAGES = [
     (706, "마이크 들어오면 테두리로만 표시하면 좋겠어."),
 ]
 
+DEMO_WORKSPACE_LOCK_OFFSET = 30_000_000_000_000
+
 
 async def ensure_dm_repository_user(database: Any, user: UserPublic) -> None:
     await database.execute(
@@ -52,6 +54,26 @@ async def ensure_dm_repository_user(database: Any, user: UserPublic) -> None:
 
 
 async def ensure_postgres_dm_demo_workspace(
+    *,
+    database: Any,
+    id_generator: IdGenerator,
+    user_id: int,
+    find_existing_dm: FindExistingDm,
+) -> None:
+    lock_key = DEMO_WORKSPACE_LOCK_OFFSET + user_id
+    await database.execute("SELECT pg_advisory_lock($1)", lock_key)
+    try:
+        await _ensure_postgres_dm_demo_workspace_locked(
+            database=database,
+            id_generator=id_generator,
+            user_id=user_id,
+            find_existing_dm=find_existing_dm,
+        )
+    finally:
+        await database.execute("SELECT pg_advisory_unlock($1)", lock_key)
+
+
+async def _ensure_postgres_dm_demo_workspace_locked(
     *,
     database: Any,
     id_generator: IdGenerator,

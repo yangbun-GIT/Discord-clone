@@ -2085,6 +2085,16 @@ Completed Stage 2 bridge work:
   one connected peer, and the opposite participant in the voice workspace. A
   repeated Vue warning from an unresolved `<Mic>` icon in `App.vue` was fixed by
   importing the lucide `Mic` component.
+- A follow-up two-profile Friends/DM QA pass fixed duplicate private-surface
+  rendering and initial presence sync. PostgreSQL demo DM seeding now takes a
+  user-scoped advisory lock so parallel relationship/DM workspace loads cannot
+  create duplicate demo one-to-one DMs; backend DM listing and frontend DM
+  visibility also dedupe by recipient set. Friends now renders the total heading
+  once outside pending request subgroups, and the app sends the current presence
+  after the initial gateway connection so accepted friends show online without a
+  manual status toggle. Manual browser reload on the A/B HTTPS tabs showed one
+  Tae/Joon/Mina row each, one `친구 - 1` heading, and the opposite QA friend online
+  on both sides.
 
 After each stage or meaningful feature:
 

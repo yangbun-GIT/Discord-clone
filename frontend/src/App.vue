@@ -279,6 +279,14 @@ watch(
   },
 )
 
+watch(
+  () => gatewayStatus.value,
+  (status) => {
+    if (status !== 'connected' || !session.user) return
+    updatePresence({ status: userPresenceStatus.value, activity: null })
+  },
+)
+
 async function openWorkspace() {
   if (!session.token || !session.user) return
   const restoredLocation = navigation.readPersistedWorkspaceLocation(session.user.id)

@@ -41,5 +41,11 @@ async def test_demo_workspace_does_not_seed_self_relationship() -> None:
         for query, args in database.executed
         if "INSERT INTO relationships" in query
     ]
+    lock_queries = [
+        query
+        for query, _ in database.executed
+        if "pg_advisory_lock" in query or "pg_advisory_unlock" in query
+    ]
+    assert lock_queries == ["SELECT pg_advisory_lock($1)", "SELECT pg_advisory_unlock($1)"]
     assert relationship_inserts
     assert all(args[0] != args[1] for args in relationship_inserts)
