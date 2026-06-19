@@ -179,6 +179,23 @@ Voice participant consistency update:
   `browserErrors: 0`. Backend logs for the post-fix window showed no new
   `voice signal rejected` entries.
 
+WebRTC signaling collision update:
+
+- Date: 2026-06-20.
+- User-visible issue: the B account could show
+  `Failed to execute 'createAnswer' on 'RTCPeerConnection'` when duplicate, stale,
+  or glare-related voice offers reached a peer after its signaling state had moved
+  past `have-remote-offer`.
+- Fix: `frontend/src/composables/voicePeerConnections.ts` now queues incoming
+  voice signals per peer, rechecks active channel/user state before each queued
+  operation, ignores stale remote descriptions, creates answers only from
+  answerable states, and applies answers only while a local offer is pending.
+- Verification: frontend lint, frontend tests, production build, and
+  `CHROME_EXECUTABLE="C:/Program Files/Google/Chrome/Application/chrome.exe"
+  npm run smoke:realtime:browser` passed with `voiceRemoteAudioSinks: 1`,
+  `voicePeerDetailVisible: true`, `voiceRejoinRecovered: true`, and
+  `browserErrors: 0`.
+
 Manual two-account product-flow result:
 
 - Date: 2026-06-19.

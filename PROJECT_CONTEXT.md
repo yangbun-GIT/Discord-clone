@@ -198,6 +198,15 @@ logs caused by offers sent before the sender was registered in the voice channel
 `npm run smoke:realtime:browser` passed after the change with one remote audio
 sink, visible peer detail, voice rejoin recovery, and zero browser errors.
 
+A follow-up 2026-06-20 WebRTC signaling hardening pass fixed a manual B-account
+warning where duplicate or stale offers could call `RTCPeerConnection.createAnswer`
+outside `have-remote-offer`/`have-local-pranswer`. `voicePeerConnections.ts` now
+serializes incoming offer/answer/ICE handling per peer, rechecks the active
+channel/user before processing queued signals, ignores stale descriptions that no
+longer fit the current signaling state, and applies answers only while a local
+offer is pending. Frontend lint, frontend tests, production build, and
+`npm run smoke:realtime:browser` passed with `browserErrors: 0`.
+
 The same recheck also clarified browser QA setup and voice architecture direction.
 The two user tabs may live in separate Chrome profiles; the current local mapping is
 `minruel` for `localhost:5173` and `jbnu.ac.kr` for `127.0.0.1:5173`, so future

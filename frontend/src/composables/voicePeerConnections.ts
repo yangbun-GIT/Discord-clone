@@ -85,10 +85,46 @@ function waitForStableSignaling(connection: RTCPeerConnection) {
   })
 }
 
+function canCreateAnswer(connection: RTCPeerConnection) {
+  return (
+    connection.signalingState === 'have-remote-offer'
+    || connection.signalingState === 'have-local-pranswer'
+  )
+}
+
+function canApplyAnswer(connection: RTCPeerConnection) {
+  return (
+    connection.signalingState === 'have-local-offer'
+    || connection.signalingState === 'have-remote-pranswer'
+  )
+}
+
+async function rollbackLocalDescription(connection: RTCPeerConnection) {
+  try {
+    await connection.setLocalDescription({ type: 'rollback' } as RTCSessionDescriptionInit)
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function setRemoteDescriptionIfValid(
+  connection: RTCPeerConnection,
+  description: Record<string, unknown>,
+) {
+  try {
+    await connection.setRemoteDescription(toDescription(description))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   const peers = new Map<PeerKey, PeerEntry>()
   const retryTimers = new Map<PeerKey, number>()
   const retryCounts = new Map<PeerKey, number>()
+  const signalQueues = new Map<PeerKey, Promise<void>>()
 
   function isActivePeer(peer: Pick<PeerEntry, 'channelId'>) {
     return options.getActiveOptions()?.channelId === peer.channelId
@@ -123,6 +159,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     peer.connection.close()
     peer.stream.getTracks().forEach((track) => track.stop())
     peers.delete(key)
+    signalQueues.delete(key)
     removeRemoteStream(peer)
   }
 
@@ -352,47 +389,65 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     }
   }
 
+  async function runQueuedSignal(peer: PeerEntry, task: () => Promise<void>) {
+    const key = peerKey(peer.channelId, peer.userId)
+    const previous = signalQueues.get(key) ?? Promise.resolve()
+    const current = previous.catch(() => undefined).then(async () => {
+      if (peers.get(key) !== peer || peer.connection.connectionState === 'closed') return
+      await task()
+    })
+    signalQueues.set(key, current.catch(() => undefined))
+    await current
+  }
+
   async function handleSignal(signal: VoiceSignal) {
     const activeOptions = options.getActiveOptions()
     if (!activeOptions || signal.target_user_id !== activeOptions.currentUserId) return
     if (signal.channel_id !== activeOptions.channelId) return
 
     const peer = ensurePeer(signal.from_user_id, signal.from_username)
-    if (signal.type === 'screen') {
-      replaceRemoteStream(peer, { sharingScreen: Boolean(signal.screen_sharing) })
-      return
-    }
-    if (signal.type === 'offer' && signal.description) {
-      if (peer.connection.signalingState !== 'stable') {
-        if (activeOptions.currentUserId < signal.from_user_id) return
-        await peer.connection.setLocalDescription({ type: 'rollback' } as RTCSessionDescriptionInit)
-      }
-      await peer.connection.setRemoteDescription(toDescription(signal.description))
-      await flushPendingCandidates(peer)
-      const answer = await peer.connection.createAnswer()
-      await peer.connection.setLocalDescription(answer)
-      activeOptions.sendSignal({
-        channel_id: activeOptions.channelId,
-        target_user_id: signal.from_user_id,
-        type: 'answer',
-        description: { type: answer.type, sdp: answer.sdp ?? '' },
-      })
-      return
-    }
-    if (signal.type === 'answer' && signal.description) {
-      if (peer.connection.signalingState === 'stable') return
-      await peer.connection.setRemoteDescription(toDescription(signal.description))
-      await flushPendingCandidates(peer)
-      return
-    }
-    if (signal.type === 'ice' && signal.candidate) {
-      const candidate = toIceCandidate(signal.candidate)
-      if (!peer.connection.remoteDescription) {
-        peer.pendingCandidates.push(candidate)
+    await runQueuedSignal(peer, async () => {
+      const currentOptions = options.getActiveOptions()
+      if (!currentOptions || signal.target_user_id !== currentOptions.currentUserId) return
+      if (signal.channel_id !== currentOptions.channelId || peer.channelId !== currentOptions.channelId) return
+
+      if (signal.type === 'screen') {
+        replaceRemoteStream(peer, { sharingScreen: Boolean(signal.screen_sharing) })
         return
       }
-      await peer.connection.addIceCandidate(candidate)
-    }
+      if (signal.type === 'offer' && signal.description) {
+        if (peer.connection.signalingState !== 'stable') {
+          if (currentOptions.currentUserId < signal.from_user_id) return
+          if (!(await rollbackLocalDescription(peer.connection))) return
+        }
+        if (!(await setRemoteDescriptionIfValid(peer.connection, signal.description))) return
+        if (!canCreateAnswer(peer.connection)) return
+        await flushPendingCandidates(peer)
+        const answer = await peer.connection.createAnswer()
+        await peer.connection.setLocalDescription(answer)
+        currentOptions.sendSignal({
+          channel_id: currentOptions.channelId,
+          target_user_id: signal.from_user_id,
+          type: 'answer',
+          description: { type: answer.type, sdp: answer.sdp ?? '' },
+        })
+        return
+      }
+      if (signal.type === 'answer' && signal.description) {
+        if (!canApplyAnswer(peer.connection)) return
+        if (!(await setRemoteDescriptionIfValid(peer.connection, signal.description))) return
+        await flushPendingCandidates(peer)
+        return
+      }
+      if (signal.type === 'ice' && signal.candidate) {
+        const candidate = toIceCandidate(signal.candidate)
+        if (!peer.connection.remoteDescription) {
+          peer.pendingCandidates.push(candidate)
+          return
+        }
+        await peer.connection.addIceCandidate(candidate)
+      }
+    })
   }
 
   function closeAll() {
