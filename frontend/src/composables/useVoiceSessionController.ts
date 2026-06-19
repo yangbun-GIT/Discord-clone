@@ -36,6 +36,7 @@ interface StoredVoiceRejoin {
 
 export function useVoiceSessionController(options: VoiceSessionControllerOptions) {
   const isDeafened = ref(false)
+  const muteStateBeforeDeafen = ref<boolean | null>(null)
   const pendingVoiceSwitchChannelId = ref<number | null>(null)
   const pendingVoiceRejoinChannelId = ref<number | null>(null)
   const skipVoiceSwitchConfirm = ref(browserStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
@@ -164,6 +165,8 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       })
     }
     options.voiceRtc.disconnect()
+    isDeafened.value = false
+    muteStateBeforeDeafen.value = null
     options.guilds.setVoiceConnected(false)
     clearVoiceRejoinRecovery()
   }
@@ -271,11 +274,28 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
   }
 
   function handleToggleDeafen() {
-    isDeafened.value = !isDeafened.value
+    if (!isDeafened.value) {
+      muteStateBeforeDeafen.value = options.voiceRtc.isMuted.value
+      options.voiceRtc.setMuted(true)
+      isDeafened.value = true
+      publishCurrentVoiceState()
+      return
+    }
+
+    const shouldRestoreUnmuted = muteStateBeforeDeafen.value === false
+    isDeafened.value = false
+    muteStateBeforeDeafen.value = null
+    if (shouldRestoreUnmuted) {
+      options.voiceRtc.setMuted(false)
+    }
     publishCurrentVoiceState()
   }
 
   function handleToggleMute() {
+    if (isDeafened.value) {
+      publishCurrentVoiceState()
+      return
+    }
     options.voiceRtc.toggleMute()
     publishCurrentVoiceState()
   }

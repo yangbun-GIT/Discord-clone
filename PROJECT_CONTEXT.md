@@ -1926,11 +1926,15 @@ Completed Stage 2 bridge work:
   clear stopped remote video; same-user voice reloads show an app-owned rejoin
   prompt; LAN HTTPS and TURN readiness checks are documented and scriptable;
   friend-request tabs, DM display normalization, per-recipient invite DM delivery,
-  deafen-to-remote-audio muting, and owner/member invite permission browser QA are
-  covered by frontend tests and `scripts/realtime_browser_smoke.mjs`. Remaining
-  release gates are real sustained-vowel microphone quality, real screen picker
-  layout with multiple participants, different-PC HTTPS LAN media, and TURN/NAT
-  internet voice with real credentials.
+  Discord-like deafen behavior, and owner/member invite permission browser QA are
+  covered by frontend tests and `scripts/realtime_browser_smoke.mjs`. The M9
+  recheck fixed the missing deafen microphone behavior: deafen now disables the
+  local microphone track, mutes remote playback locally, disables the manual mute
+  button while deafened, restores the previous manual mute state on undeafen, and
+  keeps screen sharing independent. Remaining release gates are real
+  sustained-vowel microphone quality, real screen picker layout with multiple
+  participants, different-PC HTTPS LAN media, and TURN/NAT internet voice with real
+  credentials.
 
 After each stage or meaningful feature:
 

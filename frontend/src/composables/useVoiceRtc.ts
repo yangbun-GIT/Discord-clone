@@ -219,6 +219,7 @@ export function useVoiceRtc() {
     qualityStats,
     connect,
     disconnect,
+    setMuted,
     toggleMute,
     toggleScreenShare,
     syncParticipants,

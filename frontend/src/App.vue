@@ -108,6 +108,10 @@ const showWorkspaceTopbar = computed(() => navigation.destination !== 'friends')
 const voiceConnectedElsewhere = computed(() =>
   Boolean(guilds.voiceConnected && activeGuild.value && guilds.connectedVoiceGuildId !== activeGuild.value.id),
 )
+const localMicrophoneTracksMuted = computed(() => {
+  const tracks = voiceRtc.localStream.value?.getAudioTracks() ?? []
+  return voiceRtc.isMuted.value && tracks.length > 0 && tracks.every((track) => !track.enabled)
+})
 const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
@@ -866,6 +870,7 @@ async function handleSendInviteToFriend(friendId: number) {
       'friends-mode': navigation.destination === 'friends',
     }"
     :data-gateway-status="gatewayStatus"
+    :data-local-microphone-muted="localMicrophoneTracksMuted"
     :aria-label="t('app.aria.workspace')"
     @mousedown="handleWorkspacePointerDown"
     @contextmenu.prevent="openGlobalContextMenu"

@@ -437,12 +437,17 @@ Tasks:
    - Completed: browser smoke toggles undeafen and verifies remote audio elements
      become unmuted without reconnecting.
 4. Keep microphone mute semantics separate from deafen semantics.
-   - Completed: deafen mutes only local remote-audio playback; microphone mute
-     remains controlled by the existing mute button.
+   - Corrected after recheck: the first implementation muted only remote playback.
+     Deafen now also disables the local microphone track like Discord, remembers
+     the pre-deafen manual mute state, restores that state on undeafen, and keeps
+     the manual mute button disabled while deafened.
+5. Keep screen sharing independent from deafen.
+   - Completed after recheck: deafen no longer disables the screen-share button.
 
 Acceptance:
 
 - With deafen enabled, user does not hear remote participants.
+- With deafen enabled, the local microphone does not transmit.
 - Remote participants do not lose their connection because one user deafened.
 - UI communicates deafen state clearly in bottom panel and voice workspace.
 
@@ -453,6 +458,9 @@ Verification:
 - `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
   `remoteAudioMutedWhileDeafened: true` and
   `remoteAudioUnmutedAfterUndeafen: true`.
+- Recheck verification passed with `localMicrophoneMutedWhileDeafened: true`,
+  `localMicrophoneRestoredAfterUndeafen: true`, and
+  `muteButtonDisabledWhileDeafened: true`.
 
 ### Stage M10: Invite Permission Browser QA
 

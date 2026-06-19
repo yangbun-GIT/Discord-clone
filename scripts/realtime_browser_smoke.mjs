@@ -293,8 +293,12 @@ async function run() {
     await openVoiceWorkspace(pageB.page)
     await pageA.page.waitForTimeout(9_000)
 
-    await clickVoiceAction(pageA.page, /Mute microphone/i)
     await clickVoiceAction(pageA.page, /Deafen/i)
+    await pageA.page.waitForFunction(
+      () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'true',
+      null,
+      { timeout: 10_000 },
+    )
     await pageA.page.waitForFunction(
       () => {
         const audioElements = [...document.querySelectorAll('.voice-audio-sinks audio')]
@@ -306,7 +310,21 @@ async function run() {
     const remoteAudioMutedWhileDeafened = await pageA.page.locator('.voice-audio-sinks audio').evaluateAll((audios) =>
       audios.length >= 1 && audios.every((audio) => audio.muted),
     )
+    const localMicrophoneMutedWhileDeafened = await pageA.page
+      .locator('.app-shell')
+      .getAttribute('data-local-microphone-muted') === 'true'
+    const muteButtonDisabledWhileDeafened = await pageA.page.evaluate(() => {
+      const buttons = [...document.querySelectorAll('button')]
+        .filter((button) => /unmute microphone|mute microphone/i.test(button.getAttribute('aria-label') ?? ''))
+        .filter((button) => Boolean(button.offsetParent))
+      return buttons.length >= 1 && buttons.every((button) => button.disabled)
+    })
     await clickVoiceAction(pageA.page, /Undeafen/i)
+    await pageA.page.waitForFunction(
+      () => document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted') === 'false',
+      null,
+      { timeout: 10_000 },
+    )
     await pageA.page.waitForFunction(
       () => {
         const audioElements = [...document.querySelectorAll('.voice-audio-sinks audio')]
@@ -318,6 +336,10 @@ async function run() {
     const remoteAudioUnmutedAfterUndeafen = await pageA.page.locator('.voice-audio-sinks audio').evaluateAll((audios) =>
       audios.length >= 1 && audios.every((audio) => !audio.muted),
     )
+    const localMicrophoneRestoredAfterUndeafen = await pageA.page
+      .locator('.app-shell')
+      .getAttribute('data-local-microphone-muted') === 'false'
+    await clickVoiceAction(pageA.page, /Mute microphone/i)
     await clickVoiceAction(pageA.page, /Deafen/i)
     await clickVoiceAction(pageA.page, /^Share screen$/i)
     await pageA.page.waitForTimeout(2_500)
@@ -383,6 +405,9 @@ async function run() {
       deafenPressed: deafenPressed === 'true',
       remoteAudioMutedWhileDeafened,
       remoteAudioUnmutedAfterUndeafen,
+      localMicrophoneMutedWhileDeafened,
+      localMicrophoneRestoredAfterUndeafen,
+      muteButtonDisabledWhileDeafened,
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
       localScreenPreviewVideos,
       remoteScreenVideos,
@@ -410,6 +435,9 @@ async function run() {
       || !result.deafenPressed
       || !result.remoteAudioMutedWhileDeafened
       || !result.remoteAudioUnmutedAfterUndeafen
+      || !result.localMicrophoneMutedWhileDeafened
+      || !result.localMicrophoneRestoredAfterUndeafen
+      || !result.muteButtonDisabledWhileDeafened
       || !result.fakeScreenShareVisible
       || result.localScreenPreviewVideos < 1
       || result.remoteScreenVideos < 1

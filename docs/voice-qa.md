@@ -165,9 +165,14 @@ cover these items.
    and outbound bitrate.
 6. Toggle mute/unmute on each side and confirm audio state is reflected on the other
    side.
-7. Refresh one client while the other remains connected and confirm the late joiner
+7. Toggle deafen on one side and confirm both expected Discord-like effects:
+   - The deafened user cannot hear remote participants.
+   - The deafened user's microphone no longer transmits until undeafen restores the
+     previous manual mute state.
+   - Screen sharing remains available while deafened.
+8. Refresh one client while the other remains connected and confirm the late joiner
    receives the current participant snapshot.
-8. Record the result as pass/fail notes only. Do not record raw audio, media device
+9. Record the result as pass/fail notes only. Do not record raw audio, media device
    labels, ICE candidates, TURN credentials, or user tokens.
 
 Known 2026-06-19 real-device issue:
