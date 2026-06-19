@@ -12,6 +12,7 @@ import {
   getSupportedVoiceConstraints,
   normalizeMediaError,
   recordVoiceConstraintSupport,
+  VoiceMediaError,
   type VoiceConstraintSupport,
   type VoiceMediaErrorCode,
   setAudioTracksMuted,
@@ -95,11 +96,11 @@ export function useVoiceRtc() {
       startStatsLoop()
       await syncParticipants(options.participants)
     } catch (cause) {
-      const mediaError = normalizeMediaError(cause, 'microphone')
-      errorCode.value = mediaError.code
-      error.value = mediaError.message
+      const mediaError = cause instanceof VoiceMediaError ? normalizeMediaError(cause, 'microphone') : null
       disconnect()
-      throw mediaError
+      errorCode.value = mediaError?.code ?? null
+      error.value = mediaError?.message ?? (cause instanceof Error ? cause.message : 'Voice connection failed')
+      throw mediaError ?? cause
     }
   }
 
@@ -150,10 +151,10 @@ export function useVoiceRtc() {
       }
       await peerRegistry.renegotiateAllPeers()
     } catch (cause) {
-      const mediaError = normalizeMediaError(cause, 'screen')
-      errorCode.value = mediaError.code
-      error.value = mediaError.message
-      throw mediaError
+      const mediaError = cause instanceof VoiceMediaError ? normalizeMediaError(cause, 'screen') : null
+      errorCode.value = mediaError?.code ?? null
+      error.value = mediaError?.message ?? (cause instanceof Error ? cause.message : 'Screen sharing failed')
+      throw mediaError ?? cause
     }
   }
 

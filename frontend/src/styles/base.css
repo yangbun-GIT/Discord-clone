@@ -4671,7 +4671,20 @@ select:focus-visible {
 
 .voice-connection-card small,
 .voice-connection-idle small {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
   color: #9ca3af;
+}
+
+.voice-connection-card small span,
+.voice-connection-idle small span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .voice-actions {

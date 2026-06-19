@@ -853,6 +853,9 @@ The app boots in two local modes:
     offers from the lower user ID to avoid glare, applies answers and ICE candidates,
     renders remote audio through `VoiceAudioSink`, and tears down tracks/connections on
     disconnect.
+  - `voicePeerConnections.ts` keys peers by `channelId:userId`, ignores stale
+    signals from previous voice channels, queues ICE candidates until remote
+    descriptions exist, and performs one bounded failed-peer recreate attempt.
   - Mute toggles local audio track enabled state without leaving the voice channel.
   - Media capture now detects native browser audio constraint support, requests
     supported echo cancellation/noise suppression/auto gain constraints, stores only
@@ -866,6 +869,8 @@ The app boots in two local modes:
   - While connected, `useVoiceRtc()` samples `RTCPeerConnection.getStats()` every two
     seconds and the voice panel displays connected peers, RTT, inbound audio jitter,
     inbound packet loss, outbound audio bitrate, and outbound screen-share bitrate.
+  - `RemoteVoiceStream` includes `channelId`, so `App.vue` only mounts audio/video
+    sinks for the current connected voice channel.
   - `VoicePanel.vue` owns retry/open-settings/leave actions for media permission
     failures, and `SettingsView.vue` displays supported native audio processing
     without exposing media device labels.

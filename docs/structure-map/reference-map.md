@@ -630,8 +630,10 @@ Browser UI
   - Referenced by:
     - `frontend/src/composables/useVoiceRtc.ts`
   - Owns:
-    - Peer connection registry, remote stream mutation, offer/answer/ICE handling,
-      screen-share track renegotiation, and participant synchronization.
+    - Channel-scoped peer connection registry, remote stream mutation,
+      offer/answer/ICE handling, pending ICE candidate queueing, stale signal
+      filtering, bounded failed-peer retry, screen-share track renegotiation, and
+      participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:
@@ -688,9 +690,11 @@ Browser UI
   - Emits join/leave/mute/screen-share/retry/settings actions to
     `frontend/src/App.vue`.
 - `frontend/src/components/VoiceAudioSink.vue`
-  - Receives remote audio stream from `frontend/src/App.vue`/`useVoiceRtc`.
+  - Receives current-channel remote audio stream from
+    `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/VoiceVideoSink.vue`
-  - Receives remote screen/video stream from `frontend/src/App.vue`/`useVoiceRtc`.
+  - Receives current-channel remote screen/video stream from
+    `frontend/src/App.vue`/`useVoiceRtc`.
 - `frontend/src/components/SettingsView.vue`
   - Receives current user, status controls, and debug-safe voice constraint support
     from `frontend/src/App.vue`.

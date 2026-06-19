@@ -2,6 +2,7 @@ import type { VoiceQualityStats } from '../types'
 
 export interface VoiceStatsPeer {
   connection: RTCPeerConnection
+  userId: number
 }
 
 type OutboundBytesSample = {
@@ -69,7 +70,7 @@ export function createVoiceStatsCollector() {
     }
   }
 
-  async function collect(peers: Map<number, VoiceStatsPeer>) {
+  async function collect(peers: Map<string, VoiceStatsPeer>) {
     const nextStats = createEmptyQualityStats()
     nextStats.peerCount = peers.size
     nextStats.connectedPeerCount = [...peers.values()].filter(
@@ -81,7 +82,7 @@ export function createVoiceStatsCollector() {
     const audioBitrates: number[] = []
     const screenBitrates: number[] = []
 
-    for (const [userId, peer] of peers) {
+    for (const peer of peers.values()) {
       const report = await peer.connection.getStats()
       report.forEach((entry) => {
         if (entry.type === 'candidate-pair' && numericStat(entry, 'currentRoundTripTime') !== null) {
@@ -98,7 +99,7 @@ export function createVoiceStatsCollector() {
           }
         }
         if (entry.type === 'outbound-rtp') {
-          updateBitrateSamples(userId, entry, audioBitrates, screenBitrates)
+          updateBitrateSamples(peer.userId, entry, audioBitrates, screenBitrates)
         }
       })
     }

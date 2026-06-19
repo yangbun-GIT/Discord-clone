@@ -101,6 +101,10 @@
   `getUserMedia`, creates `RTCPeerConnection` instances per remote voice participant,
   exchanges offer/answer/ICE through gateway opcode 5, renders remote audio through
   hidden audio sinks, and cleans up tracks/connections on disconnect.
+- WebRTC peer lifecycle hardening completed: peer connections are scoped by
+  `channelId:userId`, stale channel signals are ignored, ICE candidates queue until
+  remote descriptions exist, failed peers get one bounded recreate attempt, and
+  current-channel audio/video sinks are filtered by `RemoteVoiceStream.channelId`.
 - ICE server config is exposed by `/api/meta/voice` from `WEBRTC_ICE_SERVERS_JSON`.
 - VAD scaffold completed: local microphone frequency sampling feeds a speaking flag
   in the voice panel.

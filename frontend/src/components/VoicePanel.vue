@@ -54,6 +54,23 @@ const presenceLabel = computed(() => {
   return t('common.status.online')
 })
 
+const voiceStatusLabel = computed(() => {
+  if (props.connectedElsewhere) return t('voice.connectedElsewhere')
+  if (props.screenSharing) return t('voice.screenLive')
+  return t('common.status.connected')
+})
+
+const connectionDetailLabel = computed(() => {
+  if (!props.signalingReady) return t('voice.gatewayRequired')
+  if (props.qualityStats.connectedPeerCount > 0) {
+    return t('voice.peerConnectedCount', { count: props.qualityStats.connectedPeerCount })
+  }
+  if (props.qualityStats.peerCount > 0) {
+    return t('voice.peerConnectingCount', { count: props.qualityStats.peerCount })
+  }
+  return props.turnConfigured ? t('voice.turnReady') : t('voice.stunOnly')
+})
+
 </script>
 
 <template>
@@ -74,7 +91,9 @@ const presenceLabel = computed(() => {
         <div>
           <span>{{ connectedGuildName ? `${connectedGuildName} / ${channel?.name ?? 'voice-room'}` : channel?.name ?? 'voice-room' }}</span>
           <small>
-            {{ connectedElsewhere ? t('voice.connectedElsewhere') : screenSharing ? t('voice.screenLive') : t('common.status.connected') }}
+            <span>{{ voiceStatusLabel }}</span>
+            <span aria-hidden="true">·</span>
+            <span>{{ connectionDetailLabel }}</span>
           </small>
         </div>
       </div>

@@ -73,8 +73,11 @@ let removeDocumentKeyDown: (() => void) | null = null
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
 const activeMessages = computed(() => guilds.activeMessages)
+const activeRemoteVoiceStreams = computed(() =>
+  voiceRtc.remoteStreams.value.filter((remote) => remote.channelId === guilds.connectedVoiceChannelId),
+)
 const remoteScreenStreams = computed(() =>
-  voiceRtc.remoteStreams.value.filter((remote) => remote.sharingScreen),
+  activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
 )
 const voiceLocationSummary = computed(() => {
   if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
@@ -1190,7 +1193,7 @@ async function copyInviteCode() {
     >
       <VoiceVideoSink
         v-for="remote in remoteScreenStreams"
-        :key="remote.userId"
+        :key="`${remote.channelId}:${remote.userId}`"
         :stream="remote.stream"
         :label="remote.username ? `${remote.username}'s screen` : `User ${remote.userId}'s screen`"
         :state="remote.connectionState"
@@ -1198,8 +1201,8 @@ async function copyInviteCode() {
     </div>
     <div class="voice-audio-sinks" aria-hidden="true">
       <VoiceAudioSink
-        v-for="remote in voiceRtc.remoteStreams.value"
-        :key="remote.userId"
+        v-for="remote in activeRemoteVoiceStreams"
+        :key="`${remote.channelId}:${remote.userId}`"
         :stream="remote.stream"
       />
     </div>

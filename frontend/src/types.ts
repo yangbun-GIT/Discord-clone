@@ -158,6 +158,7 @@ export type VoiceQualityStats = {
 }
 
 export type RemoteVoiceStream = {
+  channelId: number
   userId: number
   username: string | null
   stream: MediaStream

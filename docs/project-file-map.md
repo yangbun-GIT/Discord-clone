@@ -388,10 +388,12 @@ For ordinary implementation work:
 - `frontend/src/composables/voiceVad.ts`
   - Local AudioContext/analyser voice activity detection and input-level sampling.
 - `frontend/src/composables/voicePeerConnections.ts`
-  - Peer connection registry, offer/answer/ICE handling, remote stream tracking,
-    participant sync, and peer renegotiation.
+  - Channel-scoped peer connection registry, offer/answer/ICE handling, pending
+    candidate queueing, stale-signal filtering, remote stream tracking,
+    participant sync, retry, and peer renegotiation.
 - `frontend/src/composables/voiceStats.ts`
-  - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`.
+  - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`;
+    consumes channel-scoped peer registry entries.
 - `frontend/src/composables/useGlobalNotice.ts`
   - App notice state, timeout, and dismissal behavior.
 - `frontend/src/composables/useContextMenuController.ts`

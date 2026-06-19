@@ -1126,12 +1126,45 @@ Tasks:
 9. Add screen-share sender replacement tests or manual smoke steps.
 10. Keep remote audio/video sinks mounted only while streams are live.
 
+Discovered C6 sub-items:
+
+- C6-a: Media error codes were cleared by `disconnect()` when microphone capture
+  failed. Fixed by preserving typed media error state after cleanup.
+- C6-b: Two-session voice QA cannot use two default dev sessions because
+  `/api/dev/session` defaults to the same user ID. Fixed the verification path by
+  creating distinct dev user IDs, creating a temporary guild, and joining the second
+  user through an invite before voice smoke.
+
 Verification:
 
 - Two-session voice join/leave.
 - Mute/deafen toggles.
 - Screen share start/stop.
 - Peer disconnect/reconnect.
+
+Result 2026-06-19:
+
+- `voicePeerConnections.ts` now keys peers by `channelId:userId`, ignores stale
+  voice signals from previous channels, queues ICE candidates until a remote
+  description exists, and tears down remote streams by channel scope.
+- Failed peer connections schedule one bounded recreate attempt; intentional
+  participant removal and disconnect paths close peer connections and remove remote
+  streams without retry.
+- `RemoteVoiceStream` now carries `channelId`, and `App.vue` renders audio/video
+  sinks only for the currently connected voice channel.
+- `VoicePanel.vue` now uses the already collected WebRTC quality stats to display
+  signaling/STUN/TURN and peer connection status instead of passing those props
+  unused.
+- Verification passed:
+  - `npm --prefix frontend run lint`
+  - `npm --prefix frontend run test`
+  - `npm --prefix frontend run build`
+  - Playwright/system Chrome two-user smoke with distinct dev user IDs, temporary
+    shared guild/invite, fake microphone, voice join for both users, remote audio
+    sink count 1, peer detail visible, mute/deafen toggles, and fake screen-share
+    path visible.
+- Real-device audio quality and real screen picker behavior remain manual by design;
+  fake-device smoke only proves code path and signaling.
 
 ### Stage C7: TURN And LAN Deployment Readiness
 
