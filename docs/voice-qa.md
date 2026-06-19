@@ -100,12 +100,13 @@ Use this when the local stack is running through Docker Compose.
    ```
 
    The script writes `certs/lan-dev.pfx` and `certs/lan-dev-root-ca.cer`, then
-   prints the trust thumbprint. The `certs/` folder is ignored by Git.
+   prints the Root CA thumbprint and the server certificate thumbprint. The
+   `certs/` folder is ignored by Git.
 
 2. Copy `certs/lan-dev-root-ca.cer` to the notebook and trust it under
    `Trusted Root Certification Authorities` for browser/server authentication.
-   Compare the OS warning thumbprint with the script output before accepting. Keep
-   `lan-dev.pfx` on the development host.
+   Compare the OS warning thumbprint with the script's `Root CA thumbprint` before
+   accepting. Keep `lan-dev.pfx` on the development host.
 
 3. Start the HTTPS Docker stack:
 

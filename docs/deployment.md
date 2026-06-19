@@ -127,8 +127,8 @@ Docker HTTPS LAN development:
 
 2. Trust `certs/lan-dev-root-ca.cer` on the second device under
    `Trusted Root Certification Authorities`. Keep `certs/lan-dev.pfx` only on the
-   development host. Compare the certificate warning thumbprint with the script
-   output before accepting.
+   development host. Compare the certificate warning thumbprint with the script's
+   `Root CA thumbprint` before accepting.
 3. Start the HTTPS Compose override:
 
    ```powershell

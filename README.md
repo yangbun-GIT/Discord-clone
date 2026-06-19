@@ -114,7 +114,8 @@ same-origin for `/api` and `/gateway`; Vite terminates HTTPS and proxies to the
 backend container over the internal Docker network. Docker HTTPS uses
 `certs/lan-dev.pfx`; generated files under `certs/` are ignored by Git and must
 not be committed. When installing `certs/lan-dev-root-ca.cer` on the notebook,
-compare the Windows warning thumbprint with the script output before accepting.
+compare the Windows warning thumbprint with the script's `Root CA thumbprint`
+before accepting.
 
 Useful backend auth endpoints:
 

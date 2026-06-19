@@ -20,14 +20,17 @@ function Get-DefaultLanAddress {
   return $candidate.IPAddress
 }
 
-function Convert-ToPem {
-  param(
-    [string]$Label,
-    [byte[]]$Bytes
-  )
+function Remove-GeneratedCertFromMyStore {
+  param([string]$Thumbprint)
 
-  $base64 = [Convert]::ToBase64String($Bytes, [Base64FormattingOptions]::InsertLineBreaks)
-  return "-----BEGIN $Label-----`n$base64`n-----END $Label-----`n"
+  if ([string]::IsNullOrWhiteSpace($Thumbprint)) {
+    return
+  }
+
+  $path = "Cert:\CurrentUser\My\$Thumbprint"
+  if (Test-Path -LiteralPath $path) {
+    Remove-Item -LiteralPath $path -Force
+  }
 }
 
 if ([string]::IsNullOrWhiteSpace($HostName)) {
@@ -40,60 +43,58 @@ New-Item -ItemType Directory -Force -Path $resolvedOutDir | Out-Null
 
 $pfxPath = Join-Path $resolvedOutDir "lan-dev.pfx"
 $rootCerPath = Join-Path $resolvedOutDir "lan-dev-root-ca.cer"
+$password = ConvertTo-SecureString -String $PfxPassphrase -Force -AsPlainText
+$now = Get-Date
+$expires = $now.AddYears(2)
 
-$serverRsa = [System.Security.Cryptography.RSA]::Create(2048)
-$serverSubject = "CN=$HostName"
-$request = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
-  $serverSubject,
-  $serverRsa,
-  [System.Security.Cryptography.HashAlgorithmName]::SHA256,
-  [System.Security.Cryptography.RSASignaturePadding]::Pkcs1
-)
-
-$san = [System.Security.Cryptography.X509Certificates.SubjectAlternativeNameBuilder]::new()
 $ip = [System.Net.IPAddress]::None
-if ([System.Net.IPAddress]::TryParse($HostName, [ref]$ip)) {
-  $san.AddIpAddress($ip)
+$isIpHost = [System.Net.IPAddress]::TryParse($HostName, [ref]$ip)
+$sanParts = @("DNS=localhost", "IPAddress=127.0.0.1")
+if ($isIpHost) {
+  $sanParts = @("IPAddress=$HostName") + $sanParts
 } else {
-  $san.AddDnsName($HostName)
+  $sanParts = @("DNS=$HostName") + $sanParts
 }
-$san.AddDnsName("localhost")
-$san.AddIpAddress([System.Net.IPAddress]::Parse("127.0.0.1"))
-$request.CertificateExtensions.Add($san.Build())
-$request.CertificateExtensions.Add(
-  [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($true, $false, 0, $true)
-)
-$request.CertificateExtensions.Add(
-  [System.Security.Cryptography.X509Certificates.X509KeyUsageExtension]::new(
-    [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::DigitalSignature -bor
-      [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::KeyEncipherment -bor
-      [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags]::KeyCertSign,
-    $true
-  )
-)
+$sanTextExtension = "2.5.29.17={text}$($sanParts -join '&')"
 
-$serverAuthOid = [System.Security.Cryptography.Oid]::new("1.3.6.1.5.5.7.3.1")
-$eku = [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]::new(
-  [System.Security.Cryptography.OidCollection]::new(),
-  $false
-)
-$eku.EnhancedKeyUsages.Add($serverAuthOid) | Out-Null
-$request.CertificateExtensions.Add($eku)
-$request.CertificateExtensions.Add(
-  [System.Security.Cryptography.X509Certificates.X509SubjectKeyIdentifierExtension]::new($request.PublicKey, $false)
-)
+$rootCert = New-SelfSignedCertificate `
+  -Type Custom `
+  -Subject "CN=Discord Clone Local Development Root CA" `
+  -KeyAlgorithm RSA `
+  -KeyLength 2048 `
+  -HashAlgorithm SHA256 `
+  -KeyExportPolicy Exportable `
+  -CertStoreLocation "Cert:\CurrentUser\My" `
+  -KeyUsage CertSign, CRLSign, DigitalSignature `
+  -TextExtension @("2.5.29.19={critical}{text}ca=TRUE") `
+  -NotAfter $expires
 
-$notBefore = [System.DateTimeOffset]::UtcNow.AddDays(-1)
-$notAfter = $notBefore.AddYears(2)
-$certificate = $request.CreateSelfSigned($notBefore, $notAfter)
+$serverCert = New-SelfSignedCertificate `
+  -Type Custom `
+  -Subject "CN=$HostName" `
+  -Signer $rootCert `
+  -KeyAlgorithm RSA `
+  -KeyLength 2048 `
+  -HashAlgorithm SHA256 `
+  -KeyExportPolicy Exportable `
+  -CertStoreLocation "Cert:\CurrentUser\My" `
+  -KeyUsage DigitalSignature, KeyEncipherment `
+  -TextExtension @($sanTextExtension, "2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
+  -NotAfter $expires
 
-[System.IO.File]::WriteAllBytes($pfxPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx, $PfxPassphrase))
-[System.IO.File]::WriteAllBytes($rootCerPath, $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+try {
+  Export-PfxCertificate -Cert $serverCert -FilePath $pfxPath -Password $password -Force | Out-Null
+  Export-Certificate -Cert $rootCert -FilePath $rootCerPath -Force | Out-Null
+} finally {
+  Remove-GeneratedCertFromMyStore -Thumbprint $serverCert.Thumbprint
+  Remove-GeneratedCertFromMyStore -Thumbprint $rootCert.Thumbprint
+}
 
 Write-Host "Created HTTPS LAN certificate for $HostName"
 Write-Host "PFX:  $pfxPath"
 Write-Host "Trust this Root CA on other devices: $rootCerPath"
-Write-Host "Trust thumbprint: $($certificate.Thumbprint)"
+Write-Host "Root CA thumbprint: $($rootCert.Thumbprint)"
+Write-Host "Server certificate thumbprint: $($serverCert.Thumbprint)"
 
 Write-Host ""
 Write-Host "Run Docker HTTPS LAN with:"
