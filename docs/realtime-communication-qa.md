@@ -58,6 +58,15 @@ Latest C8 automated result:
 - Scope: same-PC automated fake-device code-path coverage only. It is not a LAN,
   TURN/NAT, real microphone quality, or real screen-picker release gate.
 
+Stage C9 local gate result:
+
+- Date: 2026-06-19.
+- Full frontend/backend command suite passed.
+- Docker/local health, voice metadata, frontend HTTP, and browser communication
+  smoke passed.
+- `/api/meta/voice` reported `turn_configured: false`, so TURN/NAT internet voice
+  remains incomplete until real TURN credentials and a different-network test pass.
+
 ## Manual Same-PC QA
 
 1. Open two isolated browser profiles.

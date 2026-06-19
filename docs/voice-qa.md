@@ -121,3 +121,18 @@ screen-share path in system Chrome. This remains a code-path smoke only. Treat
 real microphone quality, real screen picker UX, LAN media capture, and TURN/NAT
 behavior as manual checks using the sections above until a real TURN server and
 two physical networks are available.
+
+## Stage C9 Release Gate Note
+
+The 2026-06-19 Stage C9 local release gate passed for:
+
+- Full frontend lint, unit tests, and production build.
+- Full backend lint and 119-test backend suite.
+- Docker/local health, frontend HTTP, and voice metadata smoke.
+- `npm run smoke:realtime:browser`, covering same-PC two-browser server text, DM,
+  voice remote audio sink, peer detail visibility, mute/deafen, and fake
+  screen-share visibility.
+
+This is still not a real internet voice completion. The current local metadata
+reports `turn_configured: false`, so real microphone quality, real screen picker
+UX, different-PC LAN, and TURN/NAT internet voice remain manual release gates.

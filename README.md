@@ -150,3 +150,7 @@ docker compose exec -T backend pytest
 and the frontend at `http://127.0.0.1:5173`. It is a same-PC fake-device smoke for
 server text, DM, voice peer, and screen-share code paths, not a LAN/TURN release
 gate.
+
+As of the 2026-06-19 Stage C9 gate, the local command suite and Docker/local
+communication smoke pass. Real microphone quality, real screen picker UX,
+different-PC LAN, and TURN/NAT internet voice remain separate manual gates.

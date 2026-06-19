@@ -153,8 +153,12 @@ verify same-PC two-browser server text, DM, voice peer, remote audio sink,
 mute/deafen, and fake screen-share paths while keeping payload output private.
 `gatewayIdempotency.test.ts` now also covers voice-state and guild-update
 idempotency, and `backend/tests/test_gateway_routes.py` covers invalid identify and
-unsubscribed voice-channel rejection. Next stage is C9 final communication release
-gate.
+unsubscribed voice-channel rejection. Stage C9 final local communication release
+gate is complete: frontend/backend lint, tests, build, Docker/local health, voice
+metadata, frontend HTTP, and `npm run smoke:realtime:browser` passed. Real
+microphone quality, real screen picker UX, different-PC LAN, and TURN/NAT internet
+voice remain external manual gates because the current local `/api/meta/voice`
+reports `turn_configured: false`.
 
 The app boots in two local modes:
 
@@ -1746,6 +1750,16 @@ Completed Stage 2 bridge work:
   invalid identify and unsubscribed voice-channel rejection. Verification passed
   frontend lint/test/build, focused backend gateway/realtime tests, the browser
   smoke, and `git diff --check`.
+- Completed Stage C9 final communication release gate:
+  `docs/remediation-tasks/realtime-communication-plan.md`,
+  `docs/realtime-communication-qa.md`, `docs/voice-qa.md`, `docs/deployment.md`,
+  `README.md`, and `docs/implementation-plan.md` now record the final local gate.
+  Verification passed `npm run lint:frontend`, `npm run test:frontend`,
+  `npm --prefix frontend run build`, `npm run lint:backend`,
+  `npm run test:backend`, Docker/local health, `/api/meta/voice`, frontend HTTP,
+  and `npm run smoke:realtime:browser`. The remaining gates are real microphone
+  quality, real screen picker UX, different-PC LAN, and TURN/NAT internet voice
+  with real TURN credentials.
 
 After each stage or meaningful feature:
 

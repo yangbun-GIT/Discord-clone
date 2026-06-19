@@ -669,7 +669,8 @@
 
 ## Realtime Communication Hardening C0-C9
 
-- Status: in progress.
+- Status: local implementation and verification complete through C9; external LAN
+  and TURN/NAT release gates remain manual.
 - Plan document: `docs/remediation-tasks/realtime-communication-plan.md`.
 - Target: make text chat, DMs, WebSocket gateway behavior, voice state, WebRTC voice,
   screen sharing, LAN access, and TURN readiness verifiable for real multi-session
@@ -718,4 +719,10 @@
   remote audio sink, mute/deafen, and fake screen-share UI paths. Frontend store
   tests and backend gateway route tests cover additional gateway idempotency and
   auth/authorization edges.
-- Next stage: C9 final communication release gate.
+- Completed Stage C9: final local communication release gate. The full frontend and
+  backend command suite passed, Docker/local health and voice metadata passed,
+  frontend HTTP smoke passed, and `npm run smoke:realtime:browser` passed for
+  same-PC two-browser server text, DM, voice peer, remote audio sink, mute/deafen,
+  and fake screen-share paths. Real microphone quality, real screen picker UX,
+  different-PC LAN, and TURN/NAT internet voice remain separate manual gates because
+  the current local voice metadata reports `turn_configured: false`.

@@ -1298,6 +1298,41 @@ Verification:
 - LAN smoke.
 - TURN/NAT smoke if credentials are available.
 
+Final result:
+
+- Completed local release gate on 2026-06-19.
+- Command suite passed:
+  - `npm run lint:frontend`
+  - `npm run test:frontend` (5 files, 19 tests)
+  - `npm --prefix frontend run build`
+  - `npm run lint:backend`
+  - `npm run test:backend` (119 tests)
+  - `npm run smoke:realtime:browser`
+- Docker/local service smoke passed:
+  - `docker compose ps` showed frontend, backend, backend-secondary, PostgreSQL,
+    and Redis running; backend and PostgreSQL were healthy.
+  - `GET http://127.0.0.1:8000/api/health` returned healthy database and Redis
+    state.
+  - `GET http://127.0.0.1:8000/api/meta/voice` returned one STUN ICE server and
+    `turn_configured: false`.
+  - `GET http://127.0.0.1:5173/` returned HTTP 200.
+- Automated same-PC browser communication smoke passed:
+  - server text realtime: passed.
+  - DM realtime: passed.
+  - voice remote audio sink: passed with fake microphone devices.
+  - peer detail visibility: passed.
+  - mute/deafen toggles: passed.
+  - fake screen-share visible path: passed.
+  - browser errors: zero.
+- Release gate classification:
+  - Local same-PC text, DM, gateway dispatch, Redis-backed local stack, fake-device
+    voice signaling, and fake screen-share code paths are complete.
+  - Real microphone quality, real screen picker UX, different-PC LAN, and
+    TURN/NAT internet voice remain external manual gates.
+  - Internet voice must not be marked complete until real TURN credentials are
+    configured, `/api/meta/voice.turn_configured` is `true`, and a different-network
+    two-user voice/screen-share test passes.
+
 ## Verification Matrix
 
 | Scenario | Text | DM | Gateway reconnect | Voice | Screen share | Required |

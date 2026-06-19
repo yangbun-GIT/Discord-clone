@@ -130,3 +130,21 @@ TURN/NAT internet checklist:
 
 Follow `docs/voice-qa.md` for the two-browser local smoke test, TURN/NAT test, and
 deployment verification checklist.
+
+## Stage C9 Communication Gate
+
+The 2026-06-19 local communication gate passed with the Docker stack running
+frontend, backend, backend-secondary, PostgreSQL, and Redis. Local health, frontend
+HTTP, voice metadata, the full frontend/backend command suite, and
+`npm run smoke:realtime:browser` passed.
+
+Deployment remains gated by environment-specific checks:
+
+- Configure `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `CORS_ORIGINS`, and
+  `WEBRTC_ICE_SERVERS_JSON` through host secrets, not committed files.
+- Confirm `/api/meta/voice.turn_configured` is `true` before claiming internet
+  voice support.
+- Run different-PC LAN QA and different-network TURN/NAT QA separately from the
+  same-PC fake-device browser smoke.
+- Do not treat fake microphone or fake screen-share automation as real microphone
+  quality or real screen-picker UX completion.
