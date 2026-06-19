@@ -298,6 +298,10 @@ onBeforeUnmount(() => {
 })
 
 function contextMenuItems(kind: string) {
+  const inviteMenuItems = guilds.canCreateInvite
+    ? [{ id: 'invite', label: t('channel.menu.invitePeople') }]
+    : []
+
   if (kind === 'message' || kind === 'dm-message') {
     return [
       { id: 'reply', label: t('context.reply') },
@@ -318,7 +322,7 @@ function contextMenuItems(kind: string) {
   if (kind === 'voice-channel' || kind === 'voice-session') {
     return [
       { id: guilds.voiceConnected ? 'voice-disconnect' : 'voice-connect', label: guilds.voiceConnected ? t('voice.disconnect') : t('voice.joinSelected') },
-      { id: 'invite', label: t('channel.menu.invitePeople') },
+      ...inviteMenuItems,
       { id: 'copy-link', label: t('context.copyChannelLink') },
       { id: 'settings', label: t('channel.aria.settings') },
     ]
@@ -326,7 +330,7 @@ function contextMenuItems(kind: string) {
   if (kind === 'text-channel') {
     return [
       { id: 'mark-read', label: t('context.markRead') },
-      { id: 'invite', label: t('channel.menu.invitePeople') },
+      ...inviteMenuItems,
       { id: 'copy-link', label: t('context.copyChannelLink') },
       { id: 'settings', label: t('channel.aria.settings') },
     ]
@@ -334,7 +338,7 @@ function contextMenuItems(kind: string) {
   if (kind === 'server') {
     return [
       { id: 'mark-read', label: t('context.markRead') },
-      { id: 'invite', label: t('channel.menu.invitePeople') },
+      ...inviteMenuItems,
       { id: 'settings', label: t('channel.menu.serverSettings') },
     ]
   }

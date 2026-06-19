@@ -456,10 +456,11 @@ Browser UI
     - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
-      invite-DM delivery, voice peer visibility, remote audio sink, mute/deafen,
-      fake screen-share UI, local screen-preview rendering, remote screen-video
-      rendering, screen-share stop cleanup, connected-tab reload rejoin recovery,
-      and voice leave cleanup paths.
+      invite-DM delivery, owner/member invite permission UI/API behavior, voice
+      peer visibility, remote audio sink, mute/deafen, fake screen-share UI, local
+      screen-preview rendering, remote screen-video rendering, screen-share stop
+      cleanup, connected-tab reload rejoin recovery, and voice leave cleanup
+      paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
 
@@ -555,8 +556,9 @@ Browser UI
   - Owns:
     - App shell composition, global workflow wiring, gateway reconnect
       reconciliation callback, voice workspace selection, local/remote
-      screen-share stage placement, remote screen-share render conditions, and
-      QA-only `data-gateway-status` state attribute.
+      screen-share stage placement, remote screen-share render conditions,
+      permission-aware global context-menu invite filtering, and QA-only
+      `data-gateway-status` state attribute.
 
 ### Stores And API
 
@@ -790,7 +792,8 @@ Browser UI
 - `frontend/src/components/ChannelSidebar.vue`
   - Receives active guild, channels, voice state, invite permission, and user/voice
     status from `frontend/src/App.vue`.
-  - Emits channel, invite, voice, user, and menu actions to `frontend/src/App.vue`.
+  - Emits channel, invite, voice, user, and menu actions to `frontend/src/App.vue`;
+    hides the server invite menu action when invite permission is absent.
 - `frontend/src/components/FriendsHome.vue`
   - Receives relationships/activity state from `frontend/src/App.vue`.
   - Groups incoming/outgoing friend requests separately from online presence.

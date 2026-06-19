@@ -180,6 +180,15 @@ async function run() {
     method: 'POST',
     body: '{}',
   })
+  const memberInviteResponse = await fetch(`${REST_BASE}/api/guilds/${guild.id}/invites`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${userB.access_token}`,
+      'content-type': 'application/json',
+    },
+    body: '{}',
+  })
+  const memberInviteApiForbidden = memberInviteResponse.status === 403
   await api('/api/users/me/relationships/requests', userA.access_token, {
     method: 'POST',
     body: JSON.stringify({ username: userB.user.username }),
@@ -213,6 +222,29 @@ async function run() {
       openGuild(pageA.page, guildName),
       openGuild(pageB.page, guildName),
     ])
+
+    const ownerInviteControlVisible = await pageA.page
+      .getByRole('button', { name: /Create invite/i })
+      .first()
+      .isVisible()
+      .catch(() => false)
+    const memberInviteControlHidden = !(await pageB.page
+      .getByRole('button', { name: /Create invite/i })
+      .first()
+      .isVisible()
+      .catch(() => false))
+
+    await pageB.page
+      .getByRole('button', { name: new RegExp(escapeRegex(guildName), 'i') })
+      .first()
+      .click({ button: 'right' })
+    const memberContextInviteHidden = !(await pageB.page
+      .locator('.global-context-menu')
+      .getByRole('button', { name: /Invite People/i })
+      .first()
+      .isVisible()
+      .catch(() => false))
+    await pageB.page.keyboard.press('Escape')
 
     await pageA.page.getByRole('button', { name: /Create invite/i }).first().click()
     await pageA.page.locator('.invite-output strong').waitFor({ state: 'visible', timeout: 10_000 })
@@ -333,11 +365,18 @@ async function run() {
       { timeout: 10_000 },
     )
     const voiceLeaveCleaned = await pageA.page.locator('.voice-audio-sinks audio').count() === 0
+    const memberRawInvitePermissionHidden = !(await pageB.page.locator('body').innerText())
+      .includes('create invite permission required')
 
     const result = {
       serverTextRealtime: true,
       dmRealtime: true,
       inviteDmRealtime: true,
+      ownerInviteControlVisible,
+      memberInviteControlHidden,
+      memberContextInviteHidden,
+      memberInviteApiForbidden,
+      memberRawInvitePermissionHidden,
       voiceRemoteAudioSinks: remoteAudioSinks,
       voicePeerDetailVisible: detailLabels.some((text) => /1 peer/.test(text)),
       mutePressed: mutePressed === 'true',
@@ -360,6 +399,11 @@ async function run() {
       !result.serverTextRealtime
       || !result.dmRealtime
       || !result.inviteDmRealtime
+      || !result.ownerInviteControlVisible
+      || !result.memberInviteControlHidden
+      || !result.memberContextInviteHidden
+      || !result.memberInviteApiForbidden
+      || !result.memberRawInvitePermissionHidden
       || result.voiceRemoteAudioSinks < 1
       || !result.voicePeerDetailVisible
       || !result.mutePressed

@@ -456,6 +456,8 @@ Verification:
 
 ### Stage M10: Invite Permission Browser QA
 
+Status: implemented.
+
 Owner files:
 
 - `frontend/src/App.vue`
@@ -467,16 +469,36 @@ Owner files:
 Tasks:
 
 1. Keep backend `403` permission enforcement.
+   - Completed: existing backend invite permission behavior remains enforced and
+     the browser smoke verifies a non-owner member receives `403`.
 2. Add browser-level owner/member permission verification.
+   - Completed: `scripts/realtime_browser_smoke.mjs` now records owner invite
+     control visibility, member invite control hiding, member context-menu invite
+     hiding, member API `403`, and raw permission-text absence.
 3. Owner should see invite controls and create an invite.
+   - Completed: the browser smoke requires the owner Create invite control to be
+     visible and then uses it to deliver an invite code by DM.
 4. Member without `CREATE_INSTANT_INVITE` should not see active invite controls; if
    any disabled control remains, it must explain the permission state in localized
    app copy.
+   - Completed: `App.vue` global context-menu invite actions are now filtered by
+     `guilds.canCreateInvite`; `ChannelSidebar` and the header already hide invite
+     controls when the permission is absent.
 
 Acceptance:
 
 - No raw `create invite permission required` text reaches normal UI.
 - Unauthorized member cannot create invites through UI or API.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `docker compose up -d --build frontend` refreshed the browser-test frontend.
+- `npm run smoke:realtime:browser` passed with
+  `ownerInviteControlVisible: true`, `memberInviteControlHidden: true`,
+  `memberContextInviteHidden: true`, `memberInviteApiForbidden: true`, and
+  `memberRawInvitePermissionHidden: true`.
 
 ## Verification Commands
 

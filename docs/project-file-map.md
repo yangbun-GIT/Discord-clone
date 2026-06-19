@@ -48,10 +48,10 @@ For ordinary implementation work:
 - `scripts/realtime_browser_smoke.mjs`
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
     friend relationship, and a DM, then verifies invite-DM delivery, server text,
-    DM, voice peer visibility, remote audio sink, mute/deafen, fake screen-share
-    paths, local screen-preview rendering, remote screen-video rendering,
-    screen-share stop cleanup, connected-tab reload rejoin recovery, and voice
-    leave cleanup through the app UI.
+    DM, owner/member invite permission UI, voice peer visibility, remote audio
+    sink, mute/deafen, fake screen-share paths, local screen-preview rendering,
+    remote screen-video rendering, screen-share stop cleanup, connected-tab
+    reload rejoin recovery, and voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
@@ -347,6 +347,7 @@ For ordinary implementation work:
   - Delegates global notices, app context menus, invite modal state, and workspace
     title/subtitle calculation to focused composables.
   - Owns the selected voice workspace's local/remote screen-share stage placement.
+  - Filters global context-menu invite actions through `guilds.canCreateInvite`.
 - `frontend/src/types.ts`
   - Shared frontend DTO and state types.
 - `frontend/src/env.d.ts`
@@ -362,7 +363,7 @@ For ordinary implementation work:
   - Friends/DM sidebar.
 - `frontend/src/components/ChannelSidebar.vue`
   - Server heading, events, categories, text/voice channel rows, lower user/voice
-    panels.
+    panels, and permission-aware server invite menu entry.
 - `frontend/src/components/FriendsHome.vue`
   - Friends tabs, friend list, grouped incoming/outgoing friend requests,
     add-friend flow, and activity panel.

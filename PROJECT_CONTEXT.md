@@ -1920,6 +1920,17 @@ Completed Stage 2 bridge work:
   unauthorized controls hidden and permission errors localized. Automated frontend
   and gateway tests cover snapshots and media constraints; real microphone speech,
   owner/member invite, LAN, and TURN gates remain manual QA items.
+- Completed manual QA follow-up stages M1-M10:
+  `voiceMedia.ts` now defaults to a speech-stability capture preset and exposes
+  local processing controls; screen-share tiles deduplicate remote sharers and
+  clear stopped remote video; same-user voice reloads show an app-owned rejoin
+  prompt; LAN HTTPS and TURN readiness checks are documented and scriptable;
+  friend-request tabs, DM display normalization, per-recipient invite DM delivery,
+  deafen-to-remote-audio muting, and owner/member invite permission browser QA are
+  covered by frontend tests and `scripts/realtime_browser_smoke.mjs`. Remaining
+  release gates are real sustained-vowel microphone quality, real screen picker
+  layout with multiple participants, different-PC HTTPS LAN media, and TURN/NAT
+  internet voice with real credentials.
 
 After each stage or meaningful feature:
 
