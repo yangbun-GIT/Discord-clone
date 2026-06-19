@@ -1,7 +1,8 @@
 from typing import Any
 
-from app.realtime import fanout
+from app.realtime import fanout, publisher, subscriber
 from app.realtime.events import RealtimeGatewayEvent
+from app.realtime.redis_bus import RedisBus
 
 
 class FakeGatewayManager:
@@ -97,3 +98,62 @@ async def test_fanout_guild_update_syncs_members_and_channels(monkeypatch) -> No
 
     assert manager.guild_syncs == [(1001, {42, 43}, {2001, 2002})]
     assert manager.broadcasts == [("guild", 1001, "GUILD_UPDATE", event.data)]
+
+
+async def test_publisher_falls_back_to_local_fanout_when_redis_publish_fails(
+    monkeypatch,
+) -> None:
+    event = RealtimeGatewayEvent(
+        channel_id=2001,
+        event="MESSAGE_CREATE",
+        data={"id": 1, "channel_id": 2001},
+    )
+    fanout_events: list[RealtimeGatewayEvent] = []
+
+    class FailingRedisBus:
+        @property
+        def is_connected(self) -> bool:
+            return True
+
+        async def publish_json(self, channel: str, payload: str) -> int:
+            raise ConnectionError("redis unavailable")
+
+    async def fake_fanout(fanout_event: RealtimeGatewayEvent) -> None:
+        fanout_events.append(fanout_event)
+
+    monkeypatch.setattr(publisher, "redis_bus", FailingRedisBus())
+    monkeypatch.setattr(publisher, "fanout_gateway_event", fake_fanout)
+
+    await publisher._publish_or_broadcast(event)
+
+    assert fanout_events == [event]
+
+
+def test_subscriber_decodes_valid_message_and_ignores_invalid_payload() -> None:
+    valid_event = RealtimeGatewayEvent(
+        dm_id=801,
+        event="DM_MESSAGE_CREATE",
+        data={"id": 1, "dm_id": 801},
+    )
+
+    decoded = subscriber._decode_pubsub_message(
+        {"type": "message", "data": valid_event.model_dump_json()},
+    )
+    ignored_control_message = subscriber._decode_pubsub_message(
+        {"type": "subscribe", "data": "ignored"},
+    )
+    invalid = subscriber._decode_pubsub_message({"type": "message", "data": "{bad"})
+
+    assert decoded == valid_event
+    assert ignored_control_message is None
+    assert invalid is None
+
+
+async def test_redis_bus_remembers_configured_url_after_connection_failure() -> None:
+    bus = RedisBus()
+
+    await bus.connect("redis://127.0.0.1:1/0")
+
+    assert bus.is_configured is True
+    assert bus.is_connected is False
+    assert bus.redis_url == "redis://127.0.0.1:1/0"

@@ -164,6 +164,14 @@ The app boots in two local modes:
     URL pointing at the `postgres` service.
   - Uses external `REDIS_URL` when provided; Redis remains optional and empty by
     default.
+- `compose.redis-smoke.yaml`
+  - Optional C4 override that adds Redis and `backend-secondary` on port 8001.
+  - Use only for Redis multi-worker realtime verification; normal local Docker
+    remains Redis-free.
+- `scripts/realtime_redis_smoke.py`
+  - Repeatable C4 smoke: secondary backend WebSocket session receives server text and
+    DM dispatches created through the primary backend.
+  - Keeps tokens and message contents in memory only and prints no private payloads.
 - `backend/`
   - FastAPI ASGI backend.
   - Python package is configured by `backend/pyproject.toml`.
@@ -361,17 +369,21 @@ The app boots in two local modes:
     offer/answer/ICE payloads to the target user.
 - `backend/app/realtime/redis_bus.py`
   - Optional Redis asyncio client wrapper.
-  - Connects only when `REDIS_URL` is configured.
+  - Connects only when `REDIS_URL` is configured; connection failure logs a
+    privacy-safe error and leaves realtime on local fallback.
 - `backend/app/realtime/events.py`
   - Defines the Redis gateway-event channel name and `RealtimeGatewayEvent` schema.
 - `backend/app/realtime/publisher.py`
   - Publishes `MESSAGE_CREATE`, `MESSAGE_UPDATE`, `MESSAGE_DELETE`, `CHANNEL_CREATE`,
     `GUILD_UPDATE`, `DM_CREATE`, and `DM_MESSAGE_CREATE` payloads to Redis when
     configured.
-  - Falls back to the shared local realtime fan-out helper when Redis is absent.
+  - Falls back to the shared local realtime fan-out helper when Redis is absent or a
+    publish attempt fails.
 - `backend/app/realtime/subscriber.py`
   - Consumes Redis gateway-event Pub/Sub messages and fans them out to local WebSocket
     subscribers through the shared realtime fan-out helper.
+  - Logs subscriber start/stop/restart and invalid payload rejection without message
+    contents.
 - `backend/app/realtime/fanout.py`
   - Shared realtime gateway-event fan-out and local subscription synchronization.
   - Updates local gateway subscriptions for channel creation, guild membership
@@ -1661,6 +1673,15 @@ Completed Stage 2 bridge work:
   protocols were split into smaller role-focused protocol groups while preserving
   the existing provider facade. The remaining CSS/i18n physical split is
   documented as feature-driven, not a maintenance blocker.
+- Completed Stage C4 Redis multi-instance fan-out verification path:
+  `compose.redis-smoke.yaml` adds optional Redis plus `backend-secondary` on port
+  8001, `scripts/realtime_redis_smoke.py` verifies primary REST to secondary
+  WebSocket server/DM dispatch, Redis connect/subscriber/publish paths log
+  privacy-safe operational events, Redis publish failure falls back to local
+  fan-out, and configured Redis subscriber loops reconnect after Redis returns.
+  Backend lint and focused realtime tests passed; Docker Redis smoke evidence is
+  recorded in
+  `docs/remediation-tasks/realtime-communication-plan.md`.
 
 After each stage or meaningful feature:
 

@@ -34,6 +34,14 @@ For ordinary implementation work:
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, and Docker.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
+- `compose.redis-smoke.yaml`
+  - Optional Redis + secondary backend override for C4 multi-worker realtime smoke.
+  - Normal local Docker startup remains Redis-free unless this override is included.
+- `scripts/realtime_redis_smoke.py`
+  - C4 two-worker smoke: connects WebSocket to the secondary backend and creates
+    server/DM messages through the primary backend.
+  - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
+    device labels, or DM contents.
 - `.env.example`
   - Non-secret environment variable template.
 - `.dockerignore`, `backend/.dockerignore`, `frontend/.dockerignore`
@@ -231,9 +239,11 @@ For ordinary implementation work:
 - `backend/app/gateway/reaper.py`
   - Gateway zombie-connection reaper loop.
 - `backend/app/realtime/publisher.py`
-  - Redis-backed gateway event publishing.
+  - Redis-backed gateway event publishing with local fan-out fallback when Redis is
+    absent or publish fails.
 - `backend/app/realtime/subscriber.py`
-  - Redis-backed gateway event consumption.
+  - Redis-backed gateway event consumption with privacy-safe startup, stop, invalid
+    payload, and restart logs.
 - `backend/app/realtime/fanout.py`
   - Shared realtime gateway-event fan-out and local subscription synchronization.
   - Used by publisher native fallback and Redis subscriber dispatch.
@@ -264,7 +274,8 @@ For ordinary implementation work:
 - `backend/tests/test_gateway_routes.py`
   - Gateway WebSocket route close-code, authorization, and rate-limit behavior.
 - `backend/tests/test_realtime_fanout.py`
-  - Shared realtime fan-out and local subscription synchronization behavior.
+  - Shared realtime fan-out, local subscription synchronization, Redis publish
+    fallback, and subscriber payload decoding behavior.
 - `backend/tests/test_guild_repository.py`
   - PostgreSQL guild/message/channel/role/member repository behavior.
 - `backend/tests/test_message_schema.py`

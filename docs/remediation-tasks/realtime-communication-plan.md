@@ -980,6 +980,18 @@ Verification:
 
 Goal: verify real multi-worker behavior.
 
+Redis fan-out semantics:
+
+- Redis Pub/Sub is a best-effort live notification path between backend workers.
+- PostgreSQL REST writes remain the source of truth for server text and DM content.
+- Redis events must not be treated as durable storage, replay history, or guaranteed
+  offline delivery.
+- When Redis is absent, local single-worker fan-out must remain usable for local
+  development.
+- When Redis publish fails after startup, the publishing worker may use local
+  fan-out fallback so the REST write is not rejected only because notification
+  fan-out degraded.
+
 Tasks:
 
 1. Document Redis fan-out semantics as best-effort live notification.
@@ -999,6 +1011,55 @@ Verification:
 - Redis unavailable fallback smoke.
 - Two-session message delivery.
 - Logs show subscriber startup and no message-content leakage.
+
+Stage C4 Result: Completed 2026-06-19.
+
+Implementation:
+
+- Added `compose.redis-smoke.yaml` with optional Redis and `backend-secondary`
+  service on port 8001. The normal `compose.yaml` path remains Redis-free unless
+  the override is explicitly included.
+- Added `scripts/realtime_redis_smoke.py` to verify cross-worker realtime dispatch:
+  a gateway session connects to the secondary backend while server text and DM
+  messages are created through the primary backend.
+- Added privacy-safe Redis connection, subscriber start/stop/restart, invalid
+  payload, publish success, and publish failure logs. Logs include event names and
+  subscriber counts where useful, but not JWTs, message contents, ICE candidates,
+  TURN credentials, media labels, or DM body text.
+- Redis connection failure no longer prevents local app startup; realtime falls back
+  to local fan-out.
+- When `REDIS_URL` is configured but Redis is down during startup, the subscriber
+  loop keeps retrying and attaches after Redis returns without restarting the
+  backend.
+- Redis publish failure falls back to local fan-out after the REST source-of-truth
+  write has succeeded.
+- Added unit coverage for Redis publish failure fallback and subscriber payload
+  decoding behavior.
+
+Verification:
+
+- `cd backend; ..\.venv\Scripts\python.exe -m ruff check app tests` passed.
+- `cd backend; ..\.venv\Scripts\python.exe -m pytest` passed with 116 tests.
+- `.\.venv\Scripts\python.exe -m py_compile scripts\realtime_redis_smoke.py`
+  passed.
+- C4 Docker Redis smoke command path is:
+  `docker compose -f compose.yaml -f compose.redis-smoke.yaml up -d --build redis backend backend-secondary`
+  followed by
+  `.\.venv\Scripts\python.exe scripts\realtime_redis_smoke.py`.
+  This passed for server text and DM dispatch from primary REST on port 8000 to
+  secondary WebSocket on port 8001.
+- The same cross-worker smoke also passed with explicit worker routing:
+  `.\.venv\Scripts\python.exe -c "import os, runpy; os.environ['REST_SECONDARY']='http://127.0.0.1:8001'; os.environ['WS_SECONDARY']='ws://127.0.0.1:8001/gateway'; runpy.run_path('scripts/realtime_redis_smoke.py', run_name='__main__')"`
+- Redis unavailable fallback command path is:
+  `docker compose -f compose.yaml -f compose.redis-smoke.yaml stop redis`
+  followed by
+  `.\.venv\Scripts\python.exe -c "import os, runpy; os.environ['REST_SECONDARY']='http://127.0.0.1:8000'; os.environ['WS_SECONDARY']='ws://127.0.0.1:8000/gateway'; runpy.run_path('scripts/realtime_redis_smoke.py', run_name='__main__')"`
+  to route the gateway and REST traffic to a single worker. This passed for server
+  text and DM dispatch after Redis was stopped.
+- After Redis was stopped, both backends were restarted with `REDIS_URL` still set,
+  the single-worker fallback smoke passed, Redis was started again, and the explicit
+  port-8001 cross-worker smoke passed without restarting either backend. `/api/health`
+  reported Redis configured and connected on ports 8000 and 8001.
 
 ### Stage C5: Voice Media Constraints And Permission States
 

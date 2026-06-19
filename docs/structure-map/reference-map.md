@@ -353,6 +353,7 @@ Browser UI
     - `backend/app/api/routes/channels.py`
     - `backend/app/api/routes/dms.py`
     - `backend/app/api/routes/guilds.py`
+    - `scripts/realtime_redis_smoke.py` indirectly through REST message creation.
 
 - `backend/app/realtime/subscriber.py`
   - References:
@@ -361,6 +362,7 @@ Browser UI
     - `backend/app/realtime/redis_bus.py`
   - Referenced by:
     - `backend/app/main.py`
+    - `compose.redis-smoke.yaml` runtime backend services when `REDIS_URL` is set.
 
 - `backend/app/realtime/fanout.py`
   - References:
@@ -374,6 +376,33 @@ Browser UI
     - Gateway-event fan-out to channel/guild/DM subscribers.
     - Local subscription synchronization for DM create, channel create, and guild
       update events.
+
+- `compose.redis-smoke.yaml`
+  - References:
+    - `compose.yaml`
+    - `backend/Dockerfile`
+    - `backend/app/main.py`
+    - `backend/app/realtime/redis_bus.py`
+    - `backend/app/realtime/subscriber.py`
+  - Referenced by:
+    - `docs/remediation-tasks/realtime-communication-plan.md`
+    - `scripts/realtime_redis_smoke.py` runtime prerequisites.
+  - Owns:
+    - Optional Redis and secondary backend topology used to verify cross-worker
+      realtime fan-out.
+
+- `scripts/realtime_redis_smoke.py`
+  - References:
+    - `/api/health`
+    - `/api/dev/session`
+    - `/api/channels/{channel_id}/messages`
+    - `/api/dms/{dm_id}/messages`
+    - `/gateway`
+  - Referenced by:
+    - `docs/remediation-tasks/realtime-communication-plan.md`
+  - Owns:
+    - C4 repeatable primary-worker REST to secondary-worker WebSocket dispatch
+      verification for server text and DM events.
 
 ## Frontend References
 

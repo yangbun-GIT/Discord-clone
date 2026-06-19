@@ -1,9 +1,13 @@
+import logging
+
 from app.realtime.events import GATEWAY_EVENTS_CHANNEL, RealtimeGatewayEvent
 from app.realtime.fanout import fanout_gateway_event
 from app.realtime.redis_bus import redis_bus
 from app.schemas.dm import DmMessageRead, DmRead
 from app.schemas.guild import ChannelRead, GuildRead, MessageRead
 from app.schemas.message import MessageDeleteRead
+
+logger = logging.getLogger("uvicorn.error")
 
 
 async def publish_message_create(message: MessageRead) -> None:
@@ -71,7 +75,21 @@ async def publish_dm_message_create(message: DmMessageRead) -> None:
 
 async def _publish_or_broadcast(event: RealtimeGatewayEvent) -> None:
     if redis_bus.is_connected:
-        await redis_bus.publish_json(GATEWAY_EVENTS_CHANNEL, event.model_dump_json())
-        return
+        try:
+            delivered = await redis_bus.publish_json(
+                GATEWAY_EVENTS_CHANNEL,
+                event.model_dump_json(),
+            )
+        except Exception as exc:
+            logger.warning(
+                "redis publish failed; using local realtime fallback",
+                extra={"event": event.event, "error_type": type(exc).__name__},
+            )
+        else:
+            logger.debug(
+                "redis realtime event published",
+                extra={"event": event.event, "subscriber_count": delivered},
+            )
+            return
 
     await fanout_gateway_event(event)

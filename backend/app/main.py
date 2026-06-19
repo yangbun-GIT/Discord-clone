@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await database.migrate()
         await seed_database()
     await redis_bus.connect(settings.redis_url)
-    if redis_bus.is_connected:
+    if redis_bus.is_configured:
         gateway_events_task = asyncio.create_task(consume_gateway_events())
     gateway_reaper_task = asyncio.create_task(
         reap_gateway_zombies_forever(

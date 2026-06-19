@@ -685,4 +685,11 @@
   message mutations, and DM message create; gateway close-code tests and REST 429
   tests were added; privacy-safe gateway logs were added; runtime invalid-token,
   unauthorized voice-signal, REST abuse, and two-session dispatch smokes passed.
-- Next stage: C4 Redis multi-instance fan-out verification.
+- Completed Stage C4: Redis multi-instance fan-out verification path. Redis fan-out
+  is documented as best-effort live notification, Redis connect/subscriber/publish
+  failure paths now log privacy-safe operational events, Redis publish failure falls
+  back to local fan-out, configured Redis subscriber loops reconnect after Redis
+  returns, `compose.redis-smoke.yaml` provides Redis plus a secondary backend, and
+  `scripts/realtime_redis_smoke.py` verifies primary REST to secondary WebSocket
+  server/DM dispatch.
+- Next stage: C5 Voice media constraints and permission states.
