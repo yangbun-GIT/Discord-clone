@@ -325,6 +325,8 @@ Verification:
 
 ### Stage M7: DM Identity Consistency
 
+Status: implemented.
+
 Owner files:
 
 - `frontend/src/stores/dms.ts`
@@ -339,15 +341,33 @@ Tasks:
 
 1. Reproduce the receive-side mismatch between incoming message author and DM list
    row.
+   - Completed: the likely mismatch path is `DM_CREATE` gateway payloads that can
+     arrive in another user's display perspective.
 2. Audit DM participant ordering and display-name selection.
+   - Completed: backend REST/demo views already compute display name from the
+     requesting user perspective; frontend now defensively normalizes gateway
+     payloads by current user ID.
 3. Ensure one-to-one DMs display the other participant, while messages display the
    actual author.
+   - Completed: DM rows recompute `recipient_ids`, `display_name`, status, and
+     activity from participants excluding the current user. Messages keep their
+     original `author_id` and `author_name`.
 4. Add regression coverage for A->B and B->A message receipt.
+   - Completed: focused store regression covers current-user normalization for
+     incoming `DM_CREATE`, and browser smoke covers live DM receipt.
 
 Acceptance:
 
 - Receiving a DM never changes the sidebar row to the wrong account.
 - Message author and DM row participant identity remain distinct and correct.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run test -- --run src/stores/gatewayIdempotency.test.ts`
+  passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser` passed after the Docker frontend refresh.
 
 ### Stage M8: Invite Modal Per-Recipient State And DM Invite Delivery
 

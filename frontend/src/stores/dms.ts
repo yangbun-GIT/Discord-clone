@@ -31,6 +31,7 @@ export const useDmStore = defineStore('dms', () => {
   const isMutating = ref(false)
   const error = ref<string | null>(null)
   const activeDmId = ref<number | null>(null)
+  const currentUserId = ref<number | null>(null)
 
   const unreadCount = computed(() =>
     dms.value.reduce((total, dm) => total + dm.unread_count, 0),
@@ -57,7 +58,7 @@ export const useDmStore = defineStore('dms', () => {
     isLoading.value = true
     error.value = null
     try {
-      dms.value = cleanVisibleDirectMessages(await loadDirectMessages(token))
+      dms.value = cleanVisibleDirectMessages((await loadDirectMessages(token)).map(normalizeDmIdentity))
     } catch (cause) {
       setError(cause, 'Failed to load direct messages')
       throw cause
@@ -72,7 +73,7 @@ export const useDmStore = defineStore('dms', () => {
     try {
       const workspace = await loadDmWorkspace(token)
       relationships.value = cleanVisibleRelationships(workspace.relationships)
-      dms.value = cleanVisibleDirectMessages(workspace.directMessages)
+      dms.value = cleanVisibleDirectMessages(workspace.directMessages.map(normalizeDmIdentity))
     } catch (cause) {
       setError(cause, 'Failed to load direct messages')
       throw cause
@@ -87,7 +88,7 @@ export const useDmStore = defineStore('dms', () => {
   }
 
   function upsertDm(dm: DirectMessage) {
-    const cleanedDm = cleanVisibleDirectMessage(dm)
+    const cleanedDm = cleanVisibleDirectMessage(normalizeDmIdentity(dm))
     if (!cleanedDm) return
     const exists = dms.value.some((item) => item.id === cleanedDm.id)
     dms.value = exists
@@ -122,20 +123,39 @@ export const useDmStore = defineStore('dms', () => {
             }
           : participant
       ))
-      const visibleRecipients = participants.filter((participant) => dm.recipient_ids.includes(participant.id))
-      const primaryRecipient = visibleRecipients.find((participant) => participant.id === relationship.id)
-      const statusPriority: Friend['status'][] = ['online', 'idle', 'dnd']
-      const status = statusPriority.find((nextStatus) =>
-        visibleRecipients.some((participant) => participant.status === nextStatus),
-      ) ?? 'offline'
-
-      return {
-        ...dm,
-        participants,
-        status,
-        activity: dm.is_group ? dm.activity : primaryRecipient?.activity ?? null,
-      }
+      return normalizeDmIdentity({ ...dm, participants })
     })
+  }
+
+  function normalizeDmIdentity(dm: DirectMessage): DirectMessage {
+    const userId = currentUserId.value
+    if (userId === null || !dm.participants.some((participant) => participant.id === userId)) return dm
+    const recipients = dm.participants.filter((participant) => participant.id !== userId)
+    const recipientIds = recipients.map((participant) => participant.id)
+    const statusPriority: Friend['status'][] = ['online', 'idle', 'dnd']
+    const status = statusPriority.find((nextStatus) =>
+      recipients.some((participant) => participant.status === nextStatus),
+    ) ?? 'offline'
+    const activity = recipients.find((participant) => participant.activity)?.activity ?? null
+    const displayName = recipients.length
+      ? recipients.slice(0, 3).map((participant) => participant.username).join(', ')
+      : dm.display_name
+
+    return {
+      ...dm,
+      recipient_ids: recipientIds,
+      display_name: displayName,
+      status,
+      activity,
+      is_group: dm.participants.length > 2,
+      member_count: dm.participants.length,
+    }
+  }
+
+  function setCurrentUserId(userId: number | null) {
+    currentUserId.value = userId
+    if (userId === null) return
+    dms.value = dms.value.map(normalizeDmIdentity)
   }
 
   function setActiveDm(dmId: number | null) {
@@ -316,6 +336,7 @@ export const useDmStore = defineStore('dms', () => {
     isMutating.value = false
     error.value = null
     activeDmId.value = null
+    currentUserId.value = null
   }
 
   return {
@@ -325,6 +346,7 @@ export const useDmStore = defineStore('dms', () => {
     isLoading,
     isMutating,
     error,
+    setCurrentUserId,
     loadRelationships,
     loadDms,
     loadPrivateWorkspace,

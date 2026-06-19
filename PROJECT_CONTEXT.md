@@ -280,6 +280,13 @@ into matching DM rows and participants, so Friends and DM surfaces do not diverg
 when relationship status data changes. A standalone presence update endpoint/event
 is still not claimed; future presence work should add it explicitly if needed.
 
+Manual QA follow-up Stage M7 is implemented in code/docs. `frontend/src/stores/dms.ts`
+now tracks the current user ID and normalizes direct-message payloads from REST or
+gateway dispatches so one-to-one DM rows always display the other participant while
+message rows keep the actual author. Focused frontend regression coverage verifies
+incoming `DM_CREATE` normalization, and browser realtime smoke still passes for
+live DM receipt.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

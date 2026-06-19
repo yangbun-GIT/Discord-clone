@@ -410,7 +410,8 @@ For ordinary implementation work:
 - `frontend/src/stores/dms.ts`
   - Public Direct Message Pinia facade and state.
   - Owns relationship mutation actions and idempotent relationship update/delete
-    state application, including relationship presence sync into matching DM rows.
+    state application, relationship presence sync into matching DM rows, and
+    current-user DM identity normalization for REST/gateway payloads.
 - `frontend/src/stores/dmApi.ts`
   - Direct-message REST loaders and mutations used by `dms.ts`.
   - Wraps relationship mutation REST calls for Add Friend, pending, friend, block,

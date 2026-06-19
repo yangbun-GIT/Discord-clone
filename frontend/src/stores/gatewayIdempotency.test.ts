@@ -89,6 +89,7 @@ describe('gateway dispatch idempotency', () => {
 
   it('keeps one DM message when REST reconciliation and gateway dispatch race', () => {
     const store = useDmStore()
+    store.setCurrentUserId(42)
     store.dms = [{ ...dm, messages: [dmMessage] }]
     store.setActiveDm(801)
 
@@ -102,6 +103,7 @@ describe('gateway dispatch idempotency', () => {
 
   it('increments unread count for inactive DM gateway messages', () => {
     const store = useDmStore()
+    store.setCurrentUserId(42)
     store.dms = [{ ...dm, messages: [] }]
     store.setActiveDm(null)
 
@@ -113,6 +115,7 @@ describe('gateway dispatch idempotency', () => {
 
   it('clears unread count when a DM becomes active', () => {
     const store = useDmStore()
+    store.setCurrentUserId(42)
     store.dms = [{ ...dm, unread_count: 3, messages: [] }]
 
     store.setActiveDm(801)
@@ -122,6 +125,7 @@ describe('gateway dispatch idempotency', () => {
 
   it('syncs relationship presence updates into existing DM rows', () => {
     const store = useDmStore()
+    store.setCurrentUserId(42)
     store.dms = [{ ...dm, participants: dm.participants.map((participant) => ({ ...participant })) }]
 
     store.handleGatewayDispatch('RELATIONSHIP_UPDATE', relationship)
@@ -137,6 +141,26 @@ describe('gateway dispatch idempotency', () => {
       status: 'idle',
       activity: 'Reviewing requests',
     })
+  })
+
+  it('normalizes incoming DM_CREATE payloads to the current user perspective', () => {
+    const store = useDmStore()
+    store.setCurrentUserId(42)
+
+    store.handleGatewayDispatch('DM_CREATE', {
+      ...dm,
+      recipient_ids: [42],
+      display_name: 'yangbun',
+      status: 'online',
+      activity: null,
+    })
+
+    expect(store.dms[0]).toMatchObject({
+      display_name: 'Mina',
+      recipient_ids: [701],
+      status: 'online',
+    })
+    expect(store.dms[0].messages).toEqual([])
   })
 
   it('replaces one voice state per guild user and removes leave events', () => {

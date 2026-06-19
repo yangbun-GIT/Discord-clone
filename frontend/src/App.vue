@@ -247,6 +247,14 @@ watch(
   { immediate: true },
 )
 
+watch(
+  () => session.user?.id ?? null,
+  (userId) => {
+    dms.setCurrentUserId(userId)
+  },
+  { immediate: true },
+)
+
 async function openWorkspace() {
   if (!session.token) return
   await reloadWorkspaceState()

@@ -630,6 +630,8 @@ Browser UI
     - DM list/message state, active-DM unread clearing, inactive-DM unread
       incrementing for gateway message dispatch, and relationship presence sync
       into matching DM rows.
+    - Current-user DM identity normalization so sidebar rows display recipients
+      while message rows preserve actual authors.
 
 - `frontend/src/stores/dmApi.ts`
   - References:
