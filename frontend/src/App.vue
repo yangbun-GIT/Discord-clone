@@ -136,10 +136,13 @@ const {
   showInvite,
   inviteCode,
   inviteSearchQuery,
-  inviteCopied,
+  inviteCodeCopied,
   inviteFriends,
+  inviteFriendState,
   openInvite,
   closeInvite,
+  setInviteCodeCopied,
+  setInviteFriendState,
 } = useInviteController(() => dms.relationships)
 const {
   menu: globalContextMenu,
@@ -813,11 +816,27 @@ function formatInviteError(error: unknown) {
 
 async function copyInviteCode() {
   if (!inviteCode.value) return
-  inviteCopied.value = await copyToClipboard(
+  setInviteCodeCopied(await copyToClipboard(
     inviteCode.value,
     t('app.notice.inviteCopySuccess'),
     t('app.notice.copyFailed'),
-  )
+  ))
+}
+
+async function handleSendInviteToFriend(friendId: number) {
+  if (!inviteCode.value) return
+  workspaceError.value = null
+  setInviteFriendState(friendId, 'sending')
+  try {
+    const dm = await dms.createDm(session.token, [friendId])
+    if (!dm) throw new Error(t('app.error.dmCreateFailed'))
+    await dms.sendDmMessage(session.token, dm.id, t('invite.dmMessage', { code: inviteCode.value }))
+    setInviteFriendState(friendId, 'sent')
+    setWorkspaceNotice(t('invite.dmSent'), 'success')
+  } catch (error) {
+    setInviteFriendState(friendId, 'error')
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.dmSendFailed')
+  }
 }
 </script>
 
@@ -1293,8 +1312,21 @@ async function copyInviteCode() {
               <strong>{{ friend.username }}</strong>
               <small>{{ friend.activity ?? friend.handle }}</small>
             </span>
-            <button type="button" @click="copyInviteCode">
-              {{ inviteCopied ? t('invite.copied') : t('invite.send') }}
+            <button
+              type="button"
+              :class="{ sent: inviteFriendState(friend.id) === 'sent', error: inviteFriendState(friend.id) === 'error' }"
+              :disabled="isInviteWorking || dms.isMutating || inviteFriendState(friend.id) === 'sending'"
+              @click="handleSendInviteToFriend(friend.id)"
+            >
+              {{
+                inviteFriendState(friend.id) === 'sending'
+                  ? t('invite.sending')
+                  : inviteFriendState(friend.id) === 'sent'
+                    ? t('invite.sent')
+                    : inviteFriendState(friend.id) === 'error'
+                      ? t('invite.retry')
+                      : t('invite.send')
+              }}
             </button>
           </article>
           <p v-if="!inviteFriends.length" class="invite-empty">{{ t('friends.empty') }}</p>
@@ -1303,7 +1335,7 @@ async function copyInviteCode() {
           <span>{{ t('invite.linkLabel') }}</span>
           <strong>{{ inviteCode }}</strong>
           <button type="button" @click="copyInviteCode">
-            {{ inviteCopied ? t('invite.copied') : t('invite.copy') }}
+            {{ inviteCodeCopied ? t('invite.copied') : t('invite.copy') }}
           </button>
         </div>
       </div>

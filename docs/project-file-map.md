@@ -47,10 +47,11 @@ For ordinary implementation work:
     device labels, or DM contents.
 - `scripts/realtime_browser_smoke.mjs`
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
-    and a DM, then verifies server text, DM, voice peer visibility, remote audio
-    sink, mute/deafen, fake screen-share paths, local screen-preview rendering,
-    remote screen-video rendering, screen-share stop cleanup, connected-tab reload
-    rejoin recovery, and voice leave cleanup through the app UI.
+    friend relationship, and a DM, then verifies invite-DM delivery, server text,
+    DM, voice peer visibility, remote audio sink, mute/deafen, fake screen-share
+    paths, local screen-preview rendering, remote screen-video rendering,
+    screen-share stop cleanup, connected-tab reload rejoin recovery, and voice
+    leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
@@ -462,7 +463,8 @@ For ordinary implementation work:
 - `frontend/src/composables/useContextMenuController.ts`
   - App-owned context menu state.
 - `frontend/src/composables/useInviteController.ts`
-  - Invite modal state, search query, copy state, and filtered invite targets.
+  - Invite modal state, search query, bottom copy state, per-friend delivery state,
+    and filtered invite targets.
 - `frontend/src/composables/useWorkspaceController.ts`
   - Workspace title/subtitle and voice-location derived state.
 - `frontend/src/composables/useVoiceSessionController.ts`

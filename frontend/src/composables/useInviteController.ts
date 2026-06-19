@@ -2,11 +2,14 @@ import { computed, ref } from 'vue'
 
 import type { Friend } from '../types'
 
+export type InviteFriendDeliveryState = 'idle' | 'sending' | 'sent' | 'error'
+
 export function useInviteController(relationships: () => Friend[]) {
   const showInvite = ref(false)
   const inviteCode = ref<string | null>(null)
   const inviteSearchQuery = ref('')
-  const inviteCopied = ref(false)
+  const inviteCodeCopied = ref(false)
+  const inviteFriendStates = ref<Record<number, InviteFriendDeliveryState>>({})
 
   const inviteFriends = computed(() => {
     const query = inviteSearchQuery.value.trim().toLowerCase()
@@ -21,7 +24,8 @@ export function useInviteController(relationships: () => Friend[]) {
 
   function openInvite(code: string | null) {
     inviteCode.value = code
-    inviteCopied.value = false
+    inviteCodeCopied.value = false
+    inviteFriendStates.value = {}
     showInvite.value = true
   }
 
@@ -29,16 +33,35 @@ export function useInviteController(relationships: () => Friend[]) {
     showInvite.value = false
     inviteCode.value = null
     inviteSearchQuery.value = ''
-    inviteCopied.value = false
+    inviteCodeCopied.value = false
+    inviteFriendStates.value = {}
+  }
+
+  function setInviteCodeCopied(copied: boolean) {
+    inviteCodeCopied.value = copied
+  }
+
+  function setInviteFriendState(friendId: number, state: InviteFriendDeliveryState) {
+    inviteFriendStates.value = {
+      ...inviteFriendStates.value,
+      [friendId]: state,
+    }
+  }
+
+  function inviteFriendState(friendId: number) {
+    return inviteFriendStates.value[friendId] ?? 'idle'
   }
 
   return {
     showInvite,
     inviteCode,
     inviteSearchQuery,
-    inviteCopied,
+    inviteCodeCopied,
     inviteFriends,
+    inviteFriendState,
     openInvite,
     closeInvite,
+    setInviteCodeCopied,
+    setInviteFriendState,
   }
 }

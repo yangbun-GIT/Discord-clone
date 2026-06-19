@@ -180,6 +180,14 @@ async function run() {
     method: 'POST',
     body: '{}',
   })
+  await api('/api/users/me/relationships/requests', userA.access_token, {
+    method: 'POST',
+    body: JSON.stringify({ username: userB.user.username }),
+  })
+  await api(`/api/users/me/relationships/${userA.user.id}/accept`, userB.access_token, {
+    method: 'POST',
+    body: '{}',
+  })
   await api('/api/dms', userA.access_token, {
     method: 'POST',
     body: JSON.stringify({ recipient_ids: [userB.user.id] }),
@@ -201,6 +209,29 @@ async function run() {
   const pageB = await createPage(browser, userB)
 
   try {
+    await Promise.all([
+      openGuild(pageA.page, guildName),
+      openGuild(pageB.page, guildName),
+    ])
+
+    await pageA.page.getByRole('button', { name: /Create invite/i }).first().click()
+    await pageA.page.locator('.invite-output strong').waitFor({ state: 'visible', timeout: 10_000 })
+    const inviteCode = (await pageA.page.locator('.invite-output strong').innerText()).trim()
+    await pageA.page
+      .locator('.invite-friend-row')
+      .filter({ hasText: userB.user.username })
+      .getByRole('button', { name: /^Invite$/i })
+      .click()
+    await pageA.page
+      .locator('.invite-friend-row')
+      .filter({ hasText: userB.user.username })
+      .getByRole('button', { name: /Sent/i })
+      .waitFor({ state: 'visible', timeout: 10_000 })
+    await pageA.page.locator('.invite-dialog').getByRole('button', { name: /Close/i }).click()
+    await pageA.page.locator('.invite-dialog').waitFor({ state: 'detached', timeout: 10_000 })
+    await openDirectMessages(pageB.page)
+    await openDirectMessage(pageB.page, userA.user.username)
+    await waitForTextPresence(pageB.page, inviteCode, 'invite direct message')
     await Promise.all([
       openGuild(pageA.page, guildName),
       openGuild(pageB.page, guildName),
@@ -282,6 +313,7 @@ async function run() {
     const result = {
       serverTextRealtime: true,
       dmRealtime: true,
+      inviteDmRealtime: true,
       voiceRemoteAudioSinks: remoteAudioSinks,
       voicePeerDetailVisible: detailLabels.some((text) => /1 peer/.test(text)),
       mutePressed: mutePressed === 'true',
@@ -301,6 +333,7 @@ async function run() {
     if (
       !result.serverTextRealtime
       || !result.dmRealtime
+      || !result.inviteDmRealtime
       || result.voiceRemoteAudioSinks < 1
       || !result.voicePeerDetailVisible
       || !result.mutePressed

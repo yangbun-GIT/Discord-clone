@@ -371,6 +371,8 @@ Verification:
 
 ### Stage M8: Invite Modal Per-Recipient State And DM Invite Delivery
 
+Status: implemented.
+
 Owner files:
 
 - `frontend/src/composables/useInviteController.ts`
@@ -384,16 +386,33 @@ Owner files:
 Tasks:
 
 1. Replace the single global `inviteCopied` state with per-recipient state.
+   - Completed: friend-row invite delivery state is tracked per friend ID, and
+     bottom invite-code copy state is separate.
 2. Keep plain code/link copy as a separate bottom action.
+   - Completed: the bottom copy button only updates invite-code copy state.
 3. For a friend row, send a DM containing a clear invite link or invite code.
+   - Completed: friend-row invite sends a DM containing the invite code.
 4. Confirm recipient can use the invite from the DM flow.
+   - Completed for receipt: browser smoke confirms the recipient sees the invite
+     code in DM realtime. Actual join-from-DM remains code-entry based.
 5. Keep all notices app-owned and localized.
+   - Completed: invite send success uses the existing app-owned notice layer and
+     localized copy.
 
 Acceptance:
 
 - Clicking one friend's invite button affects only that row.
 - Friend-targeted invite results in a DM-visible invitation instead of only copying
   a code.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run test -- --run src/composables/useInviteController.test.ts`
+  passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
+  `inviteDmRealtime: true`.
 
 ### Stage M9: Deafen Behavior
 

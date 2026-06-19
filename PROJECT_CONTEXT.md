@@ -287,6 +287,12 @@ message rows keep the actual author. Focused frontend regression coverage verifi
 incoming `DM_CREATE` normalization, and browser realtime smoke still passes for
 live DM receipt.
 
+Manual QA follow-up Stage M8 is implemented in code/docs. The invite controller now
+keeps bottom invite-code copy state separate from per-friend invite delivery state.
+Friend-row invite actions create/open a DM and send a localized invite-code message,
+while the browser realtime smoke now creates a friend relationship, sends an invite
+from the modal, and verifies the recipient receives the invite code in DM realtime.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

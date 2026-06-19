@@ -3529,6 +3529,16 @@ select:focus-visible {
   font-weight: 900;
 }
 
+.invite-friend-row button.sent {
+  color: #dcfce7;
+  background: #248046;
+}
+
+.invite-friend-row button.error {
+  color: #fee2e2;
+  background: #b91c1c;
+}
+
 .discovery-dialog {
   width: min(100%, 430px);
 }

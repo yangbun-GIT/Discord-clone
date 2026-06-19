@@ -456,10 +456,10 @@ Browser UI
     - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
-      voice peer visibility, remote audio sink, mute/deafen, fake screen-share UI,
-      local screen-preview rendering, remote screen-video rendering, screen-share
-      stop cleanup, connected-tab reload rejoin recovery, and voice leave cleanup
-      paths.
+      invite-DM delivery, voice peer visibility, remote audio sink, mute/deafen,
+      fake screen-share UI, local screen-preview rendering, remote screen-video
+      rendering, screen-share stop cleanup, connected-tab reload rejoin recovery,
+      and voice leave cleanup paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
 
