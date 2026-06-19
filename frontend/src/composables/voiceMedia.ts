@@ -1,5 +1,6 @@
 const MEDIA_PERMISSION_TIMEOUT_MS = 30_000
 const VOICE_CONSTRAINT_SUPPORT_KEY = 'discord_clone_voice_constraint_support'
+const VOICE_PROCESSING_SETTINGS_KEY = 'discord_clone_voice_processing_settings'
 
 type ExtendedMediaTrackSupportedConstraints = MediaTrackSupportedConstraints & {
   latency?: boolean
@@ -32,6 +33,12 @@ export interface VoiceConstraintSupport {
   latency: boolean
 }
 
+export interface VoiceProcessingSettings {
+  echoCancellation: boolean
+  noiseSuppression: boolean
+  autoGainControl: boolean
+}
+
 export class VoiceMediaError extends Error {
   constructor(
     public readonly code: VoiceMediaErrorCode,
@@ -47,13 +54,50 @@ export async function captureMicrophone() {
   assertMicrophoneCaptureAvailable()
   return requestStreamWithTimeout(
     navigator.mediaDevices.getUserMedia({
-      audio: buildAudioConstraints(getSupportedVoiceConstraints()),
+      audio: buildAudioConstraints(getSupportedVoiceConstraints(), readVoiceProcessingSettings()),
       video: false,
     }),
     'permission-timeout',
   ).catch((error: unknown) => {
     throw normalizeMediaError(error, 'microphone')
   })
+}
+
+export function defaultVoiceProcessingSettings(): VoiceProcessingSettings {
+  return {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: false,
+  }
+}
+
+export function readVoiceProcessingSettings(): VoiceProcessingSettings {
+  try {
+    const value = getLocalStorage()?.getItem(VOICE_PROCESSING_SETTINGS_KEY)
+    if (!value) return defaultVoiceProcessingSettings()
+    const parsed = JSON.parse(value) as Partial<VoiceProcessingSettings>
+    return {
+      echoCancellation: typeof parsed.echoCancellation === 'boolean'
+        ? parsed.echoCancellation
+        : true,
+      noiseSuppression: typeof parsed.noiseSuppression === 'boolean'
+        ? parsed.noiseSuppression
+        : true,
+      autoGainControl: typeof parsed.autoGainControl === 'boolean'
+        ? parsed.autoGainControl
+        : false,
+    }
+  } catch {
+    return defaultVoiceProcessingSettings()
+  }
+}
+
+export function writeVoiceProcessingSettings(settings: VoiceProcessingSettings) {
+  try {
+    getLocalStorage()?.setItem(VOICE_PROCESSING_SETTINGS_KEY, JSON.stringify(settings))
+  } catch {
+    // Voice preferences are best-effort and should not block settings UI.
+  }
 }
 
 export async function captureDisplay() {
@@ -89,7 +133,7 @@ export function getSupportedVoiceConstraints(): VoiceConstraintSupport {
 
 export function recordVoiceConstraintSupport(support: VoiceConstraintSupport) {
   try {
-    window.localStorage.setItem(VOICE_CONSTRAINT_SUPPORT_KEY, JSON.stringify(support))
+    getLocalStorage()?.setItem(VOICE_CONSTRAINT_SUPPORT_KEY, JSON.stringify(support))
   } catch {
     // Storage is diagnostic-only and must not block media capture.
   }
@@ -97,7 +141,7 @@ export function recordVoiceConstraintSupport(support: VoiceConstraintSupport) {
 
 export function readVoiceConstraintSupport(): VoiceConstraintSupport | null {
   try {
-    const value = window.localStorage.getItem(VOICE_CONSTRAINT_SUPPORT_KEY)
+    const value = getLocalStorage()?.getItem(VOICE_CONSTRAINT_SUPPORT_KEY)
     if (!value) return null
     const parsed = JSON.parse(value) as Partial<VoiceConstraintSupport>
     return {
@@ -190,11 +234,18 @@ function assertDisplayCaptureAvailable() {
   }
 }
 
-function buildAudioConstraints(support: VoiceConstraintSupport): MediaTrackConstraints {
+function getLocalStorage(): Storage | null {
+  return typeof globalThis.localStorage === 'undefined' ? null : globalThis.localStorage
+}
+
+export function buildAudioConstraints(
+  support: VoiceConstraintSupport,
+  settings: VoiceProcessingSettings = defaultVoiceProcessingSettings(),
+): MediaTrackConstraints {
   const audio: ExtendedMediaTrackConstraints = {}
-  if (support.echoCancellation) audio.echoCancellation = { ideal: true }
-  if (support.noiseSuppression) audio.noiseSuppression = { ideal: true }
-  if (support.autoGainControl) audio.autoGainControl = { ideal: true }
+  if (support.echoCancellation) audio.echoCancellation = { ideal: settings.echoCancellation }
+  if (support.noiseSuppression) audio.noiseSuppression = { ideal: settings.noiseSuppression }
+  if (support.autoGainControl) audio.autoGainControl = { ideal: settings.autoGainControl }
   if (support.channelCount) audio.channelCount = { ideal: 1 }
   if (support.sampleRate) audio.sampleRate = { ideal: 48_000 }
   if (support.sampleSize) audio.sampleSize = { ideal: 16 }

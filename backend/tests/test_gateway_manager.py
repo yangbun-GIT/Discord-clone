@@ -236,3 +236,51 @@ async def test_send_voice_signal_targets_voice_channel_member_only() -> None:
         {"op": int(Opcode.DISPATCH), "d": {"type": "offer"}, "s": 1, "t": "VOICE_SIGNAL"}
     ]
     assert other_websocket.sent == []
+
+
+async def test_voice_state_snapshot_sends_current_channel_occupants() -> None:
+    manager = GatewayConnectionManager()
+    actor_websocket = FakeWebSocket()
+    observer_websocket = FakeWebSocket()
+    actor = await manager.connect(actor_websocket)  # type: ignore[arg-type]
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    actor.channel_ids.add(2003)
+    observer.channel_ids.add(2003)
+
+    await manager.broadcast_voice_state(
+        previous_channel_id=None,
+        channel_id=2003,
+        data={
+            "guild_id": 1001,
+            "channel_id": 2003,
+            "user_id": 42,
+            "username": "yangbun",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    await manager.send_voice_state_snapshot(
+        observer,
+        guild_ids={1001},
+        channel_id=2003,
+    )
+
+    assert observer_websocket.sent[-1] == {
+        "op": int(Opcode.DISPATCH),
+        "d": {
+            "guild_ids": [1001],
+            "channel_id": 2003,
+            "states": [
+                {
+                    "guild_id": 1001,
+                    "channel_id": 2003,
+                    "user_id": 42,
+                    "username": "yangbun",
+                    "self_mute": False,
+                    "self_deaf": False,
+                }
+            ],
+        },
+        "s": 2,
+        "t": "VOICE_STATE_SNAPSHOT",
+    }

@@ -2103,6 +2103,15 @@ select:focus-visible {
   accent-color: #5eead4;
 }
 
+.settings-toggle input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.settings-toggle:has(input:disabled) {
+  color: #8b95a5;
+}
+
 .settings-radio-list {
   display: grid;
   gap: 8px;

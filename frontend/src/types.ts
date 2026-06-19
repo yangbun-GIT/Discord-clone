@@ -133,6 +133,12 @@ export type VoiceState = {
   self_deaf: boolean
 }
 
+export type VoiceStateSnapshot = {
+  guild_ids: number[]
+  channel_id: number | null
+  states: VoiceState[]
+}
+
 export type VoiceSignal = {
   channel_id: number
   from_user_id: number

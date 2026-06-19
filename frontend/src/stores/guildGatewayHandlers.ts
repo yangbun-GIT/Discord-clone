@@ -1,4 +1,12 @@
-import type { Channel, Guild, Message, MessageDelete, VoiceSignal, VoiceState } from '../types'
+import type {
+  Channel,
+  Guild,
+  Message,
+  MessageDelete,
+  VoiceSignal,
+  VoiceState,
+  VoiceStateSnapshot,
+} from '../types'
 
 interface GuildGatewayHandlerContext {
   appendMessage: (message: Message) => void
@@ -6,6 +14,7 @@ interface GuildGatewayHandlerContext {
   deleteStoredMessage: (message: MessageDelete) => void
   appendChannel: (channel: Channel) => void
   syncVoiceState: (voiceState: VoiceState) => void
+  syncVoiceSnapshot: (snapshot: VoiceStateSnapshot) => void
   syncGuildUpdate: (guild: Guild) => void
   setLastVoiceSignal: (signal: VoiceSignal) => void
 }
@@ -43,6 +52,18 @@ function isVoiceState(data: Record<string, unknown>): data is VoiceState {
     && typeof data.self_deaf === 'boolean'
 }
 
+function isVoiceStateSnapshot(data: Record<string, unknown>): data is VoiceStateSnapshot {
+  return Array.isArray(data.guild_ids)
+    && data.guild_ids.every((guildId) => typeof guildId === 'number')
+    && (data.channel_id === null || typeof data.channel_id === 'number')
+    && Array.isArray(data.states)
+    && data.states.every((state) => (
+      state !== null
+      && typeof state === 'object'
+      && isVoiceState(state as Record<string, unknown>)
+    ))
+}
+
 function isVoiceSignal(data: Record<string, unknown>): data is VoiceSignal {
   return typeof data.channel_id === 'number'
     && typeof data.from_user_id === 'number'
@@ -74,6 +95,9 @@ const handlers: Record<string, GuildGatewayHandler> = {
   },
   VOICE_STATE_UPDATE(data, context) {
     if (isVoiceState(data)) context.syncVoiceState(data)
+  },
+  VOICE_STATE_SNAPSHOT(data, context) {
+    if (isVoiceStateSnapshot(data)) context.syncVoiceSnapshot(data)
   },
   VOICE_SIGNAL(data, context) {
     if (isVoiceSignal(data)) context.setLastVoiceSignal(data)

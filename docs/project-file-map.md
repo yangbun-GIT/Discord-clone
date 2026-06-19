@@ -422,8 +422,11 @@ For ordinary implementation work:
 - `frontend/src/composables/voiceMedia.ts`
   - Browser microphone/display capture helpers, native audio constraint support
     detection/storage, typed media error normalization, and media-track helpers.
+  - Persists local voice-processing preferences and builds microphone constraints
+    from browser support plus user-selected echo/noise/gain settings.
 - `frontend/src/composables/voiceMedia.test.ts`
-  - Unit coverage for typed microphone/screen media error normalization.
+  - Unit coverage for typed microphone/screen media error normalization and
+    voice-processing constraint generation.
 - `frontend/src/composables/voiceVad.ts`
   - Local AudioContext/analyser voice activity detection and input-level sampling.
 - `frontend/src/composables/voicePeerConnections.ts`
@@ -483,8 +486,8 @@ For ordinary implementation work:
 - `frontend/src/stores/guildVisibility.test.ts`
   - Guild, channel, and server-message visibility policy.
 - `frontend/src/stores/gatewayIdempotency.test.ts`
-  - Server-message, DM-message, voice-state, and guild-update gateway dispatch
-    idempotency for REST/gateway reconciliation races.
+  - Server-message, DM-message, voice-state, voice-state snapshot, and guild-update
+    gateway dispatch idempotency for REST/gateway reconciliation races.
 
 ## Common Task Routing
 
@@ -518,10 +521,12 @@ For ordinary implementation work:
     `frontend/src/stores/guilds.ts`, `frontend/src/stores/dms.ts`.
 - Voice and screen sharing:
   - Backend: `backend/app/gateway/router.py`, `backend/app/gateway/manager.py`,
-    `backend/app/api/routes/meta.py`, `backend/app/core/config.py`.
+    `backend/app/gateway/voice_service.py`, `backend/app/api/routes/meta.py`,
+    `backend/app/core/config.py`.
   - Frontend: `frontend/src/composables/useVoiceRtc.ts`,
     `frontend/src/composables/voiceMedia.ts`,
     `frontend/src/composables/voicePeerConnections.ts`,
+    `frontend/src/stores/voicePresence.ts`,
     `frontend/src/components/VoicePanel.vue`,
     `frontend/src/components/SettingsView.vue`,
     `frontend/src/components/VoiceAudioSink.vue`,

@@ -15,6 +15,14 @@ def auth_token(user_id: int = 42, username: str = "yangbun") -> str:
     return create_access_token(subject=str(user_id), claims={"username": username})
 
 
+def receive_gateway_event(websocket, event_type: str) -> dict[str, object]:
+    for _ in range(8):
+        event = websocket.receive_json()
+        if event.get("t") == event_type:
+            return event
+    raise AssertionError(f"gateway event {event_type} was not received")
+
+
 def test_create_message_requires_auth() -> None:
     client = TestClient(app)
 
@@ -594,7 +602,7 @@ def test_voice_signal_routes_to_target_voice_peer() -> None:
                     },
                 }
             )
-            signal_event = receiver.receive_json()
+            signal_event = receive_gateway_event(receiver, "VOICE_SIGNAL")
 
     assert signal_event["t"] == "VOICE_SIGNAL"
     assert signal_event["d"]["channel_id"] == 2003

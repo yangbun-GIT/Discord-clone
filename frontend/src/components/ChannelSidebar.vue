@@ -28,6 +28,7 @@ const props = defineProps<{
   localSpeaking: boolean
   muted: boolean
   deafened: boolean
+  canCreateInvite: boolean
 }>()
 
 const emit = defineEmits<{
@@ -117,6 +118,7 @@ function toggleServerMenu() {
 function runServerMenuAction(action: 'invite' | 'text' | 'voice' | 'settings') {
   serverMenuOpen.value = false
   if (action === 'invite') {
+    if (!props.canCreateInvite) return
     emit('createInvite')
     return
   }
@@ -182,7 +184,12 @@ onBeforeUnmount(() => {
         <MoreHorizontal :size="18" aria-hidden="true" />
       </button>
       <div v-if="serverMenuOpen" class="server-context-menu" role="menu" @click.stop>
-        <button type="button" role="menuitem" @click="runServerMenuAction('invite')">
+        <button
+          v-if="canCreateInvite"
+          type="button"
+          role="menuitem"
+          @click="runServerMenuAction('invite')"
+        >
           <UserPlus :size="15" aria-hidden="true" />
           <span>{{ t('channel.menu.invitePeople') }}</span>
         </button>
@@ -273,6 +280,7 @@ onBeforeUnmount(() => {
         </button>
         <div class="channel-row-actions" aria-label="Channel actions">
           <button
+            v-if="canCreateInvite"
             type="button"
             :title="t('channel.aria.createInvite')"
             :aria-label="t('channel.aria.createInvite')"
@@ -445,7 +453,7 @@ onBeforeUnmount(() => {
             </span>
           </div>
           <button
-            v-if="connectedVoiceChannelId === channel.id"
+            v-if="connectedVoiceChannelId === channel.id && canCreateInvite"
             type="button"
             class="voice-invite-row"
             @click.stop="$emit('createInvite')"

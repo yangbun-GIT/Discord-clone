@@ -762,15 +762,26 @@ async function handleJoinGuild(code: string) {
 
 async function handleCreateInvite() {
   workspaceError.value = null
+  if (!guilds.canCreateInvite) {
+    workspaceError.value = t('app.error.invitePermission')
+    return
+  }
   isInviteWorking.value = true
   try {
     const invite = await guilds.createInvite(session.token)
     openInvite(invite?.code ?? null)
   } catch (error) {
-    workspaceError.value = error instanceof Error ? error.message : t('app.error.inviteCreateFailed')
+    workspaceError.value = formatInviteError(error)
   } finally {
     isInviteWorking.value = false
   }
+}
+
+function formatInviteError(error: unknown) {
+  if (error instanceof Error && error.message.includes('create invite permission required')) {
+    return t('app.error.invitePermission')
+  }
+  return error instanceof Error ? error.message : t('app.error.inviteCreateFailed')
 }
 
 async function copyInviteCode() {
@@ -843,6 +854,7 @@ async function copyInviteCode() {
       :local-speaking="voiceRtc.localSpeaking.value"
       :muted="voiceRtc.isMuted.value"
       :deafened="isDeafened"
+      :can-create-invite="guilds.canCreateInvite"
       @select="handleSelectChannel"
       @create-channel="handleCreateChannel"
       @create-invite="handleCreateInvite"
@@ -908,11 +920,11 @@ async function copyInviteCode() {
         </div>
         <div v-if="isServerDestination" class="topbar-actions">
           <button
+            v-if="isServerDestination && guilds.canCreateInvite"
             class="topbar-icon-button"
             type="button"
             :aria-label="t('app.header.createInvite')"
             :disabled="!activeGuild || isInviteWorking"
-            v-if="isServerDestination"
             @click="handleCreateInvite"
           >
             <Link :size="17" aria-hidden="true" />
@@ -1051,6 +1063,16 @@ async function copyInviteCode() {
             </div>
           </div>
           <div class="voice-workspace-actions">
+            <button
+              v-if="!selectedVoiceConnected"
+              type="button"
+              class="primary"
+              :aria-label="t('voice.joinSelected')"
+              @click="handleJoinVoiceChannel(selectedVoiceChannel.id)"
+            >
+              <Mic :size="17" aria-hidden="true" />
+              <span>{{ t('voice.joinSelected') }}</span>
+            </button>
             <button
               v-if="selectedVoiceConnected"
               type="button"

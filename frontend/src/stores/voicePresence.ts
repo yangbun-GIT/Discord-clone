@@ -1,6 +1,6 @@
 import { computed, ref, shallowRef, type ComputedRef, type ShallowRef } from 'vue'
 
-import type { Channel, Guild, VoiceSignal, VoiceState } from '../types'
+import type { Channel, Guild, VoiceSignal, VoiceState, VoiceStateSnapshot } from '../types'
 
 interface GuildVoicePresenceOptions {
   guilds: ShallowRef<Guild[]>
@@ -63,6 +63,19 @@ export function createGuildVoicePresence(options: GuildVoicePresenceOptions) {
     ]
   }
 
+  function syncVoiceSnapshot(snapshot: VoiceStateSnapshot) {
+    const guildIds = new Set(snapshot.guild_ids)
+    const nextStates = snapshot.states
+    voiceStates.value = [
+      ...voiceStates.value.filter((state) => {
+        if (!guildIds.has(state.guild_id)) return true
+        if (snapshot.channel_id === null) return false
+        return state.channel_id !== snapshot.channel_id
+      }),
+      ...nextStates,
+    ]
+  }
+
   function setLastVoiceSignal(signal: VoiceSignal) {
     lastVoiceSignal.value = signal
   }
@@ -82,6 +95,7 @@ export function createGuildVoicePresence(options: GuildVoicePresenceOptions) {
     toggleVoice,
     setVoiceConnected,
     syncVoiceState,
+    syncVoiceSnapshot,
     setLastVoiceSignal,
   }
 }

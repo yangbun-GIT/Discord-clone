@@ -1508,6 +1508,49 @@ Additional implementation stages required before claiming real voice completion:
   - Localize permission errors.
   - Add browser QA for member and owner invite behavior.
 
+Implementation update, 2026-06-19:
+
+- Stage C10 completed in code.
+  - `backend/app/gateway/voice_service.py` now keeps an in-memory voice-state
+    registry keyed by guild and user.
+  - `backend/app/gateway/router.py` sends `VOICE_STATE_SNAPSHOT` after READY and
+    immediately after a successful voice join so late joiners receive current
+    occupants.
+  - `frontend/src/stores/voicePresence.ts` applies guild-wide and channel-scoped
+    snapshots as replace operations while preserving incremental
+    `VOICE_STATE_UPDATE` handling.
+  - Automated coverage: `backend/tests/test_gateway_manager.py` and
+    `frontend/src/stores/gatewayIdempotency.test.ts`.
+- Stage C11 completed in code for preview/join clarity.
+  - `frontend/src/App.vue` now shows an explicit Join Voice action in the voice
+    workspace when the selected voice channel is only being previewed.
+  - Sidebar, workspace, and bottom voice state continue to use the shared guild
+    voice presence source.
+- Stage C12 completed in code for browser-supported processing controls.
+  - `frontend/src/composables/voiceMedia.ts` persists local audio-processing
+    preferences and builds microphone constraints from browser support plus user
+    settings.
+  - `frontend/src/components/SettingsView.vue` exposes echo cancellation, noise
+    suppression, and auto gain controls only when the browser reports support.
+  - No raw audio, device labels, ICE candidates, or credentials are written to
+    docs or logs.
+- Stage C13 completed in code for invite permissions.
+  - `frontend/src/stores/guilds.ts` exposes `canCreateInvite`.
+  - `frontend/src/App.vue` and `frontend/src/components/ChannelSidebar.vue` hide
+    unauthorized invite controls and translate server-side invite permission
+    denials into clone UI copy.
+
+Remaining manual QA before claiming real voice completion:
+
+- Two Chrome profiles with account A and B must verify that A-joins-first and
+  B-joins-first both show both occupants in sidebar and workspace without refresh.
+- A timed speech test must verify spoken Korean/English intelligibility, echo,
+  clipping, dropout, keyboard-noise handling, mute/unmute, reconnect, and screen
+  share start/stop on real microphones. Fake-device tests are not enough for this
+  gate.
+- Owner/member invite behavior must be checked in-browser: owner sees invite
+  controls and member without `CREATE_INSTANT_INVITE` does not.
+
 ## Voice Architecture Decision Update
 
 Date: 2026-06-19.

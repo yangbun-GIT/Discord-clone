@@ -151,6 +151,36 @@ describe('gateway dispatch idempotency', () => {
     expect(store.voiceStates).toHaveLength(0)
   })
 
+  it('replaces voice states from a channel-scoped snapshot', () => {
+    const store = useGuildStore()
+
+    store.handleGatewayDispatch('VOICE_STATE_UPDATE', {
+      guild_id: 1001,
+      channel_id: 2003,
+      user_id: 701,
+      username: 'Mina',
+      self_mute: false,
+      self_deaf: false,
+    })
+    store.handleGatewayDispatch('VOICE_STATE_SNAPSHOT', {
+      guild_ids: [1001],
+      channel_id: 2003,
+      states: [
+        {
+          guild_id: 1001,
+          channel_id: 2003,
+          user_id: 702,
+          username: 'Joon',
+          self_mute: false,
+          self_deaf: false,
+        },
+      ],
+    })
+
+    expect(store.voiceStates).toHaveLength(1)
+    expect(store.voiceStates[0].user_id).toBe(702)
+  })
+
   it('replaces gateway guild updates without duplicating guilds or losing valid active channel', () => {
     const store = useGuildStore()
     const updatedGuild: Guild = {

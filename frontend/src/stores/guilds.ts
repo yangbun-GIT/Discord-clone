@@ -24,6 +24,7 @@ import {
 import { createGuildVoicePresence } from './voicePresence'
 
 const ADMINISTRATOR_PERMISSION = 1 << 3
+const CREATE_INSTANT_INVITE_PERMISSION = 1 << 0
 const MANAGE_MESSAGES_PERMISSION = 1 << 13
 
 export const useGuildStore = defineStore('guilds', () => {
@@ -58,12 +59,17 @@ export const useGuildStore = defineStore('guilds', () => {
     toggleVoice,
     setVoiceConnected,
     syncVoiceState,
+    syncVoiceSnapshot,
     setLastVoiceSignal,
   } = voicePresence
   const canManageRoles = computed(() => Boolean((activeGuild.value?.permissions ?? 0) & ADMINISTRATOR_PERMISSION))
   const canManageMessages = computed(() => {
     const permissions = activeGuild.value?.permissions ?? 0
     return Boolean((permissions & ADMINISTRATOR_PERMISSION) || (permissions & MANAGE_MESSAGES_PERMISSION))
+  })
+  const canCreateInvite = computed(() => {
+    const permissions = activeGuild.value?.permissions ?? 0
+    return Boolean((permissions & ADMINISTRATOR_PERMISSION) || (permissions & CREATE_INSTANT_INVITE_PERMISSION))
   })
 
   function setError(cause: unknown, fallback: string) {
@@ -348,6 +354,7 @@ export const useGuildStore = defineStore('guilds', () => {
       deleteStoredMessage,
       appendChannel,
       syncVoiceState,
+      syncVoiceSnapshot,
       syncGuildUpdate,
       setLastVoiceSignal,
     })
@@ -414,6 +421,7 @@ export const useGuildStore = defineStore('guilds', () => {
     connectedVoiceStates,
     canManageRoles,
     canManageMessages,
+    canCreateInvite,
     voiceConnected,
     connectedVoiceGuildId,
     connectedVoiceChannelId,

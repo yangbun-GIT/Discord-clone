@@ -15,7 +15,12 @@ import {
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
-import type { VoiceConstraintSupport } from '../composables/voiceMedia'
+import {
+  readVoiceProcessingSettings,
+  writeVoiceProcessingSettings,
+  type VoiceConstraintSupport,
+  type VoiceProcessingSettings,
+} from '../composables/voiceMedia'
 import type { User, UserPresenceStatus } from '../types'
 
 type SettingsPanel =
@@ -51,6 +56,7 @@ const compactMode = ref(false)
 const reduceMotion = ref(false)
 const dmSafety = ref(true)
 const timeFormat = ref<'auto' | '24h'>('auto')
+const voiceProcessing = ref<VoiceProcessingSettings>(readVoiceProcessingSettings())
 const { language, setLanguage, t } = useI18n()
 
 const settingsGroups = computed<Array<{ id: SettingsGroup; label: string }>>(() => [
@@ -81,12 +87,32 @@ const statusLabel = computed(() => {
 })
 const audioProcessingSummary = computed(() => {
   const enabled = [
-    props.constraintSupport.echoCancellation ? t('settings.echoCancellation') : null,
-    props.constraintSupport.noiseSuppression ? t('settings.noiseSuppression') : null,
-    props.constraintSupport.autoGainControl ? t('settings.autoGainControl') : null,
+    props.constraintSupport.echoCancellation && voiceProcessing.value.echoCancellation
+      ? t('settings.echoCancellation')
+      : null,
+    props.constraintSupport.noiseSuppression && voiceProcessing.value.noiseSuppression
+      ? t('settings.noiseSuppression')
+      : null,
+    props.constraintSupport.autoGainControl && voiceProcessing.value.autoGainControl
+      ? t('settings.autoGainControl')
+      : null,
   ].filter(Boolean)
   return enabled.length ? enabled.join(' / ') : t('common.status.unavailable')
 })
+
+function setVoiceProcessingOption(key: keyof VoiceProcessingSettings, enabled: boolean) {
+  voiceProcessing.value = {
+    ...voiceProcessing.value,
+    [key]: enabled,
+  }
+  writeVoiceProcessingSettings(voiceProcessing.value)
+}
+
+function handleVoiceProcessingChange(key: keyof VoiceProcessingSettings, event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  setVoiceProcessingOption(key, target.checked)
+}
 </script>
 
 <template>
@@ -235,6 +261,37 @@ const audioProcessingSummary = computed(() => {
             <Mic :size="18" aria-hidden="true" />
             <meter min="0" max="100" :value="inputLevel" :aria-label="t('voice.aria.inputLevel')" />
           </div>
+        </section>
+        <section class="settings-card">
+          <h2>{{ t('settings.audioProcessing') }}</h2>
+          <p>{{ t('settings.audioProcessingDescription') }}</p>
+          <label class="settings-toggle">
+            <span>{{ t('settings.echoCancellation') }}</span>
+            <input
+              type="checkbox"
+              :checked="voiceProcessing.echoCancellation"
+              :disabled="!constraintSupport.echoCancellation"
+              @change="handleVoiceProcessingChange('echoCancellation', $event)"
+            />
+          </label>
+          <label class="settings-toggle">
+            <span>{{ t('settings.noiseSuppression') }}</span>
+            <input
+              type="checkbox"
+              :checked="voiceProcessing.noiseSuppression"
+              :disabled="!constraintSupport.noiseSuppression"
+              @change="handleVoiceProcessingChange('noiseSuppression', $event)"
+            />
+          </label>
+          <label class="settings-toggle">
+            <span>{{ t('settings.autoGainControl') }}</span>
+            <input
+              type="checkbox"
+              :checked="voiceProcessing.autoGainControl"
+              :disabled="!constraintSupport.autoGainControl"
+              @change="handleVoiceProcessingChange('autoGainControl', $event)"
+            />
+          </label>
         </section>
       </div>
 

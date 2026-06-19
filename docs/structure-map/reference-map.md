@@ -337,6 +337,7 @@ Browser UI
     - Gateway connection lifecycle cleanup, including voice leave fan-out when a
       connection disconnects, is reaped as a zombie, or is removed after a stale
       send failure.
+    - Voice-state snapshot dispatch for READY and post-join synchronization.
 
 - `backend/app/gateway/connection.py`
   - References:
@@ -355,6 +356,8 @@ Browser UI
   `zombie_reaper.py`
   - Referenced by:
     - `backend/app/gateway/manager.py`
+  - `voice_service.py` owns the in-memory voice-state registry used to send
+    authoritative `VOICE_STATE_SNAPSHOT` payloads to late-joining clients.
 
 - `backend/app/realtime/publisher.py`
   - References:
@@ -659,12 +662,16 @@ Browser UI
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
     - `frontend/src/App.vue` for media error translation keys.
-    - `frontend/src/components/SettingsView.vue` for safe constraint-support display.
+    - `frontend/src/components/SettingsView.vue` for safe constraint-support display
+      and voice-processing preference toggles.
     - `frontend/src/composables/useVoiceRtc.ts`
     - `frontend/src/composables/voicePeerConnections.ts`
     - `frontend/src/composables/voiceMedia.test.ts`
   - Talks to:
     - Browser `navigator.mediaDevices`, `localStorage`, and media stream tracks.
+  - Owns:
+    - Typed microphone/screen capture errors, local voice-processing preferences,
+      browser-supported audio constraint detection, and media-track cleanup.
 
 - `frontend/src/composables/voiceVad.ts`
   - Referenced by:
@@ -718,8 +725,8 @@ Browser UI
   - Receives relationship/DM state from `frontend/src/App.vue`.
   - Emits friends/DM/search/menu actions to `frontend/src/App.vue`.
 - `frontend/src/components/ChannelSidebar.vue`
-  - Receives active guild, channels, voice state, and user/voice status from
-    `frontend/src/App.vue`.
+  - Receives active guild, channels, voice state, invite permission, and user/voice
+    status from `frontend/src/App.vue`.
   - Emits channel, invite, voice, user, and menu actions to `frontend/src/App.vue`.
 - `frontend/src/components/FriendsHome.vue`
   - Receives relationships/activity state from `frontend/src/App.vue`.
@@ -747,6 +754,8 @@ Browser UI
 - `frontend/src/components/SettingsView.vue`
   - Receives current user, status controls, and debug-safe voice constraint support
     from `frontend/src/App.vue`.
+  - Reads/writes local voice-processing preferences through
+    `frontend/src/composables/voiceMedia.ts`.
   - Emits locale/status/settings actions to `frontend/src/App.vue`.
 
 ## High-Risk Dependency Clusters

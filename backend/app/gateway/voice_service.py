@@ -9,6 +9,7 @@ class VoiceGatewayService:
     def __init__(self, connections: ConnectionRegistry, broadcaster: GatewayBroadcaster) -> None:
         self._connections = connections
         self._broadcaster = broadcaster
+        self._voice_states: dict[tuple[int, int], dict[str, object]] = {}
 
     async def broadcast_voice_state(
         self,
@@ -17,6 +18,7 @@ class VoiceGatewayService:
         channel_id: int | None,
         data: dict[str, object],
     ) -> list[ClientConnection]:
+        self._sync_voice_state(data)
         target_channel_ids = {
             item
             for item in (previous_channel_id, channel_id)
@@ -54,6 +56,45 @@ class VoiceGatewayService:
             },
         )
 
+    async def send_voice_state_snapshot(
+        self,
+        connection: ClientConnection,
+        *,
+        guild_ids: set[int],
+        channel_id: int | None = None,
+    ) -> list[ClientConnection]:
+        states = self.current_voice_states(guild_ids=guild_ids, channel_id=channel_id)
+        if not states:
+            return []
+        try:
+            await connection.send(
+                op=Opcode.DISPATCH,
+                event="VOICE_STATE_SNAPSHOT",
+                data={
+                    "guild_ids": sorted(guild_ids),
+                    "channel_id": channel_id,
+                    "states": states,
+                },
+            )
+        except RuntimeError:
+            return [connection]
+        return []
+
+    def current_voice_states(
+        self,
+        *,
+        guild_ids: set[int],
+        channel_id: int | None = None,
+    ) -> list[dict[str, object]]:
+        states = [
+            state
+            for state in self._voice_states.values()
+            if state.get("guild_id") in guild_ids
+        ]
+        if channel_id is not None:
+            states = [state for state in states if state.get("channel_id") == channel_id]
+        return [dict(state) for state in states]
+
     async def send_voice_signal(
         self,
         *,
@@ -75,3 +116,14 @@ class VoiceGatewayService:
                 stale.append(connection)
 
         return sent, stale
+
+    def _sync_voice_state(self, data: dict[str, object]) -> None:
+        guild_id = data.get("guild_id")
+        user_id = data.get("user_id")
+        if not isinstance(guild_id, int) or not isinstance(user_id, int):
+            return
+        key = (guild_id, user_id)
+        if data.get("channel_id") is None:
+            self._voice_states.pop(key, None)
+            return
+        self._voice_states[key] = dict(data)

@@ -125,6 +125,10 @@ async def gateway(websocket: WebSocket) -> None:
                         },
                     },
                 )
+                await gateway_manager.send_voice_state_snapshot(
+                    connection,
+                    guild_ids=subscribed_guild_ids,
+                )
                 continue
 
             if event.op == Opcode.REQUEST_GUILD_MEMBERS:
@@ -204,6 +208,11 @@ async def gateway(websocket: WebSocket) -> None:
                             "self_mute": voice_state.self_mute,
                             "self_deaf": voice_state.self_deaf,
                         },
+                    )
+                    await gateway_manager.send_voice_state_snapshot(
+                        connection,
+                        guild_ids={voice_state.guild_id},
+                        channel_id=voice_state.channel_id,
                     )
                 logger.info(
                     "gateway voice state user_id=%s previous_channel_id=%s channel_id=%s",

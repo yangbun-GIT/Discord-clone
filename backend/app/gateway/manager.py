@@ -85,6 +85,20 @@ class GatewayConnectionManager:
         )
         await self._disconnect_stale(stale)
 
+    async def send_voice_state_snapshot(
+        self,
+        connection: ClientConnection,
+        *,
+        guild_ids: set[int],
+        channel_id: int | None = None,
+    ) -> None:
+        stale = await self._voice.send_voice_state_snapshot(
+            connection,
+            guild_ids=guild_ids,
+            channel_id=channel_id,
+        )
+        await self._disconnect_stale(stale)
+
     async def send_voice_signal(
         self,
         *,

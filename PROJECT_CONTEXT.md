@@ -1815,6 +1815,18 @@ Completed Stage 2 bridge work:
   and `npm run smoke:realtime:browser`. The remaining gates are real microphone
   quality, real screen picker UX, different-PC LAN, and TURN/NAT internet voice
   with real TURN credentials.
+- Completed post-C9 communication remediation C10-C13:
+  backend gateway voice state now keeps an authoritative in-memory snapshot and
+  dispatches `VOICE_STATE_SNAPSHOT` on READY and post-join so late two-account
+  sessions see existing voice occupants. Frontend guild voice presence applies
+  channel/guild snapshots as replace operations. Voice workspace preview now has
+  an explicit Join Voice action. `voiceMedia.ts` persists browser audio-processing
+  preferences and `SettingsView.vue` exposes supported echo cancellation, noise
+  suppression, and auto-gain toggles without logging raw media/device data.
+  Invite controls are permission-aware through `guilds.canCreateInvite`, with
+  unauthorized controls hidden and permission errors localized. Automated frontend
+  and gateway tests cover snapshots and media constraints; real microphone speech,
+  owner/member invite, LAN, and TURN gates remain manual QA items.
 
 After each stage or meaningful feature:
 
