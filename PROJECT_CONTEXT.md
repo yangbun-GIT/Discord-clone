@@ -2114,6 +2114,17 @@ Completed Stage 2 bridge work:
   readiness only; final internet communication still requires real TURN credentials
   and two different networks to pass text, DM, voice, mute/unmute, screen-share
   start/stop, and reconnect checks.
+- External deployment decision preparation is complete in
+  `docs/external-deployment-decision.md`. The selected first external QA path is a
+  single VM Docker Compose deployment with Caddy HTTPS, runtime frontend/backend
+  containers, PostgreSQL, Redis, and TURN configured through environment variables.
+  Managed TURN is recommended for the first public external QA pass, with
+  self-hosted coturn kept as an option when VM firewall ports can be verified.
+  Local PC port forwarding, PaaS-first deployment, static frontend plus separate
+  backend, and GitHub Pages-only deployment are not selected as the first route.
+  This pass did not provision a VM, configure DNS, configure real TURN credentials,
+  or run an external different-network media test; those items remain
+  pending/unverified.
 
 After each stage or meaningful feature:
 

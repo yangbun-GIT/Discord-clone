@@ -131,6 +131,11 @@ Use this when the local stack is running through Docker Compose.
 
 ## TURN / NAT Test
 
+Read `docs/external-deployment-decision.md` before running this section. The
+selected first external QA path is a single VM Docker Compose deployment with
+Caddy HTTPS and TURN configured through environment variables. Keep this section
+pending until the VM/domain/TURN resources exist.
+
 1. Set production-like ICE servers in `.env` or the host secret store:
 
    ```powershell

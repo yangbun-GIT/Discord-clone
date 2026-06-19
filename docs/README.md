@@ -165,6 +165,13 @@ the project prompt and context files before changing code.
     `compose.production.example.yaml`, `deploy/Caddyfile.example`,
     `deploy/coturn/turnserver.conf.example`, and
     `scripts/deployment_readiness_check.mjs`.
+- `docs/external-deployment-decision.md`
+  - Current decision record for the first external-network QA deployment.
+  - Compares local port forwarding, VM/IaaS, PaaS, static frontend plus separate
+    backend, and single VM Docker Compose.
+  - Selects single VM Docker Compose with Caddy and TURN configuration while
+    keeping external TURN/NAT voice marked pending until real infrastructure and
+    two-network QA are available.
 - `docs/voice-qa.md`
   - Local two-browser voice smoke test, TURN/NAT test, deployment voice checklist,
     and WebRTC quality signal interpretation.
@@ -190,6 +197,9 @@ the project prompt and context files before changing code.
 - Update `docs/implementation-plan.md` when stage status or roadmap scope changes.
 - Update `docs/deployment.md` when runtime, deployment, environment, Redis, Docker,
   HTTPS, WebSocket, or TURN assumptions change.
+- Update `docs/external-deployment-decision.md` when the external deployment
+  provider, topology, TURN strategy, readiness command flow, or pending external
+  gate changes.
 - Update `docs/voice-qa.md` when voice, screen sharing, TURN, or WebRTC quality QA
   steps change.
 - Update `docs/realtime-communication-qa.md` when automated communication smoke,

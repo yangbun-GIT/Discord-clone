@@ -125,6 +125,12 @@ For ordinary implementation work:
     `i18n/index.ts`.
 - `docs/deployment.md`
   - Runtime, Docker, Redis, HTTPS/WebSocket, TURN, and deployment hardening.
+- `docs/external-deployment-decision.md`
+  - Current decision record for the first external-network QA deployment.
+  - Selects single VM Docker Compose with Caddy and managed TURN first, self-hosted
+    coturn optional.
+  - Separates user-prepared resources, Codex-actionable setup, deployment command
+    flow, verification checklist, and pending external gates.
 - `docs/voice-qa.md`
   - Voice, screen sharing, TURN, and WebRTC QA procedure.
 - `docs/remediation-tasks/realtime-communication-plan.md`
@@ -656,7 +662,8 @@ For ordinary implementation work:
   - `compose.yaml`, `backend/Dockerfile`, `frontend/Dockerfile`,
     `frontend/nginx.conf`, `compose.production.example.yaml`,
     `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`,
-    `scripts/deployment_readiness_check.mjs`, `docs/deployment.md`, `README.md`.
+    `scripts/deployment_readiness_check.mjs`, `docs/deployment.md`,
+    `docs/external-deployment-decision.md`, `README.md`.
 - Test updates:
   - Backend tests live in `backend/tests`.
   - Frontend unit tests live beside owner modules, for example

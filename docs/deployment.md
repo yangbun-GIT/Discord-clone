@@ -19,6 +19,11 @@ Recommended external-test topology for this project:
 5. PostgreSQL and Redis as managed services or Compose services.
 6. TURN through either a managed TURN provider or a self-hosted coturn service.
 
+The deployment decision record is `docs/external-deployment-decision.md`. It
+selects single VM Docker Compose as the first external-network QA path and keeps
+TURN/NAT internet voice marked incomplete until a real HTTPS/WSS deployment, TURN
+configuration, and two different networks are verified.
+
 This is preferred over GitHub Pages or another static-only host because the clone
 requires a stateful backend API, authenticated WebSocket gateway, PostgreSQL,
 Redis-backed fan-out for multi-worker deployments, and WebRTC ICE/TURN
@@ -196,6 +201,10 @@ npm run check:deployment:readiness
 ```
 
 ## VM Checklist
+
+Follow `docs/external-deployment-decision.md` before provisioning external
+resources. It separates user-prepared items from Codex-actionable work and records
+which release gates must remain `Pending / Not Verified`.
 
 1. Provision a small Oracle Cloud or GCP VM.
 2. Install Docker Engine and the Compose plugin.

@@ -412,7 +412,10 @@ LAN success is not TURN/NAT internet success.
 
 ## TURN/NAT QA
 
-Follow `docs/voice-qa.md#turn--nat-test`. Record:
+Follow `docs/external-deployment-decision.md` and
+`docs/voice-qa.md#turn--nat-test`. The selected first external QA topology is
+single VM Docker Compose with Caddy HTTPS and TURN configured through environment
+variables. Record:
 
 - ICE server count.
 - `turn_configured` value.

@@ -1753,6 +1753,49 @@ Remaining external gate:
 - The final internet communication claim requires two different networks to pass
   text, DM, voice, mute/unmute, screen-share start/stop, and reconnect checks.
 
+## External Deployment Decision Pass
+
+Date: 2026-06-20.
+
+Scope:
+
+- Decide the first external-network deployment approach before provisioning
+  external infrastructure.
+- Do not claim external TURN/NAT voice, screen sharing, or reconnect success.
+- Keep the current same-PC and same-Wi-Fi HTTPS LAN behavior as a regression gate.
+
+Decision record:
+
+- `docs/external-deployment-decision.md` is now the source document for the first
+  external deployment choice.
+- The selected path is single VM Docker Compose with Caddy HTTPS, runtime
+  frontend/backend containers, PostgreSQL, Redis, and TURN supplied through
+  environment configuration.
+- Managed TURN is recommended for the first public external QA pass. Self-hosted
+  coturn remains available when the user is ready to open and verify the required
+  UDP/TCP firewall ports.
+
+Candidate comparison result:
+
+- Local PC port forwarding is rejected as the primary route because residential
+  NAT, changing IPs, certificate trust, uptime, and TURN hosting are fragile.
+- VM/IaaS is viable and becomes the selected shape when paired with the existing
+  Docker Compose assets.
+- PaaS is not first choice because app deployment is easier, but TURN, persistent
+  Redis/PostgreSQL, WebSocket timeouts, and provider-specific networking split the
+  realtime stack.
+- Static frontend plus separate backend is deferred because it adds CORS/WSS
+  split-origin risk while still requiring a backend and TURN host.
+- Single VM Docker Compose best matches the current repository, same-origin
+  gateway/API design, and operator debugging needs.
+
+Pending / not verified:
+
+- No external VM/VPS has been provisioned in this pass.
+- No public DNS hostname has been configured in this pass.
+- No real TURN credential has been configured in this pass.
+- No different-network voice or screen-share QA has been run in this pass.
+
 ## Dependency Decision
 
 No new dependency is selected at the planning stage.

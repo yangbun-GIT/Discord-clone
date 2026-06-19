@@ -474,6 +474,7 @@ Browser UI
   - Referenced by:
     - `README.md`
     - `docs/deployment.md`
+    - `docs/external-deployment-decision.md`
     - `docs/voice-qa.md`
   - Owns:
     - Safe operator-facing STUN/TURN readiness output without ICE URLs, TURN
@@ -488,6 +489,7 @@ Browser UI
   - Referenced by:
     - `README.md`
     - `docs/deployment.md`
+    - `docs/external-deployment-decision.md`
     - `docs/voice-qa.md`
     - `docs/realtime-communication-qa.md`
   - Owns:
@@ -518,6 +520,7 @@ Browser UI
   - Referenced by:
     - `README.md`
     - `docs/deployment.md`
+    - `docs/external-deployment-decision.md`
     - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - Placeholder-only single-server external QA topology with Caddy HTTPS,
@@ -527,6 +530,7 @@ Browser UI
   - Referenced by:
     - `compose.production.example.yaml`
     - `docs/deployment.md`
+    - `docs/external-deployment-decision.md`
   - Owns:
     - Public HTTPS reverse-proxy routing for `/api`, `/gateway`, and frontend app
       routes.
@@ -535,6 +539,7 @@ Browser UI
   - Referenced by:
     - `compose.production.example.yaml`
     - `docs/deployment.md`
+    - `docs/external-deployment-decision.md`
   - Owns:
     - Placeholder-only self-hosted coturn configuration template.
 
