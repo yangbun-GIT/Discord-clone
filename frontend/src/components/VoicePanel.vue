@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   ChevronUp,
   Headphones,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
+import { addDocumentEventListener } from '../services/browserApi'
 import type { VoiceDeviceList, VoiceDeviceSettings } from '../composables/voiceMedia'
 import type { Channel, User, UserPresenceStatus, VoiceQualityStats } from '../types'
 
@@ -53,6 +54,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const audioMenu = ref<'input' | 'output' | null>(null)
+let removeDocumentPointerDown: (() => void) | null = null
+let removeDocumentKeyDown: (() => void) | null = null
 
 const presenceLabel = computed(() => {
   if (props.userStatus === 'dnd') return t('common.status.dnd')
@@ -103,6 +106,39 @@ function handleNoiseGateChange(event: Event) {
   if (!(target instanceof HTMLInputElement)) return
   emit('updateVoiceDeviceSettings', { noiseGate: target.checked })
 }
+
+function openSettings() {
+  audioMenu.value = null
+  emit('openSettings')
+}
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!audioMenu.value) return
+  const target = event.target
+  if (
+    target instanceof HTMLElement
+    && target.closest('.voice-device-popover, .voice-control-cluster')
+  ) {
+    return
+  }
+  audioMenu.value = null
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') audioMenu.value = null
+}
+
+onMounted(() => {
+  removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+  removeDocumentPointerDown?.()
+  removeDocumentKeyDown?.()
+  removeDocumentPointerDown = null
+  removeDocumentKeyDown = null
+})
 
 </script>
 
@@ -245,7 +281,7 @@ function handleNoiseGateChange(event: Event) {
           <strong>{{ voiceDeviceSettings.outputVolume }}%</strong>
         </label>
       </template>
-      <button type="button" class="voice-device-settings-button" @click="$emit('openSettings')">
+      <button type="button" class="voice-device-settings-button" @click="openSettings">
         <Settings :size="16" aria-hidden="true" />
         <span>{{ t('settings.voice') }}</span>
       </button>
@@ -321,7 +357,7 @@ function handleNoiseGateChange(event: Event) {
           type="button"
           :title="t('voice.userSettings')"
           :aria-label="t('voice.userSettings')"
-          @click="$emit('openSettings')"
+          @click="openSettings"
         >
           <Settings :size="17" aria-hidden="true" />
         </button>

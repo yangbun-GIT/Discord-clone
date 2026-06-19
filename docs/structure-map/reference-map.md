@@ -822,9 +822,12 @@ Browser UI
 - `frontend/src/components/DirectMessageView.vue`
   - Receives selected DM and user state from `frontend/src/App.vue`.
   - Emits message-send actions to `frontend/src/App.vue`.
+  - Owns local emoji panel state and outside-click/Escape dismissal.
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.
+  - Owns local message options and composer panel state with outside-click/Escape
+    dismissal.
 - `frontend/src/components/MemberList.vue`
   - Receives members, roles, and permission flags from `frontend/src/App.vue`.
   - Emits role/member actions to `frontend/src/App.vue`.
@@ -836,6 +839,8 @@ Browser UI
     `frontend/src/App.vue`.
   - Keeps screen sharing and manual microphone mute available while deafened so
     deafen only controls local playback of remote audio.
+  - Owns quick input/output popover state, outside-click/Escape dismissal, and the
+    lower-left user-status/connected-session card ordering.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.

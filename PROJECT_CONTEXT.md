@@ -1972,6 +1972,14 @@ Completed Stage 2 bridge work:
   routing. Frontend lint, production build, and focused `voiceMedia` tests passed.
   Real sustained-vowel/fan-noise listening remains a manual QA gate because
   automated tests cannot judge speech intelligibility.
+- Added post-M10 overlay dismissal and bottom voice-panel layout polish:
+  `VoicePanel.vue` now closes input/output quick settings on outside click or
+  Escape, and the connected voice-session card is ordered below the user status
+  card so the quick settings popover opens directly above the controls instead of
+  above the connected-session card. `ChatView.vue` and `DirectMessageView.vue` now
+  apply the same outside-click/Escape dismissal policy to composer and message
+  option panels. Frontend lint, tests, production build, and browser smoke for the
+  voice quick-settings outside-click behavior passed.
 
 After each stage or meaningful feature:
 

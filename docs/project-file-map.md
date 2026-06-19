@@ -389,10 +389,10 @@ For ordinary implementation work:
   - Emits real Add Friend, pending accept/reject/cancel, remove, block, and unblock
     actions instead of local-only UI results.
 - `frontend/src/components/DirectMessageView.vue`
-  - DM intro, message timeline, and composer.
+  - DM intro, message timeline, composer, and local emoji panel dismissal.
 - `frontend/src/components/ChatView.vue`
-  - Server text-channel timeline, message actions, attachments, reactions, and
-    composer.
+  - Server text-channel timeline, message actions/options, attachments, reactions,
+    composer panels, and outside-click/Escape dismissal for local overlays.
 - `frontend/src/components/MemberList.vue`
   - Server member list and role/member controls.
 - `frontend/src/components/VoicePanel.vue`
@@ -400,6 +400,8 @@ For ordinary implementation work:
     controls, and quick input/output device popovers.
   - Keeps manual microphone mute available while deafened so mute and deafen remain
     independent.
+  - Closes quick input/output popovers on outside click or Escape and orders the
+    connected voice-session card below the user status card.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Remote audio stream rendering, output volume, output device sink selection when
     supported, and local deafen-to-audio-muted binding.

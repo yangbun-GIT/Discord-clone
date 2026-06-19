@@ -11,9 +11,10 @@ import {
   Trash2,
   X,
 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useI18n } from '../i18n'
+import { addDocumentEventListener } from '../services/browserApi'
 import type { Channel, Message, User } from '../types'
 
 const props = defineProps<{
@@ -32,6 +33,8 @@ const activeComposerPanel = ref<'upload' | 'templates' | 'emoji' | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFileLabel = ref('')
 const { t } = useI18n()
+let removeDocumentPointerDown: (() => void) | null = null
+let removeDocumentKeyDown: (() => void) | null = null
 const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '🙌']
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
@@ -139,6 +142,35 @@ function messageTime(index: number) {
     new Date(2026, 4, 18, 8, 54 + index),
   )
 }
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (activeComposerPanel.value && !target.closest('.composer-shell')) {
+    activeComposerPanel.value = null
+  }
+  if (optionsMessageId.value && !target.closest('.message-actions')) {
+    optionsMessageId.value = null
+  }
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return
+  activeComposerPanel.value = null
+  optionsMessageId.value = null
+}
+
+onMounted(() => {
+  removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+  removeDocumentPointerDown?.()
+  removeDocumentKeyDown?.()
+  removeDocumentPointerDown = null
+  removeDocumentKeyDown = null
+})
 </script>
 
 <template>

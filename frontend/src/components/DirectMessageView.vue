@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Laugh, Send } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
+import { addDocumentEventListener } from '../services/browserApi'
 import type { DirectMessage, User } from '../types'
 
 const props = defineProps<{
@@ -14,6 +15,8 @@ const props = defineProps<{
 const draft = ref('')
 const showEmojiPanel = ref(false)
 const { t } = useI18n()
+let removeDocumentPointerDown: (() => void) | null = null
+let removeDocumentKeyDown: (() => void) | null = null
 const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '🙌']
 
 const emit = defineEmits<{
@@ -55,6 +58,29 @@ watch(
     showEmojiPanel.value = false
   },
 )
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!showEmojiPanel.value) return
+  const target = event.target
+  if (target instanceof HTMLElement && target.closest('.composer-shell')) return
+  showEmojiPanel.value = false
+}
+
+function handleDocumentKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') showEmojiPanel.value = false
+}
+
+onMounted(() => {
+  removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
+  removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+  removeDocumentPointerDown?.()
+  removeDocumentKeyDown?.()
+  removeDocumentPointerDown = null
+  removeDocumentKeyDown = null
+})
 </script>
 
 <template>
