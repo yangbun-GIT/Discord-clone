@@ -2407,6 +2407,19 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
+.friend-request-group + .friend-request-group {
+  margin-top: 16px;
+}
+
+.friend-group-heading {
+  margin: 0 0 6px;
+  color: #b5bac1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .friend-row {
   position: relative;
   display: grid;

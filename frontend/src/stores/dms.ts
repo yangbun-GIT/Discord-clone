@@ -102,10 +102,40 @@ export const useDmStore = defineStore('dms', () => {
     relationships.value = exists
       ? relationships.value.map((item) => (item.id === cleanedRelationship.id ? cleanedRelationship : item))
       : [...relationships.value, cleanedRelationship]
+    syncRelationshipPresence(cleanedRelationship)
   }
 
   function removeRelationship(relationship: { id: number }) {
     relationships.value = relationships.value.filter((item) => item.id !== relationship.id)
+  }
+
+  function syncRelationshipPresence(relationship: Friend) {
+    dms.value = dms.value.map((dm) => {
+      if (!dm.participants.some((participant) => participant.id === relationship.id)) return dm
+      const participants = dm.participants.map((participant) => (
+        participant.id === relationship.id
+          ? {
+              ...participant,
+              handle: relationship.handle,
+              status: relationship.status,
+              activity: relationship.activity,
+            }
+          : participant
+      ))
+      const visibleRecipients = participants.filter((participant) => dm.recipient_ids.includes(participant.id))
+      const primaryRecipient = visibleRecipients.find((participant) => participant.id === relationship.id)
+      const statusPriority: Friend['status'][] = ['online', 'idle', 'dnd']
+      const status = statusPriority.find((nextStatus) =>
+        visibleRecipients.some((participant) => participant.status === nextStatus),
+      ) ?? 'offline'
+
+      return {
+        ...dm,
+        participants,
+        status,
+        activity: dm.is_group ? dm.activity : primaryRecipient?.activity ?? null,
+      }
+    })
   }
 
   function setActiveDm(dmId: number | null) {

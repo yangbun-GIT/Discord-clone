@@ -272,6 +272,14 @@ labels. The current local Docker backend reports `turn_configured: false`, so
 different-network TURN/NAT voice remains a manual release gate until real TURN
 credentials are supplied and tested.
 
+Manual QA follow-up Stage M6 is implemented in code/docs. The Friends view now
+labels the pending tab as friend requests, keeps Online/All scoped to actual
+friends, and groups pending incoming/outgoing friend requests with separate counts.
+Existing `RELATIONSHIP_UPDATE` gateway dispatches now sync relationship presence
+into matching DM rows and participants, so Friends and DM surfaces do not diverge
+when relationship status data changes. A standalone presence update endpoint/event
+is still not claimed; future presence work should add it explicitly if needed.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

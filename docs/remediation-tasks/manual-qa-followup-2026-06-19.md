@@ -278,6 +278,9 @@ Verification:
 
 ### Stage M6: Friends Pending And Presence Clarity
 
+Status: implemented, pending real two-account presence-change QA if a dedicated
+presence update endpoint/event is added later.
+
 Owner files:
 
 - `frontend/src/components/FriendsHome.vue`
@@ -292,15 +295,33 @@ Tasks:
 
 1. Rename or visually clarify the Pending tab as friend-request pending, not
    presence waiting.
+   - Completed: the tab is now labeled as friend requests instead of generic
+     waiting/pending copy.
 2. Add clear incoming/outgoing request grouping and copy.
+   - Completed: the Friends list groups pending incoming and outgoing friend
+     requests separately with counts.
 3. Implement or document online/offline/idle/away realtime presence updates for
    friends.
+   - Completed for existing relationship gateway updates: relationship status
+     updates now sync into existing DM rows and participants. A standalone presence
+     endpoint/event remains outside current backend scope and is not claimed as
+     complete.
 4. Ensure Friends list status changes do not require refresh.
+   - Completed for `RELATIONSHIP_UPDATE` dispatches; focused frontend regression
+     coverage verifies same-user DM row presence updates without reload.
 
 Acceptance:
 
 - The user can distinguish friend request state from online state at a glance.
 - Friend presence updates appear consistently in Friends and DM surfaces.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run test -- --run src/stores/gatewayIdempotency.test.ts`
+  passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser` passed after the Docker frontend refresh.
 
 ### Stage M7: DM Identity Consistency
 

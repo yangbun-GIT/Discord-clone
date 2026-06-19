@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { useDmStore } from './dms'
 import { useGuildStore } from './guilds'
-import type { DirectMessage, Guild, Message } from '../types'
+import type { DirectMessage, Friend, Guild, Message } from '../types'
 
 const guild: Guild = {
   id: 1001,
@@ -62,6 +62,15 @@ const dmMessage = {
   content: 'dedupe dm message',
 }
 
+const relationship: Friend = {
+  id: 701,
+  username: 'Mina',
+  handle: 'mina.study',
+  status: 'idle',
+  activity: 'Reviewing requests',
+  relationship: 'friend',
+}
+
 describe('gateway dispatch idempotency', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -109,6 +118,25 @@ describe('gateway dispatch idempotency', () => {
     store.setActiveDm(801)
 
     expect(store.dms[0].unread_count).toBe(0)
+  })
+
+  it('syncs relationship presence updates into existing DM rows', () => {
+    const store = useDmStore()
+    store.dms = [{ ...dm, participants: dm.participants.map((participant) => ({ ...participant })) }]
+
+    store.handleGatewayDispatch('RELATIONSHIP_UPDATE', relationship)
+
+    expect(store.relationships[0]).toMatchObject({
+      id: 701,
+      status: 'idle',
+      activity: 'Reviewing requests',
+    })
+    expect(store.dms[0].status).toBe('idle')
+    expect(store.dms[0].activity).toBe('Reviewing requests')
+    expect(store.dms[0].participants.find((participant) => participant.id === 701)).toMatchObject({
+      status: 'idle',
+      activity: 'Reviewing requests',
+    })
   })
 
   it('replaces one voice state per guild user and removes leave events', () => {

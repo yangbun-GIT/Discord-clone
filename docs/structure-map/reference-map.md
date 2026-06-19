@@ -627,8 +627,9 @@ Browser UI
     - `frontend/src/App.vue`
     - `frontend/src/stores/gatewayIdempotency.test.ts`
   - Owns:
-    - DM list/message state, active-DM unread clearing, and inactive-DM unread
-      incrementing for gateway message dispatch.
+    - DM list/message state, active-DM unread clearing, inactive-DM unread
+      incrementing for gateway message dispatch, and relationship presence sync
+      into matching DM rows.
 
 - `frontend/src/stores/dmApi.ts`
   - References:
@@ -790,7 +791,9 @@ Browser UI
   - Emits channel, invite, voice, user, and menu actions to `frontend/src/App.vue`.
 - `frontend/src/components/FriendsHome.vue`
   - Receives relationships/activity state from `frontend/src/App.vue`.
-  - Emits message friend and local UI actions to `frontend/src/App.vue`.
+  - Groups incoming/outgoing friend requests separately from online presence.
+  - Emits message friend and relationship mutation actions to
+    `frontend/src/App.vue`.
 - `frontend/src/components/DirectMessageView.vue`
   - Receives selected DM and user state from `frontend/src/App.vue`.
   - Emits message-send actions to `frontend/src/App.vue`.

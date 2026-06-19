@@ -363,7 +363,8 @@ For ordinary implementation work:
   - Server heading, events, categories, text/voice channel rows, lower user/voice
     panels.
 - `frontend/src/components/FriendsHome.vue`
-  - Friends tabs, friend list, add-friend flow, and activity panel.
+  - Friends tabs, friend list, grouped incoming/outgoing friend requests,
+    add-friend flow, and activity panel.
   - Emits real Add Friend, pending accept/reject/cancel, remove, block, and unblock
     actions instead of local-only UI results.
 - `frontend/src/components/DirectMessageView.vue`
@@ -409,7 +410,7 @@ For ordinary implementation work:
 - `frontend/src/stores/dms.ts`
   - Public Direct Message Pinia facade and state.
   - Owns relationship mutation actions and idempotent relationship update/delete
-    state application.
+    state application, including relationship presence sync into matching DM rows.
 - `frontend/src/stores/dmApi.ts`
   - Direct-message REST loaders and mutations used by `dms.ts`.
   - Wraps relationship mutation REST calls for Add Friend, pending, friend, block,
