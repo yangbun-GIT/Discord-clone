@@ -92,10 +92,16 @@ export const useGuildStore = defineStore('guilds', () => {
     isLoading.value = true
     error.value = null
     try {
+      const previousGuildId = activeGuildId.value
+      const previousChannelId = activeChannelId.value
       const loadedGuilds = await apiGet<Guild[]>('/api/guilds/me', token)
       guilds.value = cleanVisibleGuilds(loadedGuilds)
-      activeGuildId.value = guilds.value[0]?.id ?? null
-      activeChannelId.value = guilds.value[0]?.channels[0]?.id ?? null
+      const preservedGuild = guilds.value.find((guild) => guild.id === previousGuildId)
+      const nextGuild = preservedGuild ?? guilds.value[0] ?? null
+      activeGuildId.value = nextGuild?.id ?? null
+      activeChannelId.value = nextGuild?.channels.some((channel) => channel.id === previousChannelId)
+        ? previousChannelId
+        : nextGuild?.channels[0]?.id ?? null
     } catch (cause) {
       setError(cause, 'Failed to load servers')
       throw cause

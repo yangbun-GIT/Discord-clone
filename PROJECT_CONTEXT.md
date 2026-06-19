@@ -127,7 +127,12 @@ and DM WebSocket dispatch passed, and fake-media browser voice join plus
 app-owned cross-server voice switch dialog smoke passed. A C1 blocker where
 PostgreSQL DM seed logic attempted to insert self-relationships for seeded profile
 users was fixed in `backend/app/repositories/dm_seed.py` and covered by
-`backend/tests/test_dm_seed.py`.
+`backend/tests/test_dm_seed.py`. Stage C2 gateway reconnect and reconciliation is
+complete: `useGateway.ts` now has bounded reconnect, explicit reconnect/offline/error
+states, heartbeat ACK timeout stale-socket detection, and reconnect-success
+callbacks; `App.vue` reloads guilds, DMs, and voice metadata after reconnect;
+`guilds.ts` preserves active guild/channel during REST reconciliation; and
+`gatewayIdempotency.test.ts` covers server/DM duplicate dispatch races.
 
 The app boots in two local modes:
 

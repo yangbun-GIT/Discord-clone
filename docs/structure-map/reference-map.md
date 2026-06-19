@@ -417,6 +417,9 @@ Browser UI
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/main.ts`
+  - Owns:
+    - App shell composition, global workflow wiring, gateway reconnect
+      reconciliation callback, and QA-only `data-gateway-status` state attribute.
 
 ### Stores And API
 
@@ -466,6 +469,7 @@ Browser UI
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
+    - `frontend/src/stores/gatewayIdempotency.test.ts`
 
 - `frontend/src/stores/voicePresence.ts`
   - References:
@@ -484,6 +488,7 @@ Browser UI
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
+    - `frontend/src/stores/gatewayIdempotency.test.ts`
 
 - `frontend/src/stores/dmApi.ts`
   - References:
@@ -551,6 +556,9 @@ Browser UI
     - `frontend/src/App.vue`
   - Talks to:
     - Backend `/gateway` WebSocket.
+  - Owns:
+    - Gateway identify, heartbeat, ACK timeout, bounded reconnect, dispatch
+      routing, and reconnect-success callbacks used for REST reconciliation.
 
 - `frontend/src/composables/useVoiceRtc.ts`
   - References:

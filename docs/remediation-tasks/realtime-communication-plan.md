@@ -802,6 +802,47 @@ Residual C1 notes:
 - Redis is not configured in the current local stack; multi-worker fan-out remains
   a C4 target.
 
+### Stage C2 Result: Completed 2026-06-19
+
+Implementation:
+
+- `frontend/src/composables/useGateway.ts` now tracks `connected`,
+  `reconnecting`, `offline`, and `error` states and preserves the existing
+  Discord-style `HELLO` -> `IDENTIFY` -> `READY` flow.
+- Gateway reconnect uses bounded exponential backoff with a 10 second maximum delay.
+- Client heartbeat now waits for `HEARTBEAT_ACK`; if the stale socket stays open
+  after backend restart and no ACK arrives, the client closes the socket and enters
+  reconnect flow.
+- `frontend/src/App.vue` now passes an `onReconnect` callback that reloads guilds,
+  DMs, and voice metadata through REST after successful re-identification.
+- `frontend/src/stores/guilds.ts` preserves the active guild/channel when
+  reconciliation reloads guild state.
+- `frontend/src/stores/gatewayIdempotency.test.ts` covers duplicate server-message
+  and DM-message gateway dispatches so REST response plus gateway dispatch races
+  leave one visible message.
+- `frontend/src/App.vue` exposes a non-visible `data-gateway-status` attribute on
+  the app shell for QA automation. It does not add user-facing debug text.
+
+Verification:
+
+- Frontend lint passed.
+- Frontend unit tests passed: 4 files, 13 tests.
+- Frontend typecheck and production build passed.
+- Docker frontend was restarted so the local dev server served the updated source.
+- Backend restart reconnect smoke passed: a user `43` browser page stayed open on
+  SRS Lab, Docker backend was restarted, user `42` sent a new message to channel
+  `2001`, and the existing page displayed the message without refresh after
+  gateway reconnect/reconciliation.
+- Two-session server text dispatch passed again after C2.
+- Two-session DM dispatch passed again after C2.
+
+Residual C2 notes:
+
+- Browser recovery from backend restart depends on heartbeat timeout when the stale
+  WebSocket is not closed immediately by the dev proxy.
+- Durable gateway resume is still intentionally not claimed; REST reload remains
+  the reconciliation source of truth.
+
 ### Stage C0: Environment And Verification Recovery
 
 Goal: remove local tooling blockers before changing communication behavior.

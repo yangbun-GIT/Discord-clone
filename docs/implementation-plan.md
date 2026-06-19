@@ -674,4 +674,10 @@
   two-session server text dispatch, two-session DM dispatch, fake-media voice join
   UI, app-owned cross-server voice switch dialog, and direct voice join/leave state
   smoke passed. The C1 DM seed self-relationship blocker was fixed.
-- Next stage: C2 gateway reconnect and REST reconciliation.
+- Completed Stage C2: gateway reconnect and REST reconciliation. The frontend gateway
+  now uses bounded reconnect, heartbeat ACK timeout stale-socket detection,
+  reconnect/offline/error states, REST reload after reconnect, active channel
+  preservation during reload, and idempotency tests for server/DM message dispatch
+  races. Backend restart reconnect smoke and two-session server/DM dispatch smoke
+  passed.
+- Next stage: C3 gateway rate limit and observability.

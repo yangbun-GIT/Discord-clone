@@ -420,6 +420,9 @@ For ordinary implementation work:
   - Direct-message relationship, participant, DM, and message visibility policy.
 - `frontend/src/stores/guildVisibility.test.ts`
   - Guild, channel, and server-message visibility policy.
+- `frontend/src/stores/gatewayIdempotency.test.ts`
+  - Server-message and DM-message gateway dispatch idempotency for REST/gateway
+    reconciliation races.
 
 ## Common Task Routing
 

@@ -224,18 +224,24 @@ watch(
 
 async function openWorkspace() {
   if (!session.token) return
-  await Promise.all([
-    guilds.loadGuilds(session.token),
-    dms.loadPrivateWorkspace(session.token),
-    loadVoiceConfig(),
-  ])
+  await reloadWorkspaceState()
   navigation.openFriends()
   connectGateway(session.token, {
     onDispatch: (event, data) => {
       guilds.handleGatewayDispatch(event, data)
       dms.handleGatewayDispatch(event, data)
     },
+    onReconnect: reloadWorkspaceState,
   })
+}
+
+async function reloadWorkspaceState() {
+  if (!session.token) return
+  await Promise.all([
+    guilds.loadGuilds(session.token),
+    dms.loadPrivateWorkspace(session.token),
+    loadVoiceConfig(),
+  ])
 }
 
 onMounted(async () => {
@@ -657,6 +663,7 @@ async function copyInviteCode() {
       'voice-connected': guilds.voiceConnected,
       'friends-mode': navigation.destination === 'friends',
     }"
+    :data-gateway-status="gatewayStatus"
     :aria-label="t('app.aria.workspace')"
     @mousedown="handleWorkspacePointerDown"
     @contextmenu.prevent="openGlobalContextMenu"
