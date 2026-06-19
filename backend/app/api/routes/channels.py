@@ -4,6 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
 from app.api.errors import raise_route_error
+from app.core.operation_limits import (
+    MESSAGE_CREATE_LIMIT,
+    MESSAGE_MUTATION_LIMIT,
+    require_rest_operation,
+)
 from app.realtime.publisher import (
     publish_message_create,
     publish_message_delete,
@@ -27,6 +32,10 @@ async def create_channel_message(
     payload: MessageCreate,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> MessageRead:
+    require_rest_operation(
+        f"message-create:{current_user.id}:{channel_id}",
+        MESSAGE_CREATE_LIMIT,
+    )
     if payload.channel_id != channel_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -60,6 +69,10 @@ async def update_channel_message(
     payload: MessageUpdate,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> MessageRead:
+    require_rest_operation(
+        f"message-update:{current_user.id}:{channel_id}",
+        MESSAGE_MUTATION_LIMIT,
+    )
     try:
         message = await update_message(
             channel_id=channel_id,
@@ -87,6 +100,10 @@ async def delete_channel_message(
     message_id: int,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> MessageDeleteRead:
+    require_rest_operation(
+        f"message-delete:{current_user.id}:{channel_id}",
+        MESSAGE_MUTATION_LIMIT,
+    )
     try:
         deleted = await delete_message(
             channel_id=channel_id,

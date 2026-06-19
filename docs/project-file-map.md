@@ -200,6 +200,9 @@ For ordinary implementation work:
   - Message-content sanitization.
 - `backend/app/core/rate_limit.py`
   - Local in-memory token-bucket rate limit middleware.
+- `backend/app/core/operation_limits.py`
+  - Local operation-level token buckets for gateway identify/heartbeat/voice and
+    REST message mutation protection.
 - `backend/app/demo/data.py`
   - Native fallback demo data.
 - `backend/app/demo/store.py`
@@ -258,6 +261,8 @@ For ordinary implementation work:
   - DM storage provider selection behavior.
 - `backend/tests/test_gateway_manager.py`
   - Gateway manager behavior.
+- `backend/tests/test_gateway_routes.py`
+  - Gateway WebSocket route close-code, authorization, and rate-limit behavior.
 - `backend/tests/test_realtime_fanout.py`
   - Shared realtime fan-out and local subscription synchronization behavior.
 - `backend/tests/test_guild_repository.py`

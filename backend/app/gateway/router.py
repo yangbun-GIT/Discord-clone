@@ -1,8 +1,17 @@
+import logging
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jwt import InvalidTokenError
 from pydantic import ValidationError
 
 from app.core.config import get_settings
+from app.core.operation_limits import (
+    GATEWAY_HEARTBEAT_LIMIT,
+    GATEWAY_IDENTIFY_LIMIT,
+    VOICE_SIGNAL_LIMIT,
+    VOICE_STATE_LIMIT,
+    allow_operation,
+)
 from app.core.security import decode_access_token
 from app.gateway.events import GatewayEvent, IdentifyPayload, VoiceSignalPayload, VoiceStatePayload
 from app.gateway.manager import gateway_manager
@@ -12,12 +21,20 @@ from app.services.dm_service import list_dms
 from app.services.guild_service import list_guilds_for_user
 
 gateway_router = APIRouter()
+logger = logging.getLogger("app.gateway")
+
+
+async def close_rate_limited(websocket: WebSocket, operation: str) -> None:
+    logger.warning("gateway rate limit exceeded operation=%s", operation)
+    await websocket.close(code=4008, reason="rate limited")
 
 
 @gateway_router.websocket("/gateway")
 async def gateway(websocket: WebSocket) -> None:
     settings = get_settings()
+    client_host = websocket.client.host if websocket.client else "unknown"
     connection = await gateway_manager.connect(websocket)
+    logger.info("gateway connect host=%s active=%s", client_host, gateway_manager.size)
     await connection.send(
         op=Opcode.HELLO,
         data={"heartbeat_interval": settings.gateway_heartbeat_interval_ms},
@@ -29,6 +46,12 @@ async def gateway(websocket: WebSocket) -> None:
             event = GatewayEvent.model_validate(raw_payload)
 
             if event.op == Opcode.HEARTBEAT:
+                if not allow_operation(
+                    f"gateway-heartbeat:{id(connection)}",
+                    GATEWAY_HEARTBEAT_LIMIT,
+                ):
+                    await close_rate_limited(websocket, "heartbeat")
+                    return
                 gateway_manager.mark_heartbeat(connection)
                 await connection.send(op=Opcode.HEARTBEAT_ACK)
                 continue
@@ -38,7 +61,23 @@ async def gateway(websocket: WebSocket) -> None:
                 try:
                     token_payload = decode_access_token(identify.token)
                 except InvalidTokenError:
+                    if not allow_operation(
+                        f"gateway-identify:{client_host}:invalid",
+                        GATEWAY_IDENTIFY_LIMIT,
+                    ):
+                        await close_rate_limited(websocket, "identify")
+                        return
+                    logger.warning(
+                        "gateway identify rejected reason=invalid-token host=%s",
+                        client_host,
+                    )
                     await websocket.close(code=4001, reason="invalid token")
+                    return
+                if not allow_operation(
+                    f"gateway-identify:{client_host}:{token_payload['sub']}",
+                    GATEWAY_IDENTIFY_LIMIT,
+                ):
+                    await close_rate_limited(websocket, "identify")
                     return
 
                 user = UserPublic(
@@ -62,6 +101,13 @@ async def gateway(websocket: WebSocket) -> None:
                     guild_ids=subscribed_guild_ids,
                     channel_ids=subscribed_channel_ids,
                     dm_ids=subscribed_dm_ids,
+                )
+                logger.info(
+                    "gateway identify user_id=%s guilds=%s channels=%s dms=%s",
+                    user.id,
+                    len(subscribed_guild_ids),
+                    len(subscribed_channel_ids),
+                    len(subscribed_dm_ids),
                 )
                 await connection.send(
                     op=Opcode.DISPATCH,
@@ -95,13 +141,31 @@ async def gateway(websocket: WebSocket) -> None:
                     return
 
                 voice_state = VoiceStatePayload.model_validate(event.d or {})
+                if not allow_operation(
+                    f"voice-state:{connection.user_id}:{voice_state.guild_id}",
+                    VOICE_STATE_LIMIT,
+                ):
+                    await close_rate_limited(websocket, "voice-state")
+                    return
                 if voice_state.guild_id not in connection.guild_ids:
+                    logger.warning(
+                        "gateway voice state rejected "
+                        "reason=guild-subscription user_id=%s guild_id=%s",
+                        connection.user_id,
+                        voice_state.guild_id,
+                    )
                     await websocket.close(code=4003, reason="not subscribed to guild")
                     return
                 if (
                     voice_state.channel_id is not None
                     and voice_state.channel_id not in connection.channel_ids
                 ):
+                    logger.warning(
+                        "gateway voice state rejected "
+                        "reason=channel-subscription user_id=%s channel_id=%s",
+                        connection.user_id,
+                        voice_state.channel_id,
+                    )
                     await websocket.close(code=4003, reason="not subscribed to channel")
                     return
 
@@ -121,6 +185,12 @@ async def gateway(websocket: WebSocket) -> None:
                         "self_deaf": voice_state.self_deaf,
                     },
                 )
+                logger.info(
+                    "gateway voice state user_id=%s previous_channel_id=%s channel_id=%s",
+                    connection.user_id,
+                    previous_channel_id,
+                    voice_state.channel_id,
+                )
                 continue
 
             if event.op == Opcode.VOICE_SIGNAL:
@@ -129,11 +199,26 @@ async def gateway(websocket: WebSocket) -> None:
                     return
 
                 voice_signal = VoiceSignalPayload.model_validate(event.d or {})
+                if not allow_operation(
+                    (
+                        f"voice-signal:{connection.user_id}:"
+                        f"{voice_signal.channel_id}:{voice_signal.target_user_id}"
+                    ),
+                    VOICE_SIGNAL_LIMIT,
+                ):
+                    await close_rate_limited(websocket, "voice-signal")
+                    return
                 if connection.voice_channel_id != voice_signal.channel_id:
+                    logger.warning(
+                        "gateway voice signal rejected "
+                        "reason=voice-channel user_id=%s channel_id=%s",
+                        connection.user_id,
+                        voice_signal.channel_id,
+                    )
                     await websocket.close(code=4003, reason="not connected to voice channel")
                     return
 
-                await gateway_manager.send_voice_signal(
+                sent = await gateway_manager.send_voice_signal(
                     channel_id=voice_signal.channel_id,
                     target_user_id=voice_signal.target_user_id,
                     data={
@@ -146,10 +231,26 @@ async def gateway(websocket: WebSocket) -> None:
                         "candidate": voice_signal.candidate,
                     },
                 )
+                logger.info(
+                    "gateway voice signal "
+                    "user_id=%s target_user_id=%s channel_id=%s type=%s sent=%s",
+                    connection.user_id,
+                    voice_signal.target_user_id,
+                    voice_signal.channel_id,
+                    voice_signal.type,
+                    sent,
+                )
                 continue
 
             await websocket.close(code=4002, reason="unsupported opcode")
             return
 
     except (WebSocketDisconnect, ValidationError):
+        pass
+    finally:
         gateway_manager.disconnect(connection)
+        logger.info(
+            "gateway disconnect user_id=%s active=%s",
+            connection.user_id,
+            gateway_manager.size,
+        )

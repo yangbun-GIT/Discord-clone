@@ -680,4 +680,9 @@
   preservation during reload, and idempotency tests for server/DM message dispatch
   races. Backend restart reconnect smoke and two-session server/DM dispatch smoke
   passed.
-- Next stage: C3 gateway rate limit and observability.
+- Completed Stage C3: gateway rate limit and observability. Local operation buckets
+  now protect gateway identify, heartbeat abuse, voice state, voice signal, server
+  message mutations, and DM message create; gateway close-code tests and REST 429
+  tests were added; privacy-safe gateway logs were added; runtime invalid-token,
+  unauthorized voice-signal, REST abuse, and two-session dispatch smokes passed.
+- Next stage: C4 Redis multi-instance fan-out verification.

@@ -35,6 +35,9 @@ class InMemoryTokenBucket:
         bucket.tokens -= 1
         return True
 
+    def reset(self) -> None:
+        self._buckets.clear()
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Local token bucket middleware.
@@ -61,4 +64,3 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             )
 
         return await call_next(request)
-

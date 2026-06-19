@@ -88,6 +88,7 @@ Browser UI
   - References:
     - `backend/app/api/dependencies.py`
     - `backend/app/api/errors.py`
+    - `backend/app/core/operation_limits.py`
     - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/guild.py`
@@ -100,6 +101,7 @@ Browser UI
   - References:
     - `backend/app/api/dependencies.py`
     - `backend/app/api/errors.py`
+    - `backend/app/core/operation_limits.py`
     - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`
@@ -299,6 +301,7 @@ Browser UI
 - `backend/app/gateway/router.py`
   - References:
     - `backend/app/core/config.py`
+    - `backend/app/core/operation_limits.py`
     - `backend/app/core/security.py`
     - `backend/app/gateway/events.py`
     - `backend/app/gateway/manager.py`
@@ -308,6 +311,7 @@ Browser UI
     - `backend/app/services/guild_service.py`
   - Referenced by:
     - `backend/app/main.py`
+    - `backend/tests/test_gateway_routes.py`
 
 - `backend/app/gateway/manager.py`
   - References:

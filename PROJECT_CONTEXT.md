@@ -132,7 +132,13 @@ complete: `useGateway.ts` now has bounded reconnect, explicit reconnect/offline/
 states, heartbeat ACK timeout stale-socket detection, and reconnect-success
 callbacks; `App.vue` reloads guilds, DMs, and voice metadata after reconnect;
 `guilds.ts` preserves active guild/channel during REST reconciliation; and
-`gatewayIdempotency.test.ts` covers server/DM duplicate dispatch races.
+`gatewayIdempotency.test.ts` covers server/DM duplicate dispatch races. Stage C3
+gateway rate-limit and observability is complete: `operation_limits.py` provides
+local operation buckets for gateway and message mutations, REST message create/edit/
+delete and DM message create return 429 when limited, gateway identify/heartbeat/
+voice state/voice signal paths enforce close-code rate limits, privacy-safe gateway
+logs were added, and gateway route tests cover identify rate limiting plus
+unauthorized voice signal rejection.
 
 The app boots in two local modes:
 

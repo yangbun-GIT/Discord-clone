@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.operation_limits import reset_operation_limits
 from app.core.security import create_access_token, decode_access_token
 from app.main import app
 
@@ -319,6 +320,26 @@ def test_create_message_returns_created_payload() -> None:
     assert response.json()["author_name"] == "yangbun"
 
 
+def test_create_message_rate_limit_returns_429() -> None:
+    reset_operation_limits()
+    client = TestClient(app)
+    headers = auth_headers(user_id=42, username="yangbun")
+
+    responses = [
+        client.post(
+            "/api/channels/2001/messages",
+            json={"channel_id": 2001, "content": f"rate {index}"},
+            headers=headers,
+        )
+        for index in range(11)
+    ]
+
+    assert [response.status_code for response in responses[:10]] == [201] * 10
+    assert responses[10].status_code == 429
+    assert responses[10].json()["detail"] == "rate limit exceeded"
+    reset_operation_limits()
+
+
 def test_update_message_returns_updated_payload() -> None:
     client = TestClient(app)
     create_response = client.post(
@@ -502,6 +523,7 @@ def test_role_create_fans_out_guild_update() -> None:
 
 
 def test_voice_state_update_fans_out_to_channel_subscribers() -> None:
+    reset_operation_limits()
     with TestClient(app) as client:
         with (
             client.websocket_connect("/gateway") as sender,
@@ -532,9 +554,11 @@ def test_voice_state_update_fans_out_to_channel_subscribers() -> None:
     assert sender_event["d"]["channel_id"] == 2003
     assert sender_event["d"]["user_id"] == 42
     assert receiver_event == sender_event
+    reset_operation_limits()
 
 
 def test_voice_signal_routes_to_target_voice_peer() -> None:
+    reset_operation_limits()
     with TestClient(app) as client:
         with (
             client.websocket_connect("/gateway") as sender,
@@ -578,6 +602,7 @@ def test_voice_signal_routes_to_target_voice_peer() -> None:
     assert signal_event["d"]["target_user_id"] == 43
     assert signal_event["d"]["type"] == "offer"
     assert signal_event["d"]["description"] == {"type": "offer", "sdp": "fake-sdp"}
+    reset_operation_limits()
 
 
 def test_create_message_requires_guild_membership() -> None:

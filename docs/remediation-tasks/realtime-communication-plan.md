@@ -843,6 +843,51 @@ Residual C2 notes:
 - Durable gateway resume is still intentionally not claimed; REST reload remains
   the reconciliation source of truth.
 
+### Stage C3 Result: Completed 2026-06-19
+
+Implementation:
+
+- `backend/app/core/operation_limits.py` defines local operation-level token buckets
+  for gateway identify, heartbeat abuse, voice state, voice signal, REST message
+  create, and REST message edit/delete.
+- `backend/app/api/routes/channels.py` rate-limits server message create, edit, and
+  delete by user and channel.
+- `backend/app/api/routes/dms.py` rate-limits DM message create by user and DM.
+- `backend/app/gateway/router.py` rate-limits identify by client host plus token
+  subject, invalid-token identify attempts by host, heartbeat abuse by connection,
+  voice state by user/guild, and voice signal by sender/channel/target.
+- Gateway logs now record privacy-safe connect, identify reject, identify success,
+  voice state, voice signal reject/send, rate-limit, and disconnect events. Logs do
+  not include JWTs, message content, ICE candidates, TURN credentials, device
+  labels, or private DM contents.
+- Gateway connections are now cleaned up in a `finally` path so rate-limit and
+  close-code returns cannot leave stale connections in the registry.
+
+Verification:
+
+- Backend lint passed.
+- Backend full test suite passed: 114 tests.
+- `backend/tests/test_api_routes.py` covers REST message create rate limiting with
+  HTTP 429.
+- `backend/tests/test_gateway_routes.py` covers gateway identify rate limiting with
+  close code `4008` and unauthorized voice signal with close code `4003`.
+- Runtime smoke passed:
+  - invalid gateway token closed with `4001`.
+  - unauthorized voice signal closed with `4003`.
+  - 11 rapid REST server-message creates returned 10 `201` responses and then
+    `429`.
+- Two-session server text dispatch passed after C3.
+- Two-session DM dispatch passed after C3.
+
+Tuning notes:
+
+- Identify rate limiting was adjusted during C3 from client-host-only to
+  client-host plus token subject for valid tokens. Host-only limiting was too broad
+  for same-PC multi-user QA and could block legitimate local two-session tests.
+- Runtime Redis is still not configured, so these operation buckets are
+  single-process local protection. Distributed counters remain a future production
+  hardening option if multi-instance abuse consistency becomes necessary.
+
 ### Stage C0: Environment And Verification Recovery
 
 Goal: remove local tooling blockers before changing communication behavior.
