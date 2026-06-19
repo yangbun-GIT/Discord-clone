@@ -776,8 +776,9 @@ Browser UI
     - `frontend/src/App.vue`
   - Owns:
     - Voice config loading, voice join/leave/switch orchestration, mute/deafen
-      gateway updates, safe reload rejoin recovery metadata, screen-share toggle
-      orchestration, voice participant sync, and incoming voice-signal handling.
+      gateway updates, safe reload rejoin recovery metadata, automatic rejoin after
+      gateway-ready refresh recovery, screen-share toggle orchestration, voice
+      participant sync, and incoming voice-signal handling.
 
 - `frontend/src/i18n/index.ts`
   - References:

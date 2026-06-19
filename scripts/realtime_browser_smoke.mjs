@@ -383,10 +383,13 @@ async function run() {
       { timeout: 10_000 },
     )
     const voiceWorkspacePreservedAfterReload = await pageB.page.locator('.voice-workspace').isVisible()
-    const rejoinButton = pageB.page.getByRole('button', { name: /Rejoin voice/i }).first()
-    await rejoinButton.waitFor({ state: 'visible', timeout: 10_000 })
-    const voiceRejoinPromptVisible = await rejoinButton.isVisible()
-    await rejoinButton.click()
+    await pageB.page.locator('.voice-panel.connected').waitFor({ state: 'visible', timeout: 15_000 })
+    const voiceAutoRejoinedAfterReload = await pageB.page.locator('.voice-panel.connected').isVisible()
+    const voiceRejoinPromptVisible = await pageB.page
+      .getByRole('button', { name: /Rejoin voice/i })
+      .first()
+      .isVisible()
+      .catch(() => false)
     await pageA.page.waitForFunction(
       () => document.querySelectorAll('.voice-audio-sinks audio').length >= 1,
       null,
@@ -429,6 +432,7 @@ async function run() {
       duplicateRemoteSharingParticipantCards,
       remoteScreenCleared,
       voiceWorkspacePreservedAfterReload,
+      voiceAutoRejoinedAfterReload,
       voiceRejoinPromptVisible,
       voiceRejoinRecovered,
       voiceLeaveCleaned,
@@ -461,7 +465,8 @@ async function run() {
       || result.duplicateRemoteSharingParticipantCards !== 0
       || !result.remoteScreenCleared
       || !result.voiceWorkspacePreservedAfterReload
-      || !result.voiceRejoinPromptVisible
+      || !result.voiceAutoRejoinedAfterReload
+      || result.voiceRejoinPromptVisible
       || !result.voiceRejoinRecovered
       || !result.voiceLeaveCleaned
       || result.browserErrors > 0

@@ -31,8 +31,10 @@
    - The receiver should see one participant/share composition per user, not a
      separate screen card plus a separate participant card.
    - If four users share, the current model can create eight visible cards.
-3. Refresh still leaves the active call.
-   - Current WebRTC media session is not restored after page reload.
+3. Refresh must not leave the user visibly out of the active voice channel.
+   - Browser reload still tears down the old WebRTC media tracks, but the clone
+     should automatically rejoin the same voice channel once the refreshed tab's
+     gateway connection is ready.
 4. LAN voice join fails from another PC on the same Wi-Fi.
    - Browser reports HTTPS/localhost secure-context errors.
    - Current LAN path is not ready for real microphone/screen capture.
@@ -165,19 +167,21 @@ Tasks:
 1. Persist the last connected voice guild/channel in a safe local client state.
    - Completed: client storage records only user/guild/channel IDs for the last
      joined voice channel.
-2. On reload, do not silently claim the microphone. Show an app-owned "rejoin
-   voice" recovery prompt.
-   - Completed: the workspace shows a clone-owned previous voice channel notice
-     after reload when a valid same-user channel can be restored.
-3. If the user confirms, reacquire microphone permission and rejoin the channel.
-   - Completed: confirming the notice opens the voice channel workspace and joins
-     the previous channel through the normal microphone capture path.
+2. On reload, restore the same voice-channel membership after the refreshed tab is
+   connected to the gateway.
+   - Completed: the client stores only same-user channel metadata, then
+     automatically reacquires microphone access and rejoins the previous channel
+     after gateway `READY`.
+3. Keep an app-owned recovery prompt as the fallback when automatic capture fails.
+   - Completed: failed automatic recovery leaves the previous-channel notice
+     available so the user can retry or dismiss the recovery state.
 4. If the user dismisses, send/confirm a leave state and clear stale local state.
    - Completed: dismissal clears the local recovery record. Normal voice leave also
      clears the recovery record.
 5. Add automated coverage for reload state reconciliation where feasible.
-   - Completed: browser smoke reloads a connected tab, verifies the rejoin prompt,
-     rejoins, and confirms the other tab receives a remote audio sink again.
+   - Completed: browser smoke reloads a connected tab, verifies the voice panel is
+     connected again without a visible rejoin prompt, and confirms the other tab
+     receives a remote audio sink again.
 6. Preserve the user's current workspace page after refresh.
    - Completed: navigation now stores a same-user restorable destination and
      DM/guild/channel IDs, then restores them before workspace state reload.
@@ -187,7 +191,10 @@ Tasks:
 Acceptance:
 
 - Refresh does not leave stale connected UI.
-- User can intentionally rejoin the previous voice channel after reload.
+- User returns to the previous voice channel automatically after reload when the
+  browser can reacquire microphone capture.
+- If automatic recovery fails, the user can intentionally rejoin the previous voice
+  channel from the app-owned notice.
 - The other participant sees a consistent leave/rejoin transition.
 - Refresh returns to the same DM/server/voice page instead of the initial Friends
   page when the saved destination is still accessible.
@@ -197,7 +204,8 @@ Verification:
 - `npm run lint:frontend` passed.
 - `npm --prefix frontend run build` passed.
 - `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
-  `voiceRejoinPromptVisible: true` and `voiceRejoinRecovered: true`.
+  `voiceAutoRejoinedAfterReload: true`, `voiceRejoinPromptVisible: false`, and
+  `voiceRejoinRecovered: true`.
 - Additional regression target: `scripts/realtime_browser_smoke.mjs` records
   `serverWorkspacePreservedAfterReload` and
   `voiceWorkspacePreservedAfterReload`.

@@ -52,8 +52,8 @@ For ordinary implementation work:
     sink, mute/deafen including local microphone track suppression while deafened,
     fake screen-share paths, local screen-preview rendering, remote screen-video
     rendering, screen-share stop cleanup, server-channel reload retention,
-    connected voice-workspace reload retention, connected-tab reload rejoin
-    recovery, and voice leave cleanup through the app UI.
+    connected voice-workspace reload retention, connected-tab automatic voice
+    rejoin recovery, and voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
@@ -484,9 +484,9 @@ For ordinary implementation work:
 - `frontend/src/composables/useVoiceSessionController.ts`
   - Voice session orchestration facade.
   - Owns voice config loading, join/leave/switch flow, mute/deafen gateway sync,
-    safe reload rejoin recovery metadata, screen-share toggling, and voice
-    participant/signal synchronization while composing the guild store, gateway
-    composable, and WebRTC facade.
+    safe reload rejoin recovery metadata, gateway-ready automatic rejoin after
+    refresh, screen-share toggling, and voice participant/signal synchronization
+    while composing the guild store, gateway composable, and WebRTC facade.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
   - Keep as the public i18n facade until the split plan in

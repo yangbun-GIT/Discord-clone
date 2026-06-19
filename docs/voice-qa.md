@@ -170,8 +170,13 @@ cover these items.
    - The deafened user's microphone no longer transmits until undeafen restores the
      previous manual mute state.
    - Screen sharing remains available while deafened.
-8. Refresh one client while the other remains connected and confirm the late joiner
-   receives the current participant snapshot.
+8. Refresh one client while the other remains connected and confirm:
+   - The refreshed client returns to the same voice workspace.
+   - The bottom voice panel returns to connected state without requiring a manual
+     channel click when microphone permission can be reacquired.
+   - The other client sees the refreshed user rejoin and receives remote audio.
+   - If browser microphone capture is blocked, the app-owned rejoin notice remains
+     available as a retry path.
 9. Record the result as pass/fail notes only. Do not record raw audio, media device
    labels, ICE candidates, TURN credentials, or user tokens.
 
@@ -246,8 +251,10 @@ Remaining manual gate:
 - The low average volume and long low-volume sections make speech quality suspect,
   but actual Korean/English speech intelligibility must still be judged by a
   human listener using two real accounts and real microphones.
-- Refreshing a page still leaves the active call. A separate voice rejoin/recovery
-  flow is needed if refresh persistence is required.
+- Refreshing a page still replaces the underlying WebRTC media session, but the app
+  now automatically rejoins the previous voice channel after the refreshed tab's
+  gateway reconnects. Real browser permission behavior must still be checked
+  manually.
 - Same-Wi-Fi LAN access over `http://<LAN-IP>` can fail media capture because the
   browser does not treat that origin as a secure context. Use localhost for local
   media tests or add a documented HTTPS LAN development path before claiming LAN

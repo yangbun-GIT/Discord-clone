@@ -111,12 +111,12 @@ Call recording QA result:
 - Automated result after the fix: `npm run smoke:realtime:browser` passed with
   local screen preview video count, remote screen video count, remote screen cleanup,
   voice leave cleanup, and zero browser errors.
-- Refresh recovery update: refreshing a connected tab no longer silently claims
-  the microphone. The client stores only same-user voice channel recovery metadata,
-  shows an app-owned rejoin prompt after reload, and reacquires microphone access
-  only after the user confirms. Browser smoke now verifies the prompt and remote
-  audio recovery after rejoin. Real browser permission prompt behavior remains a
-  manual gate.
+- Refresh recovery update: refreshing a connected tab still tears down the old
+  WebRTC media tracks, but the client stores only same-user voice channel recovery
+  metadata and automatically rejoins the previous channel after the refreshed tab's
+  gateway reaches `connected`. Browser smoke now verifies the connected voice panel,
+  absence of the fallback rejoin prompt, and remote audio recovery after automatic
+  rejoin. Real browser permission prompt behavior remains a manual gate.
 
 Manual QA follow-up result:
 
@@ -127,9 +127,10 @@ Manual QA follow-up result:
 - Real screen sharing starts and stops correctly, but the receiver layout separates
   a sharing user's screen tile from that user's participant state. The next layout
   pass should merge these into one composition per sharing participant.
-- Refresh now provides an explicit app-owned rejoin path instead of silently
-  restoring microphone capture. Real permission-prompt behavior remains a manual
-  browser gate.
+- Refresh now automatically rejoins the previous voice channel after gateway
+  reconnect when microphone capture can be reacquired. If capture fails, the
+  explicit app-owned rejoin path remains available. Real permission-prompt
+  behavior remains a manual browser gate.
 - Same-Wi-Fi LAN test failed at voice join because `http://<LAN-IP>` is not a
   secure context for microphone/screen capture.
 - TURN/NAT test has not been run and is not ready to claim while
@@ -236,8 +237,9 @@ Voice architecture note:
 9. Confirm peer count reaches one connected peer.
 10. Toggle mute and deafen.
 11. Start and stop real screen sharing.
-12. Refresh one session and confirm REST reload plus gateway reconnect recovers
-    text/DM state.
+12. Refresh one voice-connected session and confirm the same voice workspace stays
+    open, the bottom voice panel returns to connected state, and the other session
+    receives the rejoined participant/audio again.
 
 ## LAN QA
 

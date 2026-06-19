@@ -39,6 +39,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
   const muteStateBeforeDeafen = ref<boolean | null>(null)
   const pendingVoiceSwitchChannelId = ref<number | null>(null)
   const pendingVoiceRejoinChannelId = ref<number | null>(null)
+  const isRejoiningVoice = ref(false)
   const skipVoiceSwitchConfirm = ref(browserStorage.getItem('discord_clone_skip_voice_switch_confirm') === 'true')
   const rememberVoiceSwitchChoice = ref(false)
   const voiceIceServers = ref<VoiceIceServer[]>([{ urls: 'stun:stun.l.google.com:19302' }])
@@ -152,6 +153,19 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     await connectVoiceToChannel(channelId)
     if (!options.guilds.voiceConnected) {
       pendingVoiceRejoinChannelId.value = channelId
+    }
+  }
+
+  async function attemptAutomaticVoiceRejoin() {
+    if (isRejoiningVoice.value || options.guilds.voiceConnected || !pendingVoiceRejoinChannelId.value) {
+      return false
+    }
+    isRejoiningVoice.value = true
+    try {
+      await confirmVoiceRejoin()
+      return options.guilds.voiceConnected
+    } finally {
+      isRejoiningVoice.value = false
     }
   }
 
@@ -345,6 +359,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     voiceWorkspaceStatus,
     loadVoiceConfig,
     restoreVoiceRejoinPrompt,
+    attemptAutomaticVoiceRejoin,
     confirmVoiceRejoin,
     dismissVoiceRejoin,
     disconnectVoice,

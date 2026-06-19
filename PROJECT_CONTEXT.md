@@ -208,8 +208,9 @@ gateway `VOICE_SIGNAL` with `type: "screen"` and `screen_sharing`, renders local
 and remote screen tiles inside the selected voice workspace, clears remote screen
 tiles after stop, and extends `npm run smoke:realtime:browser` to verify local
 screen preview, remote screen rendering, screen-stop cleanup, and voice leave
-cleanup. Refresh still leaves the active WebRTC call because media capture and voice
-rejoin after page reload require a separate explicit rejoin/recovery flow.
+cleanup. Browser refresh still tears down the underlying WebRTC media tracks, but
+the client now uses same-user voice recovery metadata to rejoin the previous voice
+channel automatically after the gateway reconnects.
 
 Friend relationship implementation is now backend-backed. The Friends Add Friend
 surface no longer relies on a local-only success message or hardcoded fallback
@@ -256,11 +257,12 @@ and zero duplicate remote participant cards, while preserving local screen previ
 and screen-stop cleanup.
 
 Manual QA follow-up Stage M3 is implemented in code. The voice session controller
-now stores safe same-user voice rejoin metadata, shows a clone-owned previous voice
-channel notice after reload, and reacquires microphone access only after the user
-confirms rejoin. Normal leave and notice dismissal clear the recovery record. The
-browser realtime smoke now reloads a connected tab, verifies the rejoin prompt, and
-confirms the other tab receives remote audio again after rejoin.
+now stores safe same-user voice rejoin metadata, automatically rejoins the previous
+voice channel after a refreshed tab reconnects to the gateway, and keeps the
+app-owned rejoin notice as a fallback if microphone recovery fails. Normal leave
+and notice dismissal clear the recovery record. The browser realtime smoke now
+reloads a connected tab, verifies the voice panel returns to connected state, and
+confirms the other tab receives remote audio again after automatic rejoin.
 
 Manual QA follow-up Stage M4 is implemented in code/docs. `frontend/vite.config.ts`
 can start Vite over HTTPS when `VITE_HTTPS_KEY_FILE` and

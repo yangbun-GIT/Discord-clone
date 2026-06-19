@@ -170,6 +170,7 @@ const {
   voiceWorkspaceStatus,
   loadVoiceConfig,
   restoreVoiceRejoinPrompt,
+  attemptAutomaticVoiceRejoin,
   confirmVoiceRejoin,
   dismissVoiceRejoin,
   disconnectVoice,
@@ -262,6 +263,14 @@ watch(
     dms.setCurrentUserId(userId)
   },
   { immediate: true },
+)
+
+watch(
+  () => [gatewayStatus.value, pendingVoiceRejoinChannelId.value] as const,
+  ([status, rejoinChannelId]) => {
+    if (status !== 'connected' || !rejoinChannelId) return
+    void attemptAutomaticVoiceRejoin()
+  },
 )
 
 async function openWorkspace() {
