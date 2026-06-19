@@ -96,6 +96,10 @@ the project prompt and context files before changing code.
   - Current staged development plan for production-like realtime messaging,
     WebSocket gateway hardening, WebRTC voice/screen sharing, LAN/TURN access,
     security, observability, and communication QA.
+- `docs/remediation-tasks/friend-relationship-implementation-plan.md`
+  - Development plan for turning the current UI-only Add Friend form into real
+    friend request, accept/reject/cancel, remove, block/unblock, realtime
+    relationship updates, and browser QA workflows.
 - `docs/realtime-communication-qa.md`
   - Stage C8 and later communication QA checklist.
   - Documents the automated two-browser smoke, same-PC manual QA, LAN QA, TURN/NAT
@@ -114,6 +118,8 @@ the project prompt and context files before changing code.
     acceptance criteria, regression checks, staged remediation order, and a
     follow-up QA recheck for settings polish, hidden-control accessibility, header
     ownership, and voice participant duplication.
+  - `friend-relationship-implementation-plan.md` owns the future Friends/Add
+    Friend backend, frontend, realtime, and QA implementation stages.
 - `docs/structure-map/`
   - Fast-navigation structure folder.
   - `README.md` defines usage and update rules; `reference-map.md` records core

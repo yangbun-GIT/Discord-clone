@@ -100,6 +100,11 @@ For ordinary implementation work:
   - Staged implementation plan for WebSocket gateway, realtime text/DM, WebRTC
     voice/screen sharing, Redis fan-out, LAN/TURN access, security, observability,
     and communication verification.
+- `docs/remediation-tasks/friend-relationship-implementation-plan.md`
+  - Future Friends/Add Friend development plan.
+  - Documents the current UI-only add-friend gap and staged backend, frontend,
+    realtime, persistence, and QA work for real friend requests, accept/reject,
+    cancel, remove friend, block, and unblock.
 - `docs/realtime-communication-qa.md`
   - C8 and later communication QA checklist.
   - Owns automated two-browser smoke instructions, same-PC manual QA, LAN QA,
@@ -113,6 +118,8 @@ For ordinary implementation work:
   - QA-driven defect and remediation backlogs for future implementation passes.
   - Current live QA-derived development plan:
     `discord-clone-qa-remediation-2026-06-19.md`.
+  - Current Friends relationship development plan:
+    `friend-relationship-implementation-plan.md`.
 
 ## Stage And Planning Documents
 

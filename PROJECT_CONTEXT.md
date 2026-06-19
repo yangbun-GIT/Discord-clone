@@ -246,6 +246,12 @@ The app boots in two local modes:
     hardening rather than replacement, and defines staged work for reconnect,
     duplicate suppression, Redis fan-out verification, native audio constraints,
     WebRTC lifecycle hardening, LAN/TURN readiness, and two-session QA.
+- `docs/remediation-tasks/friend-relationship-implementation-plan.md`
+  - Future Friends/Add Friend implementation plan.
+  - Records that the current Add Friend form is UI-only and defines staged work for
+    friend request send, incoming/outgoing pending state, accept/reject/cancel,
+    remove friend, block/unblock, relationship realtime updates, persistence, and
+    two-browser QA.
 - `docs/realtime-communication-qa.md`
   - Stage C8 and later communication QA checklist.
   - Documents automated two-browser same-PC smoke, same-PC manual QA, LAN QA,
@@ -706,6 +712,9 @@ The app boots in two local modes:
     API-backed safe demo relationship rows, message actions, and add-friend
     placeholder form.
   - Emits `messageFriend` so `App.vue` can create or open a DM through `dms.ts`.
+  - Real friend request send/receive, accept/reject/cancel, remove friend,
+    block/unblock, and realtime relationship updates are planned in
+    `docs/remediation-tasks/friend-relationship-implementation-plan.md`.
 - `frontend/src/components/DirectMessageView.vue`
   - Renders selected DM participant intro, message history, and a DM composer inside
     the `dm` destination.
