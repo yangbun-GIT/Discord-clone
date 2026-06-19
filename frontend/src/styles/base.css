@@ -1524,6 +1524,7 @@ select:focus-visible {
   height: var(--icon-button-size);
   color: #cbd5e1;
   background: var(--surface-panel-raised);
+  padding: 0;
 }
 
 .topbar-icon-button:hover {
@@ -3873,6 +3874,7 @@ select:focus-visible {
   border-radius: 8px;
   color: #cbd5e1;
   background: transparent;
+  padding: 0;
 }
 
 .message-icon-button:hover,
@@ -4817,6 +4819,15 @@ select:focus-visible {
   border-radius: 8px;
   color: #cbd5e1;
   background: transparent;
+  padding: 0;
+}
+
+.topbar-icon-button svg,
+.message-icon-button svg,
+.user-panel-actions button svg,
+.voice-actions button svg {
+  display: block;
+  margin: auto;
 }
 
 .user-panel-actions > button {
