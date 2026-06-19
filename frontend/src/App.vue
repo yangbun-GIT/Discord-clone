@@ -47,7 +47,7 @@ import {
 } from './services/browserApi'
 import { useDmStore } from './stores/dms'
 import { useGuildStore } from './stores/guilds'
-import { useNavigationStore } from './stores/navigation'
+import { useNavigationStore, type PersistedWorkspaceLocation } from './stores/navigation'
 import { usePreferencesStore } from './stores/preferences'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
@@ -243,6 +243,8 @@ watch(
   () => {
     closeGlobalContextMenu()
     activeHeaderPanel.value = null
+    if (isBooting.value || !session.user) return
+    navigation.persistWorkspaceLocation(session.user.id, guilds.activeGuildId, guilds.activeChannelId)
   },
 )
 
@@ -263,10 +265,12 @@ watch(
 )
 
 async function openWorkspace() {
-  if (!session.token) return
+  if (!session.token || !session.user) return
+  const restoredLocation = navigation.readPersistedWorkspaceLocation(session.user.id)
+  prepareWorkspaceLocationRestore(restoredLocation)
   await reloadWorkspaceState()
   restoreVoiceRejoinPrompt()
-  navigation.openFriends()
+  restoreWorkspaceLocation(restoredLocation)
   connectGateway(session.token, {
     onDispatch: (event, data) => {
       guilds.handleGatewayDispatch(event, data)
@@ -274,6 +278,43 @@ async function openWorkspace() {
     },
     onReconnect: reloadWorkspaceState,
   })
+}
+
+function prepareWorkspaceLocationRestore(location: PersistedWorkspaceLocation | null) {
+  if (!location) return
+  if (location.destination !== 'server_channel' && location.destination !== 'voice_channel') return
+  guilds.activeGuildId = location.activeGuildId
+  guilds.activeChannelId = location.activeChannelId
+}
+
+function restoreWorkspaceLocation(location: PersistedWorkspaceLocation | null) {
+  if (!location) {
+    navigation.openFriends()
+    return
+  }
+
+  if (location.destination === 'dm') {
+    const dmId = location.activeDmId
+    if (dmId && dms.getDm(dmId)) {
+      navigation.openDm(dmId)
+      return
+    }
+    navigation.openFriends()
+    return
+  }
+
+  if (location.destination === 'server_channel' || location.destination === 'voice_channel') {
+    if (guilds.activeGuild && guilds.activeChannel) {
+      if (location.destination === 'voice_channel' && guilds.activeChannel.type === 1) {
+        navigation.openVoiceChannel()
+      } else {
+        navigation.openServerChannel()
+      }
+      return
+    }
+  }
+
+  navigation.openFriends()
 }
 
 async function reloadWorkspaceState() {
@@ -451,6 +492,7 @@ function handleLogout() {
   workspaceError.value = null
   clearWorkspaceNotice()
   session.logout()
+  navigation.clearPersistedWorkspaceLocation()
   navigation.resetNavigation()
   guilds.resetGuilds()
   dms.resetDms()

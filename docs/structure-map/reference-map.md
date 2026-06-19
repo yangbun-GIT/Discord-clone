@@ -674,8 +674,14 @@ Browser UI
     - Guild, channel, and server-message visibility filtering.
 
 - `frontend/src/stores/navigation.ts`
+  - References:
+    - `frontend/src/services/browserApi.ts`
   - Referenced by:
     - `frontend/src/App.vue`
+    - `frontend/src/stores/navigation.test.ts`
+  - Owns:
+    - Active app destination state and per-user refresh-safe workspace location
+      persistence for Friends, DM, server text, and voice-channel destinations.
 
 - `frontend/src/stores/preferences.ts`
   - References:

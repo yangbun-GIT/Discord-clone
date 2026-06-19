@@ -178,12 +178,19 @@ Tasks:
 5. Add automated coverage for reload state reconciliation where feasible.
    - Completed: browser smoke reloads a connected tab, verifies the rejoin prompt,
      rejoins, and confirms the other tab receives a remote audio sink again.
+6. Preserve the user's current workspace page after refresh.
+   - Completed: navigation now stores a same-user restorable destination and
+     DM/guild/channel IDs, then restores them before workspace state reload.
+   - Completed: browser smoke verifies that a server text channel and selected
+     voice workspace remain open after reload instead of falling back to Friends.
 
 Acceptance:
 
 - Refresh does not leave stale connected UI.
 - User can intentionally rejoin the previous voice channel after reload.
 - The other participant sees a consistent leave/rejoin transition.
+- Refresh returns to the same DM/server/voice page instead of the initial Friends
+  page when the saved destination is still accessible.
 
 Verification:
 
@@ -191,6 +198,9 @@ Verification:
 - `npm --prefix frontend run build` passed.
 - `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
   `voiceRejoinPromptVisible: true` and `voiceRejoinRecovered: true`.
+- Additional regression target: `scripts/realtime_browser_smoke.mjs` records
+  `serverWorkspacePreservedAfterReload` and
+  `voiceWorkspacePreservedAfterReload`.
 - Real browser permission prompt behavior remains a manual gate because automated
   fake-device media cannot prove the user's actual microphone permission flow.
 

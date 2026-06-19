@@ -51,8 +51,9 @@ For ordinary implementation work:
     DM, owner/member invite permission UI, voice peer visibility, remote audio
     sink, mute/deafen including local microphone track suppression while deafened,
     fake screen-share paths, local screen-preview rendering, remote screen-video
-    rendering, screen-share stop cleanup, connected-tab reload rejoin recovery, and
-    voice leave cleanup through the app UI.
+    rendering, screen-share stop cleanup, server-channel reload retention,
+    connected voice-workspace reload retention, connected-tab reload rejoin
+    recovery, and voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
@@ -351,6 +352,8 @@ For ordinary implementation work:
   - Top-level app shell and remaining global workflow orchestration.
   - Delegates global notices, app context menus, invite modal state, and workspace
     title/subtitle calculation to focused composables.
+  - Restores the last per-user DM/server/voice workspace location during app
+    bootstrap before guild and DM state reconciliation.
   - Owns the selected voice workspace's local/remote screen-share stage placement.
   - Filters global context-menu invite actions through `guilds.canCreateInvite`.
 - `frontend/src/types.ts`
@@ -400,7 +403,9 @@ For ordinary implementation work:
 - `frontend/src/stores/session.ts`
   - Auth token, current user, login/register/demo/logout.
 - `frontend/src/stores/navigation.ts`
-  - Active destination: friends, DM, server, settings, store.
+  - Active destination: friends, DM, server, voice, and settings.
+  - Persists the last per-user restorable workspace location through
+    `browserStorage` so refresh returns to the previous DM/server/voice page.
 - `frontend/src/stores/guilds.ts`
   - Guild list, active guild/channel, local message state, admin state reflection,
     and gateway state application.

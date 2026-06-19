@@ -272,6 +272,13 @@ async function run() {
     const serverContent = `server-smoke-${suffix}`
     await sendComposerMessage(pageA.page, /message #?general/i, serverContent)
     await waitForTextPresence(pageB.page, serverContent, 'server message')
+    await pageB.page.reload({ waitUntil: 'networkidle', timeout: 30_000 })
+    await waitForTextPresence(pageB.page, serverContent, 'server workspace reload')
+    const serverWorkspacePreservedAfterReload = await pageB.page
+      .getByRole('textbox', { name: /message #?general/i })
+      .last()
+      .isVisible()
+      .catch(() => false)
 
     await openDirectMessages(pageA.page)
     await openDirectMessages(pageB.page)
@@ -370,6 +377,12 @@ async function run() {
     )
     const remoteScreenCleared = await pageB.page.locator('.screen-share-tile video').count() === 0
     await pageB.page.reload({ waitUntil: 'networkidle', timeout: 30_000 })
+    await pageB.page.waitForFunction(
+      () => document.querySelector('.voice-workspace')?.textContent?.includes('voice-room'),
+      null,
+      { timeout: 10_000 },
+    )
+    const voiceWorkspacePreservedAfterReload = await pageB.page.locator('.voice-workspace').isVisible()
     const rejoinButton = pageB.page.getByRole('button', { name: /Rejoin voice/i }).first()
     await rejoinButton.waitFor({ state: 'visible', timeout: 10_000 })
     const voiceRejoinPromptVisible = await rejoinButton.isVisible()
@@ -392,6 +405,7 @@ async function run() {
 
     const result = {
       serverTextRealtime: true,
+      serverWorkspacePreservedAfterReload,
       dmRealtime: true,
       inviteDmRealtime: true,
       ownerInviteControlVisible,
@@ -414,6 +428,7 @@ async function run() {
       remoteSharingUserScreenTiles,
       duplicateRemoteSharingParticipantCards,
       remoteScreenCleared,
+      voiceWorkspacePreservedAfterReload,
       voiceRejoinPromptVisible,
       voiceRejoinRecovered,
       voiceLeaveCleaned,
@@ -422,6 +437,7 @@ async function run() {
 
     if (
       !result.serverTextRealtime
+      || !result.serverWorkspacePreservedAfterReload
       || !result.dmRealtime
       || !result.inviteDmRealtime
       || !result.ownerInviteControlVisible
@@ -444,6 +460,7 @@ async function run() {
       || result.remoteSharingUserScreenTiles !== 1
       || result.duplicateRemoteSharingParticipantCards !== 0
       || !result.remoteScreenCleared
+      || !result.voiceWorkspacePreservedAfterReload
       || !result.voiceRejoinPromptVisible
       || !result.voiceRejoinRecovered
       || !result.voiceLeaveCleaned

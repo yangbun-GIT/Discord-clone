@@ -221,6 +221,14 @@ sessions, and the frontend DM store/Friends UI applies those events idempotently
 Focused backend and frontend tests pass; the remaining follow-up is a two-profile
 browser smoke that proves A's request appears in B's Pending tab without refresh.
 
+Workspace location persistence now preserves the user's current page across
+browser refresh. `frontend/src/stores/navigation.ts` stores a per-user restorable
+destination plus DM/guild/channel IDs through the browser storage adapter, and
+`frontend/src/App.vue` restores those IDs before workspace reload so DM, server
+text, and voice-channel pages do not fall back to Friends. Logout clears the saved
+location. `scripts/realtime_browser_smoke.mjs` now verifies server-channel reload
+retention and voice-workspace reload retention before the voice rejoin flow.
+
 The latest manual QA follow-up is tracked in
 `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`. It records real-device
 issues not covered by fake-device smoke: sustained-syllable audio dropout,
