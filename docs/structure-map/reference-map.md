@@ -813,6 +813,7 @@ Browser UI
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.
+  - Applies local deafen state to the remote audio element `muted` property.
 - `frontend/src/components/VoiceVideoSink.vue`
   - Receives current-channel local or remote screen/video stream from
     `frontend/src/App.vue`/`useVoiceRtc`.

@@ -416,6 +416,8 @@ Verification:
 
 ### Stage M9: Deafen Behavior
 
+Status: implemented.
+
 Owner files:
 
 - `frontend/src/composables/useVoiceSessionController.ts`
@@ -427,15 +429,30 @@ Owner files:
 Tasks:
 
 1. Verify current deafen state updates local UI and gateway state.
+   - Completed: existing deafen UI/gateway state remains intact.
 2. Ensure remote audio elements are muted or paused locally while deafened.
+   - Completed: `VoiceAudioSink` receives the deafen state and applies it to the
+     remote audio element `muted` property.
 3. Ensure undeafen restores remote audio without requiring rejoin.
+   - Completed: browser smoke toggles undeafen and verifies remote audio elements
+     become unmuted without reconnecting.
 4. Keep microphone mute semantics separate from deafen semantics.
+   - Completed: deafen mutes only local remote-audio playback; microphone mute
+     remains controlled by the existing mute button.
 
 Acceptance:
 
 - With deafen enabled, user does not hear remote participants.
 - Remote participants do not lose their connection because one user deafened.
 - UI communicates deafen state clearly in bottom panel and voice workspace.
+
+Verification:
+
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:browser` passed after the Docker frontend refresh with
+  `remoteAudioMutedWhileDeafened: true` and
+  `remoteAudioUnmutedAfterUndeafen: true`.
 
 ### Stage M10: Invite Permission Browser QA
 

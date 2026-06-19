@@ -378,7 +378,7 @@ For ordinary implementation work:
 - `frontend/src/components/VoicePanel.vue`
   - Voice-channel workspace, participant tiles, screen-share state, and controls.
 - `frontend/src/components/VoiceAudioSink.vue`
-  - Remote audio stream rendering.
+  - Remote audio stream rendering and local deafen-to-audio-muted binding.
 - `frontend/src/components/VoiceVideoSink.vue`
   - Local and remote video/screen stream rendering.
 - `frontend/src/components/SettingsView.vue`

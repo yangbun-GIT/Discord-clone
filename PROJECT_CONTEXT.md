@@ -293,6 +293,12 @@ Friend-row invite actions create/open a DM and send a localized invite-code mess
 while the browser realtime smoke now creates a friend relationship, sends an invite
 from the modal, and verifies the recipient receives the invite code in DM realtime.
 
+Manual QA follow-up Stage M9 is implemented in code/docs. `VoiceAudioSink` now binds
+the local deafen state to remote audio element `muted`, so deafen blocks local
+playback without disconnecting peers or changing microphone mute semantics. Browser
+realtime smoke verifies remote audio is muted while deafened and restored after
+undeafen without rejoin.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

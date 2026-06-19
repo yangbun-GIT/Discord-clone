@@ -1403,6 +1403,7 @@ async function handleSendInviteToFriend(friendId: number) {
         v-for="remote in activeRemoteVoiceStreams"
         :key="`${remote.channelId}:${remote.userId}`"
         :stream="remote.stream"
+        :muted="isDeafened"
       />
     </div>
     <div

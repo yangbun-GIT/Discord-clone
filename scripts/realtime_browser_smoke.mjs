@@ -263,6 +263,30 @@ async function run() {
 
     await clickVoiceAction(pageA.page, /Mute microphone/i)
     await clickVoiceAction(pageA.page, /Deafen/i)
+    await pageA.page.waitForFunction(
+      () => {
+        const audioElements = [...document.querySelectorAll('.voice-audio-sinks audio')]
+        return audioElements.length >= 1 && audioElements.every((audio) => audio.muted)
+      },
+      null,
+      { timeout: 10_000 },
+    )
+    const remoteAudioMutedWhileDeafened = await pageA.page.locator('.voice-audio-sinks audio').evaluateAll((audios) =>
+      audios.length >= 1 && audios.every((audio) => audio.muted),
+    )
+    await clickVoiceAction(pageA.page, /Undeafen/i)
+    await pageA.page.waitForFunction(
+      () => {
+        const audioElements = [...document.querySelectorAll('.voice-audio-sinks audio')]
+        return audioElements.length >= 1 && audioElements.every((audio) => !audio.muted)
+      },
+      null,
+      { timeout: 10_000 },
+    )
+    const remoteAudioUnmutedAfterUndeafen = await pageA.page.locator('.voice-audio-sinks audio').evaluateAll((audios) =>
+      audios.length >= 1 && audios.every((audio) => !audio.muted),
+    )
+    await clickVoiceAction(pageA.page, /Deafen/i)
     await clickVoiceAction(pageA.page, /^Share screen$/i)
     await pageA.page.waitForTimeout(2_500)
     await waitForRemoteScreenTile(pageB.page, pageA.page)
@@ -318,6 +342,8 @@ async function run() {
       voicePeerDetailVisible: detailLabels.some((text) => /1 peer/.test(text)),
       mutePressed: mutePressed === 'true',
       deafenPressed: deafenPressed === 'true',
+      remoteAudioMutedWhileDeafened,
+      remoteAudioUnmutedAfterUndeafen,
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
       localScreenPreviewVideos,
       remoteScreenVideos,
@@ -338,6 +364,8 @@ async function run() {
       || !result.voicePeerDetailVisible
       || !result.mutePressed
       || !result.deafenPressed
+      || !result.remoteAudioMutedWhileDeafened
+      || !result.remoteAudioUnmutedAfterUndeafen
       || !result.fakeScreenShareVisible
       || result.localScreenPreviewVideos < 1
       || result.remoteScreenVideos < 1
