@@ -242,7 +242,7 @@ and manageable performance cost.
 Before implementation, create or update:
 
 ```text
-docs/realtime-communication-plan.md
+docs/remediation-tasks/realtime-communication-plan.md
 ```
 
 Include:
@@ -293,7 +293,7 @@ After meaningful communication work, update:
 - `docs/voice-qa.md` if voice or screen-share QA changes.
 - `docs/project-file-map.md` if file ownership changes.
 - `docs/structure-map/reference-map.md` if core dependencies change.
-- `docs/realtime-communication-plan.md`
+- `docs/remediation-tasks/realtime-communication-plan.md`
 
 ## Final Response
 

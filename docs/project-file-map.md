@@ -76,11 +76,19 @@ For ordinary implementation work:
   - Runtime, Docker, Redis, HTTPS/WebSocket, TURN, and deployment hardening.
 - `docs/voice-qa.md`
   - Voice, screen sharing, TURN, and WebRTC QA procedure.
+- `docs/remediation-tasks/realtime-communication-plan.md`
+  - Staged implementation plan for WebSocket gateway, realtime text/DM, WebRTC
+    voice/screen sharing, Redis fan-out, LAN/TURN access, security, observability,
+    and communication verification.
 - `docs/reference-screenshots/`
   - Private local visual-reference screenshot folders.
   - Do not commit real screenshot content unless explicitly approved.
 - `docs/qa-artifacts/`
   - Stage QA screenshots already used for verification evidence.
+- `docs/remediation-tasks/`
+  - QA-driven defect and remediation backlogs for future implementation passes.
+  - Current live QA-derived development plan:
+    `discord-clone-qa-remediation-2026-06-19.md`.
 
 ## Stage And Planning Documents
 

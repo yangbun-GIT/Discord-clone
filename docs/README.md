@@ -92,11 +92,24 @@ the project prompt and context files before changing code.
   - `realtime-communication-implementation-prompt.md` is the communication-stack
     prompt for realtime text, WebSocket gateway, WebRTC voice, screen sharing,
     cross-PC access, and technology selection.
+- `docs/remediation-tasks/realtime-communication-plan.md`
+  - Current staged development plan for production-like realtime messaging,
+    WebSocket gateway hardening, WebRTC voice/screen sharing, LAN/TURN access,
+    security, observability, and communication QA.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
   - Lists root files, backend/frontend ownership, tests, common task routing, and
     efficient lookup commands.
+- `docs/remediation-tasks/`
+  - QA-driven defect and remediation backlogs.
+  - Use the latest development plan in this folder before starting UI, workflow,
+    Discord-parity, or communication fix stages.
+  - `discord-clone-qa-remediation-2026-06-19.md` is promoted from QA audit to
+    development plan and includes per-finding implementation directives,
+    acceptance criteria, regression checks, staged remediation order, and a
+    follow-up QA recheck for settings polish, hidden-control accessibility, header
+    ownership, and voice participant duplication.
 - `docs/structure-map/`
   - Fast-navigation structure folder.
   - `README.md` defines usage and update rules; `reference-map.md` records core

@@ -168,6 +168,21 @@ The app boots in two local modes:
     implementation process for WebSocket gateway, realtime text, WebRTC voice,
     screen sharing, cross-PC access, technology selection, and noise-reduction
     review.
+- `docs/remediation-tasks/realtime-communication-plan.md`
+  - Current communication implementation plan.
+  - Selects the existing FastAPI WebSocket gateway plus browser WebRTC stack for
+    hardening rather than replacement, and defines staged work for reconnect,
+    duplicate suppression, Redis fan-out verification, native audio constraints,
+    WebRTC lifecycle hardening, LAN/TURN readiness, and two-session QA.
+- `docs/remediation-tasks/discord-clone-qa-remediation-2026-06-19.md`
+  - QA-derived UI/workflow remediation development plan.
+  - Promotes the QA findings into implementation-ready work items with development
+    directives, likely owner files, acceptance criteria, regression checks, and
+    staged remediation order for visible controls, shell layering, message
+    timelines, Friends/DM structure, voice state, context menus, empty states, and
+    final responsive/realtime QA. A 2026-06-19 follow-up QA pass added explicit
+    settings-surface polish, hidden-control accessibility, topbar ownership, and
+    voice participant de-duplication requirements.
 - `docs/store-clone-implementation-plan.md`
   - Detailed staged plan for implementing a Discord Store-like in-app shop.
   - Covers Store catalog, browse/search/filter, item detail preview, demo purchase,
@@ -918,14 +933,17 @@ npm run docker:down
 
 Next implementation stage:
 
-- Start Stage 9 from `docs/discord-visual-parity-remediation-plan.md`.
-- Stage 8.0 through Stage 8.14 are complete. The next user-directed priority is
-  Discord visual parity and density remediation based on the side-by-side comparison
-  screenshots.
-- Stage 9 should begin with baseline measurement, screenshot matrix capture, safe
-  demo content density, and global shell design-token tuning before individual
-  Friends, channel, composer, and voice surfaces are polished.
-- Run multi-browser manual voice QA with a real TURN provider configured.
+- Start communication implementation from
+  `docs/remediation-tasks/realtime-communication-plan.md`.
+- Begin with Stage C0 environment and verification recovery, because the prior QA
+  pass found local runner blockers around `.venv/Scripts/python.exe`, `py`, and
+  plain `npm` availability.
+- Continue through C1 baseline lock before changing gateway, text/DM, Redis, or
+  voice behavior.
+- Treat two-session browser verification as mandatory for real communication
+  claims; store-only tests are not enough.
+- Run multi-browser manual voice QA with a real TURN provider configured before
+  claiming internet voice support.
 - Tune WebRTC quality with real network stats after manual QA exposes bottlenecks.
 - Continue production deployment execution when target VM/provider is chosen.
 - Resume deferred Store UI work only if the user explicitly returns to Store scope.
