@@ -5,6 +5,7 @@ import { screenTrackIsActive } from './voiceMedia'
 
 const PEER_RETRY_DELAY_MS = 1_000
 const MAX_PEER_RETRY_COUNT = 1
+const SIGNALING_STABLE_WAIT_MS = 2_000
 
 type PeerKey = `${number}:${number}`
 
@@ -31,6 +32,7 @@ export type PeerEntry = {
   connection: RTCPeerConnection
   stream: MediaStream
   screenSender: RTCRtpSender | null
+  screenTransceiver: RTCRtpTransceiver | null
   pendingCandidates: RTCIceCandidate[]
 }
 
@@ -63,6 +65,23 @@ function participantPeers(participants: VoiceState[], currentUserId: number) {
 
 function streamHasLiveTrack(stream: MediaStream) {
   return stream.getTracks().some((track) => track.readyState === 'live')
+}
+
+function waitForStableSignaling(connection: RTCPeerConnection) {
+  if (connection.signalingState === 'stable') return Promise.resolve(true)
+  return new Promise<boolean>((resolve) => {
+    const timer = window.setTimeout(() => {
+      connection.removeEventListener('signalingstatechange', handleChange)
+      resolve(false)
+    }, SIGNALING_STABLE_WAIT_MS)
+    function handleChange() {
+      if (connection.signalingState !== 'stable') return
+      window.clearTimeout(timer)
+      connection.removeEventListener('signalingstatechange', handleChange)
+      resolve(true)
+    }
+    connection.addEventListener('signalingstatechange', handleChange)
+  })
 }
 
 export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
@@ -169,9 +188,17 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
 
     const screenStream = options.getScreenStream()
     const screenTrack = screenStream?.getVideoTracks()[0]
+    let screenTransceiver: RTCRtpTransceiver | null = null
     let screenSender: RTCRtpSender | null = null
     if (screenTrack && screenTrack.readyState === 'live' && screenStream) {
-      screenSender = connection.addTrack(screenTrack, screenStream)
+      screenTransceiver = connection.addTransceiver(screenTrack, {
+        direction: 'sendrecv',
+        streams: [screenStream],
+      })
+      screenSender = screenTransceiver.sender
+    } else {
+      screenTransceiver = connection.addTransceiver('video', { direction: 'sendrecv' })
+      screenSender = screenTransceiver.sender
     }
 
     const peer: PeerEntry = {
@@ -181,6 +208,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       connection,
       stream,
       screenSender,
+      screenTransceiver,
       pendingCandidates: [],
     }
     peers.set(key, peer)
@@ -204,6 +232,10 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
         stream.addTrack(event.track)
       }
       event.track.addEventListener('ended', () => refreshRemoteStream(peer))
+      event.track.addEventListener('mute', () => refreshRemoteStream(peer))
+      event.track.addEventListener('unmute', () => refreshRemoteStream(peer))
+      window.setTimeout(() => refreshRemoteStream(peer), 0)
+      window.setTimeout(() => refreshRemoteStream(peer), 250)
       const sharingScreen = screenTrackIsActive(stream)
       const current = options.remoteStreams.value.find(
         (remote) => remote.channelId === peer.channelId && remote.userId === userId,
@@ -248,7 +280,8 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     const activeOptions = options.getActiveOptions()
     if (!activeOptions) return
     const peer = ensurePeer(userId, username)
-    if (peer.channelId !== activeOptions.channelId || peer.connection.signalingState !== 'stable') return
+    if (peer.channelId !== activeOptions.channelId) return
+    if (!(await waitForStableSignaling(peer.connection))) return
     const offer = await peer.connection.createOffer()
     await peer.connection.setLocalDescription(offer)
     activeOptions.sendSignal({
@@ -262,7 +295,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   async function renegotiatePeer(peer: PeerEntry) {
     const activeOptions = options.getActiveOptions()
     if (!activeOptions || peer.channelId !== activeOptions.channelId) return
-    if (peer.connection.signalingState !== 'stable') return
+    if (!(await waitForStableSignaling(peer.connection))) return
     const offer = await peer.connection.createOffer()
     await peer.connection.setLocalDescription(offer)
     activeOptions.sendSignal({

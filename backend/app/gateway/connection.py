@@ -19,6 +19,7 @@ class ClientConnection:
     guild_ids: set[int] = field(default_factory=set)
     channel_ids: set[int] = field(default_factory=set)
     dm_ids: set[int] = field(default_factory=set)
+    voice_guild_id: int | None = None
     voice_channel_id: int | None = None
 
     async def send(
@@ -53,8 +54,11 @@ class ConnectionRegistry:
         self._connections.add(connection)
         return connection
 
-    def disconnect(self, connection: ClientConnection) -> None:
+    def disconnect(self, connection: ClientConnection) -> bool:
+        if connection not in self._connections:
+            return False
         self._connections.discard(connection)
+        return True
 
     def mark_identified(
         self,

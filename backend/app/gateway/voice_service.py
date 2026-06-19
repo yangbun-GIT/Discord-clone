@@ -16,14 +16,43 @@ class VoiceGatewayService:
         previous_channel_id: int | None,
         channel_id: int | None,
         data: dict[str, object],
-    ) -> None:
+    ) -> list[ClientConnection]:
         target_channel_ids = {
             item
             for item in (previous_channel_id, channel_id)
             if item is not None
         }
+        stale: list[ClientConnection] = []
         for target_channel_id in target_channel_ids:
-            await self._broadcaster.broadcast_channel(target_channel_id, "VOICE_STATE_UPDATE", data)
+            stale.extend(
+                await self._broadcaster.broadcast_channel(
+                    target_channel_id,
+                    "VOICE_STATE_UPDATE",
+                    data,
+                )
+            )
+        return stale
+
+    async def broadcast_disconnect_leave(
+        self,
+        connection: ClientConnection,
+    ) -> list[ClientConnection]:
+        if connection.user_id is None:
+            return []
+        if connection.voice_channel_id is None or connection.voice_guild_id is None:
+            return []
+        return await self.broadcast_voice_state(
+            previous_channel_id=connection.voice_channel_id,
+            channel_id=None,
+            data={
+                "guild_id": connection.voice_guild_id,
+                "channel_id": None,
+                "user_id": connection.user_id,
+                "username": connection.username,
+                "self_mute": False,
+                "self_deaf": False,
+            },
+        )
 
     async def send_voice_signal(
         self,
@@ -31,7 +60,7 @@ class VoiceGatewayService:
         channel_id: int,
         target_user_id: int,
         data: dict[str, object],
-    ) -> int:
+    ) -> tuple[int, list[ClientConnection]]:
         sent = 0
         stale: list[ClientConnection] = []
         for connection in self._connections.connections:
@@ -45,6 +74,4 @@ class VoiceGatewayService:
             except RuntimeError:
                 stale.append(connection)
 
-        for connection in stale:
-            self._connections.disconnect(connection)
-        return sent
+        return sent, stale

@@ -77,7 +77,10 @@ const activeRemoteVoiceStreams = computed(() =>
   voiceRtc.remoteStreams.value.filter((remote) => remote.channelId === guilds.connectedVoiceChannelId),
 )
 const remoteScreenStreams = computed(() =>
-  activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
+  activeRemoteVoiceStreams.value.filter((remote) =>
+    remote.sharingScreen
+    || remote.stream.getVideoTracks().some((track) => track.readyState === 'live' && !track.muted),
+  ),
 )
 const voiceLocationSummary = computed(() => {
   if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
@@ -228,6 +231,14 @@ watch(
     closeGlobalContextMenu()
     activeHeaderPanel.value = null
   },
+)
+
+watch(
+  () => navigation.activeDmId,
+  (dmId) => {
+    dms.setActiveDm(dmId)
+  },
+  { immediate: true },
 )
 
 async function openWorkspace() {
@@ -396,7 +407,7 @@ function handleDemo() {
 }
 
 function handleLogout() {
-  voiceRtc.disconnect()
+  disconnectVoice()
   disconnectGateway()
   authError.value = null
   workspaceError.value = null
@@ -548,10 +559,17 @@ function handleSelectChannel(channelId: number) {
   activeHeaderPanel.value = null
   const channel = activeGuild.value?.channels.find((item) => item.id === channelId)
   if (channel?.type === 1) {
-    void handleJoinVoiceChannel(channelId)
+    handleOpenVoiceChannel(channelId)
     return
   }
   guilds.selectChannel(channelId)
+}
+
+function handleOpenVoiceChannel(channelId: number) {
+  clearWorkspaceNotice()
+  activeHeaderPanel.value = null
+  navigation.openVoiceChannel()
+  void handleJoinVoiceChannel(channelId)
 }
 
 function showHeaderPlaceholder(label: string) {
@@ -767,7 +785,7 @@ async function copyInviteCode() {
       @create-channel="handleCreateChannel"
       @create-invite="handleCreateInvite"
       @channel-settings="handleChannelSettings"
-      @join-voice="handleJoinVoiceChannel"
+      @join-voice="handleOpenVoiceChannel"
       @leave-voice="handleLeaveVoiceChannel"
       @demo-notice="showDemoNotice"
     />
@@ -1187,7 +1205,7 @@ async function copyInviteCode() {
       @open-settings="handleOpenUserSettings"
     />
     <div
-      v-if="navigation.destination === 'voice_channel' && remoteScreenStreams.length"
+      v-if="selectedVoiceChannel && remoteScreenStreams.length"
       class="screen-share-stage"
       aria-label="Screen shares"
     >

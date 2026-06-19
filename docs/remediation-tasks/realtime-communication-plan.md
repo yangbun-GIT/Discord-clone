@@ -1329,9 +1329,83 @@ Final result:
     voice signaling, and fake screen-share code paths are complete.
   - Real microphone quality, real screen picker UX, different-PC LAN, and
     TURN/NAT internet voice remain external manual gates.
-  - Internet voice must not be marked complete until real TURN credentials are
-    configured, `/api/meta/voice.turn_configured` is `true`, and a different-network
-    two-user voice/screen-share test passes.
+- Internet voice must not be marked complete until real TURN credentials are
+  configured, `/api/meta/voice.turn_configured` is `true`, and a different-network
+  two-user voice/screen-share test passes.
+
+## Post-C9 Communication Audit And Remediation
+
+Date: 2026-06-19.
+
+Audit findings added after the first C9 gate:
+
+1. Voice participants could remain stale after abnormal WebSocket disconnect,
+   heartbeat zombie reap, stale-send cleanup, or logout because the gateway removed
+   the connection without broadcasting a `VOICE_STATE_UPDATE` leave event.
+2. Client logout used local media cleanup instead of the app's normal voice leave
+   path.
+3. Redis publish success with zero Pub/Sub subscribers was treated as complete even
+   though no backend subscriber consumed the event.
+4. Gateway and message mutation rate limits were process-local only, which is weak
+   for multi-worker Docker or production deployments.
+5. The browser smoke verified a local "Screen sharing" label but did not require a
+   remote screen-share tile in the second browser context or a post-leave voice
+   cleanup assertion.
+6. `scripts/realtime_redis_smoke.py` existed, but no root npm script exposed it as
+   a repeatable command.
+7. DM gateway messages always reset `unread_count` to zero, so inactive DMs could
+   miss unread badges.
+8. TURN/NAT internet voice remained correctly gated by external credentials and
+   real different-network QA.
+9. The remote screen-share media track was received, but the screen-share stage
+   render condition was narrower than the voice workspace condition, so the remote
+   video tile could be hidden from the current voice workspace.
+
+Remediation completed in this pass:
+
+- `backend/app/gateway/connection.py`, `subscriptions.py`, `voice_service.py`,
+  `manager.py`, `zombie_reaper.py`, and `router.py` now track voice guild/channel
+  state and route normal disconnects, zombie reaps, stale send failures, and
+  explicit voice moves through a single leave-event cleanup path.
+- `frontend/src/App.vue` now logs out through `disconnectVoice()` before closing the
+  gateway, so normal logout sends the same app-owned leave event as the visible
+  disconnect control.
+- `backend/app/realtime/publisher.py` falls back to local fan-out when Redis publish
+  reports zero subscribers.
+- `backend/app/core/operation_limits.py` uses Redis-backed fixed-window operation
+  buckets when Redis is connected, with a privacy-safe local fallback if Redis
+  limiting fails.
+- `scripts/realtime_browser_smoke.mjs` now asserts remote screen-video rendering in
+  the second browser context and verifies that leaving voice removes remote audio
+  sinks.
+- `frontend/src/composables/voicePeerConnections.ts`, `useVoiceRtc.ts`,
+  `voiceMedia.ts`, and `frontend/src/App.vue` reserve a video transceiver for
+  screen sharing, refresh remote screen flags from live unmuted video tracks, and
+  render the screen-share stage whenever a selected voice channel has a remote
+  screen stream.
+- `package.json` exposes `npm run smoke:realtime:redis`.
+- `frontend/src/stores/dms.ts` tracks the active DM, clears unread on open, keeps
+  REST-sent messages read, and increments unread for inactive DM gateway messages.
+
+Verification recorded for this remediation:
+
+- `npm run test:backend` passed with 124 tests.
+- `npm run test:frontend -- --run` passed with 21 tests.
+- `npm run lint:backend` passed.
+- `npm run lint:frontend` passed.
+- `npm --prefix frontend run build` passed.
+- `npm run smoke:realtime:redis` passed.
+- `npm run smoke:realtime:browser` passed with remote screen-video rendering and
+  voice leave cleanup after restarting the frontend dev container to load the
+  latest Vite transform.
+
+Remaining external gates:
+
+- Real microphone quality.
+- Real browser screen picker UX.
+- Different-PC LAN text, DM, voice, and screen-share QA.
+- TURN/NAT internet voice and screen-share QA with
+  `/api/meta/voice.turn_configured: true`.
 
 ## Verification Matrix
 

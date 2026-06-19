@@ -39,7 +39,9 @@ and a DM. It verifies:
 - Remote audio sink appears.
 - Voice peer count appears in the voice panel.
 - Mute/deafen controls toggle.
-- Fake screen-share path becomes visible.
+- Fake screen-share path becomes visible locally.
+- A remote screen-share video tile appears in the second browser context.
+- Leaving voice removes the remote audio sink from the other browser context.
 
 Privacy rules:
 
@@ -54,7 +56,8 @@ Latest C8 automated result:
 - Command: `npm run smoke:realtime:browser`.
 - Result: passed for two-context server text realtime, DM realtime, voice remote
   audio sink, peer detail visibility, mute/deafen toggles, fake screen-share
-  visibility, and zero browser errors.
+  visibility, remote screen-video rendering, voice leave cleanup, and zero browser
+  errors.
 - Scope: same-PC automated fake-device code-path coverage only. It is not a LAN,
   TURN/NAT, real microphone quality, or real screen-picker release gate.
 
@@ -66,6 +69,23 @@ Stage C9 local gate result:
   smoke passed.
 - `/api/meta/voice` reported `turn_configured: false`, so TURN/NAT internet voice
   remains incomplete until real TURN credentials and a different-network test pass.
+
+Post-C9 remediation result:
+
+- Date: 2026-06-19.
+- Added abnormal voice-disconnect cleanup coverage, Redis zero-subscriber fallback,
+  Redis-backed operation limit support, inactive-DM unread handling, and stronger
+  remote screen-share/voice-leave browser smoke checks.
+- Fixed the remote screen-share stage render condition so a received live video
+  track is visible from the selected voice workspace.
+- Current automated command baseline is:
+  - `npm run test:backend`
+  - `npm run test:frontend`
+  - `npm run lint:backend`
+  - `npm run lint:frontend`
+  - `npm --prefix frontend run build`
+  - `npm run smoke:realtime:browser`
+  - `npm run smoke:realtime:redis`
 
 ## Manual Same-PC QA
 

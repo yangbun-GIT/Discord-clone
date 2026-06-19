@@ -36,8 +36,11 @@ class SubscriptionRegistry:
     def update_voice_channel(
         self,
         connection: ClientConnection,
+        *,
+        guild_id: int,
         channel_id: int | None,
     ) -> int | None:
         previous_channel_id = connection.voice_channel_id
+        connection.voice_guild_id = guild_id if channel_id is not None else None
         connection.voice_channel_id = channel_id
         return previous_channel_id

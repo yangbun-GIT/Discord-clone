@@ -129,6 +129,35 @@ async def test_publisher_falls_back_to_local_fanout_when_redis_publish_fails(
     assert fanout_events == [event]
 
 
+async def test_publisher_falls_back_to_local_fanout_when_redis_has_no_subscribers(
+    monkeypatch,
+) -> None:
+    event = RealtimeGatewayEvent(
+        dm_id=801,
+        event="DM_MESSAGE_CREATE",
+        data={"id": 1, "dm_id": 801},
+    )
+    fanout_events: list[RealtimeGatewayEvent] = []
+
+    class SubscriberlessRedisBus:
+        @property
+        def is_connected(self) -> bool:
+            return True
+
+        async def publish_json(self, channel: str, payload: str) -> int:
+            return 0
+
+    async def fake_fanout(fanout_event: RealtimeGatewayEvent) -> None:
+        fanout_events.append(fanout_event)
+
+    monkeypatch.setattr(publisher, "redis_bus", SubscriberlessRedisBus())
+    monkeypatch.setattr(publisher, "fanout_gateway_event", fake_fanout)
+
+    await publisher._publish_or_broadcast(event)
+
+    assert fanout_events == [event]
+
+
 def test_subscriber_decodes_valid_message_and_ignores_invalid_payload() -> None:
     valid_event = RealtimeGatewayEvent(
         dm_id=801,

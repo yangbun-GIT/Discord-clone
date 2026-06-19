@@ -143,7 +143,11 @@ export function useVoiceRtc() {
         void stopScreenShare()
       })
       for (const peer of peerRegistry.peers.values()) {
-        if (peer.screenSender) {
+        if (peer.screenTransceiver) {
+          await peer.screenTransceiver.sender.replaceTrack(track)
+          peer.screenTransceiver.direction = 'sendrecv'
+          peer.screenSender = peer.screenTransceiver.sender
+        } else if (peer.screenSender) {
           await peer.screenSender.replaceTrack(track)
         } else {
           peer.screenSender = peer.connection.addTrack(track, displayStream)
@@ -165,8 +169,14 @@ export function useVoiceRtc() {
     stopMediaStream(previousStream)
     for (const peer of peerRegistry.peers.values()) {
       if (!peer.screenSender) continue
-      peer.connection.removeTrack(peer.screenSender)
-      peer.screenSender = null
+      await peer.screenSender.replaceTrack(null)
+      if (peer.screenTransceiver) {
+        peer.screenTransceiver.direction = 'sendrecv'
+        peer.screenSender = peer.screenTransceiver.sender
+      } else {
+        peer.connection.removeTrack(peer.screenSender)
+        peer.screenSender = null
+      }
     }
     await peerRegistry.renegotiateAllPeers()
   }

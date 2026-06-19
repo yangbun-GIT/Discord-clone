@@ -48,7 +48,7 @@ async def create_direct_message_message(
     payload: DmMessageCreate,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> DmMessageRead:
-    require_rest_operation(
+    await require_rest_operation(
         f"dm-message-create:{current_user.id}:{dm_id}",
         MESSAGE_CREATE_LIMIT,
     )

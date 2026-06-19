@@ -32,7 +32,7 @@ async def create_channel_message(
     payload: MessageCreate,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> MessageRead:
-    require_rest_operation(
+    await require_rest_operation(
         f"message-create:{current_user.id}:{channel_id}",
         MESSAGE_CREATE_LIMIT,
     )
@@ -69,7 +69,7 @@ async def update_channel_message(
     payload: MessageUpdate,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> MessageRead:
-    require_rest_operation(
+    await require_rest_operation(
         f"message-update:{current_user.id}:{channel_id}",
         MESSAGE_MUTATION_LIMIT,
     )
@@ -100,7 +100,7 @@ async def delete_channel_message(
     message_id: int,
     current_user: Annotated[UserPublic, Depends(get_current_user)],
 ) -> MessageDeleteRead:
-    require_rest_operation(
+    await require_rest_operation(
         f"message-delete:{current_user.id}:{channel_id}",
         MESSAGE_MUTATION_LIMIT,
     )

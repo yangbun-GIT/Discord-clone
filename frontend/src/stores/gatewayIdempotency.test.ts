@@ -81,12 +81,34 @@ describe('gateway dispatch idempotency', () => {
   it('keeps one DM message when REST reconciliation and gateway dispatch race', () => {
     const store = useDmStore()
     store.dms = [{ ...dm, messages: [dmMessage] }]
+    store.setActiveDm(801)
 
     store.handleGatewayDispatch('DM_MESSAGE_CREATE', dmMessage)
     store.handleGatewayDispatch('DM_MESSAGE_CREATE', dmMessage)
 
     expect(store.dms[0].messages).toHaveLength(1)
     expect(store.dms[0].messages[0]).toEqual(dmMessage)
+    expect(store.dms[0].unread_count).toBe(0)
+  })
+
+  it('increments unread count for inactive DM gateway messages', () => {
+    const store = useDmStore()
+    store.dms = [{ ...dm, messages: [] }]
+    store.setActiveDm(null)
+
+    store.handleGatewayDispatch('DM_MESSAGE_CREATE', dmMessage)
+
+    expect(store.dms[0].messages).toHaveLength(1)
+    expect(store.dms[0].unread_count).toBe(1)
+  })
+
+  it('clears unread count when a DM becomes active', () => {
+    const store = useDmStore()
+    store.dms = [{ ...dm, unread_count: 3, messages: [] }]
+
+    store.setActiveDm(801)
+
+    expect(store.dms[0].unread_count).toBe(0)
   })
 
   it('replaces one voice state per guild user and removes leave events', () => {

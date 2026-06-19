@@ -136,7 +136,10 @@ deployment verification checklist.
 The 2026-06-19 local communication gate passed with the Docker stack running
 frontend, backend, backend-secondary, PostgreSQL, and Redis. Local health, frontend
 HTTP, voice metadata, the full frontend/backend command suite, and
-`npm run smoke:realtime:browser` passed.
+`npm run smoke:realtime:browser` passed. A post-C9 remediation pass added
+abnormal voice-leave cleanup, Redis zero-subscriber fallback, Redis-backed
+operation limit support, inactive-DM unread handling, `npm run smoke:realtime:redis`,
+and stronger remote screen-share/voice-leave browser smoke assertions.
 
 Deployment remains gated by environment-specific checks:
 

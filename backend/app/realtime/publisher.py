@@ -90,6 +90,11 @@ async def _publish_or_broadcast(event: RealtimeGatewayEvent) -> None:
                 "redis realtime event published",
                 extra={"event": event.event, "subscriber_count": delivered},
             )
-            return
+            if delivered > 0:
+                return
+            logger.warning(
+                "redis publish had no subscribers; using local realtime fallback",
+                extra={"event": event.event},
+            )
 
     await fanout_gateway_event(event)

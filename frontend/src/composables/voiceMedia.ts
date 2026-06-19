@@ -163,7 +163,7 @@ export function setAudioTracksMuted(stream: MediaStream | null, muted: boolean) 
 }
 
 export function screenTrackIsActive(stream: MediaStream) {
-  return stream.getVideoTracks().some((track) => track.readyState === 'live')
+  return stream.getVideoTracks().some((track) => track.readyState === 'live' && !track.muted)
 }
 
 function assertMicrophoneCaptureAvailable() {

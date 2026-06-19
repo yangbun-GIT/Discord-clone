@@ -22,8 +22,13 @@ class GatewayConnectionManager:
     async def connect(self, websocket: WebSocket) -> ClientConnection:
         return await self._connections.connect(websocket)
 
-    def disconnect(self, connection: ClientConnection) -> None:
-        self._connections.disconnect(connection)
+    async def disconnect(self, connection: ClientConnection) -> None:
+        if not self._connections.disconnect(connection):
+            return
+        stale = await self._voice.broadcast_disconnect_leave(connection)
+        await self._disconnect_stale(stale)
+        connection.voice_guild_id = None
+        connection.voice_channel_id = None
 
     def mark_identified(
         self,
@@ -48,13 +53,16 @@ class GatewayConnectionManager:
         self._connections.mark_heartbeat(connection)
 
     async def broadcast_channel(self, channel_id: int, event: str, data: dict[str, object]) -> None:
-        await self._broadcaster.broadcast_channel(channel_id, event, data)
+        stale = await self._broadcaster.broadcast_channel(channel_id, event, data)
+        await self._disconnect_stale(stale)
 
     async def broadcast_guild(self, guild_id: int, event: str, data: dict[str, object]) -> None:
-        await self._broadcaster.broadcast_guild(guild_id, event, data)
+        stale = await self._broadcaster.broadcast_guild(guild_id, event, data)
+        await self._disconnect_stale(stale)
 
     async def broadcast_dm(self, dm_id: int, event: str, data: dict[str, object]) -> None:
-        await self._broadcaster.broadcast_dm(dm_id, event, data)
+        stale = await self._broadcaster.broadcast_dm(dm_id, event, data)
+        await self._disconnect_stale(stale)
 
     def add_dm_to_user_subscribers(self, dm_id: int, member_ids: set[int]) -> None:
         self._subscriptions.add_dm_to_user_subscribers(dm_id, member_ids)
@@ -66,11 +74,12 @@ class GatewayConnectionManager:
         channel_id: int | None,
         data: dict[str, object],
     ) -> None:
-        await self._voice.broadcast_voice_state(
+        stale = await self._voice.broadcast_voice_state(
             previous_channel_id=previous_channel_id,
             channel_id=channel_id,
             data=data,
         )
+        await self._disconnect_stale(stale)
 
     async def send_voice_signal(
         self,
@@ -79,18 +88,26 @@ class GatewayConnectionManager:
         target_user_id: int,
         data: dict[str, object],
     ) -> int:
-        return await self._voice.send_voice_signal(
+        sent, stale = await self._voice.send_voice_signal(
             channel_id=channel_id,
             target_user_id=target_user_id,
             data=data,
         )
+        await self._disconnect_stale(stale)
+        return sent
 
     def update_voice_channel(
         self,
         connection: ClientConnection,
+        *,
+        guild_id: int,
         channel_id: int | None,
     ) -> int | None:
-        return self._subscriptions.update_voice_channel(connection, channel_id)
+        return self._subscriptions.update_voice_channel(
+            connection,
+            guild_id=guild_id,
+            channel_id=channel_id,
+        )
 
     def add_channel_to_guild_subscribers(self, guild_id: int, channel_id: int) -> None:
         self._subscriptions.add_channel_to_guild_subscribers(guild_id, channel_id)
@@ -109,7 +126,14 @@ class GatewayConnectionManager:
         )
 
     async def reap_zombies(self, *, heartbeat_interval_ms: int) -> int:
-        return await self._reaper.reap_zombies(heartbeat_interval_ms=heartbeat_interval_ms)
+        return await self._reaper.reap_zombies(
+            heartbeat_interval_ms=heartbeat_interval_ms,
+            disconnect=self.disconnect,
+        )
+
+    async def _disconnect_stale(self, connections: list[ClientConnection]) -> None:
+        for connection in connections:
+            await self.disconnect(connection)
 
 
 gateway_manager = GatewayConnectionManager()

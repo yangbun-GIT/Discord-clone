@@ -46,7 +46,7 @@ async def gateway(websocket: WebSocket) -> None:
             event = GatewayEvent.model_validate(raw_payload)
 
             if event.op == Opcode.HEARTBEAT:
-                if not allow_operation(
+                if not await allow_operation(
                     f"gateway-heartbeat:{id(connection)}",
                     GATEWAY_HEARTBEAT_LIMIT,
                 ):
@@ -61,7 +61,7 @@ async def gateway(websocket: WebSocket) -> None:
                 try:
                     token_payload = decode_access_token(identify.token)
                 except InvalidTokenError:
-                    if not allow_operation(
+                    if not await allow_operation(
                         f"gateway-identify:{client_host}:invalid",
                         GATEWAY_IDENTIFY_LIMIT,
                     ):
@@ -73,7 +73,7 @@ async def gateway(websocket: WebSocket) -> None:
                     )
                     await websocket.close(code=4001, reason="invalid token")
                     return
-                if not allow_operation(
+                if not await allow_operation(
                     f"gateway-identify:{client_host}:{token_payload['sub']}",
                     GATEWAY_IDENTIFY_LIMIT,
                 ):
@@ -141,7 +141,7 @@ async def gateway(websocket: WebSocket) -> None:
                     return
 
                 voice_state = VoiceStatePayload.model_validate(event.d or {})
-                if not allow_operation(
+                if not await allow_operation(
                     f"voice-state:{connection.user_id}:{voice_state.guild_id}",
                     VOICE_STATE_LIMIT,
                 ):
@@ -169,22 +169,42 @@ async def gateway(websocket: WebSocket) -> None:
                     await websocket.close(code=4003, reason="not subscribed to channel")
                     return
 
-                previous_channel_id = gateway_manager.update_voice_channel(
+                previous_channel_id = connection.voice_channel_id
+                previous_guild_id = connection.voice_guild_id
+                gateway_manager.update_voice_channel(
                     connection,
-                    voice_state.channel_id,
-                )
-                await gateway_manager.broadcast_voice_state(
-                    previous_channel_id=previous_channel_id,
+                    guild_id=voice_state.guild_id,
                     channel_id=voice_state.channel_id,
-                    data={
-                        "guild_id": voice_state.guild_id,
-                        "channel_id": voice_state.channel_id,
-                        "user_id": connection.user_id,
-                        "username": connection.username,
-                        "self_mute": voice_state.self_mute,
-                        "self_deaf": voice_state.self_deaf,
-                    },
                 )
+                if (
+                    previous_channel_id is not None
+                    and previous_channel_id != voice_state.channel_id
+                ):
+                    await gateway_manager.broadcast_voice_state(
+                        previous_channel_id=previous_channel_id,
+                        channel_id=None,
+                        data={
+                            "guild_id": previous_guild_id or voice_state.guild_id,
+                            "channel_id": None,
+                            "user_id": connection.user_id,
+                            "username": connection.username,
+                            "self_mute": False,
+                            "self_deaf": False,
+                        },
+                    )
+                if voice_state.channel_id is not None:
+                    await gateway_manager.broadcast_voice_state(
+                        previous_channel_id=None,
+                        channel_id=voice_state.channel_id,
+                        data={
+                            "guild_id": voice_state.guild_id,
+                            "channel_id": voice_state.channel_id,
+                            "user_id": connection.user_id,
+                            "username": connection.username,
+                            "self_mute": voice_state.self_mute,
+                            "self_deaf": voice_state.self_deaf,
+                        },
+                    )
                 logger.info(
                     "gateway voice state user_id=%s previous_channel_id=%s channel_id=%s",
                     connection.user_id,
@@ -199,7 +219,7 @@ async def gateway(websocket: WebSocket) -> None:
                     return
 
                 voice_signal = VoiceSignalPayload.model_validate(event.d or {})
-                if not allow_operation(
+                if not await allow_operation(
                     (
                         f"voice-signal:{connection.user_id}:"
                         f"{voice_signal.channel_id}:{voice_signal.target_user_id}"
@@ -248,7 +268,7 @@ async def gateway(websocket: WebSocket) -> None:
     except (WebSocketDisconnect, ValidationError):
         pass
     finally:
-        gateway_manager.disconnect(connection)
+        await gateway_manager.disconnect(connection)
         logger.info(
             "gateway disconnect user_id=%s active=%s",
             connection.user_id,

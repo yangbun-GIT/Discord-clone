@@ -325,6 +325,10 @@ Browser UI
     - `backend/app/gateway/reaper.py`
     - `backend/app/realtime/fanout.py`
     - `backend/tests/test_gateway_manager.py`
+  - Owns:
+    - Gateway connection lifecycle cleanup, including voice leave fan-out when a
+      connection disconnects, is reaped as a zombie, or is removed after a stale
+      send failure.
 
 - `backend/app/gateway/connection.py`
   - References:
@@ -335,6 +339,9 @@ Browser UI
     - `backend/app/gateway/subscriptions.py`
     - `backend/app/gateway/voice_service.py`
     - `backend/app/gateway/zombie_reaper.py`
+  - Owns:
+    - Per-WebSocket subscription state, heartbeat state, and active voice
+      guild/channel state used for disconnect cleanup.
 
 - `backend/app/gateway/broadcaster.py`, `subscriptions.py`, `voice_service.py`,
   `zombie_reaper.py`
@@ -400,6 +407,7 @@ Browser UI
     - `/gateway`
   - Referenced by:
     - `docs/remediation-tasks/realtime-communication-plan.md`
+    - root `package.json` script `smoke:realtime:redis`.
   - Owns:
     - C4 repeatable primary-worker REST to secondary-worker WebSocket dispatch
       verification for server text and DM events.
@@ -425,8 +433,8 @@ Browser UI
     - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
-      voice peer visibility, remote audio sink, mute/deafen, and fake screen-share
-      UI paths.
+      voice peer visibility, remote audio sink, mute/deafen, fake screen-share UI,
+      remote screen-video rendering, and voice leave cleanup paths.
     - Payload-safe result output that omits JWTs, message bodies, ICE candidates,
       TURN credentials, media device labels, and DM contents.
 
@@ -478,7 +486,8 @@ Browser UI
     - `frontend/src/main.ts`
   - Owns:
     - App shell composition, global workflow wiring, gateway reconnect
-      reconciliation callback, and QA-only `data-gateway-status` state attribute.
+      reconciliation callback, voice workspace selection, remote screen-share stage
+      render conditions, and QA-only `data-gateway-status` state attribute.
 
 ### Stores And API
 
@@ -548,6 +557,9 @@ Browser UI
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/stores/gatewayIdempotency.test.ts`
+  - Owns:
+    - DM list/message state, active-DM unread clearing, and inactive-DM unread
+      incrementing for gateway message dispatch.
 
 - `frontend/src/stores/dmApi.ts`
   - References:
@@ -632,6 +644,9 @@ Browser UI
   - Talks to:
     - Browser `navigator.mediaDevices`, page lifecycle events, `RTCPeerConnection`,
       and WebRTC APIs.
+  - Owns:
+    - Local microphone and screen capture lifecycle, reserved screen-share sender
+      track replacement, mute/deafen media state, and voice RTC cleanup.
 
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
@@ -658,8 +673,8 @@ Browser UI
   - Owns:
     - Channel-scoped peer connection registry, remote stream mutation,
       offer/answer/ICE handling, pending ICE candidate queueing, stale signal
-      filtering, bounded failed-peer retry, screen-share track renegotiation, and
-      participant synchronization.
+      filtering, bounded failed-peer retry, reserved video transceivers for screen
+      sharing, remote screen-track state refresh, and participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:

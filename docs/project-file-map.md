@@ -33,7 +33,8 @@ For ordinary implementation work:
     commands.
 - `package.json`
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
-    dev commands, Docker, and the C8 realtime browser smoke.
+    dev commands, Docker, the C8 realtime browser smoke, and the C4 Redis
+    cross-worker realtime smoke.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.redis-smoke.yaml`
@@ -47,7 +48,8 @@ For ordinary implementation work:
 - `scripts/realtime_browser_smoke.mjs`
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
     and a DM, then verifies server text, DM, voice peer visibility, remote audio
-    sink, mute/deafen, and fake screen-share paths through the app UI.
+    sink, mute/deafen, fake screen-share paths, remote screen-video rendering, and
+    voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.

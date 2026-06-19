@@ -23,6 +23,7 @@ export const useDmStore = defineStore('dms', () => {
   const isLoading = ref(false)
   const isMutating = ref(false)
   const error = ref<string | null>(null)
+  const activeDmId = ref<number | null>(null)
 
   const unreadCount = computed(() =>
     dms.value.reduce((total, dm) => total + dm.unread_count, 0),
@@ -87,14 +88,27 @@ export const useDmStore = defineStore('dms', () => {
       : [cleanedDm, ...dms.value]
   }
 
-  function appendMessage(dmId: number, message: DmMessage) {
+  function setActiveDm(dmId: number | null) {
+    activeDmId.value = dmId
+    if (dmId === null) return
+    dms.value = dms.value.map((dm) => (
+      dm.id === dmId ? { ...dm, unread_count: 0 } : dm
+    ))
+  }
+
+  function appendMessage(
+    dmId: number,
+    message: DmMessage,
+    options: { markUnread?: boolean } = {},
+  ) {
     if (!isVisibleDmMessage(message)) return
     dms.value = dms.value.map((dm) => {
       if (dm.id !== dmId) return dm
       if (dm.messages.some((existingMessage) => existingMessage.id === message.id)) return dm
+      const markUnread = options.markUnread ?? activeDmId.value !== dmId
       return {
         ...dm,
-        unread_count: 0,
+        unread_count: markUnread ? Math.min(dm.unread_count + 1, 999) : 0,
         messages: [...dm.messages, message],
       }
     })
@@ -128,7 +142,7 @@ export const useDmStore = defineStore('dms', () => {
     error.value = null
     try {
       const message = await messagePromise
-      appendMessage(dmId, message)
+      appendMessage(dmId, message, { markUnread: false })
     } catch (cause) {
       setError(cause, 'Failed to send direct message')
       throw cause
@@ -143,6 +157,7 @@ export const useDmStore = defineStore('dms', () => {
     isLoading.value = false
     isMutating.value = false
     error.value = null
+    activeDmId.value = null
   }
 
   return {
@@ -156,6 +171,7 @@ export const useDmStore = defineStore('dms', () => {
     loadDms,
     loadPrivateWorkspace,
     getDm,
+    setActiveDm,
     createDm,
     sendDmMessage,
     handleGatewayDispatch,

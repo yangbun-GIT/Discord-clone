@@ -160,6 +160,19 @@ microphone quality, real screen picker UX, different-PC LAN, and TURN/NAT intern
 voice remain external manual gates because the current local `/api/meta/voice`
 reports `turn_configured: false`.
 
+The post-C9 communication audit/remediation pass closed local code gaps found after
+the first gate. Gateway connections now track voice guild/channel state and
+disconnect, zombie reap, stale-send cleanup, logout, and explicit channel moves
+fan out `VOICE_STATE_UPDATE` leave events. Redis publish with zero subscribers now
+falls back to local fan-out, Redis-backed operation limits are used when Redis is
+connected with local fallback on limiter failure, inactive DM gateway messages now
+increment unread badges, and `package.json` exposes `npm run smoke:realtime:redis`.
+`scripts/realtime_browser_smoke.mjs` now verifies remote screen-video rendering and
+voice leave cleanup in addition to the previous same-PC fake-device checks. The
+voice workspace now opens from voice-channel selection/join paths, and the remote
+screen-share stage renders from the selected voice workspace when a live unmuted
+remote video track is present.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,
@@ -179,7 +192,7 @@ The app boots in two local modes:
   - Runs frontend dev/lint/build through `frontend/package.json`.
   - Adds `dev:backend:lan` and `dev:frontend:lan` for same-LAN browser testing.
   - Adds `smoke:realtime:browser` for the C8 same-PC two-browser communication
-    smoke.
+    smoke and `smoke:realtime:redis` for the C4 Redis cross-worker dispatch smoke.
   - Runs Docker Compose through `docker:up`, `docker:down`, and `docker:logs`.
 - `compose.yaml`
   - Docker Compose development stack for PostgreSQL, backend, and frontend.

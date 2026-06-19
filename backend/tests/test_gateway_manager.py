@@ -39,6 +39,41 @@ async def test_reap_zombies_closes_stale_connections_only() -> None:
     assert manager.size == 1
 
 
+async def test_reap_zombies_broadcasts_voice_leave() -> None:
+    manager = GatewayConnectionManager()
+    stale_websocket = FakeWebSocket()
+    observer_websocket = FakeWebSocket()
+    stale = await manager.connect(stale_websocket)  # type: ignore[arg-type]
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    stale.user_id = 42
+    stale.username = "yangbun"
+    stale.voice_guild_id = 1001
+    stale.voice_channel_id = 2003
+    stale.channel_ids.add(2003)
+    observer.channel_ids.add(2003)
+    stale.last_heartbeat_at = time.monotonic() - 3
+    observer.last_heartbeat_at = time.monotonic()
+
+    reaped = await manager.reap_zombies(heartbeat_interval_ms=1000)
+
+    assert reaped == 1
+    assert observer_websocket.sent == [
+        {
+            "op": int(Opcode.DISPATCH),
+            "d": {
+                "guild_id": 1001,
+                "channel_id": None,
+                "user_id": 42,
+                "username": "yangbun",
+                "self_mute": False,
+                "self_deaf": False,
+            },
+            "s": 1,
+            "t": "VOICE_STATE_UPDATE",
+        }
+    ]
+
+
 async def test_mark_heartbeat_prevents_zombie_reaping() -> None:
     manager = GatewayConnectionManager()
     websocket = FakeWebSocket()
@@ -66,6 +101,40 @@ async def test_broadcast_channel_removes_send_failures() -> None:
     await manager.broadcast_channel(2001, "MESSAGE_CREATE", {"id": 1})
 
     assert manager.size == 0
+
+
+async def test_disconnect_broadcasts_voice_leave_to_channel_subscribers() -> None:
+    manager = GatewayConnectionManager()
+    leaver_websocket = FakeWebSocket()
+    observer_websocket = FakeWebSocket()
+    leaver = await manager.connect(leaver_websocket)  # type: ignore[arg-type]
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    leaver.user_id = 42
+    leaver.username = "yangbun"
+    leaver.voice_guild_id = 1001
+    leaver.voice_channel_id = 2003
+    leaver.channel_ids.add(2003)
+    observer.channel_ids.add(2003)
+
+    await manager.disconnect(leaver)
+
+    assert manager.size == 1
+    assert leaver.voice_channel_id is None
+    assert observer_websocket.sent == [
+        {
+            "op": int(Opcode.DISPATCH),
+            "d": {
+                "guild_id": 1001,
+                "channel_id": None,
+                "user_id": 42,
+                "username": "yangbun",
+                "self_mute": False,
+                "self_deaf": False,
+            },
+            "s": 1,
+            "t": "VOICE_STATE_UPDATE",
+        }
+    ]
 
 
 async def test_broadcast_channel_dispatches_to_subscribers() -> None:

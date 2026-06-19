@@ -103,8 +103,63 @@ async function joinFirstVoiceChannel(page) {
   await page.locator('[data-context-kind="voice-channel"] .channel-button').first().click()
 }
 
+async function openVoiceWorkspace(page) {
+  const voiceChat = page.getByRole('button', { name: /Open voice channel chat/i }).first()
+  if (await voiceChat.isVisible().catch(() => false)) {
+    await voiceChat.click()
+  }
+}
+
 async function clickVoiceAction(page, label) {
   await page.getByRole('button', { name: label }).first().click()
+}
+
+async function countRemoteScreenVideos(page) {
+  return await page.locator('.screen-share-tile video').evaluateAll((videos) =>
+    videos.filter((video) => {
+      const stream = video.srcObject
+      return stream instanceof MediaStream
+        && stream.getVideoTracks().some((track) => track.readyState === 'live')
+    }).length,
+  )
+}
+
+async function waitForRemoteScreenTile(receiverPage, senderPage) {
+  try {
+    await receiverPage.waitForSelector('.screen-share-tile video', {
+      state: 'attached',
+      timeout: 10_000,
+    })
+  } catch (error) {
+    const receiverDebug = await receiverPage.evaluate(() => ({
+      screenStages: document.querySelectorAll('.screen-share-stage').length,
+      screenTiles: document.querySelectorAll('.screen-share-tile').length,
+      videoElements: document.querySelectorAll('video').length,
+      remoteAudioSinks: document.querySelectorAll('.voice-audio-sinks audio').length,
+      remoteAudioStreams: [...document.querySelectorAll('.voice-audio-sinks audio')]
+        .map((audio) => {
+          const stream = audio.srcObject
+          if (!(stream instanceof MediaStream)) return null
+          return {
+            audioTracks: stream.getAudioTracks().length,
+            videoTracks: stream.getVideoTracks().map((track) => ({
+              muted: track.muted,
+              readyState: track.readyState,
+            })),
+          }
+        }),
+      voiceWorkspaceVisible: Boolean(document.querySelector('.voice-workspace')),
+    }))
+    const senderDebug = await senderPage.evaluate(() => ({
+      stopShareButtons: [...document.querySelectorAll('button')]
+        .filter((button) => /stop.*screen|stop.*share/i.test(button.getAttribute('aria-label') ?? button.textContent ?? ''))
+        .length,
+      screenTextVisible: document.body.innerText.includes('Screen sharing'),
+    }))
+    throw new Error(
+      `remote screen tile was not observed: ${JSON.stringify({ receiverDebug, senderDebug })}`,
+    )
+  }
 }
 
 async function run() {
@@ -136,6 +191,7 @@ async function run() {
     args: [
       '--use-fake-ui-for-media-stream',
       '--use-fake-device-for-media-stream',
+      '--enable-usermedia-screen-capturing',
       '--auto-select-desktop-capture-source=Entire screen',
       '--allow-http-screen-capture',
     ],
@@ -170,17 +226,21 @@ async function run() {
     await joinFirstVoiceChannel(pageA.page)
     await pageA.page.waitForTimeout(1_800)
     await joinFirstVoiceChannel(pageB.page)
+    await openVoiceWorkspace(pageA.page)
+    await openVoiceWorkspace(pageB.page)
     await pageA.page.waitForTimeout(9_000)
 
     await clickVoiceAction(pageA.page, /Mute microphone/i)
     await clickVoiceAction(pageA.page, /Deafen/i)
     await clickVoiceAction(pageA.page, /^Share screen$/i)
     await pageA.page.waitForTimeout(2_500)
+    await waitForRemoteScreenTile(pageB.page, pageA.page)
 
     const detailLabels = await pageA.page
       .locator('.voice-connection-card small')
       .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''))
     const remoteAudioSinks = await pageA.page.locator('.voice-audio-sinks audio').count()
+    const remoteScreenVideos = await countRemoteScreenVideos(pageB.page)
     const mutePressed = await pageA.page
       .getByRole('button', { name: /Unmute microphone|Mute microphone/i })
       .first()
@@ -190,6 +250,13 @@ async function run() {
       .first()
       .getAttribute('aria-pressed')
     const bodyA = await pageA.page.locator('body').innerText()
+    await clickVoiceAction(pageB.page, /Disconnect voice/i)
+    await pageA.page.waitForFunction(
+      () => document.querySelectorAll('.voice-audio-sinks audio').length === 0,
+      null,
+      { timeout: 10_000 },
+    )
+    const voiceLeaveCleaned = await pageA.page.locator('.voice-audio-sinks audio').count() === 0
 
     const result = {
       serverTextRealtime: true,
@@ -199,6 +266,8 @@ async function run() {
       mutePressed: mutePressed === 'true',
       deafenPressed: deafenPressed === 'true',
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
+      remoteScreenVideos,
+      voiceLeaveCleaned,
       browserErrors: [...pageA.events, ...pageB.events].length,
     }
 
@@ -210,6 +279,8 @@ async function run() {
       || !result.mutePressed
       || !result.deafenPressed
       || !result.fakeScreenShareVisible
+      || result.remoteScreenVideos < 1
+      || !result.voiceLeaveCleaned
       || result.browserErrors > 0
     ) {
       throw new Error(`browser realtime smoke failed: ${JSON.stringify(result)}`)
