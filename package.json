@@ -9,6 +9,8 @@
     "dev:frontend:lan": "npm --prefix frontend run dev:lan",
     "dev:frontend:lan:https": "npm --prefix frontend run dev:lan:https",
     "docker:up": "docker compose up --build",
+    "docker:up:https": "docker compose -f compose.yaml -f compose.https.yaml up --build",
+    "docker:up:https:detached": "docker compose -f compose.yaml -f compose.https.yaml up -d --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "check:voice:readiness": "node scripts/voice_readiness_check.mjs",

@@ -2067,6 +2067,12 @@ Completed Stage 2 bridge work:
   into the fixed workspace topbar in `App.vue`, so Settings can be closed from
   the right side of the `User Settings` header regardless of the current scroll
   position.
+- Added a Docker HTTPS LAN media path for another PC on the same Wi-Fi.
+  `compose.https.yaml` runs the frontend Vite dev server with local certificate
+  PFX mounted from ignored `certs/`, `scripts/create_lan_https_cert.ps1` generates
+  a host-IP certificate and trustable `.cer`, and README/voice/deployment docs now
+  route microphone and screen-capture LAN testing through
+  `https://<host-ip>:5173` instead of blocked `http://<host-ip>:5173` media.
 
 After each stage or meaningful feature:
 

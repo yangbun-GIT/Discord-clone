@@ -33,13 +33,23 @@ For ordinary implementation work:
     commands.
 - `package.json`
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
-    dev commands, HTTPS LAN frontend dev, Docker, the C8 realtime browser smoke,
-    the C4 Redis cross-worker realtime smoke, and the safe voice readiness check.
+    dev commands, HTTPS LAN frontend dev, Docker HTTP/HTTPS startup, the C8
+    realtime browser smoke, the C4 Redis cross-worker realtime smoke, and the safe
+    voice readiness check.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
+- `compose.https.yaml`
+  - Optional Docker Compose override for same-LAN HTTPS media testing.
+  - Runs the frontend Vite dev server with `VITE_HTTPS_PFX_FILE` mounted from
+    ignored local `certs/` files.
 - `compose.redis-smoke.yaml`
   - Optional Redis + secondary backend override for C4 multi-worker realtime smoke.
   - Normal local Docker startup remains Redis-free unless this override is included.
+- `scripts/create_lan_https_cert.ps1`
+  - Generates an ignored local PFX certificate plus a `.cer` trust file for HTTPS
+    LAN testing from another PC.
+  - Keep the PFX on the development host; copy only the `.cer` trust file to the
+    notebook.
 - `scripts/realtime_redis_smoke.py`
   - C4 two-worker smoke: connects WebSocket to the secondary backend and creates
     server/DM messages through the primary backend.
@@ -63,8 +73,8 @@ For ordinary implementation work:
   - Does not print ICE URLs, TURN credentials, candidates, tokens, message content,
     or media device labels.
 - `.env.example`
-  - Non-secret environment variable template, including LAN CORS and STUN/TURN
-    guidance.
+  - Non-secret environment variable template, including LAN CORS, HTTPS LAN
+    certificate, and STUN/TURN guidance.
 - `.dockerignore`, `backend/.dockerignore`, `frontend/.dockerignore`
   - Docker build-context exclusions.
 

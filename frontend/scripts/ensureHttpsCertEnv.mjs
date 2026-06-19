@@ -1,7 +1,16 @@
 import { existsSync } from 'node:fs'
 
+const pfxFile = process.env.VITE_HTTPS_PFX_FILE
 const keyFile = process.env.VITE_HTTPS_KEY_FILE
 const certFile = process.env.VITE_HTTPS_CERT_FILE
+
+if (pfxFile) {
+  if (!existsSync(pfxFile)) {
+    console.error(`HTTPS PFX certificate file not found: ${pfxFile}`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
 
 const missing = []
 if (!keyFile) missing.push('VITE_HTTPS_KEY_FILE')
@@ -9,7 +18,9 @@ if (!certFile) missing.push('VITE_HTTPS_CERT_FILE')
 
 if (missing.length > 0) {
   console.error(`Missing ${missing.join(' and ')}.`)
-  console.error('Set both variables to local development certificate files before running HTTPS LAN.')
+  console.error(
+    'Set VITE_HTTPS_PFX_FILE or both VITE_HTTPS_KEY_FILE and VITE_HTTPS_CERT_FILE before running HTTPS LAN.',
+  )
   process.exit(1)
 }
 

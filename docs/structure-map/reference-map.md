@@ -479,6 +479,32 @@ Browser UI
     - Safe operator-facing STUN/TURN readiness output without ICE URLs, TURN
       credentials, candidates, tokens, message content, or media device labels.
 
+- `compose.https.yaml`
+  - References:
+    - `compose.yaml`
+    - `frontend/vite.config.ts`
+    - ignored local `certs/lan-dev.pfx`
+  - Referenced by:
+    - root `package.json` scripts `docker:up:https` and
+      `docker:up:https:detached`
+    - `README.md`
+    - `docs/deployment.md`
+    - `docs/voice-qa.md`
+  - Owns:
+    - Docker HTTPS LAN media path for non-localhost microphone and screen-capture
+      testing.
+
+- `scripts/create_lan_https_cert.ps1`
+  - References:
+    - Windows PowerShell/.NET certificate APIs
+    - ignored local `certs/` output folder
+  - Referenced by:
+    - `README.md`
+    - `docs/deployment.md`
+    - `docs/voice-qa.md`
+  - Owns:
+    - Local self-signed certificate generation for same-Wi-Fi HTTPS development.
+
 ## Frontend References
 
 ### Runtime Config
@@ -494,6 +520,7 @@ Browser UI
 
 - `frontend/scripts/ensureHttpsCertEnv.mjs`
   - References:
+    - `VITE_HTTPS_PFX_FILE`
     - `VITE_HTTPS_KEY_FILE`
     - `VITE_HTTPS_CERT_FILE`
   - Referenced by:
@@ -504,6 +531,8 @@ Browser UI
 - `frontend/vite.config.ts`
   - References:
     - `VITE_BACKEND_PROXY_TARGET`
+    - `VITE_HTTPS_PFX_FILE`
+    - `VITE_HTTPS_PFX_PASSPHRASE`
     - `VITE_HTTPS_KEY_FILE`
     - `VITE_HTTPS_CERT_FILE`
   - Referenced by:

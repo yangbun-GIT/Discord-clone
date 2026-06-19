@@ -117,6 +117,27 @@ HTTPS LAN media path:
 7. If the browser still reports an insecure context, fix certificate trust/SAN
    mismatch first. Do not mark LAN voice complete from `http://<host-ip>`.
 
+Docker HTTPS LAN development:
+
+1. Generate a local certificate for the exact LAN host used by the second device:
+
+   ```powershell
+   .\scripts\create_lan_https_cert.ps1 -HostName <host-ip>
+   ```
+
+2. Trust `certs/lan-dev-cert.cer` on the second device. Keep
+   `certs/lan-dev.pfx` only on the development host. Compare the certificate
+   warning thumbprint with the script output before accepting.
+3. Start the HTTPS Compose override:
+
+   ```powershell
+   npm run docker:up:https:detached
+   ```
+
+4. Open `https://<host-ip>:5173`. Vite terminates HTTPS and proxies `/api` plus
+   `/gateway` to the backend container, so browser microphone and display-capture
+   calls run from a secure origin while the internal backend remains HTTP.
+
 TURN/NAT internet checklist:
 
 1. Configure `WEBRTC_ICE_SERVERS_JSON` with at least one `turn:` or `turns:` URL.

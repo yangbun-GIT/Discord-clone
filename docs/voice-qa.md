@@ -89,6 +89,37 @@ Use this path when the second device must test real microphone or screen capture
 7. If the browser still reports an insecure context, fix certificate trust or SAN
    mismatch before testing media again.
 
+### Docker HTTPS LAN Media Path
+
+Use this when the local stack is running through Docker Compose.
+
+1. Generate a certificate for the exact host IP or DNS name opened by the notebook:
+
+   ```powershell
+   .\scripts\create_lan_https_cert.ps1 -HostName <host-ip>
+   ```
+
+   The script writes `certs/lan-dev.pfx`, `certs/lan-dev-cert.pem`, and
+   `certs/lan-dev-cert.cer`, then prints the certificate thumbprint. The `certs/`
+   folder is ignored by Git.
+
+2. Copy `certs/lan-dev-cert.cer` to the notebook and trust it for browser/server
+   authentication. Compare the OS warning thumbprint with the script output before
+   accepting. Keep `lan-dev.pfx` on the development host.
+
+3. Start the HTTPS Docker stack:
+
+   ```powershell
+   npm run docker:up:https:detached
+   ```
+
+4. Open `https://<host-ip>:5173` from the notebook.
+5. Confirm `https://<host-ip>:5173/api/health` works and the browser shows a secure
+   origin before testing microphone, voice join, mute/unmute, screen sharing, and
+   gateway reconnect.
+6. If media is still blocked, check certificate trust on the notebook and confirm
+   the certificate SAN matches the URL host exactly.
+
 ## TURN / NAT Test
 
 1. Set production-like ICE servers in `.env` or the host secret store:
