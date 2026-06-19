@@ -112,6 +112,16 @@ blocker remains before feature implementation. Physical `base.css` and
 `i18n/index.ts` splitting remains intentionally deferred to a focused visual/copy
 feature pass.
 
+Realtime communication implementation has started from
+`docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and
+verification recovery is complete: `.venv` is a valid Python 3.14.3 environment
+when run through approved execution, backend checks should use
+`cd backend; ..\.venv\Scripts\python.exe -m pytest` and
+`cd backend; ..\.venv\Scripts\python.exe -m ruff check app tests`, frontend checks
+should use bundled Node plus `frontend/node_modules/.bin`, and browser automation
+should use the Codex Node REPL Playwright Chrome path unless project-local
+Playwright is added deliberately.
+
 The app boots in two local modes:
 
 - Docker Compose mode provisions local PostgreSQL and persists created text channels,

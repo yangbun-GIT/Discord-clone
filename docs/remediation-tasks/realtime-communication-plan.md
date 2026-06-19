@@ -681,6 +681,63 @@ Minimum pass criteria before calling voice complete:
 
 ## Staged Implementation Plan
 
+## Stage Progress Log
+
+### Stage C0 Result: Completed 2026-06-19
+
+Environment recovery found that the backend virtual environment was not corrupted.
+The failure was caused by sandboxed execution of the Python 3.14 runtime outside the
+workspace. The approved command path for backend verification is:
+
+```powershell
+cd backend
+..\.venv\Scripts\python.exe -m pytest
+..\.venv\Scripts\python.exe -m ruff check app tests
+```
+
+Backend tool versions verified:
+
+- Python: `Python 3.14.3`
+- pytest: `pytest 9.0.3`
+- ruff: `ruff 0.14.14`
+
+The system `py` launcher and plain `npm` remain unavailable in PATH. Use the bundled
+Node runtime plus frontend local binaries for frontend verification:
+
+```powershell
+$env:PATH='C:\Users\yangbun\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;'+(Resolve-Path ..\frontend\node_modules\.bin).Path+';'+$env:PATH
+..\frontend\node_modules\.bin\oxlint.cmd .
+..\frontend\node_modules\.bin\vue-tsc.cmd -b
+..\frontend\node_modules\.bin\vite.cmd build
+..\frontend\node_modules\.bin\vitest.cmd run
+```
+
+Frontend tool versions verified:
+
+- Node: `v24.14.0`
+- oxlint: `1.64.0`
+- TypeScript/vue-tsc: `5.9.3`
+- Vite: `8.0.16`
+- Vitest: `4.1.9`
+
+Browser automation path:
+
+- Direct shell `require('playwright')` from the bundled package path failed because
+  `playwright-core` was not resolved in that shell context.
+- The Codex Node REPL Playwright environment launched installed Chrome successfully
+  with `chromium.launch({ channel: 'chrome', headless: true })`.
+- Use Node REPL Playwright for C1 browser automation unless a project-local
+  Playwright dependency is added deliberately.
+
+Stage C0 verification:
+
+- Backend Python `--version`: passed with approved `.venv` execution.
+- Backend `pytest --version`: passed.
+- Backend `ruff --version`: passed.
+- Frontend `oxlint`, `vue-tsc`, `vite`, and `vitest` path/version checks: passed.
+- Playwright installed Chrome launch smoke through Node REPL: passed.
+- `git diff --check`: passed.
+
 ### Stage C0: Environment And Verification Recovery
 
 Goal: remove local tooling blockers before changing communication behavior.
