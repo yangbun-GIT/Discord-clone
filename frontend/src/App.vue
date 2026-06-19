@@ -4,6 +4,7 @@ import {
   Bell,
   Hash,
   Link,
+  Mic,
   Pin,
   Radio,
   Search,

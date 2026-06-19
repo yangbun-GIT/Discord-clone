@@ -2079,6 +2079,12 @@ Completed Stage 2 bridge work:
   `https://127.0.0.1:5173`. The browser smoke script now supports that mode
   through `npm run smoke:realtime:browser:https`; plain HTTP smoke remains for the
   normal non-HTTPS dev stack.
+- A manual two-profile HTTPS local check connected
+  `https://localhost:5173` and `https://127.0.0.1:5173` as separate QA accounts in
+  `Voice Pair QA 905704 / voice-room`; both tabs showed one remote audio sink,
+  one connected peer, and the opposite participant in the voice workspace. A
+  repeated Vue warning from an unresolved `<Mic>` icon in `App.vue` was fixed by
+  importing the lucide `Mic` component.
 
 After each stage or meaningful feature:
 
