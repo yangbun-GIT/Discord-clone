@@ -4,14 +4,25 @@ from app.schemas.dm import (
     DmMessageCreate,
     DmMessageRead,
     DmRead,
+    PresenceUpdateRead,
     RelationshipDeleteRead,
     RelationshipRead,
+    UserPresenceStatus,
 )
 from app.services.dm_storage import get_dm_storage
 
 
 async def list_relationships(user: UserPublic) -> list[RelationshipRead]:
     return await get_dm_storage().list_relationships(user)
+
+
+async def update_presence(
+    *,
+    user: UserPublic,
+    status: UserPresenceStatus,
+    activity: str | None,
+) -> tuple[PresenceUpdateRead, list[int]]:
+    return await get_dm_storage().update_presence(user=user, status=status, activity=activity)
 
 
 async def send_friend_request(

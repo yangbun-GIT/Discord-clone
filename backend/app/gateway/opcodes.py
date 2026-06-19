@@ -7,6 +7,7 @@ class Opcode(IntEnum):
     IDENTIFY = 2
     UPDATE_VOICE_STATE = 4
     VOICE_SIGNAL = 5
+    UPDATE_PRESENCE = 6
     REQUEST_GUILD_MEMBERS = 8
     HELLO = 10
     HEARTBEAT_ACK = 11

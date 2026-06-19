@@ -271,6 +271,8 @@ For ordinary implementation work:
   - Demo Store catalog data.
 - `backend/app/gateway/router.py`
   - WebSocket gateway endpoint and payload handling.
+  - Handles presence update opcode 6 by persisting profile status and publishing
+    user-targeted `PRESENCE_UPDATE` dispatches to accepted friends.
   - Relays offer/answer/ICE voice signals and screen-share state signals.
 - `backend/app/gateway/manager.py`
   - Compatibility facade for gateway connection, subscription, broadcast, voice,
@@ -291,7 +293,7 @@ For ordinary implementation work:
   - Heartbeat timeout detection and stale websocket closure.
 - `backend/app/gateway/events.py`
   - Gateway event naming/contracts, including voice signal payload validation for
-    offer/answer/ICE and screen-share state messages.
+    offer/answer/ICE, screen-share state messages, and presence status updates.
 - `backend/app/gateway/opcodes.py`
   - Discord-style gateway opcodes.
 - `backend/app/gateway/reaper.py`
@@ -299,7 +301,8 @@ For ordinary implementation work:
 - `backend/app/realtime/publisher.py`
   - Redis-backed gateway event publishing with local fan-out fallback when Redis is
     absent or publish fails.
-  - Publishes user-targeted relationship update/delete dispatches.
+  - Publishes user-targeted relationship update/delete and presence update
+    dispatches.
 - `backend/app/realtime/subscriber.py`
   - Redis-backed gateway event consumption with privacy-safe startup, stop, invalid
     payload, and restart logs.
@@ -433,13 +436,15 @@ For ordinary implementation work:
   - Owns relationship mutation actions and idempotent relationship update/delete
     state application, relationship presence sync into matching DM rows, and
     current-user DM identity normalization for REST/gateway payloads.
+  - Applies lightweight `PRESENCE_UPDATE` gateway dispatches to relationship rows,
+    DM participants, and normalized DM sidebar status/activity.
 - `frontend/src/stores/dmApi.ts`
   - Direct-message REST loaders and mutations used by `dms.ts`.
   - Wraps relationship mutation REST calls for Add Friend, pending, friend, block,
     and unblock workflows.
 - `frontend/src/stores/dmGatewayHandlers.ts`
   - Direct-message gateway event validation and state callback dispatch.
-  - Handles relationship update/delete gateway events.
+  - Handles relationship update/delete and presence update gateway events.
 - `frontend/src/stores/dmVisibility.ts`
   - Direct-message relationship/participant/message visibility filtering.
 - `frontend/src/stores/preferences.ts`
@@ -457,7 +462,7 @@ For ordinary implementation work:
     view transitions.
 - `frontend/src/composables/useGateway.ts`
   - WebSocket gateway connection, Identify, heartbeat, dispatch handling, and voice
-    signal send/update helpers.
+    signal plus presence send/update helpers.
 - `frontend/src/composables/useVoiceRtc.ts`
   - Public WebRTC voice facade used by the app.
   - Composes media capture, VAD, peer registry, screen share, and stats modules.

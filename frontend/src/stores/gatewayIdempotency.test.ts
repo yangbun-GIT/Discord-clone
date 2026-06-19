@@ -143,6 +143,32 @@ describe('gateway dispatch idempotency', () => {
     })
   })
 
+  it('syncs lightweight presence updates into relationships and existing DM rows', () => {
+    const store = useDmStore()
+    store.setCurrentUserId(42)
+    store.relationships = [{ ...relationship, status: 'online', activity: null }]
+    store.dms = [{ ...dm, participants: dm.participants.map((participant) => ({ ...participant })) }]
+
+    store.handleGatewayDispatch('PRESENCE_UPDATE', {
+      user_id: 701,
+      username: 'Mina',
+      status: 'dnd',
+      activity: 'Focusing',
+    })
+
+    expect(store.relationships[0]).toMatchObject({
+      id: 701,
+      status: 'dnd',
+      activity: 'Focusing',
+    })
+    expect(store.dms[0].status).toBe('dnd')
+    expect(store.dms[0].activity).toBe('Focusing')
+    expect(store.dms[0].participants.find((participant) => participant.id === 701)).toMatchObject({
+      status: 'dnd',
+      activity: 'Focusing',
+    })
+  })
+
   it('normalizes incoming DM_CREATE payloads to the current user perspective', () => {
     const store = useDmStore()
     store.setCurrentUserId(42)

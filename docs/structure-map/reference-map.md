@@ -326,6 +326,7 @@ Browser UI
     - `backend/app/gateway/events.py`
     - `backend/app/gateway/manager.py`
     - `backend/app/gateway/opcodes.py`
+    - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/services/dm_service.py`
     - `backend/app/services/guild_service.py`
@@ -632,8 +633,8 @@ Browser UI
     - `frontend/src/stores/gatewayIdempotency.test.ts`
   - Owns:
     - DM list/message state, active-DM unread clearing, inactive-DM unread
-      incrementing for gateway message dispatch, and relationship presence sync
-      into matching DM rows.
+      incrementing for gateway message dispatch, relationship presence sync into
+      matching DM rows, and lightweight presence update application.
     - Current-user DM identity normalization so sidebar rows display recipients
       while message rows preserve actual authors.
 
@@ -653,7 +654,8 @@ Browser UI
     - `frontend/src/stores/dms.ts`
     - `frontend/src/stores/dmGatewayHandlers.test.ts`
   - Owns:
-    - Direct-message gateway payload validation and callback dispatch.
+    - Direct-message gateway payload validation and callback dispatch, including
+      relationship and presence events.
 
 - `frontend/src/stores/dmVisibility.ts`
   - References:
@@ -711,7 +713,8 @@ Browser UI
     - Backend `/gateway` WebSocket.
   - Owns:
     - Gateway identify, heartbeat, ACK timeout, bounded reconnect, dispatch
-      routing, and reconnect-success callbacks used for REST reconciliation.
+      routing, presence updates, and reconnect-success callbacks used for REST
+      reconciliation.
 
 - `frontend/src/composables/useVoiceRtc.ts`
   - References:

@@ -4,10 +4,11 @@ import {
   handleDmGatewayDispatch,
   isDirectMessagePayload,
   isDmMessagePayload,
+  isPresenceUpdatePayload,
   isRelationshipDeletePayload,
   isRelationshipPayload,
 } from './dmGatewayHandlers'
-import type { DirectMessage, DmMessage, Friend, RelationshipDelete } from '../types'
+import type { DirectMessage, DmMessage, Friend, PresenceUpdate, RelationshipDelete } from '../types'
 
 const dm: DirectMessage = {
   id: 9001,
@@ -43,6 +44,13 @@ const relationshipDelete: RelationshipDelete = {
   id: 701,
 }
 
+const presence: PresenceUpdate = {
+  user_id: 701,
+  username: 'Mina',
+  status: 'idle',
+  activity: null,
+}
+
 describe('dm gateway handlers', () => {
   it('validates direct-message payload shape', () => {
     expect(isDirectMessagePayload(dm)).toBe(true)
@@ -59,6 +67,8 @@ describe('dm gateway handlers', () => {
     expect(isRelationshipPayload({ ...relationship, relationship: 'unknown' })).toBe(false)
     expect(isRelationshipDeletePayload(relationshipDelete)).toBe(true)
     expect(isRelationshipDeletePayload({ id: '701' })).toBe(false)
+    expect(isPresenceUpdatePayload(presence)).toBe(true)
+    expect(isPresenceUpdatePayload({ ...presence, status: 'unknown' })).toBe(false)
   })
 
   it('dispatches valid DM events to focused callbacks', () => {
@@ -66,36 +76,49 @@ describe('dm gateway handlers', () => {
     const appendMessage = vi.fn()
     const upsertRelationship = vi.fn()
     const removeRelationship = vi.fn()
+    const updatePresence = vi.fn()
 
     handleDmGatewayDispatch('DM_CREATE', dm, {
       upsertDm,
       appendMessage,
       upsertRelationship,
       removeRelationship,
+      updatePresence,
     })
     handleDmGatewayDispatch('DM_MESSAGE_CREATE', message, {
       upsertDm,
       appendMessage,
       upsertRelationship,
       removeRelationship,
+      updatePresence,
     })
     handleDmGatewayDispatch('RELATIONSHIP_UPDATE', relationship, {
       upsertDm,
       appendMessage,
       upsertRelationship,
       removeRelationship,
+      updatePresence,
     })
     handleDmGatewayDispatch('RELATIONSHIP_DELETE', relationshipDelete, {
       upsertDm,
       appendMessage,
       upsertRelationship,
       removeRelationship,
+      updatePresence,
+    })
+    handleDmGatewayDispatch('PRESENCE_UPDATE', presence, {
+      upsertDm,
+      appendMessage,
+      upsertRelationship,
+      removeRelationship,
+      updatePresence,
     })
 
     expect(upsertDm).toHaveBeenCalledWith(dm)
     expect(appendMessage).toHaveBeenCalledWith(message.dm_id, message)
     expect(upsertRelationship).toHaveBeenCalledWith(relationship)
     expect(removeRelationship).toHaveBeenCalledWith(relationshipDelete)
+    expect(updatePresence).toHaveBeenCalledWith(presence)
   })
 
   it('ignores invalid or unknown events', () => {

@@ -13,11 +13,18 @@ from app.core.operation_limits import (
     allow_operation,
 )
 from app.core.security import decode_access_token
-from app.gateway.events import GatewayEvent, IdentifyPayload, VoiceSignalPayload, VoiceStatePayload
+from app.gateway.events import (
+    GatewayEvent,
+    IdentifyPayload,
+    PresenceUpdatePayload,
+    VoiceSignalPayload,
+    VoiceStatePayload,
+)
 from app.gateway.manager import gateway_manager
 from app.gateway.opcodes import Opcode
+from app.realtime.publisher import publish_presence_update
 from app.schemas.auth import UserPublic
-from app.services.dm_service import list_dms
+from app.services.dm_service import list_dms, update_presence
 from app.services.guild_service import list_guilds_for_user
 
 gateway_router = APIRouter()
@@ -136,6 +143,31 @@ async def gateway(websocket: WebSocket) -> None:
                     op=Opcode.DISPATCH,
                     event="GUILD_MEMBERS_CHUNK",
                     data={"members": []},
+                )
+                continue
+
+            if event.op == Opcode.UPDATE_PRESENCE:
+                if not connection.identified or connection.user_id is None:
+                    await websocket.close(code=4003, reason="identify required")
+                    return
+
+                presence_payload = PresenceUpdatePayload.model_validate(event.d or {})
+                presence, friend_user_ids = await update_presence(
+                    user=UserPublic(
+                        id=connection.user_id,
+                        username=connection.username or "unknown",
+                        status=1,
+                    ),
+                    status=presence_payload.status,
+                    activity=presence_payload.activity,
+                )
+                for friend_user_id in friend_user_ids:
+                    await publish_presence_update(user_id=friend_user_id, presence=presence)
+                logger.info(
+                    "gateway presence update user_id=%s status=%s targets=%s",
+                    connection.user_id,
+                    presence.status,
+                    len(friend_user_ids),
                 )
                 continue
 

@@ -13,6 +13,7 @@ from app.schemas.dm import (
     DmMessageRead,
     DmParticipantRead,
     DmRead,
+    PresenceUpdateRead,
     RelationshipDeleteRead,
     RelationshipRead,
     RelationshipState,
@@ -86,6 +87,43 @@ class DmRepository:
             )
             for row in rows
         ]
+
+    async def update_presence(
+        self,
+        *,
+        user: UserPublic,
+        status: UserPresenceStatus,
+        activity: str | None,
+    ) -> tuple[PresenceUpdateRead, list[int]]:
+        await ensure_dm_repository_user(database, user)
+        await database.execute(
+            """
+            INSERT INTO dm_profiles (user_id, handle, presence_status, activity)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (user_id) DO UPDATE SET
+                presence_status = EXCLUDED.presence_status,
+                activity = EXCLUDED.activity
+            """,
+            user.id,
+            user.username.lower(),
+            status,
+            activity,
+        )
+        relationships = await self.list_relationships(user.id)
+        friend_user_ids = [
+            relationship.id
+            for relationship in relationships
+            if relationship.relationship == "friend"
+        ]
+        return (
+            PresenceUpdateRead(
+                user_id=user.id,
+                username=user.username,
+                status=status,
+                activity=activity,
+            ),
+            friend_user_ids,
+        )
 
     async def send_friend_request(
         self,

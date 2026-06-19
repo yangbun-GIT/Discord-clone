@@ -294,8 +294,11 @@ labels the pending tab as friend requests, keeps Online/All scoped to actual
 friends, and groups pending incoming/outgoing friend requests with separate counts.
 Existing `RELATIONSHIP_UPDATE` gateway dispatches now sync relationship presence
 into matching DM rows and participants, so Friends and DM surfaces do not diverge
-when relationship status data changes. A standalone presence update endpoint/event
-is still not claimed; future presence work should add it explicitly if needed.
+when relationship status data changes. A dedicated gateway `PRESENCE_UPDATE` flow
+now persists the current user's `dm_profiles.presence_status` in PostgreSQL/demo
+storage and publishes user-targeted presence updates to accepted friends, while
+`frontend/src/components/VoicePanel.vue` keeps the large self avatar visually
+stable and moves online/idle/dnd/offline color changes to the small status dot.
 
 Manual QA follow-up Stage M7 is implemented in code/docs. `frontend/src/stores/dms.ts`
 now tracks the current user ID and normalizes direct-message payloads from REST or
@@ -792,6 +795,8 @@ The app boots in two local modes:
     messages immutably, and resets on logout.
   - Applies `DM_CREATE` and `DM_MESSAGE_CREATE` gateway dispatches with idempotent
     upsert/append behavior.
+  - Applies `PRESENCE_UPDATE` gateway dispatches into matching relationship rows,
+    DM participants, and normalized DM sidebar status/activity.
 - `frontend/src/stores/navigation.ts`
   - Pinia app destination store for the Discord-like shell.
   - Tracks `friends`, `dm`, `server_channel`, `voice_channel`, and `settings`
@@ -811,7 +816,8 @@ The app boots in two local modes:
   - Shows connected state after Ready dispatch.
   - Accepts a dispatch callback and forwards non-READY gateway dispatch events to the
     app store.
-  - Exposes `updateVoiceState()` for opcode 4 and `sendVoiceSignal()` for opcode 5.
+  - Exposes `updateVoiceState()` for opcode 4, `sendVoiceSignal()` for opcode 5,
+    and `updatePresence()` for opcode 6.
   - Builds gateway URL and navigator platform values through `browserApi`.
 - `frontend/src/composables/useVoiceRtc.ts`
   - Public WebRTC voice facade used by the app and Stage 12.1 voice session

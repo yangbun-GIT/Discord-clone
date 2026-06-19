@@ -23,6 +23,13 @@ export type RelationshipDelete = {
   id: number
 }
 
+export type PresenceUpdate = {
+  user_id: number
+  username: string | null
+  status: UserPresenceStatus
+  activity: string | null
+}
+
 export type DirectMessage = {
   id: number
   recipient_ids: number[]

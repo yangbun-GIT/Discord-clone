@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 
 import { useI18n } from '../i18n'
 import { getNavigatorPlatform, getWebSocketUrl } from '../services/browserApi'
+import type { UserPresenceStatus } from '../types'
 
 type GatewayStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'offline' | 'error'
 
@@ -33,6 +34,11 @@ type VoiceSignalPayload = {
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
   screen_sharing?: boolean | null
+}
+
+type PresenceUpdatePayload = {
+  status: UserPresenceStatus
+  activity?: string | null
 }
 
 const socket = ref<WebSocket | null>(null)
@@ -194,6 +200,10 @@ export function useGateway() {
     send({ op: 5, d: payload })
   }
 
+  function updatePresence(payload: PresenceUpdatePayload) {
+    send({ op: 6, d: payload })
+  }
+
   onBeforeUnmount(() => {
     disconnect()
   })
@@ -212,5 +222,6 @@ export function useGateway() {
     disconnect,
     updateVoiceState,
     sendVoiceSignal,
+    updatePresence,
   }
 }

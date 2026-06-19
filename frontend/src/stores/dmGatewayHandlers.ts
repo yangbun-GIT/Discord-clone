@@ -1,10 +1,11 @@
-import type { DirectMessage, DmMessage, Friend, RelationshipDelete } from '../types'
+import type { DirectMessage, DmMessage, Friend, PresenceUpdate, RelationshipDelete } from '../types'
 
 interface DmGatewayHandlerContext {
   upsertDm: (dm: DirectMessage) => void
   appendMessage: (dmId: number, message: DmMessage) => void
   upsertRelationship?: (relationship: Friend) => void
   removeRelationship?: (relationship: RelationshipDelete) => void
+  updatePresence?: (presence: PresenceUpdate) => void
 }
 
 type DmGatewayHandler = (
@@ -49,6 +50,22 @@ export function isRelationshipDeletePayload(
   return typeof data.id === 'number'
 }
 
+export function isPresenceUpdatePayload(data: Record<string, unknown>): data is PresenceUpdate {
+  return typeof data.user_id === 'number'
+    && (
+      data.username === null
+      || typeof data.username === 'string'
+      || typeof data.username === 'undefined'
+    )
+    && typeof data.status === 'string'
+    && ['online', 'idle', 'dnd', 'offline'].includes(data.status)
+    && (
+      data.activity === null
+      || typeof data.activity === 'string'
+      || typeof data.activity === 'undefined'
+    )
+}
+
 const handlers: Record<string, DmGatewayHandler> = {
   DM_CREATE(data, context) {
     if (isDirectMessagePayload(data)) context.upsertDm(data)
@@ -61,6 +78,14 @@ const handlers: Record<string, DmGatewayHandler> = {
   },
   RELATIONSHIP_DELETE(data, context) {
     if (isRelationshipDeletePayload(data)) context.removeRelationship?.(data)
+  },
+  PRESENCE_UPDATE(data, context) {
+    if (isPresenceUpdatePayload(data)) context.updatePresence?.({
+      user_id: data.user_id,
+      username: data.username ?? null,
+      status: data.status,
+      activity: data.activity ?? null,
+    })
   },
 }
 

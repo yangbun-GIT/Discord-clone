@@ -3,7 +3,13 @@ import logging
 from app.realtime.events import GATEWAY_EVENTS_CHANNEL, RealtimeGatewayEvent
 from app.realtime.fanout import fanout_gateway_event
 from app.realtime.redis_bus import redis_bus
-from app.schemas.dm import DmMessageRead, DmRead, RelationshipDeleteRead, RelationshipRead
+from app.schemas.dm import (
+    DmMessageRead,
+    DmRead,
+    PresenceUpdateRead,
+    RelationshipDeleteRead,
+    RelationshipRead,
+)
 from app.schemas.guild import ChannelRead, GuildRead, MessageRead
 from app.schemas.message import MessageDeleteRead
 
@@ -95,6 +101,19 @@ async def publish_relationship_delete(
         user_id=user_id,
         event="RELATIONSHIP_DELETE",
         data=relationship.model_dump(),
+    )
+    await _publish_or_broadcast(event)
+
+
+async def publish_presence_update(
+    *,
+    user_id: int,
+    presence: PresenceUpdateRead,
+) -> None:
+    event = RealtimeGatewayEvent(
+        user_id=user_id,
+        event="PRESENCE_UPDATE",
+        data=presence.model_dump(),
     )
     await _publish_or_broadcast(event)
 

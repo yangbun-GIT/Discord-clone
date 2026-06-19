@@ -11,13 +11,23 @@ from app.schemas.dm import (
     DmMessageCreate,
     DmMessageRead,
     DmRead,
+    PresenceUpdateRead,
     RelationshipDeleteRead,
     RelationshipRead,
+    UserPresenceStatus,
 )
 
 
 class DmStorage(Protocol):
     async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]: ...
+
+    async def update_presence(
+        self,
+        *,
+        user: UserPublic,
+        status: UserPresenceStatus,
+        activity: str | None,
+    ) -> tuple[PresenceUpdateRead, list[int]]: ...
 
     async def send_friend_request(
         self,
@@ -84,6 +94,15 @@ class DmStorage(Protocol):
 class PostgresDmStorage:
     async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
         return await dm_repository.list_relationships(user.id)
+
+    async def update_presence(
+        self,
+        *,
+        user: UserPublic,
+        status: UserPresenceStatus,
+        activity: str | None,
+    ) -> tuple[PresenceUpdateRead, list[int]]:
+        return await dm_repository.update_presence(user=user, status=status, activity=activity)
 
     async def send_friend_request(
         self,
@@ -160,6 +179,15 @@ class PostgresDmStorage:
 class DemoDmStorage:
     async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
         return demo_store.list_relationships(user.id)
+
+    async def update_presence(
+        self,
+        *,
+        user: UserPublic,
+        status: UserPresenceStatus,
+        activity: str | None,
+    ) -> tuple[PresenceUpdateRead, list[int]]:
+        return demo_store.update_presence(user=user, status=status, activity=activity)
 
     async def send_friend_request(
         self,

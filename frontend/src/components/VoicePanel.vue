@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {
-  Circle,
   Headphones,
   HeadphoneOff,
   Mic,
@@ -146,12 +145,15 @@ const connectionDetailLabel = computed(() => {
         :aria-label="t('settings.status')"
         @click="$emit('cycleStatus')"
       >
-        <span class="user-panel-avatar" :class="[userStatus, { speaking: localSpeaking }]">
+        <span class="user-panel-avatar" :class="{ speaking: localSpeaking }">
           {{ currentUser?.username.slice(0, 2).toUpperCase() ?? 'DC' }}
         </span>
         <span class="user-panel-copy">
           <strong>{{ currentUser?.username ?? t('common.demoUser') }}</strong>
-          <small><Circle :size="8" aria-hidden="true" />{{ presenceLabel }}</small>
+          <small>
+            <span class="presence-dot user-panel-presence-dot" :class="userStatus" aria-hidden="true"></span>
+            {{ presenceLabel }}
+          </small>
         </span>
       </button>
       <div class="user-panel-actions">

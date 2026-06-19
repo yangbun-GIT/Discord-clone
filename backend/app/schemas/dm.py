@@ -34,6 +34,13 @@ class RelationshipDeleteRead(BaseModel):
     id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
 
 
+class PresenceUpdateRead(BaseModel):
+    user_id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
+    username: str | None = Field(default=None, max_length=80)
+    status: UserPresenceStatus
+    activity: str | None = Field(default=None, max_length=120)
+
+
 class DmParticipantRead(BaseModel):
     id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
     username: str = Field(min_length=1, max_length=80)

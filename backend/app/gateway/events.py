@@ -2,6 +2,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.schemas.dm import UserPresenceStatus
+
 
 class GatewayEvent(BaseModel):
     op: int
@@ -30,3 +32,8 @@ class VoiceSignalPayload(BaseModel):
     description: dict[str, Any] | None = None
     candidate: dict[str, Any] | None = None
     screen_sharing: bool | None = None
+
+
+class PresenceUpdatePayload(BaseModel):
+    status: UserPresenceStatus
+    activity: str | None = Field(default=None, max_length=120)

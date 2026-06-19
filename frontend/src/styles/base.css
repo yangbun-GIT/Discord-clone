@@ -4680,19 +4680,6 @@ select:focus-visible {
     0 0 18px rgb(59 165 93 / 62%);
 }
 
-.user-panel-avatar.idle {
-  background: #fde68a;
-}
-
-.user-panel-avatar.dnd {
-  background: #fca5a5;
-}
-
-.user-panel-avatar.offline {
-  color: #e5e7eb;
-  background: #64748b;
-}
-
 .user-panel-copy {
   min-width: 0;
   display: grid;
@@ -4713,6 +4700,12 @@ select:focus-visible {
   gap: 5px;
   color: #9ca3af;
   font-size: 0.74rem;
+}
+
+.user-panel-presence-dot {
+  width: 8px;
+  height: 8px;
+  border: 0;
 }
 
 .user-panel-actions {

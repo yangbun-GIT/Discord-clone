@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
-import type { DirectMessage, DmMessage, Friend } from '../types'
+import type { DirectMessage, DmMessage, Friend, PresenceUpdate } from '../types'
 import {
   acceptRelationshipRequest,
   blockRelationshipUser,
@@ -110,6 +110,33 @@ export const useDmStore = defineStore('dms', () => {
     relationships.value = relationships.value.filter((item) => item.id !== relationship.id)
   }
 
+  function updatePresence(presence: PresenceUpdate) {
+    relationships.value = relationships.value.map((relationship) => (
+      relationship.id === presence.user_id
+        ? {
+            ...relationship,
+            username: presence.username ?? relationship.username,
+            status: presence.status,
+            activity: presence.activity,
+          }
+        : relationship
+    ))
+    dms.value = dms.value.map((dm) => {
+      if (!dm.participants.some((participant) => participant.id === presence.user_id)) return dm
+      const participants = dm.participants.map((participant) => (
+        participant.id === presence.user_id
+          ? {
+              ...participant,
+              username: presence.username ?? participant.username,
+              status: presence.status,
+              activity: presence.activity,
+            }
+          : participant
+      ))
+      return normalizeDmIdentity({ ...dm, participants })
+    })
+  }
+
   function syncRelationshipPresence(relationship: Friend) {
     dms.value = dms.value.map((dm) => {
       if (!dm.participants.some((participant) => participant.id === relationship.id)) return dm
@@ -190,6 +217,7 @@ export const useDmStore = defineStore('dms', () => {
       appendMessage,
       upsertRelationship,
       removeRelationship,
+      updatePresence,
     })
   }
 

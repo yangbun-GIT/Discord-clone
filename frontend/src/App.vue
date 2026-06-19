@@ -65,6 +65,7 @@ const {
   disconnect: disconnectGateway,
   updateVoiceState,
   sendVoiceSignal,
+  updatePresence,
   status: gatewayStatus,
 } = useGateway()
 const voiceRtc = useVoiceRtc()
@@ -285,7 +286,10 @@ async function openWorkspace() {
       guilds.handleGatewayDispatch(event, data)
       dms.handleGatewayDispatch(event, data)
     },
-    onReconnect: reloadWorkspaceState,
+    onReconnect: async () => {
+      await reloadWorkspaceState()
+      updatePresence({ status: userPresenceStatus.value, activity: null })
+    },
   })
 }
 
@@ -820,7 +824,9 @@ function handleRemoveMember(memberId: number) {
 function cycleUserPresence() {
   const statuses: UserPresenceStatus[] = ['online', 'idle', 'dnd', 'offline']
   const currentIndex = statuses.indexOf(userPresenceStatus.value)
-  userPresenceStatus.value = statuses[(currentIndex + 1) % statuses.length]
+  const nextStatus = statuses[(currentIndex + 1) % statuses.length]
+  userPresenceStatus.value = nextStatus
+  updatePresence({ status: nextStatus, activity: null })
 }
 
 function handleOpenUserSettings() {

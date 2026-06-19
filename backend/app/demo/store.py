@@ -14,9 +14,11 @@ from app.schemas.dm import (
     DmMessageRead,
     DmParticipantRead,
     DmRead,
+    PresenceUpdateRead,
     RelationshipDeleteRead,
     RelationshipRead,
     RelationshipState,
+    UserPresenceStatus,
 )
 from app.schemas.guild import (
     ChannelCreate,
@@ -277,6 +279,38 @@ class DemoStore:
         with self._lock:
             return deepcopy(self._relationships_by_user.get(user_id, []))
 
+    def update_presence(
+        self,
+        *,
+        user: UserPublic,
+        status: UserPresenceStatus,
+        activity: str | None,
+    ) -> tuple[PresenceUpdateRead, list[int]]:
+        with self._lock:
+            self._ensure_user_profile(user)
+            profile = self._find_dm_profile(user.id).model_copy(
+                update={
+                    "status": status,
+                    "activity": activity,
+                },
+            )
+            self._dm_profiles[user.id] = profile
+            self._refresh_profile_references(user.id)
+            friend_user_ids = [
+                relationship.id
+                for relationship in self._relationships_by_user.get(user.id, [])
+                if relationship.relationship == "friend"
+            ]
+            return (
+                PresenceUpdateRead(
+                    user_id=user.id,
+                    username=user.username,
+                    status=status,
+                    activity=activity,
+                ),
+                friend_user_ids,
+            )
+
     def send_friend_request(
         self,
         *,
@@ -492,6 +526,25 @@ class DemoStore:
             if profile.username.casefold() == normalized or profile.handle.casefold() == normalized:
                 return profile
         raise KeyError(username)
+
+    def _refresh_profile_references(self, user_id: int) -> None:
+        profile = self._find_dm_profile(user_id)
+        for user_relationships in self._relationships_by_user.values():
+            for index, relationship in enumerate(user_relationships):
+                if relationship.id == user_id:
+                    user_relationships[index] = relationship.model_copy(
+                        update={
+                            "username": profile.username,
+                            "handle": profile.handle,
+                            "status": profile.status,
+                            "activity": profile.activity,
+                        },
+                    )
+        for dm in self._dms:
+            dm.participants = [
+                profile if participant.id == user_id else participant
+                for participant in dm.participants
+            ]
 
     def _ensure_user_profile(self, user: UserPublic) -> None:
         if user.id in self._dm_profiles:
