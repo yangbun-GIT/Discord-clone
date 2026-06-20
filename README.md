@@ -49,10 +49,12 @@ npm run docker:down
 
 For same-Wi-Fi two-PC microphone/screen-share tests, use the Docker HTTPS LAN path
 below. For temporary external access without a permanent VM, run the local stack and
-expose it with Cloudflare Tunnel:
+expose the HMR-free tunnel frontend with Cloudflare Tunnel:
 
 ```powershell
-cloudflared tunnel --url http://localhost:5173
+npm run docker:up:https:detached
+npm run docker:up:cloudflare-tunnel
+cloudflared tunnel --url http://localhost:5174
 ```
 
 Cloudflare Tunnel is an optional demo path that creates a temporary HTTPS public

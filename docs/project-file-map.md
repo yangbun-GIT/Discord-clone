@@ -35,13 +35,18 @@ For ordinary implementation work:
   - Root npm scripts for backend lint/tests, frontend lint/build/tests, native LAN
     dev commands, HTTPS LAN frontend dev, Docker HTTP/HTTPS startup, the C8
     realtime browser smoke, the C4 Redis cross-worker realtime smoke, production
-    Compose config rendering, and safe voice/deployment readiness checks.
+    Compose config rendering, Cloudflare tunnel frontend startup, and safe
+    voice/deployment readiness checks.
 - `compose.yaml`
   - Local Docker Compose stack for PostgreSQL, backend, and frontend.
 - `compose.https.yaml`
   - Optional Docker Compose override for same-LAN HTTPS media testing.
   - Runs the frontend Vite dev server with `VITE_HTTPS_PFX_FILE` mounted from
     ignored local `certs/` files.
+- `compose.cloudflare-tunnel.yaml`
+  - Optional Cloudflare Quick Tunnel demo override.
+  - Adds `frontend-tunnel`, a runtime Nginx frontend on local port `5174` that
+    proxies `/api` and `/gateway` without Vite HMR.
 - `compose.production.example.yaml`
   - Example single-server external QA topology.
   - Uses Caddy for public HTTPS, runtime frontend/backend containers,
@@ -694,8 +699,9 @@ For ordinary implementation work:
 - Architecture or refactor planning:
   - `docs/architecture-principles-audit.md`, `PROJECT_CONTEXT.md`, this file.
 - Deployment or Docker:
-  - `compose.yaml`, `backend/Dockerfile`, `frontend/Dockerfile`,
-    `frontend/nginx.conf`, `compose.production.example.yaml`,
+  - `compose.yaml`, `compose.https.yaml`, `compose.cloudflare-tunnel.yaml`,
+    `backend/Dockerfile`, `frontend/Dockerfile`, `frontend/nginx.conf`,
+    `compose.production.example.yaml`,
     `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`,
     `scripts/deployment_readiness_check.mjs`,
     `scripts/submission_readiness_check.mjs`, `docs/deployment.md`,

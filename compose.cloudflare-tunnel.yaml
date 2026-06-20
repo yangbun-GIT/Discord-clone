@@ -1,0 +1,10 @@
+services:
+  frontend-tunnel:
+    build:
+      context: ./frontend
+      target: runtime
+    ports:
+      - "5174:80"
+    depends_on:
+      backend:
+        condition: service_healthy

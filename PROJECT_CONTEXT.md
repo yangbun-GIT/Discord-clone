@@ -2154,10 +2154,12 @@ Completed Stage 2 bridge work:
   `docs/assignment-submission-guide.md` and summarized in `README.md`. Same-Wi-Fi
   two-PC media testing stays on the existing Docker HTTPS LAN certificate path.
   Cloudflare Tunnel is documented only as optional temporary external access to
-  the locally running app through `cloudflared tunnel --url http://localhost:5173`;
-  it is not a formal deployment and does not replace TURN/NAT media QA. The
-  VM/VPS + Caddy + production Compose documents remain future always-on extension
-  references.
+  the locally running app; it is not a formal deployment and does not replace
+  TURN/NAT media QA. The preferred Cloudflare path now starts
+  `frontend-tunnel` from `compose.cloudflare-tunnel.yaml` and tunnels
+  `http://localhost:5174`, so public demos use a built Nginx frontend without
+  Vite HMR WebSocket noise. The VM/VPS + Caddy + production Compose documents
+  remain future always-on extension references.
 - Local submission readiness verification is now scriptable with
   `npm run check:submission:local`. The script auto-detects the normal HTTP Docker
   origin or local HTTPS Docker origins, verifies frontend HTML, same-origin
@@ -2168,6 +2170,14 @@ Completed Stage 2 bridge work:
   local HTTPS deployment readiness, and `npm run smoke:realtime:browser:https`.
   TURN remained unconfigured, so external different-network voice/screen sharing
   remains manual and incomplete.
+- Cloudflare Quick Tunnel was executed on 2026-06-20 using the HMR-free
+  `frontend-tunnel` origin. `cloudflared` was installed to a user-local tools
+  path, a temporary `https://*.trycloudflare.com` URL was generated, and public
+  checks passed for frontend load, `/api/health`, `/api/meta/voice/readiness`,
+  WSS `/gateway` HELLO, and `npm run smoke:realtime:browser` with
+  `browserErrors: 0`. The exact temporary URL is not recorded as a stable
+  deployment address. TURN remained unconfigured, so real different-network
+  microphone and screen-share QA is still incomplete.
 
 After each stage or meaningful feature:
 

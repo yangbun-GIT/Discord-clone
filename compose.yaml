@@ -51,6 +51,7 @@ services:
       target: dev
     environment:
       VITE_BACKEND_PROXY_TARGET: http://backend:8000
+      VITE_DISABLE_HMR: ${VITE_DISABLE_HMR:-1}
     ports:
       - "5173:5173"
     volumes:

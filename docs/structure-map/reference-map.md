@@ -517,6 +517,7 @@ Browser UI
     - `README.md`
     - `compose.yaml`
     - `compose.https.yaml`
+    - `compose.cloudflare-tunnel.yaml`
     - `scripts/create_lan_https_cert.ps1`
     - `scripts/deployment_readiness_check.mjs`
     - `scripts/realtime_browser_smoke.mjs`
@@ -553,6 +554,23 @@ Browser UI
   - Owns:
     - Docker HTTPS LAN media path for non-localhost microphone and screen-capture
       testing.
+
+- `compose.cloudflare-tunnel.yaml`
+  - References:
+    - `compose.yaml`
+    - `frontend/Dockerfile`
+    - `frontend/nginx.conf`
+    - backend service health from the base Compose stack.
+  - Referenced by:
+    - root `package.json` script `docker:up:cloudflare-tunnel`
+    - `docs/assignment-submission-guide.md`
+    - `docs/deployment.md`
+    - `docs/voice-qa.md`
+    - `docs/realtime-communication-qa.md`
+    - `docs/project-file-map.md`
+  - Owns:
+    - HMR-free local `frontend-tunnel` runtime service on port `5174` for
+      Cloudflare Quick Tunnel demos.
 
 - `compose.production.example.yaml`
   - References:

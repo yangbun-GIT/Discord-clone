@@ -18,7 +18,8 @@ Optional external access for a short demo can use Cloudflare Tunnel after the lo
 stack is running:
 
 ```powershell
-cloudflared tunnel --url http://localhost:5173
+npm run docker:up:cloudflare-tunnel
+cloudflared tunnel --url http://localhost:5174
 ```
 
 Cloudflare Tunnel creates a temporary public HTTPS URL to the local origin. It can
@@ -26,6 +27,10 @@ carry the frontend, REST API, and `/gateway` WebSocket traffic through the same
 origin, but it is not a formal deployment and it does not replace WebRTC TURN
 requirements. Different-network voice and screen sharing still need a real TURN
 configuration and manual QA before they can be called complete.
+
+The Cloudflare demo path uses `frontend-tunnel` on local port `5174` instead of
+the Vite dev frontend on `5173`. `frontend-tunnel` serves the built frontend with
+Nginx and avoids Vite HMR WebSocket errors on random Quick Tunnel hostnames.
 
 The complete submission guide is `docs/assignment-submission-guide.md`.
 

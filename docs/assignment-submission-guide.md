@@ -154,18 +154,20 @@ Official Cloudflare references:
 
 Recommended simple path:
 
-1. Start the normal local Docker stack:
+1. Start the local Docker stack and the HMR-free tunnel frontend:
 
    ```powershell
-   npm run docker:up
+   npm run docker:up:https:detached
+   npm run docker:up:cloudflare-tunnel
    ```
 
 2. Install `cloudflared` from Cloudflare's official documentation for the current
-   OS.
-3. Start a temporary tunnel to the local frontend origin:
+   OS. On Windows, the tested local path is a user-local executable such as
+   `%USERPROFILE%\.local\bin\cloudflared.exe`.
+3. Start a temporary tunnel to the HMR-free local frontend origin:
 
    ```powershell
-   cloudflared tunnel --url http://localhost:5173
+   cloudflared tunnel --url http://localhost:5174
    ```
 
 4. Open the printed `https://*.trycloudflare.com` URL from another browser or
@@ -176,6 +178,12 @@ Recommended simple path:
    - `/api/health` works through the same public origin.
    - The WebSocket gateway connects over WSS.
    - Text and DM updates work in two sessions.
+
+`frontend-tunnel` serves the built frontend through Nginx on local port `5174`
+and proxies `/api` plus `/gateway` to the backend. Use this for Cloudflare
+Tunnel demos instead of the Vite dev server on `5173`; the dev server injects HMR
+WebSocket clients that are useful during development but create avoidable console
+errors on a random public Quick Tunnel hostname.
 
 Cloudflare provides the public HTTPS endpoint and proxies requests to the local
 origin. The browser sees a secure context at the Cloudflare URL, which is required
@@ -247,9 +255,45 @@ Local package checks run for this packaging pass:
 
 Manual or environment-dependent items still not verified in this pass:
 
-- Actual Cloudflare Tunnel URL creation and public access.
 - Real different-network voice and screen sharing.
 - TURN/NAT success with real TURN credentials.
+
+## Cloudflare Tunnel Verification Result 2026-06-20
+
+Cloudflare Quick Tunnel was verified with the HMR-free `frontend-tunnel` origin.
+The exact `trycloudflare.com` hostname was temporary and is not recorded as a
+stable deployment URL.
+
+Commands and checks:
+
+- Installed `cloudflared` from the official Cloudflare release path into a
+  user-local tools directory. No login, token, account ID, or fixed tunnel
+  credential was used.
+- `docker compose -f compose.yaml -f compose.cloudflare-tunnel.yaml up -d --build frontend-tunnel`:
+  passed and exposed the built frontend on `http://localhost:5174`.
+- `cloudflared tunnel --url http://localhost:5174`: passed and generated a
+  temporary `https://*.trycloudflare.com` URL.
+- Public URL frontend load: passed with the login/register surface visible and no
+  browser console errors in a page-load probe.
+- Public URL `/api/health`: passed with database connectivity configured and
+  connected.
+- Public URL `/api/meta/voice/readiness`: passed with STUN configured and
+  `turn_configured: false`.
+- Public URL `npm run check:deployment:readiness`: passed with secure origin,
+  healthy API, and `/gateway` HELLO over WSS.
+- Public URL `npm run smoke:realtime:browser`: passed for server text, DM,
+  gateway dispatch, voice fake-media peer creation, mute/deafen behavior,
+  fake screen-share rendering/cleanup, voice refresh recovery, and
+  `browserErrors: 0`.
+- Local regression after the tunnel pass:
+  `npm run check:submission:local` and `npm run smoke:realtime:browser:https`
+  both passed.
+
+Remaining manual gates:
+
+- Real external-network microphone and screen-share QA are still not complete.
+- TURN/NAT internet voice remains incomplete until `turn_configured: true` and
+  two different networks pass real media QA.
 
 ## Not Part Of The Default Submission
 

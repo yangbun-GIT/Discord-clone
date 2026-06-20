@@ -8,6 +8,7 @@ const httpsPfxFile = process.env.VITE_HTTPS_PFX_FILE
 const httpsPfxPassphrase = process.env.VITE_HTTPS_PFX_PASSPHRASE
 const httpsKeyFile = process.env.VITE_HTTPS_KEY_FILE
 const httpsCertFile = process.env.VITE_HTTPS_CERT_FILE
+const hmr = process.env.VITE_DISABLE_HMR === '1' ? false : undefined
 const https =
   httpsPfxFile
     ? {
@@ -26,6 +27,7 @@ export default defineConfig({
   server: {
     port: 5173,
     https,
+    hmr,
     proxy: {
       '/api': backendProxyTarget,
       '/gateway': {

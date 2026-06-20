@@ -418,7 +418,8 @@ public HTTPS URL is needed for a submission demo.
 
 Record:
 
-- Local stack mode: normal Docker HTTP origin or Docker HTTPS LAN stack.
+- Local stack mode: normal Docker HTTP origin, Docker HTTPS LAN stack, or the
+  HMR-free `frontend-tunnel` origin.
 - Tunnel command used.
 - Generated public origin domain only, not any Cloudflare token.
 - Whether the app loads through HTTPS.
@@ -432,6 +433,25 @@ Record:
 Cloudflare Tunnel success for page/API/WebSocket access is not the same as
 TURN/NAT voice success. The tunnel carries HTTP and WebSocket signaling; WebRTC
 media still needs valid STUN/TURN behavior between browsers.
+
+2026-06-20 Cloudflare Quick Tunnel check:
+
+- Local origin: `frontend-tunnel` from `compose.cloudflare-tunnel.yaml`, serving
+  the built frontend through Nginx on `http://localhost:5174`.
+- Tunnel command: `cloudflared tunnel --url http://localhost:5174`.
+- Temporary public origin: a generated `https://*.trycloudflare.com` hostname.
+  The exact hostname was not recorded as a stable deployment URL.
+- Public frontend load: passed with the auth surface visible and zero browser
+  console errors in a page-load probe.
+- Public API: `/api/health` and `/api/meta/voice/readiness` passed.
+- Public WSS gateway: `npm run check:deployment:readiness` passed with
+  `gateway_hello: true`.
+- Public automated realtime: `APP_URL` and `REST_BASE` pointed at the temporary
+  Cloudflare origin; `npm run smoke:realtime:browser` passed with server text,
+  DM, invite DM, gateway dispatch, fake-media voice, fake screen share, refresh
+  recovery, cleanup, and `browserErrors: 0`.
+- Limit: this does not complete real external voice/screen-share QA because
+  `turn_configured` was `false` and no two-network real media test was performed.
 
 ## TURN/NAT QA
 

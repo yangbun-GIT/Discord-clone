@@ -66,17 +66,18 @@ Use this only as a temporary demo path when a public HTTPS URL is needed without
 provisioning a VM/VPS. It is not an always-on deployment and it does not replace
 TURN/NAT voice QA.
 
-1. Start the normal local Docker stack:
+1. Start the local Docker HTTPS stack and the HMR-free Cloudflare demo frontend:
 
    ```powershell
-   npm run docker:up
+   npm run docker:up:https:detached
+   npm run docker:up:cloudflare-tunnel
    ```
 
 2. Install `cloudflared` from Cloudflare's official documentation.
-3. Expose the local frontend origin:
+3. Expose the HMR-free local frontend origin:
 
    ```powershell
-   cloudflared tunnel --url http://localhost:5173
+   cloudflared tunnel --url http://localhost:5174
    ```
 
 4. Open the printed `https://*.trycloudflare.com` URL from another network.
@@ -85,10 +86,20 @@ TURN/NAT voice QA.
 6. Test text and DM realtime first. Then test voice only if a TURN-capable
    `WEBRTC_ICE_SERVERS_JSON` is configured.
 
+Use `frontend-tunnel` for this path because it serves the production frontend
+bundle through Nginx and avoids Vite HMR WebSocket errors on random Quick Tunnel
+hostnames.
+
 Cloudflare Tunnel proxies the app, REST API, and WebSocket signaling. WebRTC media
 still depends on browser ICE candidates and should be treated as incomplete across
 different networks unless `/api/meta/voice/readiness.turn_configured` is `true`
 and a real two-network microphone/screen-share test passes.
+
+2026-06-20 check: Quick Tunnel was verified through the `frontend-tunnel` origin
+with a temporary `https://*.trycloudflare.com` hostname. Page load, `/api/health`,
+`/api/meta/voice/readiness`, WSS `/gateway` HELLO, and automated two-session
+text/DM/fake-media smoke passed. The result is not a real external voice
+completion because TURN remained unconfigured.
 
 ### HTTPS LAN Media Path
 
