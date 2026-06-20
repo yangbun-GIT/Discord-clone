@@ -366,6 +366,50 @@ Current sustained-vowel QA:
 10. Record only pass/fail notes and visible quality stats. Do not record raw audio,
    device labels, ICE candidates, TURN credentials, or user tokens.
 
+## Bluetooth Microphone QA
+
+Use this checklist when a tester can hear audio through Bluetooth headphones but
+the microphone does not transmit or is unstable.
+
+1. Confirm Windows detects the Bluetooth microphone:
+   - Open Windows Settings -> System -> Sound.
+   - Under Input, select the Bluetooth headset microphone, usually labeled
+     `Headset`, `Hands-Free`, or the device name plus microphone.
+   - Use the Windows input test meter. If the meter does not move here, fix the
+     OS/Bluetooth pairing first; the clone cannot capture a device Windows does
+     not expose.
+2. Confirm Chrome permission for the active Cloudflare URL:
+   - Open the current `https://*.trycloudflare.com` page.
+   - Click the address-bar site controls icon.
+   - Set Microphone to Allow.
+   - If Chrome lists devices in site settings, choose the Bluetooth headset
+     microphone, not only the stereo output device.
+3. Confirm the clone device selection:
+   - Open User Settings -> Voice & Video.
+   - Click Refresh devices.
+   - In Recording Device, select the Bluetooth input device.
+   - Leave and rejoin the voice channel after changing recording device or audio
+     processing settings.
+4. Baseline before tuning:
+   - Set Audio Processing preset to Speech stability.
+   - Set RNNoise to Off.
+   - Set Input Sensitivity Gate to Off.
+   - Set Input Volume around 80-100%.
+   - Confirm the input level meter moves in settings while speaking.
+5. If the mic still fails:
+   - Close apps that may own the Bluetooth microphone, such as Discord, Zoom,
+     Teams, OBS, browser tabs, or game launchers.
+   - Disconnect and reconnect the Bluetooth device.
+   - Reopen Chrome and retry permission.
+   - Test with a wired/USB mic to separate app/network issues from Bluetooth
+     profile issues.
+
+Windows Bluetooth headsets often expose separate stereo output and hands-free
+input profiles. If only the stereo output profile is active, the browser may not
+receive microphone input. If the hands-free profile is active, output quality may
+drop; that is a Bluetooth/Windows limitation rather than a clone-specific media
+transport bug.
+
 ## Call Recording QA 2026-06-19
 
 The user-provided call recording is stored only in the ignored local folder
