@@ -32,8 +32,11 @@ In scope:
 Out of scope for this pass:
 
 - Cosmetic Discord pixel parity unrelated to usability.
-- New friend suggestions, contact import, profile editing, friend-call feature, or
-  full profile popout implementation.
+- New friend suggestions or contact import.
+- Profile popout, friend-call, and conversation mute implementation were not built
+  in this pass, but they are considered appropriate Discord-clone functionality and
+  should be implemented in a follow-up feature pass before being exposed as active
+  controls again.
 - Backend relationship lifecycle redesign; the current backend-backed friend
   request, accept/reject/cancel, remove, block, and unblock flow is reused.
 - Final DM conversation polish. DM-specific defects should move to the next DM
@@ -61,15 +64,79 @@ Out of scope for this pass:
   as clickable actions, but they only close the menu or show a generic local-control
   notice.
 - Expected behavior: visible active controls should either perform a real action or
-  be removed from the active menu surface until implemented.
+  be hidden only temporarily until the matching Discord-like feature is implemented.
 - User impact: users waste clicks on actions that appear complete but do nothing
   meaningful.
 - Resolution direction: remove unsupported active actions from friend-specific menus
-  and keep only wired actions: message, remove friend, block, unblock.
+  and keep only wired actions for this pass; create a follow-up implementation
+  backlog for profile popout, friend call, and conversation mute before re-exposing
+  those controls.
 - Target files: `frontend/src/components/FriendsHome.vue`,
   `frontend/src/App.vue`, `frontend/src/i18n/index.ts`.
 - Verification: inspect menus, run frontend lint/build, and confirm no friend menu
   item routes to a generic placeholder notice.
+
+### FH-010 - Friend profile popout should be implemented before restoring View Profile
+
+- Priority: P1
+- Location: Friends row menu, activity panel, and future target-aware context menu.
+- Current behavior: `View profile` was removed from active menus because it had no
+  behavior.
+- Expected behavior: selecting a friend profile should open an app-owned profile
+  popout/modal with username, handle, presence, activity, relationship action, and
+  message entry.
+- User impact: users expect to inspect a friend before messaging/removing/blocking.
+- Resolution direction: implement a lightweight app-owned profile popout first;
+  then restore the menu item as a real action.
+- Target files: `frontend/src/components/FriendsHome.vue`,
+  `frontend/src/App.vue`, `frontend/src/styles/base.css`,
+  `frontend/src/i18n/index.ts`.
+- Verification: profile opens/closes with outside-click/Escape, has no browser
+  native UI, and exposes only real relationship actions.
+
+### FH-011 - Friend call should be implemented as a real DM call flow before restoring Start Call
+
+- Priority: P1
+- Location: Friends row menu and activity panel.
+- Current behavior: `Start call` was removed from active menus because the app only
+  has guild voice-channel calling, not a friend/DM call flow.
+- Expected behavior: starting a call from a friend should create/open a DM context
+  and start a private voice session or clearly route to a call-capable DM workflow.
+- User impact: a Discord clone is expected to support direct call initiation, not
+  only server voice channels.
+- Resolution direction: design and implement a DM voice-call transport on top of
+  the existing voice transport boundary, or explicitly map friend call to a
+  private call room with the same mute/deafen/screen-share controls. Do not restore
+  the menu item until the call can actually connect.
+- Target files: `frontend/src/components/FriendsHome.vue`,
+  `frontend/src/components/DirectMessageView.vue`,
+  `frontend/src/composables/useVoiceSessionController.ts`,
+  `frontend/src/composables/useVoiceRtc.ts`,
+  `backend/app/gateway/voice_service.py`, and related gateway/API routing if a
+  DM voice room is added.
+- Verification: two users can start and receive a friend call, join, mute/deafen,
+  leave, refresh/rejoin where supported, and the existing guild voice flow remains
+  unchanged.
+
+### FH-012 - Conversation mute should be implemented before restoring Mute Conversation
+
+- Priority: P2
+- Location: Friends row menu, DM row menu, and DM notification/unread behavior.
+- Current behavior: `Mute conversation` was removed from active menus because there
+  is no persisted or local preference affecting notifications/unread state.
+- Expected behavior: muting a DM should suppress notification/unread emphasis for
+  that conversation while still allowing messages to arrive.
+- User impact: users expect to reduce noise from a specific conversation without
+  blocking the friend.
+- Resolution direction: add a local preference or persisted DM mute state, reflect
+  it in the DM list and message-receive handling, then restore the menu action as a
+  toggle.
+- Target files: `frontend/src/stores/dms.ts`,
+  `frontend/src/stores/preferences.ts` or backend DM preference storage if
+  persisted, `frontend/src/components/PrivateChannelSidebar.vue`,
+  `frontend/src/components/FriendsHome.vue`, and `frontend/src/i18n/index.ts`.
+- Verification: muted DMs still receive messages but do not show normal unread
+  emphasis; unmuting restores unread behavior.
 
 ### FH-002 - Add Friend result feedback is not local to the Add Friend panel
 
@@ -232,7 +299,10 @@ Out of scope for this pass:
 - F5 completed: the activity panel now shows a clear offline/no-activity message
   instead of implying activity for every selected friend.
 - F6 completed: nonfunctional Start Call, View Profile, and Mute Conversation
-  entries were removed from friend menus and global friend/DM context menus.
+  entries were removed from friend menus and global friend/DM context menus as a
+  temporary inactive-control cleanup. They are now tracked as implementation-worthy
+  follow-up features in FH-010 through FH-012 and should be restored only after
+  they perform real clone-owned behavior.
 - F7 completed: presence updates continue to flow through the existing
   relationship-only `PRESENCE_UPDATE` path; this pass did not reintroduce DM row
   presence repainting.
@@ -280,9 +350,9 @@ Run this when visually checking the Friends screen after future changes:
 
 ## Residual Risks And Next Screen Handoff
 
-- The Friends screen now removes inactive friend-call/profile/mute controls instead
-  of implementing those features. If those features become required, add a new
-  implementation plan before re-exposing the controls.
+- The Friends screen now removes inactive friend-call/profile/mute controls only as
+  a temporary quality gate. They are appropriate Discord-clone features and should
+  be implemented in follow-up work before being re-exposed as active controls.
 - The global context menu intentionally returns no items for friend and DM rows
   because it does not receive target IDs. If future work adds target-aware context
   metadata, DM/friend context menu actions can be reintroduced as real actions.
