@@ -109,6 +109,13 @@ attempt as signaling/best-effort only and keep the TURN/NAT media gate incomplet
 Follow the checklist in `docs/assignment-submission-guide.md` before changing this
 status.
 
+2026-06-20 hotspot result: the user tested PC A on the home network and PC B on a
+phone hotspot through the active Cloudflare Quick Tunnel URL. DM send/receive and
+voice call speaking/listening worked. Treat this as a specific STUN-based P2P
+success in one hotspot external-network environment, not as universal
+TURN-backed external media support. Screen-share across the hotspot topology still
+needs a separate manual pass, and `turn_configured` remained `false`.
+
 ### HTTPS LAN Media Path
 
 Use this path when the second device must test real microphone or screen capture.
@@ -495,3 +502,16 @@ The same-Wi-Fi notebook HTTPS path passed for real voice after the local root CA
 host-IP certificate flow was corrected. Treat this as a LAN pass only. It does not
 prove public internet/NAT voice, because the current deployed TURN gate still
 requires a TURN-configured HTTPS/WSS host and two different networks.
+
+## Pre-Submission Remediation Queue
+
+The project is not in final submission mode yet. After the hotspot QA note, continue
+with clone-completion work before the final submission pass:
+
+- Discord UI detail and density polish across Friends, DM, server, and voice
+  workspaces.
+- Friends, DM, and server invite UX completion, including inactive-control cleanup.
+- Voice and screen-share UX polish, including hotspot screen-share manual QA.
+- Responsive layout checks for narrow desktop, tablet, and mobile-sized viewports.
+- Accessibility checks for keyboard flow, labels, focus visibility, and dialog
+  dismissal.

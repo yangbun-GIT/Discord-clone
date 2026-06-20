@@ -291,7 +291,7 @@ Commands and checks:
 
 Remaining manual gates:
 
-- Real external-network microphone and screen-share QA are still not complete.
+- Real external-network screen-share QA is still not complete.
 - TURN/NAT internet voice remains incomplete until `turn_configured: true` and
   two different networks pass real media QA.
 
@@ -343,6 +343,43 @@ Pass criteria:
 - Real external voice/screen-share pass requires TURN configured and a real
   two-network media test. Without TURN, leave the media gate incomplete even if a
   best-effort call happens to work.
+
+## Hotspot External-Network QA Result 2026-06-20
+
+This is not a final submission sign-off. It records the current communication
+state before the next design and feature-completion work.
+
+Manual topology:
+
+- PC A: local development PC on the home network.
+- PC B: notebook connected through a phone hotspot.
+- Public access path: Cloudflare Quick Tunnel temporary HTTPS URL.
+- TURN status: `/api/meta/voice/readiness.turn_configured` remained `false`.
+
+Observed result:
+
+- Cross-network page access through the Cloudflare URL worked.
+- Cross-network DM send/receive worked.
+- Cross-network voice call speech and listening worked in this hotspot test.
+
+Interpretation:
+
+- Record this as "Cloudflare signaling plus STUN-based WebRTC P2P succeeded in a
+  specific hotspot external-network environment."
+- Do not describe it as guaranteed external-network media support. Without TURN,
+  other NAT/firewall environments can still fail or behave inconsistently.
+- Submission is not being finalized at this point. The next project work remains
+  missing design polish and feature-completion remediation.
+
+Upcoming remediation before submission:
+
+- Discord UI detail and density polish.
+- Friends, DM, and server invite UX completion.
+- Voice and screen-share UX polish, including external-network screen-share manual
+  QA.
+- Responsive layout checks for smaller screens.
+- Accessibility and keyboard-flow checks.
+- Remove inactive controls or connect them to real behavior.
 
 ## Not Part Of The Default Submission
 

@@ -469,6 +469,22 @@ media still needs valid STUN/TURN behavior between browsers.
 - Do not upgrade the media status beyond "Cloudflare signaling path verified,
   TURN/NAT media gate incomplete" while `turn_configured` remains `false`.
 
+2026-06-20 hotspot manual QA result:
+
+- Topology: local development PC on the home network, notebook on a phone hotspot,
+  both using the active Cloudflare Quick Tunnel HTTPS URL.
+- User-observed result: DM send/receive worked across the two networks.
+- User-observed result: voice call speaking and listening worked across the two
+  networks.
+- Automated public-origin checks were rerun in the same pass and still passed:
+  `/api/health`, `/api/meta/voice/readiness`, WSS `/gateway` HELLO, and
+  public-origin `npm run smoke:realtime:browser` with `browserErrors: 0`.
+- Status wording: "specific hotspot external-network STUN/P2P voice success."
+  Do not call this universal external-network media completion because
+  `turn_configured` remained `false`.
+- Next work is not final submission packaging. Continue with unresolved design
+  polish and feature-completion remediation before the final submission pass.
+
 ## TURN/NAT QA
 
 Follow `docs/external-deployment-decision.md` and

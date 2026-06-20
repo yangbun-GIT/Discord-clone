@@ -2187,6 +2187,16 @@ Completed Stage 2 bridge work:
   from Codex-run automated public-origin checks. Because `turn_configured` stayed
   `false`, the correct status remains "Cloudflare signaling path verified,
   TURN/NAT media gate incomplete."
+- A user-run hotspot external-network QA pass followed on 2026-06-20: PC A stayed
+  on the home network, PC B used a phone hotspot, and both connected through the
+  active Cloudflare Quick Tunnel URL. DM send/receive and voice call
+  speaking/listening worked. Document this as a specific hotspot external-network
+  STUN/P2P success, not as universal TURN-backed media support; `turn_configured`
+  remained `false` and hotspot screen-share still needs separate manual QA. This
+  is not the final submission pass. Continue with missing design and feature
+  remediation before final packaging: Discord UI detail/density polish,
+  Friends/DM/server invite UX completion, voice/screen-share UX polish,
+  responsive checks, accessibility checks, and inactive-control cleanup.
 
 After each stage or meaningful feature:
 
