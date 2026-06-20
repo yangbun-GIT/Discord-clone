@@ -86,6 +86,23 @@ voice-panel behavior.
   participant tiles. `base.css` removes the screen-share row-span exception and
   applies explicit `voice-workspace-grid--count-1` through `--count-9` layouts.
 
+### VCV-7: Stage grid count rules needed stricter Discord-like rows
+
+- Location: `frontend/src/styles/base.css`, `frontend/src/composables/useVoiceRtc.ts`
+- Current behavior: three visible tiles used a three-column row, and a browser
+  refresh while screen sharing could close the peer connection before remote
+  clients received a final screen-share-off signal.
+- Expected behavior: one or two tiles should stay in a single horizontal row;
+  three or four tiles should use a stable 2 by 2 grid; five through nine tiles
+  should use a stable 3 by 3 grid. A refresh should stop local screen sharing,
+  let voice auto-rejoin through existing reload recovery, and notify other
+  participants that the shared screen ended as early as possible.
+- Fix: `base.css` now defines explicit row and column rules for the requested
+  1/2, 2x2, and 3x3 layouts, with narrower max widths to avoid stretched panels.
+  `useVoiceRtc.disconnect()` broadcasts `screen_sharing: false` before closing
+  peer connections so remote screens clear quickly when a sharing tab refreshes
+  or leaves.
+
 ## Verification Plan
 
 - `npm run lint:frontend`
@@ -120,3 +137,12 @@ voice-panel behavior.
   duplicate remote sharing participant card and zero browser errors. Docker HTTPS
   refresh should be run after this change so `https://localhost:5173/` and the
   Cloudflare tunnel origin receive the 9-tile grid update.
+- Follow-up VCV-7 verification passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`,
+  `npm run smoke:realtime:browser:https`, and `git diff --check` passed. The
+  browser smoke reported `remoteScreenCleared: true`,
+  `voiceAutoRejoinedAfterReload: true`, `voiceRejoinRecovered: true`, and
+  `browserErrors: 0`, so refresh stops screen sharing while preserving voice
+  recovery. Docker HTTPS refresh should be run after this change so
+  `https://localhost:5173/` and the Cloudflare tunnel origin receive the exact
+  1/2, 2x2, and 3x3 grid behavior.

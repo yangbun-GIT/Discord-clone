@@ -5766,18 +5766,20 @@ select:focus-visible {
 .voice-workspace-grid--count-1 {
   max-width: 980px;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .voice-workspace-grid--count-2 {
+  max-width: 1320px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
 }
 
-.voice-workspace-grid--count-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
+.voice-workspace-grid--count-3,
 .voice-workspace-grid--count-4 {
+  max-width: 1180px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
 }
 
 .voice-workspace-grid--count-5,
@@ -5785,7 +5787,9 @@ select:focus-visible {
 .voice-workspace-grid--count-7,
 .voice-workspace-grid--count-8,
 .voice-workspace-grid--count-9 {
+  max-width: 1320px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
 }
 
 .voice-workspace-grid--screen-active .voice-tile,
@@ -6824,6 +6828,20 @@ select:focus-visible {
     grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: auto;
     height: auto;
+  }
+
+  .voice-workspace-grid--count-1,
+  .voice-workspace-grid--count-2,
+  .voice-workspace-grid--count-3,
+  .voice-workspace-grid--count-4,
+  .voice-workspace-grid--count-5,
+  .voice-workspace-grid--count-6,
+  .voice-workspace-grid--count-7,
+  .voice-workspace-grid--count-8,
+  .voice-workspace-grid--count-9 {
+    max-width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
   }
 
   .voice-workspace-grid--screen-active .screen-share-tile {

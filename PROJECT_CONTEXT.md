@@ -144,10 +144,14 @@ participant and empty-state tiles, darker stage framing, bottom-center voice
 actions for join/screen-share/leave, stage-level microphone/output controls with
 device popovers before screen share, and a real invite action in the empty tile when
 the user has invite permission. Screen-share tiles and participant tiles now share
-one adaptive stage grid capped at 9 visible tiles per voice workspace; active
-screen shares and local/remote participant cards use explicit 1/2/3-column
-count-based layouts so simultaneous shares do not overlap or escape the stage. The
-existing WebRTC, voice panel, screen-share, and gateway signaling flows are
+one adaptive stage grid capped at 9 visible tiles per voice workspace. The grid
+now follows the requested count rules: 1-2 tiles stay in a horizontal row, 3-4
+tiles use a stable 2x2 layout, and 5-9 tiles use a stable 3x3 layout with bounded
+stage widths so simultaneous shares do not overlap or escape the stage. Refreshing
+or leaving while screen sharing broadcasts `screen_sharing: false` before closing
+peer connections, so remote participants clear the video quickly while the
+existing voice reload recovery can rejoin audio without restoring screen sharing.
+The existing WebRTC, voice panel, screen-share, and gateway signaling flows are
 preserved.
 
 The global dark-theme surface tokens in `frontend/src/styles/base.css` were lowered

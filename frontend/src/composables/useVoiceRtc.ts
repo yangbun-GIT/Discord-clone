@@ -125,6 +125,9 @@ export function useVoiceRtc(): VoiceTransport {
   }
 
   function disconnect() {
+    if (isScreenSharing.value || screenStream.value) {
+      peerRegistry.broadcastScreenState(false)
+    }
     peerRegistry.closeAll()
     if (inputProcessor) {
       inputProcessor.close()
