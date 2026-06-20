@@ -461,6 +461,8 @@ For ordinary implementation work:
   - Owns the selected voice workspace's local/remote screen-share stage placement.
   - Routes voice-panel setting actions directly into the Voice & Video settings
     panel while keeping generic settings entry on My Account.
+  - Sends a reset key to Friends home when the private sidebar Friends entry is
+    clicked so the main Friends tab returns to All.
   - Filters global context-menu invite actions through `guilds.canCreateInvite`.
 - `frontend/src/types.ts`
   - Shared frontend DTO and state types.
@@ -484,12 +486,16 @@ For ordinary implementation work:
     panels, and permission-aware server invite menu entry.
 - `frontend/src/components/FriendsHome.vue`
   - Friends tabs, friend list, grouped incoming/outgoing friend requests,
-    add-friend flow, and activity panel.
+    add-friend flow, favorites/online/offline grouping, sorting controls, and
+    activity panel.
   - Emits real Add Friend, pending accept/reject/cancel, remove, block, and unblock
     actions instead of local-only UI results.
   - Shows relationship tab counts, query-aware empty states, Add Friend panel
     feedback from workspace notice/error state, blocked-user access when needed,
     and a stable grouped friend-row action cluster.
+  - Hides redundant All/Online tab badges, avoids duplicate pending request
+    headings when only one request group is visible, lets users favorite friends
+    locally, and shows every strictly-online friend in Active Now.
 - `frontend/src/components/FriendProfileDialog.vue`
   - App-owned friend profile popout for username, handle, presence, relationship,
     message, call-entry, and mute actions.
@@ -509,7 +515,10 @@ For ordinary implementation work:
     independent.
   - Quick microphone popovers show configured device/sensitivity settings only; do
     not expose exact live microphone input level outside the settings screen.
-  - Its quick setting actions open the Voice & Video settings panel directly.
+  - Its lower-right user settings gear opens My Account, while quick voice popover
+    settings actions open the Voice & Video settings panel directly.
+  - Input/output popover chevrons toggle open and closed rather than acting only as
+    refresh/open buttons.
   - Closes quick input/output popovers on outside click or Escape and orders the
     connected voice-session card below the user status card.
 - `frontend/src/components/VoiceAudioSink.vue`
@@ -569,7 +578,8 @@ For ordinary implementation work:
 - `frontend/src/stores/dmVisibility.ts`
   - Direct-message relationship/participant/message visibility filtering.
 - `frontend/src/stores/preferences.ts`
-  - User preferences such as locale/theme-like settings and locally muted DM IDs.
+  - User preferences such as locale/theme-like settings, locally muted DM IDs, and
+    locally favorited friend IDs.
 - `frontend/src/stores/store.ts`
   - Deferred/demo Store state.
 

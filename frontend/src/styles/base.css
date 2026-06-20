@@ -2879,6 +2879,32 @@ select:focus-visible {
   background: transparent;
 }
 
+.friend-list-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px 16px 8px;
+}
+
+.friend-list-controls button {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  color: #d7dee8;
+  background: rgb(255 255 255 / 5%);
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.friend-list-controls button:hover,
+.friend-list-controls button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 10%);
+}
+
 .friend-list {
   min-width: 0;
   min-height: 0;
@@ -3166,6 +3192,13 @@ select:focus-visible {
   font-weight: 900;
 }
 
+.activity-empty {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
 .friend-avatar.large {
   width: 64px;
   height: 64px;
@@ -3245,11 +3278,20 @@ select:focus-visible {
   background: #202127;
 }
 
+.activity-card.selected.active {
+  border-color: rgb(88 101 242 / 58%);
+}
+
 .activity-card.selected button {
   grid-column: 1 / -1;
   width: 100%;
   color: #f2f3f5;
   background: var(--surface-panel-raised);
+}
+
+.friend-action-button.active {
+  color: #fbbf24;
+  background: rgb(251 191 36 / 14%);
 }
 
 .add-friend-layout {
@@ -5428,7 +5470,7 @@ select:focus-visible {
 .voice-device-settings-button {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
   min-height: 34px;
   border: 0;
@@ -5436,7 +5478,7 @@ select:focus-visible {
   color: #dbe4ef;
   background: transparent;
   padding: 10px 0 0;
-  text-align: left;
+  text-align: right;
 }
 
 .voice-device-settings-button:hover,

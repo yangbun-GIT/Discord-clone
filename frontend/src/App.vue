@@ -169,6 +169,7 @@ const userPresenceStatus = ref<UserPresenceStatus>('online')
 const showCreateDmDialog = ref(false)
 const profileFriendId = ref<number | null>(null)
 const pendingRequestFocusKey = ref(0)
+const friendsHomeResetKey = ref(0)
 const activeContextTarget = ref<{ kind: string; id: number | null; label: string } | null>(null)
 const profileFriend = computed(() =>
   profileFriendId.value === null
@@ -640,6 +641,7 @@ function handleSelectGuild(guildId: number) {
 function handleOpenFriends() {
   clearWorkspaceNotice()
   activeHeaderPanel.value = null
+  friendsHomeResetKey.value += 1
   navigation.openFriends()
 }
 
@@ -1374,6 +1376,7 @@ async function handleSendInviteToFriend(friendId: number) {
         :action-notice="workspaceNotice"
         :action-error="workspaceError ?? dms.error"
         :pending-request-focus-key="pendingRequestFocusKey"
+        :reset-tab-key="friendsHomeResetKey"
         @add-friend="handleAddFriend"
         @accept-friend="handleAcceptFriend"
         @reject-friend="handleRejectFriend"
@@ -1688,7 +1691,8 @@ async function handleSendInviteToFriend(friendId: number) {
       @retry="handleRetryVoiceCapture"
       @leave="handleLeaveVoiceFromError"
       @cycle-status="cycleUserPresence"
-      @open-settings="handleOpenVoiceSettings"
+      @open-user-settings="handleOpenUserSettings"
+      @open-voice-settings="handleOpenVoiceSettings"
       @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
       @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
     />

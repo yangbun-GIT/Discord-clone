@@ -2233,6 +2233,16 @@ Completed Stage 2 bridge work:
   complete: current backend voice state/signaling remains guild voice-channel
   subscription based, so the call action only opens the DM and shows clone-owned
   guidance until a DM private-call room or DM voice mapping is implemented.
+- The 2026-06-20 Friends home follow-up pass refined the visible Friends screen:
+  `FriendsHome.vue` now hides redundant All/Online tab count badges, avoids
+  duplicate pending request headings for a single visible request group, groups All
+  friends into local favorites/online/offline sections, adds ascending/descending
+  sorting, and renders every strictly-online friend in Active Now. `App.vue`
+  passes a Friends reset key so the private sidebar Friends entry returns the tab
+  to All. `preferences.ts` persists local favorite-friend IDs. `VoicePanel.vue`
+  now separates the lower user-settings gear to My Account from quick voice
+  popover Voice & Video settings, and input/output chevrons toggle their popovers
+  open and closed.
 
 After each stage or meaningful feature:
 

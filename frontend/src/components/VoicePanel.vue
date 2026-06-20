@@ -46,7 +46,8 @@ const emit = defineEmits<{
   retry: []
   leave: []
   cycleStatus: []
-  openSettings: []
+  openUserSettings: []
+  openVoiceSettings: []
   updateVoiceDeviceSettings: [settings: Partial<VoiceDeviceSettings>]
   refreshVoiceDevices: []
 }>()
@@ -80,7 +81,11 @@ const connectionDetailLabel = computed(() => {
   return props.turnConfigured ? t('voice.turnReady') : t('voice.stunOnly')
 })
 function toggleAudioMenu(menu: 'input' | 'output') {
-  audioMenu.value = audioMenu.value === menu ? null : menu
+  if (audioMenu.value === menu) {
+    audioMenu.value = null
+    return
+  }
+  audioMenu.value = menu
   emit('refreshVoiceDevices')
 }
 
@@ -116,9 +121,9 @@ function handleNoiseSuppressionModeChange(event: Event) {
   })
 }
 
-function openSettings() {
+function openVoiceSettings() {
   audioMenu.value = null
-  emit('openSettings')
+  emit('openVoiceSettings')
 }
 
 function handleDocumentPointerDown(event: MouseEvent) {
@@ -209,7 +214,7 @@ onBeforeUnmount(() => {
       </div>
       <div class="voice-error-actions">
         <button type="button" @click="$emit('retry')">{{ t('voice.retryCapture') }}</button>
-        <button type="button" @click="$emit('openSettings')">{{ t('voice.openVoiceSettings') }}</button>
+        <button type="button" @click="$emit('openVoiceSettings')">{{ t('voice.openVoiceSettings') }}</button>
         <button v-if="connected" type="button" class="danger" @click="$emit('leave')">
           {{ t('voice.leaveSelected') }}
         </button>
@@ -301,9 +306,9 @@ onBeforeUnmount(() => {
           <strong>{{ voiceDeviceSettings.outputVolume }}%</strong>
         </label>
       </template>
-      <button type="button" class="voice-device-settings-button" @click="openSettings">
+      <button type="button" class="voice-device-settings-button" @click="openVoiceSettings">
         <Settings :size="16" aria-hidden="true" />
-        <span>{{ t('settings.voice') }}</span>
+        <span>{{ t('settings.voiceAndVideoSettings') }}</span>
       </button>
     </div>
 
@@ -377,7 +382,7 @@ onBeforeUnmount(() => {
           type="button"
           :title="t('voice.userSettings')"
           :aria-label="t('voice.userSettings')"
-          @click="openSettings"
+          @click="$emit('openUserSettings')"
         >
           <Settings :size="17" aria-hidden="true" />
         </button>

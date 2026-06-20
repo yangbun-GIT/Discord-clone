@@ -10,6 +10,7 @@ const PREFERENCES_STORAGE_KEY = 'discord-clone-preferences'
 type PersistedPreferences = {
   language?: AppLanguage
   mutedDmIds?: number[]
+  favoriteFriendIds?: number[]
 }
 
 function isAppLanguage(value: unknown): value is AppLanguage {
@@ -19,6 +20,7 @@ function isAppLanguage(value: unknown): value is AppLanguage {
 export const usePreferencesStore = defineStore('preferences', () => {
   const language = ref<AppLanguage>('ko')
   const mutedDmIds = ref<number[]>([])
+  const favoriteFriendIds = ref<number[]>([])
 
   function restorePreferences() {
     const rawPreferences = browserStorage.getItem(PREFERENCES_STORAGE_KEY)
@@ -32,6 +34,9 @@ export const usePreferencesStore = defineStore('preferences', () => {
       if (Array.isArray(preferences.mutedDmIds)) {
         mutedDmIds.value = preferences.mutedDmIds.filter((id): id is number => Number.isSafeInteger(id))
       }
+      if (Array.isArray(preferences.favoriteFriendIds)) {
+        favoriteFriendIds.value = preferences.favoriteFriendIds.filter((id): id is number => Number.isSafeInteger(id))
+      }
     } catch {
       browserStorage.removeItem(PREFERENCES_STORAGE_KEY)
     }
@@ -41,6 +46,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
     const preferences: PersistedPreferences = {
       language: language.value,
       mutedDmIds: mutedDmIds.value,
+      favoriteFriendIds: favoriteFriendIds.value,
     }
     browserStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences))
   }
@@ -65,13 +71,32 @@ export const usePreferencesStore = defineStore('preferences', () => {
     setDmMuted(dmId, !isDmMuted(dmId))
   }
 
+  function isFavoriteFriend(friendId: number | null) {
+    return friendId !== null && favoriteFriendIds.value.includes(friendId)
+  }
+
+  function setFavoriteFriend(friendId: number, favorite: boolean) {
+    favoriteFriendIds.value = favorite
+      ? Array.from(new Set([...favoriteFriendIds.value, friendId]))
+      : favoriteFriendIds.value.filter((id) => id !== friendId)
+    persistPreferences()
+  }
+
+  function toggleFavoriteFriend(friendId: number) {
+    setFavoriteFriend(friendId, !isFavoriteFriend(friendId))
+  }
+
   return {
     language,
     mutedDmIds,
+    favoriteFriendIds,
     restorePreferences,
     setLanguage,
     isDmMuted,
     setDmMuted,
     toggleDmMuted,
+    isFavoriteFriend,
+    setFavoriteFriend,
+    toggleFavoriteFriend,
   }
 })

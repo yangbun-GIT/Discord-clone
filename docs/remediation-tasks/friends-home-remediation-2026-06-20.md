@@ -553,6 +553,25 @@ needed before the Friends home surface can be considered complete.
   controlled auto-scroll, and a jump-to-latest affordance.
 - F17 pending: DM header/profile-side controls need a target-aware action audit so
   useful Discord-like controls are implemented instead of excluded.
+- F18 completed: 2026-06-20 Friends home follow-up fixes from the visible main
+  Friends screen were implemented.
+  - All and Online top-tab badges were removed because each list view already
+    exposes its own count inside the pane.
+  - Pending request duplicate copy was reduced: the pending view shows the total
+    request count, and a received/sent group heading appears only when more than
+    one pending group is visible.
+  - Clicking the private sidebar Friends entry resets the visible Friends tab to
+    All.
+  - The All tab now groups accepted friends into local Favorites, Online
+    (including idle/DND), and Offline, with an ascending/descending sort toggle.
+  - Friend rows can be favorited locally so frequent contacts stay at the top of
+    the All view.
+  - Active Now now lists every strictly-online friend instead of only the selected
+    friend.
+  - The lower-left user settings gear opens My Account, while quick input/output
+    popovers still route to Voice & Video settings.
+  - Input/output chevrons now toggle their popovers open and closed, and the
+    Voice & Video popover action is a right-aligned settings-icon action.
 
 ## Verification Log
 
@@ -565,6 +584,17 @@ needed before the Friends home surface can be considered complete.
   remote audio sink, DM/server realtime, invite-DM realtime, screen-share cleanup,
   and voice reload/rejoin recovery.
 - `git diff --check` passed after final whitespace cleanup.
+- 2026-06-20 F18 follow-up verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `npm run check:submission:local` passed against `https://localhost:5173/`;
+    TURN remained false, which is acceptable for local submission readiness.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, DM/server realtime, invite-DM realtime, screen-share
+    cleanup, voice reload/rejoin recovery, and voice leave cleanup.
+  - `git diff --check` passed; Git only reported line-ending normalization
+    warnings for touched files.
 
 ## Manual QA Checklist
 

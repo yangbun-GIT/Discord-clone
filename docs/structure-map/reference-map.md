@@ -852,10 +852,12 @@ Browser UI
     - `frontend/src/services/browserApi.ts`
   - Referenced by:
     - `frontend/src/App.vue`
+    - `frontend/src/components/FriendsHome.vue`
     - `frontend/src/i18n/index.ts`
     - `frontend/src/stores/dms.ts`
   - Owns:
-    - Locale preference and local muted-DM ID persistence.
+    - Locale preference, local muted-DM ID persistence, and local favorite-friend
+      ID persistence.
 
 - `frontend/src/stores/store.ts`
   - References:
@@ -1003,7 +1005,11 @@ Browser UI
     hides the server invite menu action when invite permission is absent.
 - `frontend/src/components/FriendsHome.vue`
   - Receives relationships/activity state from `frontend/src/App.vue`.
-  - Groups incoming/outgoing friend requests separately from online presence.
+  - Receives a reset key from `frontend/src/App.vue` so sidebar Friends navigation
+    returns the visible tab to All.
+  - Groups All friends into local favorites, online, and offline sections with a
+    user-controlled ascending/descending sort; pending requests stay separated only
+    when both incoming and outgoing groups are present.
   - Emits message friend, profile, call-entry, mute, and relationship mutation
     actions to `frontend/src/App.vue`.
 - `frontend/src/components/FriendProfileDialog.vue`
@@ -1028,15 +1034,16 @@ Browser UI
   - Receives selected voice channel, current user, voice quality stats, typed
     media-error copy, binary local speaking state, and voice device settings from
     `frontend/src/App.vue`.
-  - Emits join/leave/mute/screen-share/retry/settings and quick voice device
-    update/refresh actions to
+  - Emits join/leave/mute/screen-share/retry, distinct My Account and Voice &
+    Video settings actions, and quick voice device update/refresh actions to
     `frontend/src/App.vue`.
   - Keeps screen sharing and manual microphone mute available while deafened so
     deafen only controls local playback of remote audio.
   - Shows configured quick voice settings but does not receive or display exact
     live input level.
-  - Owns quick input/output popover state, outside-click/Escape dismissal, and the
-    lower-left user-status/connected-session card ordering.
+  - Owns quick input/output popover state, toggle-open chevrons,
+    outside-click/Escape dismissal, and the lower-left user-status/connected-session
+    card ordering.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.

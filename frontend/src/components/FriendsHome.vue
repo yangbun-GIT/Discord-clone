@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
+  ArrowDownAZ,
+  ArrowUpAZ,
   BellOff,
   Check,
   MoreHorizontal,
   Phone,
   Search,
   Send,
+  Star,
   UserRound,
   UserMinus,
   UserX,
@@ -15,6 +18,7 @@ import {
 
 import { useI18n } from '../i18n'
 import { addDocumentEventListener } from '../services/browserApi'
+import { usePreferencesStore } from '../stores/preferences'
 import type { Friend, UserPresenceStatus } from '../types'
 
 const props = defineProps<{
@@ -23,6 +27,7 @@ const props = defineProps<{
   actionNotice?: string | null
   actionError?: string | null
   pendingRequestFocusKey?: number
+  resetTabKey?: number
 }>()
 
 const emit = defineEmits<{
@@ -40,6 +45,7 @@ const emit = defineEmits<{
 }>()
 
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('all')
+const sortDirection = ref<'asc' | 'desc'>('asc')
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
 const searchQuery = ref('')
@@ -55,6 +61,7 @@ const friendMenu = ref<{
   y: number
 } | null>(null)
 const { t } = useI18n()
+const preferences = usePreferencesStore()
 
 const visualFriends = computed(() => props.friends)
 
@@ -68,7 +75,7 @@ const friendCounts = computed(() => {
   }
 })
 
-const visibleFriends = computed(() => {
+const filteredFriends = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
   return visualFriends.value.filter((friend) => {
     if (activeTab.value === 'online' && (friend.relationship !== 'friend' || friend.status === 'offline')) return false
@@ -81,9 +88,36 @@ const visibleFriends = computed(() => {
   })
 })
 
+const visibleFriends = computed(() => sortFriends(filteredFriends.value))
+
 const hasSearchQuery = computed(() => searchQuery.value.trim().length > 0)
 
 const friendGroups = computed(() => {
+  if (activeTab.value === 'all') {
+    const friends = visibleFriends.value.filter((friend) => friend.relationship === 'friend')
+    const favorites = friends.filter((friend) => preferences.isFavoriteFriend(friend.id))
+    const nonFavorites = friends.filter((friend) => !preferences.isFavoriteFriend(friend.id))
+    const online = nonFavorites.filter((friend) => friend.status !== 'offline')
+    const offline = nonFavorites.filter((friend) => friend.status === 'offline')
+    return [
+      {
+        id: 'favorites',
+        label: t('friends.favoritesCount', { count: favorites.length }),
+        friends: favorites,
+      },
+      {
+        id: 'online',
+        label: t('friends.onlineCount', { count: online.length }),
+        friends: online,
+      },
+      {
+        id: 'offline',
+        label: t('friends.offlineCount', { count: offline.length }),
+        friends: offline,
+      },
+    ].filter((group) => group.friends.length > 0)
+  }
+
   if (activeTab.value !== 'pending') {
     return [{
       id: activeTab.value,
@@ -132,12 +166,11 @@ const selectedFriend = computed(
   () => visibleFriends.value.find((friend) => friend.id === selectedFriendId.value) ?? visibleFriends.value[0] ?? null,
 )
 
-const selectedFriendStatusCopy = computed(() => {
-  if (!selectedFriend.value) return ''
-  if (selectedFriend.value.activity) return selectedFriend.value.activity
-  if (selectedFriend.value.status === 'offline') return t('friends.noActivityOffline')
-  return t('friends.noActivityOnline')
-})
+const activeNowFriends = computed(() =>
+  sortFriends(visualFriends.value.filter((friend) => (
+    friend.relationship === 'friend' && friend.status === 'online'
+  ))),
+)
 
 const openMenuFriend = computed(() =>
   friendMenu.value ? visualFriends.value.find((friend) => friend.id === friendMenu.value?.friendId) ?? null : null,
@@ -152,6 +185,21 @@ function relationshipLabel(friend: Friend) {
   if (friend.relationship === 'pending_outgoing') return t('friends.pendingOutgoing')
   if (friend.relationship === 'blocked') return t('friends.blocked')
   return t('friends.friend')
+}
+
+function sortFriends(friends: Friend[]) {
+  return [...friends].sort((left, right) => {
+    const result = left.username.localeCompare(right.username, undefined, { sensitivity: 'base' })
+    return sortDirection.value === 'asc' ? result : -result
+  })
+}
+
+function toggleSortDirection() {
+  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+}
+
+function toggleFavorite(friendId: number) {
+  preferences.toggleFavoriteFriend(friendId)
 }
 
 function submitAddFriend() {
@@ -276,6 +324,14 @@ watch(
     activeTab.value = 'pending'
   },
 )
+
+watch(
+  () => props.resetTabKey,
+  (key, previousKey) => {
+    if (!key || key === previousKey) return
+    activeTab.value = 'all'
+  },
+)
 </script>
 
 <template>
@@ -294,7 +350,6 @@ watch(
           @click="activeTab = 'all'"
         >
           <span>{{ t('friends.all') }}</span>
-          <small>{{ friendCounts.all }}</small>
         </button>
         <button
           type="button"
@@ -304,7 +359,6 @@ watch(
           @click="activeTab = 'online'"
         >
           <span>{{ t('friends.online') }}</span>
-          <small>{{ friendCounts.online }}</small>
         </button>
         <button
           type="button"
@@ -370,13 +424,22 @@ watch(
             <Search :size="17" aria-hidden="true" />
             <input v-model="searchQuery" :placeholder="t('friends.search')" autocomplete="off" />
           </label>
+          <div v-if="activeTab === 'all'" class="friend-list-controls">
+            <button type="button" @click="toggleSortDirection">
+              <ArrowUpAZ v-if="sortDirection === 'asc'" :size="15" aria-hidden="true" />
+              <ArrowDownAZ v-else :size="15" aria-hidden="true" />
+              <span>
+                {{ sortDirection === 'asc' ? t('friends.sortAscending') : t('friends.sortDescending') }}
+              </span>
+            </button>
+          </div>
 
           <section class="friend-list" :aria-label="t('friends.listLabel', { tab: activeTabLabel })">
             <h2 class="friend-list-heading">
               {{
                 activeTab === 'online'
                   ? t('friends.onlineCount', { count: visibleFriends.length })
-                  : activeTab === 'pending'
+                : activeTab === 'pending'
                     ? t('friends.pendingCount', { count: visibleFriends.length })
                   : activeTab === 'blocked'
                     ? t('friends.blockedCount', { count: visibleFriends.length })
@@ -391,7 +454,12 @@ watch(
               class="friend-request-group"
               :aria-label="group.label"
             >
-              <h3 v-if="activeTab === 'pending'" class="friend-group-heading">{{ group.label }}</h3>
+              <h3
+                v-if="activeTab === 'all' || (activeTab === 'pending' && friendGroups.length > 1)"
+                class="friend-group-heading"
+              >
+                {{ group.label }}
+              </h3>
               <article
                 v-for="friend in group.friends"
                 :key="friend.id"
@@ -419,6 +487,17 @@ watch(
                   </span>
                 </span>
                 <span class="friend-actions" :aria-label="t('friends.more')">
+                  <button
+                    v-if="friend.relationship === 'friend'"
+                    type="button"
+                    class="friend-action-button"
+                    :class="{ active: preferences.isFavoriteFriend(friend.id) }"
+                    :aria-label="preferences.isFavoriteFriend(friend.id) ? t('friends.removeFavorite') : t('friends.addFavorite')"
+                    :aria-pressed="preferences.isFavoriteFriend(friend.id)"
+                    @click.stop="toggleFavorite(friend.id)"
+                  >
+                    <Star :size="17" aria-hidden="true" />
+                  </button>
                   <button
                     v-if="friend.relationship === 'friend'"
                     type="button"
@@ -501,32 +580,36 @@ watch(
           </section>
         </div>
 
-        <aside v-if="selectedFriend" class="friend-activity-panel" :aria-label="t('friends.selectedProfile')">
+        <aside class="friend-activity-panel" :aria-label="t('friends.selectedProfile')">
           <h2>{{ t('friends.activityNow') }}</h2>
-          <article class="activity-card selected">
+          <p v-if="!activeNowFriends.length" class="activity-empty">{{ t('friends.activityEmpty') }}</p>
+          <article
+            v-for="friend in activeNowFriends"
+            :key="friend.id"
+            class="activity-card selected"
+            :class="{ active: selectedFriend?.id === friend.id }"
+          >
             <span class="friend-avatar">
-              {{ selectedFriend.username.slice(0, 1).toUpperCase() }}
+              {{ friend.username.slice(0, 1).toUpperCase() }}
             </span>
             <div>
-              <strong>{{ selectedFriend.username }}</strong>
+              <strong>{{ friend.username }}</strong>
               <small class="friend-status-line">
-                <span class="presence-dot" :class="selectedFriend.status" aria-hidden="true"></span>
-                <span>{{ selectedFriendStatusCopy }}</span>
+                <span class="presence-dot" :class="friend.status" aria-hidden="true"></span>
+                <span>{{ friend.activity || t('friends.noActivityOnline') }}</span>
               </small>
-              <small>{{ selectedFriend.handle }}</small>
+              <small>{{ friend.handle }}</small>
             </div>
             <button
-              v-if="selectedFriend.relationship === 'friend'"
               type="button"
-              @click="$emit('messageFriend', selectedFriend.id)"
+              @click="$emit('messageFriend', friend.id)"
             >
               <Send :size="16" aria-hidden="true" />
               <span>{{ t('friends.sendMessage') }}</span>
             </button>
             <button
-              v-if="selectedFriend.relationship === 'friend'"
               type="button"
-              @click="$emit('viewProfile', selectedFriend.id)"
+              @click="$emit('viewProfile', friend.id)"
             >
               <UserRound :size="16" aria-hidden="true" />
               <span>{{ t('friends.viewProfile') }}</span>
