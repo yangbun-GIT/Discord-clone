@@ -2178,6 +2178,15 @@ Completed Stage 2 bridge work:
   `browserErrors: 0`. The exact temporary URL is not recorded as a stable
   deployment address. TURN remained unconfigured, so real different-network
   microphone and screen-share QA is still incomplete.
+- The active Cloudflare Tunnel path was rechecked for external-network manual QA
+  preparation on 2026-06-20. Docker services, `frontend-tunnel`, and the
+  `cloudflared` process were running; the temporary public URL returned HTTP 200;
+  `/api/health`, `/api/meta/voice/readiness`, WSS `/gateway` HELLO, and
+  public-origin `npm run smoke:realtime:browser` passed again. A new checklist in
+  `docs/assignment-submission-guide.md` separates user-run two-network manual QA
+  from Codex-run automated public-origin checks. Because `turn_configured` stayed
+  `false`, the correct status remains "Cloudflare signaling path verified,
+  TURN/NAT media gate incomplete."
 
 After each stage or meaningful feature:
 

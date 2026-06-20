@@ -295,6 +295,55 @@ Remaining manual gates:
 - TURN/NAT internet voice remains incomplete until `turn_configured: true` and
   two different networks pass real media QA.
 
+## Cloudflare External-Network Manual QA Checklist
+
+Use this checklist only while a Quick Tunnel process is currently running. The URL
+changes between runs, so do not copy it into permanent project docs.
+
+Preparation:
+
+1. On PC A, keep Docker and `cloudflared tunnel --url http://localhost:5174`
+   running.
+2. On PC B, use a different network such as phone hotspot, mobile data, another
+   Wi-Fi, or a separate physical network.
+3. Open the current `https://*.trycloudflare.com` URL on both devices.
+4. Use two different accounts. Creating fresh test accounts is acceptable.
+
+Functional checks:
+
+1. PC A and PC B both load the app over HTTPS with no browser certificate warning.
+2. Both users can sign up or log in.
+3. User A creates a server.
+4. User A creates an invite; User B joins with the invite.
+5. User A sends a server text message; User B receives it without refresh.
+6. User B sends a server text message; User A receives it without refresh.
+7. User A sends a friend request; User B sees and accepts it.
+8. Either user opens the DM and sends a message; the other user receives it without
+   refresh.
+9. Refresh one browser tab and verify it returns to the previous workspace.
+
+Voice and screen checks:
+
+1. Confirm `/api/meta/voice/readiness.turn_configured` before claiming external
+   voice support.
+2. If `turn_configured` is `false`, record voice/screen-share as signaling-only or
+   best-effort; do not call it complete.
+3. If attempting a best-effort call, both users join the same voice channel and
+   record whether participants appear on both sides.
+4. Grant microphone permission and test short words plus a sustained vowel.
+5. Verify mute and deafen are independent.
+6. Start screen sharing, verify the receiver sees the screen, stop sharing, and
+   verify the receiver's screen tile disappears.
+7. Refresh one voice-connected tab and record whether the app returns to the
+   previous voice workspace and rejoin flow.
+
+Pass criteria:
+
+- Text, DM, invite, and gateway realtime can pass with Cloudflare Tunnel alone.
+- Real external voice/screen-share pass requires TURN configured and a real
+  two-network media test. Without TURN, leave the media gate incomplete even if a
+  best-effort call happens to work.
+
 ## Not Part Of The Default Submission
 
 - GitHub Pages-only deployment is not sufficient for this project because the app

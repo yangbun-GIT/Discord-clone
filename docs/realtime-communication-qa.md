@@ -453,6 +453,22 @@ media still needs valid STUN/TURN behavior between browsers.
 - Limit: this does not complete real external voice/screen-share QA because
   `turn_configured` was `false` and no two-network real media test was performed.
 
+2026-06-20 external-network manual QA status:
+
+- Codex reran the automated public-origin checks against the active temporary
+  Cloudflare URL. `/api/health`, `/api/meta/voice/readiness`, WSS `/gateway`
+  HELLO, and the public-origin browser realtime smoke all passed with
+  `browserErrors: 0`.
+- Manual two-network checks remain pending because they require a second physical
+  device on a different network. Use
+  `docs/assignment-submission-guide.md#cloudflare-external-network-manual-qa-checklist`
+  to run the human pass.
+- Record any manual failures as one of: auth, server invite, friend request, DM,
+  server text, gateway reconnect, voice permission, voice media, screen-share, or
+  refresh recovery.
+- Do not upgrade the media status beyond "Cloudflare signaling path verified,
+  TURN/NAT media gate incomplete" while `turn_configured` remains `false`.
+
 ## TURN/NAT QA
 
 Follow `docs/external-deployment-decision.md` and

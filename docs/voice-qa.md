@@ -101,6 +101,14 @@ with a temporary `https://*.trycloudflare.com` hostname. Page load, `/api/health
 text/DM/fake-media smoke passed. The result is not a real external voice
 completion because TURN remained unconfigured.
 
+2026-06-20 manual external-network status: automated public-origin checks were
+rerun successfully, but real external microphone and screen-share remain pending
+until the user tests from a second physical network. While
+`/api/meta/voice/readiness.turn_configured` is `false`, record any Cloudflare call
+attempt as signaling/best-effort only and keep the TURN/NAT media gate incomplete.
+Follow the checklist in `docs/assignment-submission-guide.md` before changing this
+status.
+
 ### HTTPS LAN Media Path
 
 Use this path when the second device must test real microphone or screen capture.
