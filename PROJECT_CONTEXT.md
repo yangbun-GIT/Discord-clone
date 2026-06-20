@@ -2394,6 +2394,9 @@ Completed Stage 2 bridge work:
   from backdrop clicks, and removes the demo-only automatic `Project` rail folder
   assignment in `frontend/src/App.vue` so newly created servers appear as normal
   top-level rail icons instead of being grouped under `PR`.
+- A 2026-06-21 visual hierarchy follow-up changed the channel sidebar guild header
+  row to use `--surface-header`, matching the adjacent app header tone while
+  preserving the darker channel sidebar body across all servers.
 
 After each stage or meaningful feature:
 
