@@ -208,6 +208,11 @@ For ordinary implementation work:
   `backend/app/realtime/publisher.py`, and `backend/app/schemas/dm.py`.
   Use this set before broad searches when changing DM message timestamps, author
   actions, timeline separators, or realtime DM message removal.
+- `docs/remediation-tasks/voice-channel-visual-remediation-2026-06-21.md`
+  - Voice channel visual remediation record.
+  - Routes Discord-like voice workspace stage layout changes across
+    `frontend/src/App.vue`, `frontend/src/styles/base.css`, and
+    `frontend/src/i18n/index.ts`.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh

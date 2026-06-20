@@ -15,7 +15,7 @@ import {
   PhoneOff,
   ScreenShare,
   ScreenShareOff,
-  UserRound,
+  Sparkles,
   Users,
   X,
 } from 'lucide-vue-next'
@@ -1694,7 +1694,97 @@ async function handleSendInviteToFriend(friendId: number) {
               <p class="voice-workspace-status">{{ activeGuild.name }} / {{ voiceWorkspaceStatus }}</p>
             </div>
           </div>
-          <div class="voice-workspace-actions">
+        </header>
+
+        <div class="voice-workspace-stage">
+          <div
+            v-if="voiceRtc.screenStream.value || remoteScreenStreams.length"
+            class="screen-share-stage"
+            aria-label="Screen shares"
+          >
+            <VoiceVideoSink
+              v-if="voiceRtc.screenStream.value"
+              class="local-screen-share-tile"
+              :stream="voiceRtc.screenStream.value"
+              :label="t('voice.screenPreview')"
+              :subtitle="session.user?.username ?? t('common.demoUser')"
+              :user-id="session.user?.id"
+              state="connected"
+            />
+            <VoiceVideoSink
+              v-for="remote in remoteScreenStreams"
+              :key="`${remote.channelId}:${remote.userId}`"
+              :stream="remote.stream"
+              :label="t('voice.remoteScreenLabel', { user: remote.username ?? `User ${remote.userId}` })"
+              :subtitle="remote.connectionState === 'connected' ? t('common.status.connected') : remote.connectionState"
+              :state="remote.connectionState"
+              :user-id="remote.userId"
+            />
+          </div>
+
+          <div class="voice-workspace-grid">
+            <article
+              class="voice-tile local"
+              :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
+            >
+              <span class="voice-tile-avatar">{{ session.user?.username.slice(0, 2).toUpperCase() ?? 'YA' }}</span>
+              <div>
+                <strong>{{ session.user?.username ?? t('common.demoUser') }}</strong>
+                <span>{{ selectedVoiceConnected ? voiceWorkspaceStatus : t('voice.localPreview') }}</span>
+              </div>
+              <small v-if="voiceRtc.isScreenSharing.value">{{ t('voice.screenLive') }}</small>
+            </article>
+
+            <article
+              v-for="participant in visibleSelectedVoicePeers"
+              :key="participant.user_id"
+              class="voice-tile remote"
+              :class="{ speaking: remoteVoiceStreamByUserId.get(participant.user_id)?.speaking }"
+              :data-user-id="participant.user_id"
+            >
+              <span class="voice-tile-avatar remote">
+                {{ (participant.username ?? `U${participant.user_id}`).slice(0, 2).toUpperCase() }}
+              </span>
+              <div>
+                <strong>{{ participant.username ?? `User ${participant.user_id}` }}</strong>
+                <span>
+                  {{
+                    participant.self_mute
+                      ? t('common.status.muted')
+                      : remoteVoiceStreamByUserId.get(participant.user_id)?.speaking
+                        ? t('voice.speaking')
+                        : t('common.status.connected')
+                  }}
+                </span>
+              </div>
+            </article>
+
+            <article v-if="!visibleSelectedVoicePeers.length && !remoteScreenStreams.length" class="voice-tile empty">
+              <div class="voice-activity-art" aria-hidden="true">
+                <Sparkles :size="66" />
+              </div>
+              <div>
+                <strong>{{ t('voice.noRemoteParticipants') }}</strong>
+                <span>{{ t('voice.inviteHint') }}</span>
+              </div>
+              <div class="voice-empty-actions">
+                <button
+                  type="button"
+                  :disabled="!guilds.canCreateInvite"
+                  @click="handleCreateInvite"
+                >
+                  <Users :size="17" aria-hidden="true" />
+                  <span>{{ t('voice.inviteByVoice') }}</span>
+                </button>
+                <button type="button" disabled>
+                  <Sparkles :size="17" aria-hidden="true" />
+                  <span>{{ t('voice.activitySelect') }}</span>
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <div class="voice-stage-controls" aria-label="Voice channel actions">
             <button
               v-if="!selectedVoiceConnected"
               type="button"
@@ -1702,18 +1792,8 @@ async function handleSendInviteToFriend(friendId: number) {
               :aria-label="t('voice.joinSelected')"
               @click="handleJoinVoiceChannel(selectedVoiceChannel.id)"
             >
-              <Mic :size="17" aria-hidden="true" />
+              <Mic :size="18" aria-hidden="true" />
               <span>{{ t('voice.joinSelected') }}</span>
-            </button>
-            <button
-              v-if="selectedVoiceConnected"
-              type="button"
-              class="danger"
-              :aria-label="t('voice.leaveSelected')"
-              @click="handleLeaveVoiceChannel(selectedVoiceChannel.id)"
-            >
-              <PhoneOff :size="17" aria-hidden="true" />
-              <span>{{ t('voice.leaveSelected') }}</span>
             </button>
             <button
               type="button"
@@ -1724,82 +1804,21 @@ async function handleSendInviteToFriend(friendId: number) {
               :disabled="!selectedVoiceConnected"
               @click="handleToggleScreenShare"
             >
-              <ScreenShareOff v-if="voiceRtc.isScreenSharing.value" :size="17" aria-hidden="true" />
-              <ScreenShare v-else :size="17" aria-hidden="true" />
+              <ScreenShareOff v-if="voiceRtc.isScreenSharing.value" :size="18" aria-hidden="true" />
+              <ScreenShare v-else :size="18" aria-hidden="true" />
               <span>{{ voiceRtc.isScreenSharing.value ? t('voice.stopScreenShare') : t('voice.screenShare') }}</span>
             </button>
+            <button
+              v-if="selectedVoiceConnected"
+              type="button"
+              class="danger"
+              :aria-label="t('voice.leaveSelected')"
+              @click="handleLeaveVoiceChannel(selectedVoiceChannel.id)"
+            >
+              <PhoneOff :size="18" aria-hidden="true" />
+              <span>{{ t('voice.leaveSelected') }}</span>
+            </button>
           </div>
-        </header>
-
-        <div
-          v-if="voiceRtc.screenStream.value || remoteScreenStreams.length"
-          class="screen-share-stage"
-          aria-label="Screen shares"
-        >
-          <VoiceVideoSink
-            v-if="voiceRtc.screenStream.value"
-            class="local-screen-share-tile"
-            :stream="voiceRtc.screenStream.value"
-            :label="t('voice.screenPreview')"
-            :subtitle="session.user?.username ?? t('common.demoUser')"
-            :user-id="session.user?.id"
-            state="connected"
-          />
-          <VoiceVideoSink
-            v-for="remote in remoteScreenStreams"
-            :key="`${remote.channelId}:${remote.userId}`"
-            :stream="remote.stream"
-            :label="t('voice.remoteScreenLabel', { user: remote.username ?? `User ${remote.userId}` })"
-            :subtitle="remote.connectionState === 'connected' ? t('common.status.connected') : remote.connectionState"
-            :state="remote.connectionState"
-            :user-id="remote.userId"
-          />
-        </div>
-
-        <div class="voice-workspace-grid">
-          <article
-            class="voice-tile local"
-            :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
-          >
-            <span class="voice-tile-avatar">{{ session.user?.username.slice(0, 2).toUpperCase() ?? 'YA' }}</span>
-            <div>
-              <strong>{{ session.user?.username ?? t('common.demoUser') }}</strong>
-              <span>{{ selectedVoiceConnected ? voiceWorkspaceStatus : t('voice.localPreview') }}</span>
-            </div>
-            <small v-if="voiceRtc.isScreenSharing.value">{{ t('voice.screenLive') }}</small>
-          </article>
-
-          <article v-if="!visibleSelectedVoicePeers.length && !remoteScreenStreams.length" class="voice-tile empty">
-            <UserRound :size="34" aria-hidden="true" />
-            <div>
-              <strong>{{ t('voice.noRemoteParticipants') }}</strong>
-              <span>{{ t('voice.inviteHint') }}</span>
-            </div>
-          </article>
-
-          <article
-            v-for="participant in visibleSelectedVoicePeers"
-            :key="participant.user_id"
-            class="voice-tile remote"
-            :class="{ speaking: remoteVoiceStreamByUserId.get(participant.user_id)?.speaking }"
-            :data-user-id="participant.user_id"
-          >
-            <span class="voice-tile-avatar remote">
-              {{ (participant.username ?? `U${participant.user_id}`).slice(0, 2).toUpperCase() }}
-            </span>
-            <div>
-              <strong>{{ participant.username ?? `User ${participant.user_id}` }}</strong>
-              <span>
-                {{
-                  participant.self_mute
-                    ? t('common.status.muted')
-                    : remoteVoiceStreamByUserId.get(participant.user_id)?.speaking
-                      ? t('voice.speaking')
-                      : t('common.status.connected')
-                }}
-              </span>
-            </div>
-          </article>
         </div>
 
         <aside v-if="workspaceError" class="voice-workspace-error" role="status">

@@ -136,6 +136,15 @@ Server text channels now use bottom-anchored message behavior, persisted
 `created_at` timestamps, per-day dividers, and clearer author row styling while
 preserving existing message action flows.
 
+Voice channel visual remediation is recorded in
+`docs/remediation-tasks/voice-channel-visual-remediation-2026-06-21.md`. The server
+voice workspace now uses a Discord-like stage composition in
+`frontend/src/App.vue` and `frontend/src/styles/base.css`: large responsive
+participant and empty-state tiles, darker stage framing, bottom-center voice
+actions for join/screen-share/leave, and a real invite action in the empty tile
+when the user has invite permission. The existing WebRTC, voice panel, screen-share,
+and gateway signaling flows are preserved.
+
 Realtime communication implementation has started from
 `docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and
 verification recovery is complete: `.venv` is a valid Python 3.14.3 environment
