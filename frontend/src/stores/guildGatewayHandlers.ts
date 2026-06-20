@@ -47,8 +47,11 @@ function isChannel(data: Record<string, unknown>): data is Channel {
 }
 
 function isVoiceState(data: Record<string, unknown>): data is VoiceState {
-  return typeof data.guild_id === 'number'
+  const contextType = data.context_type ?? 'guild'
+  return (contextType === 'guild' || contextType === 'dm')
+    && (data.guild_id === null || typeof data.guild_id === 'number')
     && (data.channel_id === null || typeof data.channel_id === 'number')
+    && (data.dm_id === null || typeof data.dm_id === 'number' || typeof data.dm_id === 'undefined')
     && typeof data.user_id === 'number'
     && typeof data.self_mute === 'boolean'
     && typeof data.self_deaf === 'boolean'
@@ -57,7 +60,11 @@ function isVoiceState(data: Record<string, unknown>): data is VoiceState {
 function isVoiceStateSnapshot(data: Record<string, unknown>): data is VoiceStateSnapshot {
   return Array.isArray(data.guild_ids)
     && data.guild_ids.every((guildId) => typeof guildId === 'number')
+    && (typeof data.dm_ids === 'undefined' || (
+      Array.isArray(data.dm_ids) && data.dm_ids.every((dmId) => typeof dmId === 'number')
+    ))
     && (data.channel_id === null || typeof data.channel_id === 'number')
+    && (data.dm_id === null || typeof data.dm_id === 'number' || typeof data.dm_id === 'undefined')
     && Array.isArray(data.states)
     && data.states.every((state) => (
       state !== null
@@ -67,7 +74,10 @@ function isVoiceStateSnapshot(data: Record<string, unknown>): data is VoiceState
 }
 
 function isVoiceSignal(data: Record<string, unknown>): data is VoiceSignal {
-  return typeof data.channel_id === 'number'
+  const contextType = data.context_type ?? 'guild'
+  return (contextType === 'guild' || contextType === 'dm')
+    && typeof data.channel_id === 'number'
+    && (data.dm_id === null || typeof data.dm_id === 'number' || typeof data.dm_id === 'undefined')
     && typeof data.from_user_id === 'number'
     && typeof data.target_user_id === 'number'
     && typeof data.type === 'string'

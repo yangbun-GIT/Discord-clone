@@ -82,7 +82,7 @@ const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
 const activeMessages = computed(() => guilds.activeMessages)
 const activeRemoteVoiceStreams = computed(() =>
-  voiceRtc.remoteStreams.value.filter((remote) => remote.channelId === guilds.connectedVoiceChannelId),
+  voiceRtc.remoteStreams.value.filter((remote) => remote.channelId === connectedVoiceRoomId.value),
 )
 const remoteScreenStreams = computed(() =>
   activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
@@ -95,6 +95,16 @@ const visibleSelectedVoicePeers = computed(() =>
   selectedVoicePeers.value.filter((participant) => !remoteScreenUserIds.value.has(participant.user_id)),
 )
 const voiceLocationSummary = computed(() => {
+  if (connectedDmId.value !== null) {
+    const state = isDeafened.value
+      ? t('common.status.deafened')
+      : voiceRtc.isMuted.value
+        ? t('common.status.muted')
+        : voiceRtc.localSpeaking.value
+          ? t('voice.speaking')
+          : t('common.status.connected')
+    return `${t('app.status.directMessage')} / ${connectedDmName.value ?? selectedDm.value?.display_name ?? ''} 쨌 ${state}`
+  }
   if (!guilds.voiceConnected || !guilds.connectedVoiceChannel || !guilds.connectedVoiceGuild) return null
   const state = isDeafened.value
     ? t('common.status.deafened')
@@ -183,7 +193,11 @@ const {
   pendingVoiceRejoinSummary,
   rememberVoiceSwitchChoice,
   voiceTurnConfigured,
+  voiceConnected,
+  connectedDmId,
+  connectedDmName,
   connectedVoiceChannelId,
+  connectedVoiceRoomId,
   activeGuildConnectedVoiceChannelId,
   voicePanelChannel,
   selectedVoiceChannel,
@@ -196,6 +210,7 @@ const {
   confirmVoiceRejoin,
   dismissVoiceRejoin,
   disconnectVoice,
+  connectVoiceToDm,
   handleToggleVoice,
   handleJoinVoiceChannel,
   confirmVoiceSwitch,
@@ -222,7 +237,7 @@ const { workspaceTitle, workspaceSubtitle } = useWorkspaceController({
   activeGuild: () => activeGuild.value ?? null,
   activeChannel: () => activeChannel.value ?? null,
   selectedDm: () => selectedDm.value,
-  voiceConnected: () => guilds.voiceConnected,
+  voiceConnected: () => voiceConnected.value,
   connectedVoiceGuild: () => guilds.connectedVoiceGuild,
   connectedVoiceChannel: () => guilds.connectedVoiceChannel,
   isDeafened: () => isDeafened.value,
@@ -609,12 +624,19 @@ function voiceMediaErrorKey(errorCode: VoiceMediaErrorCode): TranslationKey {
 
 function handleRetryVoiceCapture() {
   const code = voiceRtc.errorCode.value
-  if (code?.startsWith('screen') && guilds.voiceConnected) {
+  if (code?.startsWith('screen') && voiceConnected.value) {
     handleToggleScreenShare()
     return
   }
-  if (!guilds.voiceConnected) {
+  if (!voiceConnected.value) {
     void handleToggleVoice()
+    return
+  }
+  if (connectedDmId.value !== null) {
+    const dm = selectedDm.value?.id === connectedDmId.value ? selectedDm.value : dms.getDm(connectedDmId.value)
+    if (!dm) return
+    disconnectVoice()
+    void connectVoiceToDm(dm)
     return
   }
   const channelId = guilds.connectedVoiceChannelId
@@ -624,6 +646,10 @@ function handleRetryVoiceCapture() {
 }
 
 function handleLeaveVoiceFromError() {
+  if (voiceConnected.value) {
+    disconnectVoice()
+    return
+  }
   if (guilds.connectedVoiceChannelId) {
     handleLeaveVoiceChannel(guilds.connectedVoiceChannelId)
     return
@@ -709,8 +735,16 @@ async function handleMessageContextTarget() {
 }
 
 async function handleStartFriendCall(friendId: number) {
-  await handleMessageFriend(friendId)
-  setWorkspaceNotice(t('friends.dmCallNeedsVoiceChannel'))
+  workspaceError.value = null
+  try {
+    const dm = await dms.createDm(session.token, [friendId])
+    if (!dm) return
+    navigation.openDm(dm.id)
+    await connectVoiceToDm(dm)
+    setWorkspaceNotice(t('friends.dmCallStarted', { target: dm.display_name }), 'success')
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.voiceConnectFailed')
+  }
 }
 
 async function handleStartContextCall() {
@@ -720,9 +754,9 @@ async function handleStartContextCall() {
 }
 
 async function handleStartSelectedDmCall() {
-  const friendId = selectedDm.value?.recipient_ids[0]
-  if (!friendId) return
-  await handleStartFriendCall(friendId)
+  if (!selectedDm.value) return
+  await connectVoiceToDm(selectedDm.value)
+  setWorkspaceNotice(t('friends.dmCallStarted', { target: selectedDm.value.display_name }), 'success')
 }
 
 function handleViewSelectedDmProfile() {
@@ -1396,8 +1430,10 @@ async function handleSendInviteToFriend(friendId: number) {
         :current-user="session.user"
         :disabled="dms.isMutating"
         :muted="selectedDmMuted"
+        :call-active="connectedDmId === selectedDm?.id"
         @view-profile="handleViewSelectedDmProfile"
         @start-call="handleStartSelectedDmCall"
+        @leave-call="disconnectVoice"
         @toggle-mute="handleToggleSelectedDmMute"
         @send="handleSendDmMessage"
       />
@@ -1671,8 +1707,8 @@ async function handleSendInviteToFriend(friendId: number) {
       :channel="voicePanelChannel"
       :current-user="session.user"
       :user-status="userPresenceStatus"
-      :connected="guilds.voiceConnected"
-      :connected-guild-name="guilds.connectedVoiceGuild?.name ?? null"
+      :connected="voiceConnected"
+      :connected-guild-name="connectedDmId !== null ? t('app.status.directMessage') : guilds.connectedVoiceGuild?.name ?? null"
       :connected-elsewhere="voiceConnectedElsewhere"
       :signaling-ready="gatewayStatus === 'connected'"
       :local-speaking="voiceRtc.localSpeaking.value"

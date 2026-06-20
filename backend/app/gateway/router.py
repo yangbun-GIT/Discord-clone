@@ -135,6 +135,7 @@ async def gateway(websocket: WebSocket) -> None:
                 await gateway_manager.send_voice_state_snapshot(
                     connection,
                     guild_ids=subscribed_guild_ids,
+                    dm_ids=subscribed_dm_ids,
                 )
                 continue
 
@@ -181,64 +182,96 @@ async def gateway(websocket: WebSocket) -> None:
                     return
 
                 voice_state = VoiceStatePayload.model_validate(event.d or {})
+                context_type = voice_state.context_type
+                room_id: int | None
+                guild_id: int | None
+                dm_id: int | None
+                channel_id: int | None
+                if context_type == "dm":
+                    dm_id = voice_state.dm_id
+                    if dm_id is None or dm_id not in connection.dm_ids:
+                        logger.warning(
+                            "gateway voice state rejected "
+                            "reason=dm-subscription user_id=%s dm_id=%s",
+                            connection.user_id,
+                            dm_id,
+                        )
+                        await websocket.close(code=4003, reason="not subscribed to dm")
+                        return
+                    guild_id = None
+                    room_id = dm_id if voice_state.channel_id is not None else None
+                    channel_id = dm_id if voice_state.channel_id is not None else None
+                else:
+                    guild_id = voice_state.guild_id
+                    dm_id = None
+                    room_id = voice_state.channel_id
+                    channel_id = voice_state.channel_id
+                    if guild_id is None or guild_id not in connection.guild_ids:
+                        logger.warning(
+                            "gateway voice state rejected "
+                            "reason=guild-subscription user_id=%s guild_id=%s",
+                            connection.user_id,
+                            guild_id,
+                        )
+                        await websocket.close(code=4003, reason="not subscribed to guild")
+                        return
+                    if channel_id is not None and channel_id not in connection.channel_ids:
+                        logger.warning(
+                            "gateway voice state rejected "
+                            "reason=channel-subscription user_id=%s channel_id=%s",
+                            connection.user_id,
+                            channel_id,
+                        )
+                        await websocket.close(code=4003, reason="not subscribed to channel")
+                        return
                 if not await allow_operation(
-                    f"voice-state:{connection.user_id}:{voice_state.guild_id}",
+                    f"voice-state:{connection.user_id}:{context_type}:{guild_id or dm_id}",
                     VOICE_STATE_LIMIT,
                 ):
                     await close_rate_limited(websocket, "voice-state")
                     return
-                if voice_state.guild_id not in connection.guild_ids:
-                    logger.warning(
-                        "gateway voice state rejected "
-                        "reason=guild-subscription user_id=%s guild_id=%s",
-                        connection.user_id,
-                        voice_state.guild_id,
-                    )
-                    await websocket.close(code=4003, reason="not subscribed to guild")
-                    return
-                if (
-                    voice_state.channel_id is not None
-                    and voice_state.channel_id not in connection.channel_ids
-                ):
-                    logger.warning(
-                        "gateway voice state rejected "
-                        "reason=channel-subscription user_id=%s channel_id=%s",
-                        connection.user_id,
-                        voice_state.channel_id,
-                    )
-                    await websocket.close(code=4003, reason="not subscribed to channel")
-                    return
 
-                previous_channel_id = connection.voice_channel_id
-                previous_guild_id = connection.voice_guild_id
-                gateway_manager.update_voice_channel(
+                previous = gateway_manager.update_voice_room(
                     connection,
-                    guild_id=voice_state.guild_id,
-                    channel_id=voice_state.channel_id,
+                    context_type=context_type,
+                    guild_id=guild_id,
+                    channel_id=channel_id,
+                    dm_id=dm_id,
                 )
+                previous_context_type = previous.get("context_type")
+                previous_room_id = previous.get("room_id")
                 if (
-                    previous_channel_id is not None
-                    and previous_channel_id != voice_state.channel_id
+                    previous_context_type in {"guild", "dm"}
+                    and isinstance(previous_room_id, int)
+                    and (previous_context_type, previous_room_id) != (context_type, room_id)
                 ):
                     await gateway_manager.broadcast_voice_state(
-                        previous_channel_id=previous_channel_id,
+                        previous_context_type=previous_context_type,
+                        previous_room_id=previous_room_id,
+                        context_type=previous_context_type,
+                        room_id=None,
                         channel_id=None,
                         data={
-                            "guild_id": previous_guild_id or voice_state.guild_id,
+                            "context_type": previous_context_type,
+                            "guild_id": previous.get("guild_id"),
                             "channel_id": None,
+                            "dm_id": previous.get("dm_id"),
                             "user_id": connection.user_id,
                             "username": connection.username,
                             "self_mute": False,
                             "self_deaf": False,
                         },
                     )
-                if voice_state.channel_id is not None:
+                if room_id is not None:
                     await gateway_manager.broadcast_voice_state(
-                        previous_channel_id=None,
-                        channel_id=voice_state.channel_id,
+                        context_type=context_type,
+                        room_id=room_id,
+                        channel_id=channel_id,
                         data={
-                            "guild_id": voice_state.guild_id,
-                            "channel_id": voice_state.channel_id,
+                            "context_type": context_type,
+                            "guild_id": guild_id,
+                            "channel_id": channel_id,
+                            "dm_id": dm_id,
                             "user_id": connection.user_id,
                             "username": connection.username,
                             "self_mute": voice_state.self_mute,
@@ -247,14 +280,16 @@ async def gateway(websocket: WebSocket) -> None:
                     )
                     await gateway_manager.send_voice_state_snapshot(
                         connection,
-                        guild_ids={voice_state.guild_id},
-                        channel_id=voice_state.channel_id,
+                        guild_ids={guild_id} if guild_id is not None else set(),
+                        dm_ids={dm_id} if dm_id is not None else set(),
+                        channel_id=channel_id if context_type == "guild" else None,
+                        dm_id=dm_id if context_type == "dm" else None,
                     )
                 logger.info(
-                    "gateway voice state user_id=%s previous_channel_id=%s channel_id=%s",
+                    "gateway voice state user_id=%s context_type=%s room_id=%s",
                     connection.user_id,
-                    previous_channel_id,
-                    voice_state.channel_id,
+                    context_type,
+                    room_id,
                 )
                 continue
 
@@ -264,30 +299,60 @@ async def gateway(websocket: WebSocket) -> None:
                     return
 
                 voice_signal = VoiceSignalPayload.model_validate(event.d or {})
+                signal_context_type = voice_signal.context_type
+                signal_room_id = (
+                    voice_signal.dm_id
+                    if signal_context_type == "dm"
+                    else voice_signal.channel_id
+                )
                 if not await allow_operation(
                     (
                         f"voice-signal:{connection.user_id}:"
-                        f"{voice_signal.channel_id}:{voice_signal.target_user_id}"
+                        f"{signal_context_type}:{signal_room_id}:{voice_signal.target_user_id}"
                     ),
                     VOICE_SIGNAL_LIMIT,
                 ):
                     await close_rate_limited(websocket, "voice-signal")
                     return
-                if connection.voice_channel_id != voice_signal.channel_id:
+                if signal_context_type == "dm":
+                    if voice_signal.dm_id is None or voice_signal.dm_id not in connection.dm_ids:
+                        logger.warning(
+                            "gateway voice signal rejected "
+                            "reason=dm-subscription user_id=%s dm_id=%s",
+                            connection.user_id,
+                            voice_signal.dm_id,
+                        )
+                        await websocket.close(code=4003, reason="not subscribed to dm")
+                        return
+                    connected = (
+                        connection.voice_context_type == "dm"
+                        and connection.voice_dm_id == voice_signal.dm_id
+                    )
+                else:
+                    connected = (
+                        connection.voice_context_type == "guild"
+                        and connection.voice_channel_id == voice_signal.channel_id
+                    )
+                if not connected:
                     logger.warning(
                         "gateway voice signal rejected "
-                        "reason=voice-channel user_id=%s channel_id=%s",
+                        "reason=voice-room user_id=%s context_type=%s room_id=%s",
                         connection.user_id,
-                        voice_signal.channel_id,
+                        signal_context_type,
+                        signal_room_id,
                     )
-                    await websocket.close(code=4003, reason="not connected to voice channel")
+                    await websocket.close(code=4003, reason="not connected to voice room")
                     return
 
                 sent = await gateway_manager.send_voice_signal(
+                    context_type=signal_context_type,
+                    room_id=signal_room_id,
                     channel_id=voice_signal.channel_id,
                     target_user_id=voice_signal.target_user_id,
                     data={
+                        "context_type": signal_context_type,
                         "channel_id": voice_signal.channel_id,
+                        "dm_id": voice_signal.dm_id,
                         "from_user_id": connection.user_id,
                         "from_username": connection.username,
                         "target_user_id": voice_signal.target_user_id,
@@ -299,10 +364,11 @@ async def gateway(websocket: WebSocket) -> None:
                 )
                 logger.info(
                     "gateway voice signal "
-                    "user_id=%s target_user_id=%s channel_id=%s type=%s sent=%s",
+                    "user_id=%s target_user_id=%s context_type=%s room_id=%s type=%s sent=%s",
                     connection.user_id,
                     voice_signal.target_user_id,
-                    voice_signal.channel_id,
+                    signal_context_type,
+                    signal_room_id,
                     voice_signal.type,
                     sent,
                 )

@@ -133,8 +133,10 @@ export type Invite = {
 }
 
 export type VoiceState = {
-  guild_id: number
+  context_type?: 'guild' | 'dm'
+  guild_id: number | null
   channel_id: number | null
+  dm_id?: number | null
   user_id: number
   username: string | null
   self_mute: boolean
@@ -143,12 +145,16 @@ export type VoiceState = {
 
 export type VoiceStateSnapshot = {
   guild_ids: number[]
+  dm_ids?: number[]
   channel_id: number | null
+  dm_id?: number | null
   states: VoiceState[]
 }
 
 export type VoiceSignal = {
+  context_type?: 'guild' | 'dm'
   channel_id: number
+  dm_id?: number | null
   from_user_id: number
   from_username: string | null
   target_user_id: number

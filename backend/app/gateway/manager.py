@@ -41,8 +41,10 @@ class GatewayConnectionManager:
         else:
             stale = await self._voice.broadcast_disconnect_leave(connection)
             await self._disconnect_stale(stale)
+        connection.voice_context_type = None
         connection.voice_guild_id = None
         connection.voice_channel_id = None
+        connection.voice_dm_id = None
 
     def mark_identified(
         self,
@@ -88,12 +90,20 @@ class GatewayConnectionManager:
     async def broadcast_voice_state(
         self,
         *,
-        previous_channel_id: int | None,
+        previous_context_type: str | None = None,
+        previous_room_id: int | None = None,
+        previous_channel_id: int | None = None,
+        context_type: str = "guild",
+        room_id: int | None = None,
         channel_id: int | None,
         data: dict[str, object],
     ) -> None:
         stale = await self._voice.broadcast_voice_state(
+            previous_context_type=previous_context_type,
+            previous_room_id=previous_room_id,
             previous_channel_id=previous_channel_id,
+            context_type=context_type,
+            room_id=room_id,
             channel_id=channel_id,
             data=data,
         )
@@ -104,29 +114,54 @@ class GatewayConnectionManager:
         connection: ClientConnection,
         *,
         guild_ids: set[int],
+        dm_ids: set[int] | None = None,
         channel_id: int | None = None,
+        dm_id: int | None = None,
     ) -> None:
         stale = await self._voice.send_voice_state_snapshot(
             connection,
             guild_ids=guild_ids,
+            dm_ids=dm_ids,
             channel_id=channel_id,
+            dm_id=dm_id,
         )
         await self._disconnect_stale(stale)
 
     async def send_voice_signal(
         self,
         *,
+        context_type: str = "guild",
+        room_id: int | None = None,
         channel_id: int,
         target_user_id: int,
         data: dict[str, object],
     ) -> int:
         sent, stale = await self._voice.send_voice_signal(
+            context_type=context_type,
+            room_id=room_id,
             channel_id=channel_id,
             target_user_id=target_user_id,
             data=data,
         )
         await self._disconnect_stale(stale)
         return sent
+
+    def update_voice_room(
+        self,
+        connection: ClientConnection,
+        *,
+        context_type: str,
+        guild_id: int | None = None,
+        channel_id: int | None,
+        dm_id: int | None = None,
+    ) -> dict[str, int | str | None]:
+        return self._subscriptions.update_voice_room(
+            connection,
+            context_type=context_type,
+            guild_id=guild_id,
+            channel_id=channel_id,
+            dm_id=dm_id,
+        )
 
     def update_voice_channel(
         self,

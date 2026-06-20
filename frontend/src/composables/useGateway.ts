@@ -21,14 +21,18 @@ type GatewayConnectOptions = {
 }
 
 type VoiceStatePayload = {
-  guild_id: number
+  context_type?: 'guild' | 'dm'
+  guild_id?: number | null
   channel_id: number | null
+  dm_id?: number | null
   self_mute?: boolean
   self_deaf?: boolean
 }
 
 type VoiceSignalPayload = {
+  context_type?: 'guild' | 'dm'
   channel_id: number
+  dm_id?: number | null
   target_user_id: number
   type: 'offer' | 'answer' | 'ice' | 'screen'
   description?: Record<string, unknown> | null

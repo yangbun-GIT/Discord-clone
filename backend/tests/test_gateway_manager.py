@@ -336,6 +336,40 @@ async def test_send_voice_signal_targets_voice_channel_member_only() -> None:
     assert other_websocket.sent == []
 
 
+async def test_dm_voice_signal_targets_dm_voice_member_only() -> None:
+    manager = GatewayConnectionManager()
+    target_websocket = FakeWebSocket()
+    other_websocket = FakeWebSocket()
+    target = await manager.connect(target_websocket)  # type: ignore[arg-type]
+    other = await manager.connect(other_websocket)  # type: ignore[arg-type]
+    target.user_id = 43
+    target.voice_context_type = "dm"
+    target.voice_channel_id = 7001
+    target.voice_dm_id = 7001
+    other.user_id = 43
+    other.voice_context_type = "guild"
+    other.voice_channel_id = 7001
+
+    sent = await manager.send_voice_signal(
+        context_type="dm",
+        room_id=7001,
+        channel_id=7001,
+        target_user_id=43,
+        data={"context_type": "dm", "dm_id": 7001, "type": "offer"},
+    )
+
+    assert sent == 1
+    assert target_websocket.sent == [
+        {
+            "op": int(Opcode.DISPATCH),
+            "d": {"context_type": "dm", "dm_id": 7001, "type": "offer"},
+            "s": 1,
+            "t": "VOICE_SIGNAL",
+        }
+    ]
+    assert other_websocket.sent == []
+
+
 async def test_voice_state_snapshot_sends_current_channel_occupants() -> None:
     manager = GatewayConnectionManager()
     actor_websocket = FakeWebSocket()
@@ -378,6 +412,59 @@ async def test_voice_state_snapshot_sends_current_channel_occupants() -> None:
                     "self_deaf": False,
                 }
             ],
+        },
+        "s": 2,
+        "t": "VOICE_STATE_SNAPSHOT",
+    }
+
+
+async def test_dm_voice_state_snapshot_sends_current_dm_occupants() -> None:
+    manager = GatewayConnectionManager()
+    observer_websocket = FakeWebSocket()
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    observer.dm_ids.add(7001)
+
+    await manager.broadcast_voice_state(
+        context_type="dm",
+        room_id=7001,
+        channel_id=7001,
+        data={
+            "context_type": "dm",
+            "guild_id": None,
+            "channel_id": 7001,
+            "dm_id": 7001,
+            "user_id": 42,
+            "username": "yangbun",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    await manager.send_voice_state_snapshot(
+        observer,
+        guild_ids=set(),
+        dm_ids={7001},
+        dm_id=7001,
+    )
+
+    assert observer_websocket.sent[-1] == {
+        "op": int(Opcode.DISPATCH),
+        "d": {
+            "guild_ids": [],
+            "channel_id": None,
+            "states": [
+                {
+                    "context_type": "dm",
+                    "guild_id": None,
+                    "channel_id": 7001,
+                    "dm_id": 7001,
+                    "user_id": 42,
+                    "username": "yangbun",
+                    "self_mute": False,
+                    "self_deaf": False,
+                }
+            ],
+            "dm_ids": [7001],
+            "dm_id": 7001,
         },
         "s": 2,
         "t": "VOICE_STATE_SNAPSHOT",

@@ -380,6 +380,23 @@ Voice architecture note:
   lower-level mediasoup integration is specifically justified, is the best long-term
   path for Discord-like multi-user voice channels.
 
+DM private voice boundary update:
+
+- Date: 2026-06-20.
+- Backend gateway voice payloads now distinguish `guild` and `dm` voice contexts.
+  DM private calls route voice state snapshots and WebRTC offer/answer/ICE/screen
+  signals through subscribed DM rooms instead of guild voice-channel subscribers.
+- Frontend Friends and selected-DM call actions now open the one-to-one DM and
+  join a DM-scoped private WebRTC room. The bottom voice panel remains the shared
+  mute/deafen/screen-share/leave surface, and the DM view renders an active call
+  stage.
+- Automated verification: Docker backend gateway tests passed with DM-only signal
+  routing and DM voice-state snapshot coverage; frontend lint, frontend tests, and
+  production build passed.
+- Manual QA still needed: two real accounts should start a DM call from Friends
+  and from an open DM, confirm both sides hear each other, then verify guild voice
+  channel calls still work after leaving the DM call.
+
 ## Manual Same-PC QA
 
 1. Open two isolated browser profiles.
@@ -389,12 +406,14 @@ Voice architecture note:
    refresh.
 5. Open a DM between the two users.
 6. Send one DM from user A and confirm user B sees it without refresh.
-7. Join the same voice channel from both sessions.
-8. Confirm each session shows the other participant.
-9. Confirm peer count reaches one connected peer.
-10. Toggle mute and deafen.
-11. Start and stop real screen sharing.
-12. Refresh one voice-connected session and confirm the same voice workspace stays
+7. Start a DM call from the DM header and confirm the other session joins the same
+   DM voice room, with remote audio and bottom voice controls visible.
+8. Leave the DM call, then join the same server voice channel from both sessions.
+9. Confirm each session shows the other participant.
+10. Confirm peer count reaches one connected peer.
+11. Toggle mute and deafen.
+12. Start and stop real screen sharing.
+13. Refresh one voice-connected session and confirm the same voice workspace stays
     open, the bottom voice panel returns to connected state, and the other session
     receives the rejoined participant/audio again.
 

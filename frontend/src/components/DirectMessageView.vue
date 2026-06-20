@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowDown, BellOff, Laugh, Phone, Send, UserRound } from 'lucide-vue-next'
+import { ArrowDown, BellOff, Laugh, Phone, PhoneOff, Send, UserRound } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
@@ -11,6 +11,7 @@ const props = defineProps<{
   currentUser: User | null
   disabled: boolean
   muted?: boolean
+  callActive?: boolean
 }>()
 
 const draft = ref('')
@@ -26,6 +27,7 @@ const emit = defineEmits<{
   send: [content: string]
   viewProfile: []
   startCall: []
+  leaveCall: []
   toggleMute: []
 }>()
 
@@ -120,6 +122,26 @@ onBeforeUnmount(() => {
 <template>
   <section class="chat-view" :aria-label="t('dm.aria.directMessages')">
     <div ref="messageList" class="message-list message-list-bottom" @scroll="handleMessageScroll">
+      <section v-if="dm && callActive" class="dm-call-stage" :aria-label="t('dm.callActive')">
+        <div class="dm-call-avatars" aria-hidden="true">
+          <span class="dm-call-avatar local">{{ currentUser?.username.slice(0, 1).toUpperCase() ?? 'Y' }}</span>
+          <span
+            v-for="participant in otherParticipants.slice(0, 2)"
+            :key="participant.id"
+            class="dm-call-avatar"
+          >
+            {{ participant.username.slice(0, 1).toUpperCase() }}
+          </span>
+        </div>
+        <div>
+          <strong>{{ dm.display_name }}</strong>
+          <span>{{ t('dm.callConnected') }}</span>
+        </div>
+        <button type="button" class="dm-call-leave" :aria-label="t('voice.leaveSelected')" @click="$emit('leaveCall')">
+          <PhoneOff :size="18" aria-hidden="true" />
+        </button>
+      </section>
+
       <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
         <div class="dm-intro-heading">
           <div class="dm-placeholder-avatar">

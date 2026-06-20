@@ -19,8 +19,10 @@ class ClientConnection:
     guild_ids: set[int] = field(default_factory=set)
     channel_ids: set[int] = field(default_factory=set)
     dm_ids: set[int] = field(default_factory=set)
+    voice_context_type: str | None = None
     voice_guild_id: int | None = None
     voice_channel_id: int | None = None
+    voice_dm_id: int | None = None
 
     async def send(
         self,

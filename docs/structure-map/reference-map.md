@@ -350,7 +350,8 @@ Browser UI
     - Gateway connection lifecycle cleanup, including recoverable voice-disconnect
       grace for normal websocket closes and immediate voice leave fan-out when a
       connection is reaped as a zombie or removed after a stale send failure.
-    - Voice-state snapshot dispatch for READY and post-join synchronization.
+    - Voice-state snapshot dispatch for READY and post-join synchronization across
+      guild voice channels and DM private voice rooms.
 
 - `backend/app/gateway/connection.py`
   - References:
@@ -363,7 +364,7 @@ Browser UI
     - `backend/app/gateway/zombie_reaper.py`
   - Owns:
     - Per-WebSocket subscription state, heartbeat state, and active voice
-      guild/channel state used for disconnect cleanup.
+      guild/channel or DM-room state used for disconnect cleanup.
 
 - `backend/app/gateway/broadcaster.py`, `subscriptions.py`, `voice_service.py`,
   `zombie_reaper.py`
@@ -372,7 +373,8 @@ Browser UI
   - `voice_service.py` owns the in-memory voice-state registry used to send
     authoritative `VOICE_STATE_SNAPSHOT` payloads to late-joining clients.
   - `voice_service.py` also owns pending voice leave scheduling and cancellation
-    when the same guild user rejoins during the normal-disconnect grace window.
+    when the same user rejoins a guild or DM voice room during the
+    normal-disconnect grace window.
 
 - `backend/app/realtime/publisher.py`
   - References:
@@ -717,6 +719,8 @@ Browser UI
       screen-share stage placement, remote screen-share render conditions,
       permission-aware global context-menu invite filtering, and QA-only
       `data-gateway-status` state attribute.
+    - Friends/DM call-entry orchestration that opens the selected DM and delegates
+      to `useVoiceSessionController.ts` for DM-scoped voice join/leave.
 
 ### Stores And API
 
@@ -973,10 +977,11 @@ Browser UI
   - Referenced by:
     - `frontend/src/App.vue`
   - Owns:
-    - Voice config loading, voice join/leave/switch orchestration, mute/deafen
-      gateway updates, safe reload rejoin recovery metadata, automatic rejoin after
+    - Voice config loading, guild voice join/leave/switch orchestration, DM private
+      voice join/leave orchestration, mute/deafen gateway updates, safe reload
+      rejoin recovery metadata for guild voice channels, automatic rejoin after
       gateway-ready refresh recovery, screen-share toggle orchestration, voice
-      participant sync, and incoming voice-signal handling.
+      participant sync, and incoming context-scoped voice-signal handling.
 
 - `frontend/src/i18n/index.ts`
   - References:
@@ -1020,8 +1025,8 @@ Browser UI
   - Receives selected DM and user state from `frontend/src/App.vue`.
   - Emits message-send, selected-DM profile, call-entry, and mute actions to
     `frontend/src/App.vue`.
-  - Owns bottom-anchored DM scroll behavior and local emoji panel state with
-    outside-click/Escape dismissal.
+  - Owns bottom-anchored DM scroll behavior, active private-call stage display, and
+    local emoji panel state with outside-click/Escape dismissal.
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.

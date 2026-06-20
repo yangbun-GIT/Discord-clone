@@ -2229,10 +2229,7 @@ Completed Stage 2 bridge work:
   `frontend/src/stores/dms.ts`, target-aware friend/DM context routing in
   `frontend/src/App.vue`, bottom-anchored DM/server timelines in
   `DirectMessageView.vue` and `ChatView.vue`, and app-owned incoming friend request
-  notice/focus behavior. True private friend/DM voice calling is still not
-  complete: current backend voice state/signaling remains guild voice-channel
-  subscription based, so the call action only opens the DM and shows clone-owned
-  guidance until a DM private-call room or DM voice mapping is implemented.
+  notice/focus behavior.
 - The 2026-06-20 Friends home follow-up pass refined the visible Friends screen:
   `FriendsHome.vue` now hides redundant All/Online tab count badges, avoids
   duplicate pending request headings for a single visible request group, groups All
@@ -2244,8 +2241,22 @@ Completed Stage 2 bridge work:
   to All. `preferences.ts` persists local favorite-friend IDs. `VoicePanel.vue`
   separates the lower user-settings gear to My Account from quick voice popover
   Voice & Video settings, and input/output chevrons toggle their popovers open and
-  closed. True private DM calls still require a backend DM voice-room/signaling
-  boundary; the current call action does not claim real private voice completion.
+- The 2026-06-20 DM private voice boundary pass added real DM voice-room signaling
+  without replacing the existing guild voice transport. Gateway voice payloads now
+  carry an optional `context_type` of `guild` or `dm`; `backend/app/gateway/router.py`,
+  `manager.py`, `subscriptions.py`, and `voice_service.py` route DM voice state,
+  snapshots, and offer/answer/ICE/screen signals through subscribed DM rooms while
+  preserving the existing guild channel payload shape. Frontend `useGateway.ts`,
+  `voicePresence.ts`, `guildGatewayHandlers.ts`, and
+  `useVoiceSessionController.ts` understand the same context boundary, so Friends
+  and DM `Start Call` create/open the one-to-one DM and join a private WebRTC room.
+  `DirectMessageView.vue` shows a Discord-like DM call stage with a leave action,
+  and the bottom `VoicePanel` can disconnect, mute/deafen, and screen-share while
+  connected to either a guild channel or a DM call. Backend gateway tests now cover
+  DM voice state snapshots and DM-only signal routing. Frontend lint/tests/build,
+  Docker backend gateway tests, local submission readiness, and HTTPS realtime
+  browser smoke passed after rebuilding the Docker stack. Manual two-account real
+  microphone QA for DM private calls remains recommended before final submission.
 
 After each stage or meaningful feature:
 

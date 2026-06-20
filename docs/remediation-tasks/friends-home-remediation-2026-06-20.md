@@ -321,11 +321,9 @@ needed before the Friends home surface can be considered complete.
   - FH-016 DM and server chat timelines now anchor to latest messages by default
     and expose a jump-to-latest control when the user scrolls upward.
 - Partially completed:
-  - FH-011 friend/DM call entry opens the target DM and shows clone-owned guidance,
-    but real friend/DM private voice calling is not complete. The backend gateway
-    still validates voice state and WebRTC signaling against subscribed guild
-    voice channels. A private DM call room or DM voice mapping is required before
-    this can be marked complete.
+  - FH-011 friend/DM call entry now opens the target DM and joins a DM-scoped
+    private voice room. The backend gateway validates DM voice state/signaling
+    against subscribed DM IDs, while guild voice remains channel-scoped.
   - FH-015 incoming friend requests now show a clone-owned notice and focus the
     pending request view on realtime `RELATIONSHIP_UPDATE`; a persistent
     `@me`/private-sidebar pending badge remains a possible follow-up.
@@ -539,8 +537,8 @@ needed before the Friends home surface can be considered complete.
   UTF-8 Korean.
 - F10 pending: profile popout is implementation-worthy and must be built before
   `View Profile` returns.
-- F11 pending: friend/DM call entry is implementation-worthy and must be designed
-  against the current guild voice transport before `Start Call` returns.
+- F11 completed: friend/DM call entry creates or opens the one-to-one DM and joins
+  a DM-scoped private voice room through the existing WebRTC transport.
 - F12 pending: conversation mute is implementation-worthy and must affect DM
   unread/notification behavior before `Mute Conversation` returns.
 - F13 pending: the private sidebar `+` and quick-create action must open a real
@@ -583,11 +581,16 @@ needed before the Friends home surface can be considered complete.
   - Friend row shortcut actions were reduced to Favorite and `...`; Profile, Start
     Call, and Send Message remain available inside the overflow menu instead of
     being duplicated as three row icons.
-  - Private DM voice calling was rechecked. The current backend gateway accepts
-    voice state and WebRTC signaling only for subscribed guild voice channels, so
-    a real Discord-like private call requires a dedicated DM voice-room/signaling
-    boundary before it can be marked implemented. This pass does not fake private
-    call completion.
+  - Private DM voice calling was rechecked. The remaining gap was a real DM
+    voice-room/signaling boundary, which was implemented in the follow-up F11
+    completion pass below instead of faking private call completion.
+  - F11 follow-up completed: gateway voice state and WebRTC signaling payloads now
+    support `context_type: "dm"` plus `dm_id`; `VoiceGatewayService` stores
+    voice presence by context/room and broadcasts DM state through subscribed DM
+    rooms; `useVoiceSessionController.ts` starts and leaves DM calls without
+    contaminating guild voice state; `DirectMessageView.vue` renders a
+    Discord-like active DM call stage. Backend gateway-manager tests cover
+    DM-only signal routing and DM voice-state snapshots.
 
 ## Verification Log
 
@@ -625,6 +628,23 @@ needed before the Friends home surface can be considered complete.
   - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
     remote audio sink, DM/server realtime, invite-DM realtime, screen-share
     cleanup, voice reload/rejoin recovery, and voice leave cleanup.
+- 2026-06-20 F11 DM voice boundary verification:
+  - `npm --prefix frontend run build` passed.
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - Docker backend gateway tests passed:
+    `pytest tests/test_gateway_manager.py tests/test_gateway_routes.py tests/test_api_routes.py -q`
+    with 60 tests and one upstream FastAPI/Starlette deprecation warning.
+  - `git diff --check` passed with only repository line-ending normalization
+    warnings for touched files.
+  - `npm run docker:up:https:detached` rebuilt and restarted the HTTPS Docker stack.
+  - `npm run check:submission:local` passed for `https://localhost:5173/`; TURN
+    remains intentionally unconfigured.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, DM/server realtime, invite-DM realtime, screen-share
+    cleanup, voice reload/rejoin recovery, and voice leave cleanup.
+  - Manual two-account real microphone QA for DM private calls is still
+    recommended before final submission.
 
 ## Manual QA Checklist
 

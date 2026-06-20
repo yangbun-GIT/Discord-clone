@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -19,14 +19,18 @@ class IdentifyPayload(BaseModel):
 
 
 class VoiceStatePayload(BaseModel):
-    guild_id: int
+    context_type: Literal["guild", "dm"] = "guild"
+    guild_id: int | None = None
     channel_id: int | None = None
+    dm_id: int | None = None
     self_mute: bool = False
     self_deaf: bool = False
 
 
 class VoiceSignalPayload(BaseModel):
+    context_type: Literal["guild", "dm"] = "guild"
     channel_id: int
+    dm_id: int | None = None
     target_user_id: int
     type: str = Field(pattern="^(offer|answer|ice|screen)$")
     description: dict[str, Any] | None = None

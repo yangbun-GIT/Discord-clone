@@ -367,7 +367,8 @@ For ordinary implementation work:
   - Handles presence update opcode 6 by persisting profile status and publishing
     user-targeted `PRESENCE_UPDATE` dispatches to accepted friends plus
     guild-targeted presence dispatches to shared server subscribers.
-  - Relays offer/answer/ICE voice signals and screen-share state signals.
+  - Relays offer/answer/ICE voice signals and screen-share state signals for both
+    guild voice channels and private DM voice rooms.
 - `backend/app/gateway/manager.py`
   - Compatibility facade for gateway connection, subscription, broadcast, voice,
     and reaper operations.
@@ -377,17 +378,21 @@ For ordinary implementation work:
 - `backend/app/gateway/connection.py`
   - `ClientConnection` and active WebSocket connection registry.
 - `backend/app/gateway/subscriptions.py`
-  - Guild/channel/DM subscription mutation helpers and voice-channel assignment.
+  - Guild/channel/DM subscription mutation helpers and active voice-room
+    assignment for guild and DM contexts.
 - `backend/app/gateway/broadcaster.py`
   - Channel/guild/DM dispatch fan-out and stale connection pruning.
 - `backend/app/gateway/voice_service.py`
   - Voice state broadcast, recoverable voice-disconnect grace scheduling, pending
     leave cancellation on same-user rejoin, and targeted voice signal routing.
+  - Stores voice presence by context and room, so DM private calls do not leak into
+    guild voice-channel snapshots or signaling.
 - `backend/app/gateway/zombie_reaper.py`
   - Heartbeat timeout detection and stale websocket closure.
 - `backend/app/gateway/events.py`
   - Gateway event naming/contracts, including voice signal payload validation for
-    offer/answer/ICE, screen-share state messages, and presence status updates.
+    offer/answer/ICE, screen-share state messages, optional guild/DM voice context,
+    and presence status updates.
 - `backend/app/gateway/opcodes.py`
   - Discord-style gateway opcodes.
 - `backend/app/gateway/reaper.py`
@@ -503,7 +508,7 @@ For ordinary implementation work:
     message, call-entry, and mute actions.
 - `frontend/src/components/DirectMessageView.vue`
   - DM intro, bottom-anchored message timeline, selected-DM actions, composer,
-    and local emoji panel dismissal.
+    local emoji panel dismissal, and the active DM private-call stage.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal
@@ -553,8 +558,8 @@ For ordinary implementation work:
 - `frontend/src/stores/guildVisibility.ts`
   - Guild/channel/message visibility filtering for visual-test/demo noise.
 - `frontend/src/stores/voicePresence.ts`
-  - Connected voice guild/channel state, voice-state collections, latest voice
-    signal, and voice-channel derived state used by `guilds.ts`.
+  - Connected voice guild/channel state, context-aware voice-state collections,
+    latest voice signal, and guild/DM voice-room derived state used by `guilds.ts`.
 - `frontend/src/stores/channelMessages.ts`
   - Server text-channel message REST mutations.
 - `frontend/src/stores/guildAdmin.ts`
@@ -596,6 +601,8 @@ For ordinary implementation work:
 - `frontend/src/composables/useGateway.ts`
   - WebSocket gateway connection, Identify, heartbeat, dispatch handling, and voice
     signal plus presence send/update helpers.
+  - Sends guild and DM voice-state/signal payloads through the shared gateway
+    opcode boundary.
 - `frontend/src/composables/useVoiceRtc.ts`
   - Public WebRTC voice facade used by the app.
   - Composes media capture, input processing, VAD, peer registry, screen share,
@@ -653,6 +660,8 @@ For ordinary implementation work:
     safe reload rejoin recovery metadata, gateway-ready automatic rejoin after
     refresh, screen-share toggling, and voice participant/signal synchronization
     while composing the guild store, gateway composable, and WebRTC facade.
+  - Starts private DM calls by opening the target DM and joining a DM-scoped WebRTC
+    room through the same P2P transport.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
   - Keep as the public i18n facade until the split plan in

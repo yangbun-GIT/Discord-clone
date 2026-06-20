@@ -8,7 +8,9 @@ from app.gateway.connection import ClientConnection, ConnectionRegistry
 from app.gateway.opcodes import Opcode
 
 type StaleDisconnectHandler = Callable[[list[ClientConnection]], Awaitable[None]]
-VoiceStateKey = tuple[int, int]
+VoiceContextType = str
+VoiceStateKey = tuple[VoiceContextType, int, int]
+VoiceTarget = tuple[VoiceContextType, int]
 
 
 class VoiceGatewayService:
@@ -21,24 +23,37 @@ class VoiceGatewayService:
     async def broadcast_voice_state(
         self,
         *,
-        previous_channel_id: int | None,
-        channel_id: int | None,
+        previous_context_type: str | None = None,
+        previous_room_id: int | None = None,
+        previous_channel_id: int | None = None,
+        context_type: str = "guild",
+        room_id: int | None = None,
+        channel_id: int | None = None,
         data: dict[str, object],
     ) -> list[ClientConnection]:
-        state_previous_channel_id = self._sync_voice_state(data)
-        target_channel_ids = {
+        if room_id is None:
+            room_id = channel_id
+        if previous_context_type is None and previous_channel_id is not None:
+            previous_context_type = "guild"
+            previous_room_id = previous_channel_id
+        state_previous_target = self._sync_voice_state(
+            data,
+            context_type=context_type,
+            room_id=room_id,
+        )
+        target_rooms = {
             item
-            for item in (previous_channel_id, channel_id, state_previous_channel_id)
+            for item in (
+                self._make_target(previous_context_type, previous_room_id),
+                self._make_target(context_type, room_id),
+                state_previous_target,
+            )
             if item is not None
         }
         stale: list[ClientConnection] = []
-        for target_channel_id in target_channel_ids:
+        for target_context_type, target_room_id in target_rooms:
             stale.extend(
-                await self._broadcaster.broadcast_channel(
-                    target_channel_id,
-                    "VOICE_STATE_UPDATE",
-                    data,
-                )
+                await self._broadcast_voice_event(target_context_type, target_room_id, data)
             )
         return stale
 
@@ -51,15 +66,17 @@ class VoiceGatewayService:
     ) -> None:
         if connection.user_id is None:
             return
-        if connection.voice_channel_id is None or connection.voice_guild_id is None:
+        target = self._connection_voice_target(connection)
+        if target is None:
             return
+        context_type, room_id = target
         guild_id = connection.voice_guild_id
-        channel_id = connection.voice_channel_id
+        dm_id = connection.voice_dm_id
         user_id = connection.user_id
-        key = (guild_id, user_id)
+        key = (context_type, room_id, user_id)
         if self._has_active_voice_connection(
-            guild_id=guild_id,
-            channel_id=channel_id,
+            context_type=context_type,
+            room_id=room_id,
             user_id=user_id,
         ):
             return
@@ -72,7 +89,9 @@ class VoiceGatewayService:
             "self_mute": False,
             "self_deaf": False,
         }
-        previous_channel_id = channel_id
+        if context_type == "dm":
+            data["context_type"] = context_type
+            data["dm_id"] = dm_id
 
         async def delayed_leave() -> None:
             try:
@@ -80,15 +99,18 @@ class VoiceGatewayService:
                 if self._pending_disconnect_tasks.get(key) is not task:
                     return
                 if self._has_active_voice_connection(
-                    guild_id=guild_id,
-                    channel_id=previous_channel_id,
+                    context_type=context_type,
+                    room_id=room_id,
                     user_id=user_id,
                 ):
                     self._pending_disconnect_tasks.pop(key, None)
                     return
                 self._pending_disconnect_tasks.pop(key, None)
                 stale = await self.broadcast_voice_state(
-                    previous_channel_id=previous_channel_id,
+                    previous_context_type=context_type,
+                    previous_room_id=room_id,
+                    context_type=context_type,
+                    room_id=None,
                     channel_id=None,
                     data=data,
                 )
@@ -105,12 +127,17 @@ class VoiceGatewayService:
     ) -> list[ClientConnection]:
         if connection.user_id is None:
             return []
-        if connection.voice_channel_id is None or connection.voice_guild_id is None:
+        target = self._connection_voice_target(connection)
+        if target is None:
             return []
-        key = (connection.voice_guild_id, connection.user_id)
+        context_type, room_id = target
+        key = (context_type, room_id, connection.user_id)
         self._cancel_pending_disconnect(key)
         return await self.broadcast_voice_state(
-            previous_channel_id=connection.voice_channel_id,
+            previous_context_type=context_type,
+            previous_room_id=room_id,
+            context_type=context_type,
+            room_id=None,
             channel_id=None,
             data={
                 "guild_id": connection.voice_guild_id,
@@ -133,20 +160,31 @@ class VoiceGatewayService:
         connection: ClientConnection,
         *,
         guild_ids: set[int],
+        dm_ids: set[int] | None = None,
         channel_id: int | None = None,
+        dm_id: int | None = None,
     ) -> list[ClientConnection]:
-        states = self.current_voice_states(guild_ids=guild_ids, channel_id=channel_id)
+        states = self.current_voice_states(
+            guild_ids=guild_ids,
+            dm_ids=dm_ids or set(),
+            channel_id=channel_id,
+            dm_id=dm_id,
+        )
         if not states:
             return []
+        payload: dict[str, object] = {
+            "guild_ids": sorted(guild_ids),
+            "channel_id": channel_id,
+            "states": states,
+        }
+        if dm_ids or dm_id is not None:
+            payload["dm_ids"] = sorted(dm_ids or set())
+            payload["dm_id"] = dm_id
         try:
             await connection.send(
                 op=Opcode.DISPATCH,
                 event="VOICE_STATE_SNAPSHOT",
-                data={
-                    "guild_ids": sorted(guild_ids),
-                    "channel_id": channel_id,
-                    "states": states,
-                },
+                data=payload,
             )
         except RuntimeError:
             return [connection]
@@ -156,30 +194,55 @@ class VoiceGatewayService:
         self,
         *,
         guild_ids: set[int],
+        dm_ids: set[int] | None = None,
         channel_id: int | None = None,
+        dm_id: int | None = None,
     ) -> list[dict[str, object]]:
         states = [
             state
             for state in self._voice_states.values()
-            if state.get("guild_id") in guild_ids
+            if (
+                (
+                    state.get("context_type", "guild") == "guild"
+                    and state.get("guild_id") in guild_ids
+                )
+                or (state.get("context_type") == "dm" and state.get("dm_id") in (dm_ids or set()))
+            )
         ]
         if channel_id is not None:
-            states = [state for state in states if state.get("channel_id") == channel_id]
+            states = [
+                state
+                for state in states
+                if (
+                    state.get("context_type", "guild") == "guild"
+                    and state.get("channel_id") == channel_id
+                )
+            ]
+        if dm_id is not None:
+            states = [
+                state
+                for state in states
+                if state.get("context_type") == "dm" and state.get("dm_id") == dm_id
+            ]
         return [dict(state) for state in states]
 
     async def send_voice_signal(
         self,
         *,
+        context_type: str = "guild",
+        room_id: int | None = None,
         channel_id: int,
         target_user_id: int,
         data: dict[str, object],
     ) -> tuple[int, list[ClientConnection]]:
+        if room_id is None:
+            room_id = channel_id
         sent = 0
         stale: list[ClientConnection] = []
         for connection in self._connections.connections:
             if connection.user_id != target_user_id:
                 continue
-            if connection.voice_channel_id != channel_id:
+            if self._connection_voice_target(connection) != (context_type, room_id):
                 continue
             try:
                 await connection.send(op=Opcode.DISPATCH, data=data, event="VOICE_SIGNAL")
@@ -189,34 +252,78 @@ class VoiceGatewayService:
 
         return sent, stale
 
-    def _sync_voice_state(self, data: dict[str, object]) -> int | None:
-        guild_id = data.get("guild_id")
+    def _sync_voice_state(
+        self,
+        data: dict[str, object],
+        *,
+        context_type: str,
+        room_id: int | None,
+    ) -> VoiceTarget | None:
         user_id = data.get("user_id")
-        if not isinstance(guild_id, int) or not isinstance(user_id, int):
+        if not isinstance(user_id, int):
             return None
-        key = (guild_id, user_id)
-        previous_channel_id = self._current_state_channel_id(key)
-        if data.get("channel_id") is None:
-            self._cancel_pending_disconnect(key)
-            self._voice_states.pop(key, None)
-            return previous_channel_id
-        self._cancel_pending_disconnect(key)
+        previous_key = self._current_state_key_for_user(user_id)
+        previous_target = self._target_from_key(previous_key)
+        if previous_key is not None:
+            self._cancel_pending_disconnect(previous_key)
+            self._voice_states.pop(previous_key, None)
+        if room_id is None:
+            return previous_target
+        key = (context_type, room_id, user_id)
         self._voice_states[key] = dict(data)
-        return previous_channel_id
+        self._cancel_pending_disconnect(key)
+        return previous_target
 
-    def _current_state_channel_id(self, key: VoiceStateKey) -> int | None:
-        value = self._voice_states.get(key, {}).get("channel_id")
-        return value if isinstance(value, int) else None
+    def _current_state_key_for_user(self, user_id: int) -> VoiceStateKey | None:
+        for key in self._voice_states:
+            if key[2] == user_id:
+                return key
+        return None
+
+    def _target_from_key(self, key: VoiceStateKey | None) -> VoiceTarget | None:
+        if key is None:
+            return None
+        return key[0], key[1]
 
     def _cancel_pending_disconnect(self, key: VoiceStateKey) -> None:
         task = self._pending_disconnect_tasks.pop(key, None)
         if task and not task.done():
             task.cancel()
 
-    def _has_active_voice_connection(self, *, guild_id: int, channel_id: int, user_id: int) -> bool:
+    def _connection_voice_target(self, connection: ClientConnection) -> VoiceTarget | None:
+        if connection.voice_context_type == "dm" and connection.voice_dm_id is not None:
+            return "dm", connection.voice_dm_id
+        if (
+            connection.voice_context_type in {None, "guild"}
+            and connection.voice_channel_id is not None
+        ):
+            return "guild", connection.voice_channel_id
+        return None
+
+    def _make_target(self, context_type: str | None, room_id: int | None) -> VoiceTarget | None:
+        if context_type in {"guild", "dm"} and room_id is not None:
+            return context_type, room_id
+        return None
+
+    async def _broadcast_voice_event(
+        self,
+        context_type: str,
+        room_id: int,
+        data: dict[str, object],
+    ) -> list[ClientConnection]:
+        if context_type == "dm":
+            return await self._broadcaster.broadcast_dm(room_id, "VOICE_STATE_UPDATE", data)
+        return await self._broadcaster.broadcast_channel(room_id, "VOICE_STATE_UPDATE", data)
+
+    def _has_active_voice_connection(
+        self,
+        *,
+        context_type: str,
+        room_id: int,
+        user_id: int,
+    ) -> bool:
         return any(
             connection.user_id == user_id
-            and connection.voice_guild_id == guild_id
-            and connection.voice_channel_id == channel_id
+            and self._connection_voice_target(connection) == (context_type, room_id)
             for connection in self._connections.connections
         )
