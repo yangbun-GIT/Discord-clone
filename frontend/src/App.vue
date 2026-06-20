@@ -725,6 +725,20 @@ function handleOpenDm(dmId: number) {
   navigation.openDm(dmId)
 }
 
+function handleCloseDm(dmId: number) {
+  workspaceError.value = null
+  void dms.closeDm(session.token, dmId)
+    .then(() => {
+      if (navigation.activeDmId === dmId) {
+        navigation.openFriends()
+      }
+      setWorkspaceNotice(t('dm.closeSuccess'), 'success')
+    })
+    .catch((error) => {
+      workspaceError.value = error instanceof Error ? error.message : t('app.error.dmCloseFailed')
+    })
+}
+
 async function handleMessageFriend(friendId: number) {
   workspaceError.value = null
   try {
@@ -1264,6 +1278,7 @@ async function handleSendInviteToFriend(friendId: number) {
       @open-friends="handleOpenFriends"
       @open-dm="handleOpenDm"
       @create-dm="showCreateDmDialog = true"
+      @close-dm="handleCloseDm"
       @demo-notice="showDemoNotice"
     />
 

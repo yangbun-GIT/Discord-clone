@@ -2306,6 +2306,15 @@ Completed Stage 2 bridge work:
   through PostgreSQL/demo storage and publishes `DM_MESSAGE_DELETE`; `dms.ts` and
   `dmGatewayHandlers.ts` remove the message for both the local sender and remote
   subscribers.
+- A 2026-06-20 DM usability correction kept current-user and remote DM messages
+  left-aligned for readability while preserving current-user row styling and
+  author-only delete controls. `DirectMessageView.vue` restores composer focus
+  after send for repeated typing. `PrivateChannelSidebar.vue`, `App.vue`,
+  `dms.ts`, and `/api/dms/{dm_id}` now support `대화 닫기`: PostgreSQL stores this
+  as `direct_message_members.is_hidden` per user, demo storage mirrors the same
+  behavior, `DM_DELETE` removes the closed DM from the current user's sessions,
+  and recreating the same DM unhides the conversation without deleting the other
+  participant's history.
 
 After each stage or meaningful feature:
 

@@ -63,6 +63,29 @@ def test_demo_store_creates_dm_for_known_recipient() -> None:
     assert dm.recipient_ids == [704]
 
 
+def test_demo_store_closes_dm_for_current_user_only() -> None:
+    store = DemoStore()
+    actor = UserPublic(id=42, username="yangbun", status=1)
+    other = UserPublic(id=701, username="Mina", status=1)
+
+    closed = store.close_dm(dm_id=801, actor=actor)
+
+    assert closed.id == 801
+    assert all(dm.id != 801 for dm in store.list_dms(actor))
+    assert any(dm.id == 801 for dm in store.list_dms(other))
+
+
+def test_demo_store_reopens_hidden_dm_when_recreated() -> None:
+    store = DemoStore()
+    actor = UserPublic(id=42, username="yangbun", status=1)
+
+    store.close_dm(dm_id=801, actor=actor)
+    dm = store.create_dm(DmCreate(recipient_ids=[701]), actor)
+
+    assert dm.id == 801
+    assert any(item.id == 801 for item in store.list_dms(actor))
+
+
 def test_demo_store_friend_request_accept_and_remove() -> None:
     store = DemoStore()
     actor = UserPublic(id=42, username="yangbun", status=1)

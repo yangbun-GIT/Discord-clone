@@ -495,6 +495,9 @@ For ordinary implementation work:
   - Friends/DM sidebar.
   - Emits start-new-DM actions to `App.vue`; DM rows carry target IDs for
     context-menu routing.
+  - Emits DM close actions to `App.vue`; the close control hides the conversation
+    for the current user through the DM store/API instead of deleting it for every
+    participant.
 - `frontend/src/components/CreateDmDialog.vue`
   - App-owned accepted-friend recipient picker for starting 1:1 or group DMs.
 - `frontend/src/components/ChannelSidebar.vue`
@@ -528,6 +531,9 @@ For ordinary implementation work:
     one toolbar; chevrons open/close settings while the main microphone/output
     buttons toggle mute/deafen. Ongoing remote DM calls can render as joinable
     stages after the local user leaves.
+  - Keeps all DM messages left-aligned while distinguishing current-user messages
+    with row styling and author-only delete actions; the composer restores focus
+    after sending.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal

@@ -93,9 +93,13 @@ CREATE TABLE IF NOT EXISTS direct_message_members (
     dm_id BIGINT NOT NULL REFERENCES direct_message_channels(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     unread_count INTEGER NOT NULL DEFAULT 0 CHECK (unread_count >= 0),
+    is_hidden BOOLEAN NOT NULL DEFAULT false,
     joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (dm_id, user_id)
 );
+
+ALTER TABLE direct_message_members
+    ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false;
 
 CREATE INDEX IF NOT EXISTS idx_direct_message_members_user_id ON direct_message_members(user_id);
 

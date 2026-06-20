@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
-import type { DirectMessage, DmMessage, DmMessageDelete, Friend, PresenceUpdate } from '../types'
+import type { DirectMessage, DmDelete, DmMessage, DmMessageDelete, Friend, PresenceUpdate } from '../types'
 import {
   acceptRelationshipRequest,
   blockRelationshipUser,
   cancelRelationshipRequest,
+  closeDmChannel,
   createDmChannel,
   createDmChannelMessage,
   deleteDmChannelMessage,
@@ -217,10 +218,18 @@ export const useDmStore = defineStore('dms', () => {
     ))
   }
 
+  function removeDm(dm: DmDelete) {
+    dms.value = dms.value.filter((item) => item.id !== dm.id)
+    if (activeDmId.value === dm.id) {
+      activeDmId.value = null
+    }
+  }
+
   function handleGatewayDispatch(event: string, data: Record<string, unknown>) {
     handleDmGatewayDispatch(event, data, {
       upsertDm,
       appendMessage,
+      removeDm,
       deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
@@ -378,6 +387,21 @@ export const useDmStore = defineStore('dms', () => {
     }
   }
 
+  async function closeDm(token: string | null, dmId: number) {
+    isMutating.value = true
+    error.value = null
+    try {
+      const dm = await closeDmChannel(token, dmId)
+      removeDm(dm)
+      return dm
+    } catch (cause) {
+      setError(cause, 'Failed to close direct message')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
   function resetDms() {
     relationships.value = []
     dms.value = []
@@ -404,6 +428,7 @@ export const useDmStore = defineStore('dms', () => {
     createDm,
     sendDmMessage,
     deleteDmMessage,
+    closeDm,
     sendFriendRequest,
     acceptRequest,
     rejectRequest,

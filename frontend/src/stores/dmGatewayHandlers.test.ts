@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   handleDmGatewayDispatch,
+  isDmDeletePayload,
   isDirectMessagePayload,
   isDmMessageDeletePayload,
   isDmMessagePayload,
@@ -37,6 +38,10 @@ const deletedMessage: DmMessageDelete = {
   dm_id: 9001,
 }
 
+const deletedDm = {
+  id: 9001,
+}
+
 const relationship: Friend = {
   id: 701,
   username: 'Mina',
@@ -68,6 +73,8 @@ describe('dm gateway handlers', () => {
     expect(isDmMessagePayload({ ...message, dm_id: '9001' })).toBe(false)
     expect(isDmMessageDeletePayload(deletedMessage)).toBe(true)
     expect(isDmMessageDeletePayload({ ...deletedMessage, id: '9101' })).toBe(false)
+    expect(isDmDeletePayload(deletedDm)).toBe(true)
+    expect(isDmDeletePayload({ id: '9001' })).toBe(false)
   })
 
   it('validates relationship payload shapes', () => {
@@ -82,6 +89,7 @@ describe('dm gateway handlers', () => {
   it('dispatches valid DM events to focused callbacks', () => {
     const upsertDm = vi.fn()
     const appendMessage = vi.fn()
+    const removeDm = vi.fn()
     const deleteStoredMessage = vi.fn()
     const upsertRelationship = vi.fn()
     const removeRelationship = vi.fn()
@@ -90,6 +98,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('DM_CREATE', dm, {
       upsertDm,
       appendMessage,
+      removeDm,
       upsertRelationship,
       removeRelationship,
       updatePresence,
@@ -97,6 +106,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('DM_MESSAGE_CREATE', message, {
       upsertDm,
       appendMessage,
+      removeDm,
       deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
@@ -105,6 +115,16 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('DM_MESSAGE_DELETE', deletedMessage, {
       upsertDm,
       appendMessage,
+      removeDm,
+      deleteStoredMessage,
+      upsertRelationship,
+      removeRelationship,
+      updatePresence,
+    })
+    handleDmGatewayDispatch('DM_DELETE', deletedDm, {
+      upsertDm,
+      appendMessage,
+      removeDm,
       deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
@@ -113,6 +133,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('RELATIONSHIP_UPDATE', relationship, {
       upsertDm,
       appendMessage,
+      removeDm,
       deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
@@ -121,6 +142,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('RELATIONSHIP_DELETE', relationshipDelete, {
       upsertDm,
       appendMessage,
+      removeDm,
       deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
@@ -129,6 +151,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('PRESENCE_UPDATE', presence, {
       upsertDm,
       appendMessage,
+      removeDm,
       deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
@@ -138,6 +161,7 @@ describe('dm gateway handlers', () => {
     expect(upsertDm).toHaveBeenCalledWith(dm)
     expect(appendMessage).toHaveBeenCalledWith(message.dm_id, message)
     expect(deleteStoredMessage).toHaveBeenCalledWith(deletedMessage)
+    expect(removeDm).toHaveBeenCalledWith(deletedDm)
     expect(upsertRelationship).toHaveBeenCalledWith(relationship)
     expect(removeRelationship).toHaveBeenCalledWith(relationshipDelete)
     expect(updatePresence).toHaveBeenCalledWith(presence)
@@ -148,6 +172,7 @@ describe('dm gateway handlers', () => {
     const appendMessage = vi.fn()
 
     handleDmGatewayDispatch('DM_CREATE', { ...dm, display_name: null }, { upsertDm, appendMessage })
+    handleDmGatewayDispatch('DM_DELETE', { id: '9001' }, { upsertDm, appendMessage })
     handleDmGatewayDispatch('UNKNOWN_EVENT', message, { upsertDm, appendMessage })
 
     expect(upsertDm).not.toHaveBeenCalled()

@@ -1,8 +1,9 @@
-import type { DirectMessage, DmMessage, DmMessageDelete, Friend, PresenceUpdate, RelationshipDelete } from '../types'
+import type { DirectMessage, DmDelete, DmMessage, DmMessageDelete, Friend, PresenceUpdate, RelationshipDelete } from '../types'
 
 interface DmGatewayHandlerContext {
   upsertDm: (dm: DirectMessage) => void
   appendMessage: (dmId: number, message: DmMessage) => void
+  removeDm?: (dm: DmDelete) => void
   deleteStoredMessage?: (message: DmMessageDelete) => void
   upsertRelationship?: (relationship: Friend) => void
   removeRelationship?: (relationship: RelationshipDelete) => void
@@ -33,6 +34,10 @@ export function isDmMessagePayload(data: Record<string, unknown>): data is DmMes
 export function isDmMessageDeletePayload(data: Record<string, unknown>): data is DmMessageDelete {
   return typeof data.id === 'number'
     && typeof data.dm_id === 'number'
+}
+
+export function isDmDeletePayload(data: Record<string, unknown>): data is DmDelete {
+  return typeof data.id === 'number'
 }
 
 export function isRelationshipPayload(data: Record<string, unknown>): data is Friend {
@@ -81,6 +86,9 @@ const handlers: Record<string, DmGatewayHandler> = {
   },
   DM_MESSAGE_DELETE(data, context) {
     if (isDmMessageDeletePayload(data)) context.deleteStoredMessage?.(data)
+  },
+  DM_DELETE(data, context) {
+    if (isDmDeletePayload(data)) context.removeDm?.(data)
   },
   RELATIONSHIP_UPDATE(data, context) {
     if (isRelationshipPayload(data)) context.upsertRelationship?.(data)

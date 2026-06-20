@@ -10,6 +10,7 @@ from app.domain.snowflake import SnowflakeGenerator
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
+    DmDeleteRead,
     DmMessageCreate,
     DmMessageDeleteRead,
     DmMessageRead,
@@ -47,6 +48,7 @@ class DemoStore:
         self._dm_profiles = self._seed_dm_profiles()
         self._relationships_by_user = self._seed_relationships()
         self._dms = self._seed_dms()
+        self._hidden_dm_members: set[tuple[int, int]] = set()
 
     def list_guilds(self, user_id: int | None = None) -> list[GuildRead]:
         with self._lock:
@@ -415,6 +417,7 @@ class DemoStore:
                 self._dm_view_for_user(dm, user.id)
                 for dm in self._dms
                 if any(participant.id == user.id for participant in dm.participants)
+                and (dm.id, user.id) not in self._hidden_dm_members
             ]
 
     def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead:
@@ -430,6 +433,8 @@ class DemoStore:
 
             for dm in self._dms:
                 if sorted(participant.id for participant in dm.participants) == participant_ids:
+                    for participant_id in participant_ids:
+                        self._hidden_dm_members.discard((dm.id, participant_id))
                     return self._dm_view_for_user(dm, user.id)
 
             participants = [
@@ -450,6 +455,19 @@ class DemoStore:
             self._dms.append(dm)
             return self._dm_view_for_user(dm, user.id)
 
+    def close_dm(
+        self,
+        *,
+        dm_id: int,
+        actor: UserPublic,
+    ) -> DmDeleteRead:
+        with self._lock:
+            dm = self._find_dm(dm_id)
+            if not any(participant.id == actor.id for participant in dm.participants):
+                raise PermissionError("direct message membership required")
+            self._hidden_dm_members.add((dm_id, actor.id))
+            return DmDeleteRead(id=dm_id)
+
     def create_dm_message(
         self,
         *,
@@ -461,8 +479,12 @@ class DemoStore:
             dm = self._find_dm(dm_id)
             if not any(participant.id == author.id for participant in dm.participants):
                 raise PermissionError("direct message membership required")
+            if (dm_id, author.id) in self._hidden_dm_members:
+                raise PermissionError("direct message membership required")
 
             self._ensure_user_profile(author)
+            for participant in dm.participants:
+                self._hidden_dm_members.discard((dm_id, participant.id))
             message = DmMessageRead(
                 id=self._id_generator.generate(),
                 dm_id=dm_id,
@@ -484,6 +506,8 @@ class DemoStore:
         with self._lock:
             dm = self._find_dm(dm_id)
             if not any(participant.id == actor.id for participant in dm.participants):
+                raise PermissionError("direct message membership required")
+            if (dm_id, actor.id) in self._hidden_dm_members:
                 raise PermissionError("direct message membership required")
 
             message = next((item for item in dm.messages if item.id == message_id), None)

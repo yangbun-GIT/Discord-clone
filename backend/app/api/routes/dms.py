@@ -10,13 +10,27 @@ from app.core.operation_limits import (
     require_rest_operation,
 )
 from app.realtime.publisher import (
+    publish_dm_close,
     publish_dm_create,
     publish_dm_message_create,
     publish_dm_message_delete,
 )
 from app.schemas.auth import UserPublic
-from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageDeleteRead, DmMessageRead, DmRead
-from app.services.dm_service import create_dm, create_dm_message, delete_dm_message, list_dms
+from app.schemas.dm import (
+    DmCreate,
+    DmDeleteRead,
+    DmMessageCreate,
+    DmMessageDeleteRead,
+    DmMessageRead,
+    DmRead,
+)
+from app.services.dm_service import (
+    close_dm,
+    create_dm,
+    create_dm_message,
+    delete_dm_message,
+    list_dms,
+)
 
 router = APIRouter()
 
@@ -42,6 +56,28 @@ async def create_direct_message(
             exc,
             not_found="recipient not found",
             forbidden=str(exc),
+            bad_request=str(exc),
+        )
+
+
+@router.delete("/{dm_id}", response_model=DmDeleteRead)
+async def close_direct_message(
+    dm_id: int,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> DmDeleteRead:
+    await require_rest_operation(
+        f"dm-close:{current_user.id}:{dm_id}",
+        MESSAGE_MUTATION_LIMIT,
+    )
+    try:
+        closed = await close_dm(dm_id=dm_id, actor=current_user)
+        await publish_dm_close(user_id=current_user.id, dm=closed)
+        return closed
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="direct message not found",
+            forbidden="direct message membership required",
             bad_request=str(exc),
         )
 

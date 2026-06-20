@@ -9,6 +9,7 @@ from app.repositories.dm_seed import (
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
+    DmDeleteRead,
     DmMessageCreate,
     DmMessageDeleteRead,
     DmMessageRead,
@@ -236,7 +237,7 @@ class DmRepository:
             """
             SELECT dm_id
             FROM direct_message_members
-            WHERE user_id = $1
+            WHERE user_id = $1 AND is_hidden = false
             ORDER BY joined_at DESC, dm_id DESC
             """,
             user.id,
@@ -258,7 +259,7 @@ class DmRepository:
             """
             SELECT unread_count
             FROM direct_message_members
-            WHERE dm_id = $1 AND user_id = $2
+            WHERE dm_id = $1 AND user_id = $2 AND is_hidden = false
             """,
             dm_id,
             user_id,
@@ -305,6 +306,15 @@ class DmRepository:
         participant_ids = sorted([user.id, *recipient_ids])
         existing_dm_id = await self._find_existing_dm(participant_ids)
         if existing_dm_id is not None:
+            await database.execute(
+                """
+                UPDATE direct_message_members
+                SET is_hidden = false
+                WHERE dm_id = $1 AND user_id = ANY($2::bigint[])
+                """,
+                existing_dm_id,
+                participant_ids,
+            )
             dm = await self.get_dm_for_user(existing_dm_id, user.id)
             if dm is None:
                 raise PermissionError("direct message membership required")
@@ -334,6 +344,41 @@ class DmRepository:
             raise PermissionError("direct message membership required")
         return dm
 
+    async def close_dm(
+        self,
+        *,
+        dm_id: int,
+        actor: UserPublic,
+    ) -> DmDeleteRead:
+        membership = await database.fetchrow(
+            """
+            SELECT 1 AS exists
+            FROM direct_message_members
+            WHERE dm_id = $1 AND user_id = $2
+            """,
+            dm_id,
+            actor.id,
+        )
+        if membership is None:
+            channel = await database.fetchrow(
+                "SELECT id FROM direct_message_channels WHERE id = $1",
+                dm_id,
+            )
+            if channel is None:
+                raise KeyError(dm_id)
+            raise PermissionError("direct message membership required")
+
+        await database.execute(
+            """
+            UPDATE direct_message_members
+            SET is_hidden = true, unread_count = 0
+            WHERE dm_id = $1 AND user_id = $2
+            """,
+            dm_id,
+            actor.id,
+        )
+        return DmDeleteRead(id=dm_id)
+
     async def create_dm_message(
         self,
         *,
@@ -345,7 +390,7 @@ class DmRepository:
             """
             SELECT 1 AS exists
             FROM direct_message_members
-            WHERE dm_id = $1 AND user_id = $2
+            WHERE dm_id = $1 AND user_id = $2 AND is_hidden = false
             """,
             dm_id,
             author.id,
@@ -374,7 +419,9 @@ class DmRepository:
         await database.execute(
             """
             UPDATE direct_message_members
-            SET unread_count = CASE WHEN user_id = $2 THEN 0 ELSE unread_count + 1 END
+            SET
+                unread_count = CASE WHEN user_id = $2 THEN 0 ELSE unread_count + 1 END,
+                is_hidden = false
             WHERE dm_id = $1
             """,
             dm_id,
@@ -399,7 +446,7 @@ class DmRepository:
             """
             SELECT 1 AS exists
             FROM direct_message_members
-            WHERE dm_id = $1 AND user_id = $2
+            WHERE dm_id = $1 AND user_id = $2 AND is_hidden = false
             """,
             dm_id,
             actor.id,

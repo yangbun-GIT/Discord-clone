@@ -4,6 +4,7 @@ import {
   cancelFriendRequest,
   createDirectMessage,
   createDirectMessageMessage,
+  deleteDirectMessage,
   createFriendRequest,
   deleteDirectMessageMessage,
   fetchDirectMessages,
@@ -12,7 +13,7 @@ import {
   removeFriend,
   unblockFriend,
 } from '../services/api'
-import type { DirectMessage, DmMessage, DmMessageDelete, Friend, RelationshipDelete } from '../types'
+import type { DirectMessage, DmDelete, DmMessage, DmMessageDelete, Friend, RelationshipDelete } from '../types'
 
 export async function loadDmWorkspace(token: string | null): Promise<{
   relationships: Friend[]
@@ -98,4 +99,8 @@ export function deleteDmChannelMessage(
   messageId: number,
 ): Promise<DmMessageDelete> {
   return deleteDirectMessageMessage(dmId, messageId, token)
+}
+
+export function closeDmChannel(token: string | null, dmId: number): Promise<DmDelete> {
+  return deleteDirectMessage(dmId, token)
 }

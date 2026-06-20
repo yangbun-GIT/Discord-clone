@@ -24,6 +24,7 @@ const draft = ref('')
 const showEmojiPanel = ref(false)
 const audioMenu = ref<'input' | 'output' | null>(null)
 const messageList = ref<HTMLElement | null>(null)
+const composerInput = ref<HTMLInputElement | null>(null)
 const showJumpToLatest = ref(false)
 const { t } = useI18n()
 let removeDocumentPointerDown: (() => void) | null = null
@@ -50,6 +51,7 @@ function submitMessage() {
   emit('send', content)
   draft.value = ''
   showEmojiPanel.value = false
+  void nextTick(() => composerInput.value?.focus())
 }
 
 function insertEmoji(emoji: string) {
@@ -466,6 +468,7 @@ onBeforeUnmount(() => {
     <section class="composer-shell" :aria-label="t('chat.aria.composer')">
       <form class="composer dm-composer" @submit.prevent="submitMessage">
         <input
+          ref="composerInput"
           v-model="draft"
           :aria-label="t('dm.messageTarget', { target: dm?.display_name ?? t('app.status.directMessage') })"
           :placeholder="dm ? t('dm.messageTarget', { target: dm.display_name }) : t('dm.selectPlaceholder')"

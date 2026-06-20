@@ -1,6 +1,7 @@
 import type {
   DirectMessage,
   DmCreate,
+  DmDelete,
   DmMessage,
   DmMessageCreate,
   DmMessageDelete,
@@ -193,4 +194,11 @@ export function deleteDirectMessageMessage(
   token?: string | null,
 ): Promise<DmMessageDelete> {
   return apiDelete<DmMessageDelete>(`/api/dms/${dmId}/messages/${messageId}`, token)
+}
+
+export function deleteDirectMessage(
+  dmId: number,
+  token?: string | null,
+): Promise<DmDelete> {
+  return apiDelete<DmDelete>(`/api/dms/${dmId}`, token)
 }

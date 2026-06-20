@@ -197,9 +197,16 @@ feedback, or usability.
   - `DirectMessageView.vue` and `ChatView.vue` scroll to latest on DM/channel
     switch, keep latest visible while near bottom, preserve older scroll position,
     and show a jump-to-latest control.
+  - DM messages remain left-aligned for both local and remote authors; current-user
+    messages are distinguished by row styling and keep author-only deletion.
+  - The DM composer restores input focus after send so repeated messages can be
+    typed without clicking the input again.
 - F17 DM Header And Profile-Side Action Audit: partially implemented.
   - DM screen now exposes profile, call-entry, and mute actions scoped to the
     selected DM.
+  - The private sidebar can close a DM conversation for the current user. The
+    backend stores this as per-member hidden state, so the other participant's DM
+    list and messages are not deleted. Recreating/opening the same DM unhides it.
   - Full DM search and richer group/member profile-side information remain
     follow-up items.
 - Verification for this pass:

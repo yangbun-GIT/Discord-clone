@@ -188,3 +188,19 @@ async def test_create_dm_message_writes_message_and_updates_unread(
     assert message.content == "hello postgres dm"
     assert any("INSERT INTO direct_messages" in query for query, _ in fake_database.executed)
     assert any("UPDATE direct_message_members" in query for query, _ in fake_database.executed)
+
+
+@pytest.mark.asyncio
+async def test_close_dm_marks_current_membership_hidden(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_database = FakeDmDatabase()
+    monkeypatch.setattr(dms_module, "database", fake_database)
+
+    closed = await DmRepository().close_dm(dm_id=801, actor=user())
+
+    assert closed.id == 801
+    assert any(
+        "SET is_hidden = true" in query and args == (801, 42)
+        for query, args in fake_database.executed
+    )

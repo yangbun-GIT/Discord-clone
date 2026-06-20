@@ -8,6 +8,7 @@ from app.repositories.dms import dm_repository
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
+    DmDeleteRead,
     DmMessageCreate,
     DmMessageDeleteRead,
     DmMessageRead,
@@ -82,6 +83,8 @@ class DmStorage(Protocol):
     async def list_dms(self, user: UserPublic) -> list[DmRead]: ...
 
     async def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead: ...
+
+    async def close_dm(self, *, dm_id: int, actor: UserPublic) -> DmDeleteRead: ...
 
     async def create_dm_message(
         self,
@@ -174,6 +177,9 @@ class PostgresDmStorage:
 
     async def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead:
         return await dm_repository.create_dm(payload, user)
+
+    async def close_dm(self, *, dm_id: int, actor: UserPublic) -> DmDeleteRead:
+        return await dm_repository.close_dm(dm_id=dm_id, actor=actor)
 
     async def create_dm_message(
         self,
@@ -272,6 +278,9 @@ class DemoDmStorage:
 
     async def create_dm(self, payload: DmCreate, user: UserPublic) -> DmRead:
         return demo_store.create_dm(payload, user)
+
+    async def close_dm(self, *, dm_id: int, actor: UserPublic) -> DmDeleteRead:
+        return demo_store.close_dm(dm_id=dm_id, actor=actor)
 
     async def create_dm_message(
         self,

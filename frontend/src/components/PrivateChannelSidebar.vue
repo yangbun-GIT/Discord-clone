@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { MessageCircle, Plus, Search } from 'lucide-vue-next'
+import { MessageCircle, Plus, Search, X } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import { addDocumentEventListener } from '../services/browserApi'
@@ -16,6 +16,7 @@ const emit = defineEmits<{
   openFriends: []
   openDm: [dmId: number]
   createDm: []
+  closeDm: [dmId: number]
   demoNotice: [label: string]
 }>()
 
@@ -136,32 +137,45 @@ onBeforeUnmount(() => {
           <Plus :size="16" aria-hidden="true" />
         </button>
       </div>
-      <button
+      <div
         v-for="dm in dms"
         :key="dm.id"
-        type="button"
-        class="dm-row"
-        :class="{ active: activeDestination === 'dm' && dm.id === activeDmId }"
-        :aria-current="activeDestination === 'dm' && dm.id === activeDmId ? 'page' : undefined"
-        data-context-kind="dm-row"
-        :data-context-id="dm.id"
-        :data-context-label="dm.display_name"
-        @click="$emit('openDm', dm.id)"
+        class="dm-row-wrap"
       >
-        <span class="dm-avatar-wrap">
-          <span class="dm-avatar">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
-        </span>
-        <span class="dm-copy">
-          <span class="dm-title-line">
-            <strong>{{ dm.display_name }}</strong>
-            <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
+        <button
+          type="button"
+          class="dm-row"
+          :class="{ active: activeDestination === 'dm' && dm.id === activeDmId }"
+          :aria-current="activeDestination === 'dm' && dm.id === activeDmId ? 'page' : undefined"
+          data-context-kind="dm-row"
+          :data-context-id="dm.id"
+          :data-context-label="dm.display_name"
+          @click="$emit('openDm', dm.id)"
+        >
+          <span class="dm-avatar-wrap">
+            <span class="dm-avatar">{{ dm.display_name.slice(0, 1).toUpperCase() }}</span>
           </span>
-          <span v-if="dm.is_group" class="dm-state-line">
-            <small>{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
+          <span class="dm-copy">
+            <span class="dm-title-line">
+              <strong>{{ dm.display_name }}</strong>
+              <small v-if="dm.is_group">{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
+            </span>
+            <span v-if="dm.is_group" class="dm-state-line">
+              <small>{{ t('channel.dm.members', { count: dm.member_count }) }}</small>
+            </span>
           </span>
-        </span>
-        <span v-if="dm.unread_count" class="dm-badge">{{ unreadLabel(dm.unread_count) }}</span>
-      </button>
+          <span v-if="dm.unread_count" class="dm-badge">{{ unreadLabel(dm.unread_count) }}</span>
+        </button>
+        <button
+          type="button"
+          class="dm-row-close"
+          :title="t('dm.closeConversation')"
+          :aria-label="t('dm.closeConversation')"
+          @click.stop="$emit('closeDm', dm.id)"
+        >
+          <X :size="14" aria-hidden="true" />
+        </button>
+      </div>
     </section>
   </aside>
 </template>

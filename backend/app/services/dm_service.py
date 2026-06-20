@@ -1,6 +1,7 @@
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
+    DmDeleteRead,
     DmMessageCreate,
     DmMessageDeleteRead,
     DmMessageRead,
@@ -88,6 +89,10 @@ async def list_dms(user: UserPublic) -> list[DmRead]:
 
 async def create_dm(payload: DmCreate, user: UserPublic) -> DmRead:
     return await get_dm_storage().create_dm(payload, user)
+
+
+async def close_dm(*, dm_id: int, actor: UserPublic) -> DmDeleteRead:
+    return await get_dm_storage().close_dm(dm_id=dm_id, actor=actor)
 
 
 async def create_dm_message(

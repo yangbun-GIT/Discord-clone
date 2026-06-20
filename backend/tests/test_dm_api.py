@@ -162,6 +162,27 @@ def test_delete_dm_message_requires_author_and_removes_message() -> None:
     assert all(message["id"] != message_id for message in dm["messages"])
 
 
+def test_close_dm_hides_thread_for_current_user_only() -> None:
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/api/dms",
+        json={"recipient_ids": [704]},
+        headers=auth_headers(),
+    )
+    assert create_response.status_code == 201
+    dm_id = create_response.json()["id"]
+
+    close_response = client.delete(f"/api/dms/{dm_id}", headers=auth_headers())
+
+    assert close_response.status_code == 200
+    assert close_response.json() == {"id": dm_id}
+    owner_response = client.get("/api/dms", headers=auth_headers())
+    other_response = client.get("/api/dms", headers=auth_headers(user_id=704, username="Haru"))
+    assert all(dm["id"] != dm_id for dm in owner_response.json())
+    assert any(dm["id"] == dm_id for dm in other_response.json())
+
+
 def test_friend_request_endpoint_creates_pending_state() -> None:
     client = TestClient(app)
 

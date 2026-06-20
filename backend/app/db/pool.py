@@ -7,7 +7,7 @@ from typing import Any
 
 import asyncpg
 
-CURRENT_SCHEMA_VERSION = "0001_schema_sql"
+CURRENT_SCHEMA_VERSION = "0002_dm_member_hidden"
 
 
 class Database:
