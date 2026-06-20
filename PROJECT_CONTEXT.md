@@ -2394,6 +2394,12 @@ Completed Stage 2 bridge work:
   from backdrop clicks, and removes the demo-only automatic `Project` rail folder
   assignment in `frontend/src/App.vue` so newly created servers appear as normal
   top-level rail icons instead of being grouped under `PR`.
+- A 2026-06-21 Cloudflare demo refresh fix keeps the local HTTPS and tunnel
+  origins in sync. The root `docker:up:https:detached` script now also includes
+  `compose.cloudflare-tunnel.yaml`, so `frontend-tunnel` on port `5174` is rebuilt
+  with local HTTPS changes. `docker:up:cloudflare-tunnel` force-recreates the
+  tunnel frontend, and `frontend/nginx.conf` sends strict no-cache/no-store
+  headers for Cloudflare Quick Tunnel demos.
 
 After each stage or meaningful feature:
 
