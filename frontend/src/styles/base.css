@@ -1206,7 +1206,7 @@ select:focus-visible {
   margin: 0 -8px;
   padding: 0 16px;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
-  background: var(--surface-header);
+  background: var(--surface-sidebar);
   box-shadow: 0 1px 0 rgb(255 255 255 / 4%);
   font-weight: 800;
 }
