@@ -1018,6 +1018,8 @@ Browser UI
   - Emits auth events consumed by `frontend/src/App.vue`.
 - `frontend/src/components/ServerRail.vue`
   - Receives guild list and rail metadata from `frontend/src/App.vue`.
+  - Treats guilds as top-level rail entries unless `App.vue` supplies a real
+    `folder_name`; server creation no longer assigns demo folders automatically.
   - Emits server navigation and add/discovery actions to `frontend/src/App.vue`.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - Receives relationship/DM state from `frontend/src/App.vue`.
@@ -1029,6 +1031,9 @@ Browser UI
 - `frontend/src/components/CreateDmDialog.vue`
   - Receives accepted-friend relationship state from `frontend/src/App.vue`.
   - Emits selected recipient IDs to `frontend/src/App.vue` for `dms.createDm(...)`.
+- `frontend/src/components/ServerAddDialog.vue`
+  - Receives initial create/join mode and loading state from `frontend/src/App.vue`.
+  - Emits create/join/discover/close events and owns localized backdrop-close UI.
 - `frontend/src/components/ChannelSidebar.vue`
   - Receives active guild, channels, voice state, invite permission, and user/voice
     status from `frontend/src/App.vue`.

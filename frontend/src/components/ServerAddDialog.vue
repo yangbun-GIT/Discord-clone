@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import { Compass, LogIn, Plus, X } from 'lucide-vue-next'
 
+import { useI18n } from '../i18n'
+
 const props = defineProps<{
   initialMode: 'create' | 'join'
   loading: boolean
@@ -14,6 +16,7 @@ const emit = defineEmits<{
   discover: []
 }>()
 
+const { t } = useI18n()
 const mode = ref(props.initialMode)
 const serverName = ref('')
 const inviteCode = ref('')
@@ -39,19 +42,24 @@ function submit() {
 </script>
 
 <template>
-  <section class="modal-layer" aria-label="Add server">
+  <section
+    class="modal-layer"
+    :aria-label="t('serverAdd.aria')"
+    @mousedown.self="$emit('close')"
+    @click.self="$emit('close')"
+  >
     <form class="server-add-dialog" @submit.prevent="submit">
       <header class="server-add-header">
         <div>
           <div class="auth-mark">DC</div>
-          <h2>Add a Server</h2>
+          <h2>{{ t('serverAdd.title') }}</h2>
         </div>
-        <button type="button" title="Close" aria-label="Close" @click="$emit('close')">
+        <button type="button" :title="t('common.close')" :aria-label="t('common.close')" @click="$emit('close')">
           <X :size="18" aria-hidden="true" />
         </button>
       </header>
 
-      <div class="server-add-tabs" role="tablist" aria-label="Add server mode">
+      <div class="server-add-tabs" role="tablist" :aria-label="t('serverAdd.mode')">
         <button
           type="button"
           role="tab"
@@ -60,7 +68,7 @@ function submit() {
           @click="mode = 'create'"
         >
           <Plus :size="17" aria-hidden="true" />
-          <span>Create</span>
+          <span>{{ t('serverAdd.createTab') }}</span>
         </button>
         <button
           type="button"
@@ -70,31 +78,31 @@ function submit() {
           @click="mode = 'join'"
         >
           <LogIn :size="17" aria-hidden="true" />
-          <span>Join</span>
+          <span>{{ t('serverAdd.joinTab') }}</span>
         </button>
       </div>
 
       <label v-if="mode === 'create'">
-        <span>Server name</span>
+        <span>{{ t('serverAdd.serverName') }}</span>
         <input v-model="serverName" autocomplete="off" maxlength="100" minlength="2" required autofocus />
       </label>
       <label v-else>
-        <span>Invite code</span>
+        <span>{{ t('serverAdd.inviteCode') }}</span>
         <input v-model="inviteCode" autocomplete="off" required autofocus />
       </label>
 
       <button type="button" class="server-discovery-link" @click="$emit('discover')">
         <Compass :size="17" aria-hidden="true" />
-        <span>Explore public servers</span>
+        <span>{{ t('serverAdd.explore') }}</span>
       </button>
 
       <div class="dialog-actions">
-        <button type="button" @click="$emit('close')">Cancel</button>
+        <button type="button" @click="$emit('close')">{{ t('serverAdd.cancel') }}</button>
         <button
           type="submit"
           :disabled="loading || (mode === 'create' ? serverName.trim().length < 2 : !inviteCode.trim())"
         >
-          {{ mode === 'create' ? 'Create' : 'Join' }}
+          {{ mode === 'create' ? t('serverAdd.create') : t('serverAdd.join') }}
         </button>
       </div>
     </form>

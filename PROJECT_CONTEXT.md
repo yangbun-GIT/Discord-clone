@@ -2350,6 +2350,11 @@ Completed Stage 2 bridge work:
   status text, and controls. `DirectMessageView.vue` also inserts additional DM
   date dividers whenever adjacent persisted message timestamps cross a local
   calendar date boundary, matching Discord's per-day timeline grouping.
+- A 2026-06-21 server-add follow-up localizes
+  `frontend/src/components/ServerAddDialog.vue`, lets the add-server modal close
+  from backdrop clicks, and removes the demo-only automatic `Project` rail folder
+  assignment in `frontend/src/App.vue` so newly created servers appear as normal
+  top-level rail icons instead of being grouped under `PR`.
 
 After each stage or meaningful feature:
 

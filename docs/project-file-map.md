@@ -494,6 +494,8 @@ For ordinary implementation work:
   - Login, register, and demo-session entry.
 - `frontend/src/components/ServerRail.vue`
   - Far-left server rail and server switching.
+  - Receives server rail metadata from `App.vue`; generated servers should remain
+    top-level unless a real folder feature assigns `folder_name`.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - Friends/DM sidebar.
   - Emits start-new-DM actions to `App.vue`; DM rows carry target IDs for
@@ -574,7 +576,8 @@ For ordinary implementation work:
   - Accepts an initial panel from `App.vue` so voice controls can land directly on
     Voice & Video instead of My Account.
 - `frontend/src/components/ServerAddDialog.vue`
-  - Server create/join dialog.
+  - Localized server create/join dialog.
+  - Closes on explicit close/cancel and backdrop click.
 - `frontend/src/components/ServerDiscoveryDialog.vue`
   - Demo server discovery dialog.
 

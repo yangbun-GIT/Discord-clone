@@ -303,8 +303,8 @@ const serverRailMeta = computed<Record<number, ServerRailGuildMeta>>(() => {
         mention_count: index === 0 && !isPrivateDestination.value ? 0 : Number(index === 0 && unreadCount > 0),
         muted: index % 3 === 2,
         voice_connected: guilds.voiceConnected && guilds.connectedVoiceGuildId === guild.id,
-        folder_name: index < 2 ? 'Project' : null,
-        folder_color: index < 2 ? '#5eead4' : null,
+        folder_name: null,
+        folder_color: null,
       },
     ] as const
   })

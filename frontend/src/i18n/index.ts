@@ -3,6 +3,17 @@ import { computed } from 'vue'
 import { usePreferencesStore, type AppLanguage } from '../stores/preferences'
 
 const ko = {
+  'serverAdd.aria': '서버 추가',
+  'serverAdd.title': '서버 추가',
+  'serverAdd.createTab': '만들기',
+  'serverAdd.joinTab': '참가',
+  'serverAdd.mode': '서버 추가 방식',
+  'serverAdd.serverName': '서버 이름',
+  'serverAdd.inviteCode': '초대 코드',
+  'serverAdd.explore': '공개 서버 둘러보기',
+  'serverAdd.cancel': '취소',
+  'serverAdd.create': '만들기',
+  'serverAdd.join': '참가',
   'app.aria.workspace': 'Discord 클론 작업공간',
   'app.boot.loading': '로딩 중',
   'app.empty.noServers': '서버 없음',
@@ -482,6 +493,17 @@ const ko = {
 } as const
 
 const en: Record<keyof typeof ko, string> = {
+  'serverAdd.aria': 'Add server',
+  'serverAdd.title': 'Add a Server',
+  'serverAdd.createTab': 'Create',
+  'serverAdd.joinTab': 'Join',
+  'serverAdd.mode': 'Add server mode',
+  'serverAdd.serverName': 'Server name',
+  'serverAdd.inviteCode': 'Invite code',
+  'serverAdd.explore': 'Explore public servers',
+  'serverAdd.cancel': 'Cancel',
+  'serverAdd.create': 'Create',
+  'serverAdd.join': 'Join',
   'app.aria.workspace': 'Discord clone workspace',
   'app.boot.loading': 'Loading',
   'app.empty.noServers': 'No servers',
