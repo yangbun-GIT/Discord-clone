@@ -1,13 +1,10 @@
-# Discord Clone
+﻿# Discord Clone
 
 Zero-budget Discord clone based on the SRS provided for the project.
 
 ## 프로젝트 적용 및 실행 방법
 
-이 프로젝트는 Discord 클론 코딩 과제용으로 작성된 Front-End + Back-End 통합
-프로젝트입니다. 기본 실행 방식은 상시 서버 배포가 아니라 **로컬 Docker Compose
-실행**이며, 필요할 때만 Cloudflare Tunnel로 임시 HTTPS 외부 접속 주소를 만들어
-시연할 수 있습니다.
+이 프로젝트는 Discord 클론 코딩 과제용으로 작성된 Front-End + Back-End 통합 프로젝트입니다. 기본 실행 방식은 상시 서버 배포가 아니라 **로컬 Docker Compose 실행**이며, 필요할 때만 Cloudflare Tunnel로 임시 HTTPS 외부 접속 주소를 만들어 시연할 수 있습니다.
 
 ### 1. 준비물
 
@@ -16,8 +13,7 @@ Zero-budget Discord clone based on the SRS provided for the project.
 - Node.js 및 npm
 - PowerShell
 
-Docker Desktop은 실행된 상태여야 하며, 처음 실행하는 경우 이미지 빌드 때문에
-시간이 조금 걸릴 수 있습니다.
+Docker Desktop은 실행된 상태여야 하며, 처음 실행하는 경우 이미지 빌드 때문에 시간이 조금 걸릴 수 있습니다.
 
 ### 2. 프로젝트 내려받기
 
@@ -34,8 +30,7 @@ git pull origin main
 
 ### 3. 기본 로컬 실행
 
-아래 명령은 프론트엔드, 백엔드, PostgreSQL, Redis, WebSocket gateway, 음성 상태
-메타데이터 구성을 함께 실행합니다.
+아래 명령은 프론트엔드, 백엔드, PostgreSQL, Redis, WebSocket gateway, 음성 상태 메타데이터 구성을 함께 실행합니다.
 
 ```powershell
 npm run docker:up
@@ -46,15 +41,11 @@ npm run docker:up
 - 앱: `http://127.0.0.1:5173`
 - 백엔드 상태 확인: `http://127.0.0.1:8000/api/health`
 
-처음 접속하면 회원가입 화면에서 테스트 계정을 직접 생성해 사용할 수 있습니다.
-두 브라우저 세션 또는 두 기기에서 서로 다른 계정을 만들면 친구 추가, DM, 서버
-메시지, 음성 채널, 화면 공유 흐름을 확인할 수 있습니다.
+처음 접속하면 회원가입 화면에서 테스트 계정을 직접 생성해 사용할 수 있습니다. 두 브라우저 세션 또는 두 기기에서 서로 다른 계정을 만들면 친구 추가, DM, 서버 메시지, 음성 채널, 화면 공유 흐름을 확인할 수 있습니다.
 
 ### 4. 마이크와 화면 공유까지 확인하는 HTTPS 실행
 
-브라우저는 `localhost`가 아닌 일반 HTTP 주소에서 마이크와 화면 공유를 제한합니다.
-같은 PC에서 마이크와 화면 공유를 안정적으로 확인하려면 HTTPS Docker 구성을
-사용합니다.
+브라우저는 `localhost`가 아닌 일반 HTTP 주소에서 마이크와 화면 공유를 제한합니다. 같은 PC에서 마이크와 화면 공유를 안정적으로 확인하려면 HTTPS Docker 구성을 사용합니다.
 
 ```powershell
 npm run docker:up:https:detached
@@ -65,14 +56,11 @@ npm run docker:up:https:detached
 - 앱: `https://localhost:5173`
 - 백엔드 상태 확인: `https://localhost:5173/api/health`
 
-같은 Wi-Fi의 다른 PC에서 접속하려면 개발 인증서가 필요합니다. 자세한 절차는
-`docs/assignment-submission-guide.md`와 `docs/deployment.md`를 참고합니다.
+같은 Wi-Fi의 다른 PC에서 접속하려면 개발 인증서가 필요합니다. 자세한 절차는 `docs/assignment-submission-guide.md`와 `docs/deployment.md`를 참고합니다.
 
 ### 5. 선택 사항: Cloudflare Tunnel로 임시 외부 접속
 
-상시 public VM/VPS 배포 없이 외부 네트워크에서 임시로 접속 테스트를 해야 한다면
-Cloudflare Quick Tunnel을 사용할 수 있습니다. 이 방식은 정식 배포가 아니라 로컬
-실행 앱을 임시 HTTPS 주소로 노출하는 시연 경로입니다.
+상시 public VM/VPS 배포 없이 외부 네트워크에서 임시로 접속 테스트를 해야 한다면 Cloudflare Quick Tunnel을 사용할 수 있습니다. 이 방식은 정식 배포가 아니라 로컬 실행 앱을 임시 HTTPS 주소로 노출하는 시연 경로입니다.
 
 먼저 HTTPS Docker stack과 tunnel 전용 프론트 컨테이너를 실행합니다.
 
@@ -87,17 +75,13 @@ npm run docker:up:cloudflare-tunnel
 cloudflared tunnel --url http://localhost:5174
 ```
 
-터미널에 출력되는 `https://*.trycloudflare.com` 주소로 외부 기기에서 접속할 수
-있습니다. 이 주소는 매번 바뀌는 임시 주소이며 README나 문서에 영구 배포 주소처럼
-기록하면 안 됩니다.
+터미널에 출력되는 `https://*.trycloudflare.com` 주소로 외부 기기에서 접속할 수 있습니다. 이 주소는 매번 바뀌는 임시 주소이며 README나 문서에 영구 배포 주소처럼 기록하면 안 됩니다.
 
 주의할 점:
 
 - Cloudflare Tunnel은 HTTPS/WSS 접속 확인에는 유용합니다.
-- TURN 서버가 기본 설정되어 있지 않으므로 모든 NAT/방화벽 환경에서 음성/화면
-  공유가 항상 성공한다고 보장하지 않습니다.
-- GitHub Pages 같은 정적 배포만으로는 백엔드, WebSocket, DB, 음성 통신 구성을
-  모두 실행할 수 없습니다.
+- TURN 서버가 기본 설정되어 있지 않으므로 모든 NAT/방화벽 환경에서 음성/화면 공유가 항상 성공한다고 보장하지 않습니다.
+- GitHub Pages 같은 정적 배포만으로는 백엔드, WebSocket, DB, 음성 통신 구성을 모두 실행할 수 없습니다.
 
 ### 6. 주요 기능 확인 순서
 
@@ -144,8 +128,7 @@ npm --prefix frontend run build
 npm run docker:down
 ```
 
-이 명령은 PostgreSQL Docker volume을 보존합니다. 로컬 테스트 데이터를 모두 지우고
-처음 상태로 되돌리려면 아래 명령을 사용합니다.
+이 명령은 PostgreSQL Docker volume을 보존합니다. 로컬 테스트 데이터를 모두 지우고 처음 상태로 되돌리려면 아래 명령을 사용합니다.
 
 ```powershell
 docker compose down -v
@@ -158,7 +141,6 @@ docker compose down -v
 - 음성 QA 기록: `docs/voice-qa.md`
 - 실시간 통신 QA 기록: `docs/realtime-communication-qa.md`
 - 프로젝트 구조 지도: `docs/project-file-map.md`
-
 ## Stack
 
 - Backend: Python 3.14, FastAPI, asyncpg, Redis asyncio client, Pydantic v2

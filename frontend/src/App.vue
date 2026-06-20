@@ -382,13 +382,12 @@ function contextMenuItems(kind: string) {
       { id: 'pin-message', label: t('context.pinMessage') },
     ]
   }
-  if (kind === 'friend' || kind === 'dm-row' || kind === 'user-panel') {
+  if (kind === 'friend' || kind === 'dm-row') {
+    return []
+  }
+  if (kind === 'user-panel') {
     return [
-      { id: 'message-user', label: t('context.messageUser') },
-      { id: 'start-call', label: t('context.startCall') },
-      { id: 'view-profile', label: t('context.viewProfile') },
-      { id: 'mute-conversation', label: t('context.muteConversation') },
-      { id: 'block-user', label: t('context.blockUser'), danger: true },
+      { id: 'open-settings', label: t('settings.userSettings') },
     ]
   }
   if (kind === 'voice-channel' || kind === 'voice-session') {
@@ -428,6 +427,8 @@ function openGlobalContextMenu(event: MouseEvent) {
   const contextTarget = target.closest<HTMLElement>('[data-context-kind]')
   const kind = contextTarget?.dataset.contextKind ?? 'workspace'
   const label = contextTarget?.dataset.contextLabel ?? workspaceTitle.value
+  const items = contextMenuItems(kind)
+  if (!items.length) return
   const menuWidth = 244
   const menuHeight = 228
   const viewport = getViewportSize()
@@ -436,7 +437,7 @@ function openGlobalContextMenu(event: MouseEvent) {
     x: Math.max(8, Math.min(event.clientX, viewport.width - menuWidth - 8)),
     y: Math.max(8, Math.min(event.clientY, viewport.height - menuHeight - 8)),
     title: label,
-    items: contextMenuItems(kind),
+    items,
   })
 }
 
@@ -1200,6 +1201,8 @@ async function handleSendInviteToFriend(friendId: number) {
         v-else-if="navigation.destination === 'friends'"
         :friends="dms.relationships"
         :disabled="dms.isMutating"
+        :action-notice="workspaceNotice"
+        :action-error="workspaceError ?? dms.error"
         @add-friend="handleAddFriend"
         @accept-friend="handleAcceptFriend"
         @reject-friend="handleRejectFriend"

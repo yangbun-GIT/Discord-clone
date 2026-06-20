@@ -2197,6 +2197,16 @@ Completed Stage 2 bridge work:
   remediation before final packaging: Discord UI detail/density polish,
   Friends/DM/server invite UX completion, voice/screen-share UX polish,
   responsive checks, accessibility checks, and inactive-control cleanup.
+- The first Friends home usability remediation pass is tracked in
+  `docs/remediation-tasks/friends-home-remediation-2026-06-20.md`. The pass
+  documents and fixes first-screen Friends issues: unsupported Start Call/View
+  Profile/Mute Conversation entries were removed from active friend menus and
+  global friend/DM context menus, Friends tabs now expose counts, blocked users get
+  an on-demand blocked tab, Add Friend success/error feedback appears inside the
+  Add Friend panel, search empty copy distinguishes no-result from no-data,
+  selected-friend activity copy no longer implies activity for offline/no-activity
+  friends, mobile rows keep management actions reachable, and the README Korean
+  quick-start block was restored as readable UTF-8 Korean.
 
 After each stage or meaningful feature:
 

@@ -174,6 +174,11 @@ For ordinary implementation work:
   - Documents the current UI-only add-friend gap and staged backend, frontend,
     realtime, persistence, and QA work for real friend requests, accept/reject,
     cancel, remove friend, block, and unblock.
+- `docs/remediation-tasks/friends-home-remediation-2026-06-20.md`
+  - Friends home usability remediation record.
+  - Documents and verifies the first-screen Friends pass for actionable-only menu
+    items, tab counts, Add Friend panel feedback, blocked-user access, activity
+    status clarity, responsive row actions, and README Korean quick-start repair.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh
@@ -459,6 +464,9 @@ For ordinary implementation work:
     add-friend flow, and activity panel.
   - Emits real Add Friend, pending accept/reject/cancel, remove, block, and unblock
     actions instead of local-only UI results.
+  - Shows relationship tab counts, query-aware empty states, Add Friend panel
+    feedback from workspace notice/error state, blocked-user access when needed,
+    and a stable grouped friend-row action cluster.
 - `frontend/src/components/DirectMessageView.vue`
   - DM intro, message timeline, composer, and local emoji panel dismissal.
 - `frontend/src/components/ChatView.vue`

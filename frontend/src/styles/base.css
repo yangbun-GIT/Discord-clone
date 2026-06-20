@@ -2555,6 +2555,9 @@ select:focus-visible {
 
 .friends-tabs button {
   min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   border: 1px solid transparent;
   border-radius: 8px;
   color: #cbd5e1;
@@ -2563,10 +2566,29 @@ select:focus-visible {
   font-weight: 800;
 }
 
-.friends-tabs button span {
+.friends-tabs button span,
+.friends-tabs button small {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
+}
+
+.friends-tabs button small {
+  min-width: 18px;
+  justify-content: center;
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgb(255 255 255 / 12%);
+  padding: 0 6px;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.friends-tabs button.add-tab small,
+.friends-tabs button.active small,
+.friends-tabs button:hover small {
+  color: #111827;
+  background: rgb(255 255 255 / 78%);
 }
 
 .friends-tabs button:hover,
@@ -2640,7 +2662,7 @@ select:focus-visible {
 .friend-row {
   position: relative;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 36px 36px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
   min-height: 82px;
@@ -2745,6 +2767,14 @@ select:focus-visible {
 .add-friend-panel p,
 .dm-placeholder p {
   color: #9ca3af;
+}
+
+.friend-actions {
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .friend-row button {
@@ -3127,6 +3157,18 @@ select:focus-visible {
   background: rgb(35 165 89 / 10%);
   padding: 9px 11px;
   font-size: 0.86rem;
+}
+
+.add-friend-result.info {
+  border-color: rgb(88 101 242 / 28%);
+  color: #c7d2fe;
+  background: rgb(88 101 242 / 10%);
+}
+
+.add-friend-result.error {
+  border-color: rgb(237 66 69 / 30%);
+  color: #fecaca;
+  background: rgb(237 66 69 / 12%);
 }
 
 .activity-card {
@@ -5519,12 +5561,22 @@ select:focus-visible {
   }
 
   .friend-row {
-    grid-template-columns: 40px minmax(0, 1fr) 36px;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
     min-height: 72px;
+    gap: 10px;
   }
 
-  .friend-row button:last-child {
-    display: none;
+  .friend-row button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .friend-row .friend-actions,
+  .friend-row .friend-menu-trigger,
+  .friend-row:focus-within button,
+  .friend-row.active button {
+    opacity: 1;
+    visibility: visible;
   }
 
   .voice-workspace {

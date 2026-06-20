@@ -100,6 +100,11 @@ the project prompt and context files before changing code.
   - Development plan for turning the current UI-only Add Friend form into real
     friend request, accept/reject/cancel, remove, block/unblock, realtime
     relationship updates, and browser QA workflows.
+- `docs/remediation-tasks/friends-home-remediation-2026-06-20.md`
+  - Friends home usability remediation plan and completion log.
+  - Owns the first-screen Friends pass for tab/search visibility, actionable-only
+    friend menus, Add Friend feedback, blocked-user access, activity-panel clarity,
+    responsive row actions, and README Korean quick-start repair.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest user-run manual QA follow-up plan.
   - Owns sustained speech dropout, screen-share participant composition, refresh
