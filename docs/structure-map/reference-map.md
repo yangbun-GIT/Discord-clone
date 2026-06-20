@@ -906,6 +906,9 @@ Browser UI
       lifecycle, voice device settings refresh/update state, reserved screen-share
       sender track replacement, screen-share state broadcast, explicit local
       microphone mute state/setter, and voice RTC cleanup.
+    - Active-call microphone-chain rebuild for input device or RNNoise mode
+      changes, with peer sender audio-track replacement instead of leaving the
+      current call.
     - Current `p2p-webrtc` implementation of the shared `VoiceTransport` contract.
 
 - `frontend/src/composables/voiceTransport.ts`
@@ -964,8 +967,8 @@ Browser UI
       offer/answer/ICE handling, pending ICE candidate queueing, stale signal
       filtering, bounded failed-peer retry, reserved video transceivers for screen
       sharing, explicit screen-share state signal handling, remote screen-track
-      state refresh, remote received-audio speaking detection, and participant
-      synchronization.
+      state refresh, local audio-track replacement for microphone-chain reloads,
+      remote received-audio speaking detection, and participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:
@@ -1028,10 +1031,12 @@ Browser UI
     `frontend/src/App.vue`.
 - `frontend/src/components/DirectMessageView.vue`
   - Receives selected DM and user state from `frontend/src/App.vue`.
-  - Emits message-send, selected-DM profile, call-entry, and mute actions to
-    `frontend/src/App.vue`.
+  - Receives shared voice device settings/device lists from `frontend/src/App.vue`.
+  - Emits message-send, selected-DM profile, call-entry, mute, voice settings,
+    voice-device refresh, and voice-device update actions to `frontend/src/App.vue`.
   - Owns bottom-anchored DM scroll behavior, active private-call stage display, and
-    local emoji panel state with outside-click/Escape dismissal.
+    local emoji plus DM call input/output popover state with outside-click/Escape
+    dismissal.
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.
@@ -1053,7 +1058,8 @@ Browser UI
     live input level.
   - Owns quick input/output popover state, toggle-open chevrons,
     outside-click/Escape dismissal, and the lower-left user-status/connected-session
-    card ordering.
+    card ordering. Its popovers are anchored above the full lower panel to avoid
+    covering connected voice status.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.

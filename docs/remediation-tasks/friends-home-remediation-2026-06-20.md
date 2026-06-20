@@ -600,6 +600,16 @@ needed before the Friends home surface can be considered complete.
     favorited rows with a favorite class and badge, while `base.css` gives those
     rows a distinct accent, subtle background, and persistent active star state
     so favorites are distinguishable outside the group heading.
+  - DM call device-control follow-up completed: active DM call stages now expose
+    input and output quick settings instead of forcing users back to the bottom
+    status panel. The stage controls reuse the same device list and
+    `useVoiceRtc.updateVoiceDeviceSettings(...)` path as guild voice, so input
+    volume, output volume, sensitivity, noise gate, input device, output device,
+    and RNNoise settings stay consistent across DM and guild calls. RNNoise or
+    input-device changes rebuild the local microphone processor and replace the
+    outgoing peer tracks while keeping the active call connected. The lower
+    `VoicePanel` quick popover now opens above the whole lower status/voice panel
+    so it does not cover the connected call card.
 
 ## Verification Log
 
@@ -663,6 +673,15 @@ needed before the Friends home surface can be considered complete.
     cleanup, voice reload/rejoin recovery, and voice leave cleanup.
   - `git diff --check` passed; Git only reported line-ending normalization
     warnings for touched files.
+- 2026-06-20 DM call device-control follow-up verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `git diff --check` passed; Git only reported line-ending normalization
+    warnings for touched files.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, DM/server realtime, invite-DM realtime, fake screen-share
+    cleanup, voice reload/rejoin recovery, and voice leave cleanup.
 
 ## Manual QA Checklist
 

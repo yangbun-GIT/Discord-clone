@@ -1496,10 +1496,15 @@ async function handleSendInviteToFriend(friendId: number) {
         :disabled="dms.isMutating"
         :muted="selectedDmMuted"
         :call-active="connectedDmId === selectedDm?.id"
+        :voice-device-settings="voiceRtc.voiceDeviceSettings.value"
+        :voice-devices="voiceRtc.voiceDevices.value"
         @view-profile="handleViewSelectedDmProfile"
         @start-call="handleStartSelectedDmCall"
         @leave-call="disconnectVoice"
         @toggle-mute="handleToggleSelectedDmMute"
+        @open-voice-settings="handleOpenVoiceSettings"
+        @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
+        @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
         @send="handleSendDmMessage"
       />
 

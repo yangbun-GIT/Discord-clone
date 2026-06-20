@@ -422,6 +422,14 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     await Promise.all([...peers.values()].map((peer) => renegotiatePeer(peer)))
   }
 
+  async function replaceLocalAudioTrack(track: MediaStreamTrack | null) {
+    await Promise.all([...peers.values()].map(async (peer) => {
+      const sender = peer.connection.getSenders().find((candidate) => candidate.track?.kind === 'audio')
+      if (!sender) return
+      await sender.replaceTrack(track)
+    }))
+  }
+
   function broadcastScreenState(sharingScreen: boolean) {
     const activeOptions = options.getActiveOptions()
     if (!activeOptions) return
@@ -555,6 +563,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     closeAll,
     broadcastScreenState,
     renegotiateAllPeers,
+    replaceLocalAudioTrack,
     syncParticipants,
     handleSignal,
   }

@@ -329,7 +329,10 @@ Stage M1 remediation note:
   - Balanced: echo cancellation on, noise suppression on, auto gain off.
   - Near raw: echo cancellation, noise suppression, and auto gain all off for
     isolating browser-processing artifacts.
-- Changes apply the next time the user joins a voice channel.
+- Browser audio-processing preset changes apply the next time the user joins a
+  voice channel. Input-device and RNNoise engine changes now rebuild only the
+  local microphone processor and replace the outgoing audio track while keeping
+  the active WebRTC call connected.
 - The app's local VAD is diagnostic-only for speaking state and does not own the
   public input-level meter, gate outgoing microphone audio, or disable outgoing
   microphone audio.
@@ -344,7 +347,9 @@ Stage M1 remediation note:
   vowel, the gate should remain open.
 - Lower sensitivity if long vowels are chopped; raise sensitivity if fan/wind noise
   opens the microphone too often. Keep denoising set to `Off` for the baseline
-  test, then compare RNNoise after leaving and rejoining the voice channel.
+  test, then compare RNNoise from either User Settings, the bottom microphone
+  quick popover, or the active DM call stage. RNNoise changes should apply by
+  rebuilding the local microphone chain without leaving the current call.
 - Output volume and supported output-device routing are applied to remote audio
   sinks through the bottom headphones quick popover or User Settings -> Voice &
   Video.
@@ -355,8 +360,9 @@ Current sustained-vowel QA:
 2. Select Speech stability.
 3. Set the denoiser engine to `Off`, keep Noise Gate off for the baseline, set
    Input Volume near 80%, and start Input Sensitivity around 30-40%.
-4. Leave and rejoin the voice channel if the input device, denoiser engine, or
-   audio-processing preset changed.
+4. Leave and rejoin the voice channel only if the browser audio-processing preset
+   changed. Input-device and RNNoise changes should apply during the active call
+   through local microphone track replacement.
 5. Say a single vowel continuously for at least 10 seconds.
 6. Watch the combined input-level/sensitivity track. If the sustained sound is
    chopped while the level bar is above the thumb, record it as a gate bug. If the
@@ -366,10 +372,11 @@ Current sustained-vowel QA:
 7. Repeat with a normal Korean sentence and a short English sentence.
 8. If sustained audio is still chopped after sensitivity tuning, test Balanced and
    Near raw, leaving and rejoining after each preset change.
-9. Compare denoising in this order: Off baseline, then RNNoise. Leave and rejoin
-   after changing the denoiser setting. Record whether fan/wind noise, keyboard
-   noise, speech naturalness, sustained vowels, and perceived delay improve or
-   degrade.
+9. Compare denoising in this order: Off baseline, then RNNoise. Do not leave the
+   call for the denoiser toggle; confirm the call stays connected and the remote
+   participant keeps receiving audio after the microphone chain reloads. Record
+   whether fan/wind noise, keyboard noise, speech naturalness, sustained vowels,
+   and perceived delay improve or degrade.
 10. Record only pass/fail notes and visible quality stats. Do not record raw audio,
    device labels, ICE candidates, TURN credentials, or user tokens.
 

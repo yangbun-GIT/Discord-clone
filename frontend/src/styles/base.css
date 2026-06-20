@@ -3471,6 +3471,7 @@ select:focus-visible {
 }
 
 .dm-call-stage {
+  position: relative;
   min-height: 164px;
   margin: -6px -16px 18px;
   padding: 26px;
@@ -3482,6 +3483,64 @@ select:focus-visible {
   place-items: center;
   gap: 14px;
   text-align: center;
+}
+
+.dm-call-device-controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 10px;
+  background: rgb(15 16 21 / 78%);
+  padding: 5px;
+}
+
+.dm-call-device-controls button {
+  min-width: 38px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #cbd5e1;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dm-call-device-controls button:hover,
+.dm-call-device-controls button:focus-visible,
+.dm-call-device-controls button[aria-expanded="true"] {
+  color: #ffffff;
+  background: rgb(255 255 255 / 11%);
+  outline: none;
+}
+
+.dm-call-device-popover {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  z-index: 35;
+  width: min(320px, calc(100% - 48px));
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 10px;
+  color: #f8fafc;
+  background: #24252a;
+  padding: 13px;
+  text-align: left;
+  box-shadow:
+    0 20px 50px rgb(0 0 0 / 46%),
+    0 1px 0 rgb(255 255 255 / 8%) inset;
+}
+
+.dm-call-device-popover span,
+.dm-call-device-popover strong {
+  color: inherit;
+  font-size: 0.82rem;
 }
 
 .dm-call-stage strong,
@@ -3497,6 +3556,13 @@ select:focus-visible {
 .dm-call-stage span {
   color: var(--text-muted);
   margin-top: 4px;
+}
+
+.dm-call-device-popover span,
+.dm-call-device-popover strong {
+  margin-top: 0;
+  color: inherit;
+  font-size: 0.82rem;
 }
 
 .dm-call-avatars {
@@ -5621,9 +5687,11 @@ select:focus-visible {
   position: absolute;
   left: 6px;
   right: 6px;
-  bottom: 58px;
+  bottom: calc(100% + 8px);
   z-index: 45;
   width: auto;
+  max-height: min(520px, calc(100vh - 160px));
+  overflow: auto;
   display: grid;
   gap: 10px;
   border: 1px solid rgb(255 255 255 / 12%);
@@ -5637,7 +5705,7 @@ select:focus-visible {
 }
 
 .app-shell.voice-connected .voice-device-popover {
-  bottom: 112px;
+  bottom: calc(100% + 8px);
 }
 
 .voice-device-field,

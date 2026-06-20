@@ -513,6 +513,8 @@ For ordinary implementation work:
 - `frontend/src/components/DirectMessageView.vue`
   - DM intro, bottom-anchored message timeline, selected-DM actions, composer,
     local emoji panel dismissal, and the active DM private-call stage.
+  - Active DM calls expose input/output quick settings that reuse the shared
+    `useVoiceRtc` device settings and refresh/update events.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal
@@ -532,6 +534,8 @@ For ordinary implementation work:
     refresh/open buttons.
   - Closes quick input/output popovers on outside click or Escape and orders the
     connected voice-session card below the user status card.
+  - Quick input/output popovers open above the full lower user/voice panel so
+    they do not cover the connected status card.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Remote audio stream rendering, output volume, output device sink selection when
     supported, and local deafen-to-audio-muted binding.
@@ -613,6 +617,9 @@ For ordinary implementation work:
     output device settings, and stats modules.
   - Exposes explicit local microphone mute state/setter plus voice device setting
     state/update/refresh helpers for voice controls.
+  - Rebuilds and swaps the local microphone processor track while keeping active
+    peer connections alive when input device or RNNoise mode changes require a
+    new capture/AudioWorklet graph.
 - `frontend/src/composables/voiceTransport.ts`
   - Voice transport contract used to keep the current P2P implementation
     replaceable by a future SFU-backed implementation.
@@ -646,6 +653,8 @@ For ordinary implementation work:
     candidate queueing, stale-signal filtering, remote stream tracking,
     participant sync, remote received-audio speaking detection, screen-share state
     signaling, retry, and peer renegotiation.
+  - Exposes local audio-track replacement so `useVoiceRtc.ts` can apply
+    microphone-chain changes without leaving the current call.
 - `frontend/src/composables/voiceStats.ts`
   - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`;
     consumes channel-scoped peer registry entries.

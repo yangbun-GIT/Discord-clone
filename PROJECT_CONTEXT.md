@@ -2266,6 +2266,18 @@ Completed Stage 2 bridge work:
   `frontend/src/styles/base.css` now render favorited friends with a distinct row
   accent, badge, and persistent active star state instead of relying only on the
   group heading.
+- A second DM call voice-control follow-up added input/output quick settings to
+  the active DM call stage in `frontend/src/components/DirectMessageView.vue`.
+  These controls reuse the same `useVoiceRtc.updateVoiceDeviceSettings(...)` and
+  device refresh path as `VoicePanel.vue`, so guild voice and DM calls share one
+  microphone, output, sensitivity, noise-gate, and RNNoise settings model.
+  `frontend/src/composables/useVoiceRtc.ts` now keeps an active call connected
+  while rebuilding the local microphone processor for input-device or RNNoise mode
+  changes, then swaps the new processed audio track into each peer connection
+  through `voicePeerConnections.replaceLocalAudioTrack(...)`. Volume, sensitivity,
+  and input-gate changes remain live processor updates. The lower `VoicePanel`
+  quick settings popover now opens above the entire status/voice panel instead of
+  covering the connected status card.
 
 After each stage or meaningful feature:
 

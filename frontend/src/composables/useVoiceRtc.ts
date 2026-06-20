@@ -54,6 +54,7 @@ let activeOptions: ConnectOptions | null = null
 let statsTimer: number | null = null
 let inputProcessor: VoiceInputProcessor | null = null
 let localSpeakingReleaseTimer: number | null = null
+let inputRestartTask: Promise<void> | null = null
 
 const peerRegistry = createVoicePeerRegistry({
   remoteStreams,
@@ -154,12 +155,60 @@ export function useVoiceRtc(): VoiceTransport {
   }
 
   function updateVoiceDeviceSettings(settings: Partial<VoiceDeviceSettings>) {
+    const previousSettings = voiceDeviceSettings.value
     writeVoiceDeviceSettings({
-      ...voiceDeviceSettings.value,
+      ...previousSettings,
       ...settings,
     })
-    voiceDeviceSettings.value = readVoiceDeviceSettings()
-    inputProcessor?.updateSettings(voiceDeviceSettings.value)
+    const nextSettings = readVoiceDeviceSettings()
+    voiceDeviceSettings.value = nextSettings
+    inputProcessor?.updateSettings(nextSettings)
+    if (requiresInputProcessorRestart(previousSettings, nextSettings, settings)) {
+      const restartChain = (inputRestartTask ?? Promise.resolve())
+        .catch(() => undefined)
+        .then(restartInputProcessor)
+      const scheduledTask = restartChain.finally(() => {
+        if (inputRestartTask === scheduledTask) {
+          inputRestartTask = null
+        }
+      })
+      inputRestartTask = scheduledTask
+      void inputRestartTask
+    }
+  }
+
+  async function restartInputProcessor() {
+    if (!activeOptions || !localStream.value || !inputProcessor) return
+    const previousProcessor = inputProcessor
+    const previousStream = localStream.value
+    const wasMuted = isMuted.value
+    let nextProcessor: VoiceInputProcessor | null = null
+    error.value = null
+    errorCode.value = null
+    try {
+      constraintSupport.value = getSupportedVoiceConstraints()
+      recordVoiceConstraintSupport(constraintSupport.value)
+      const rawStream = await captureMicrophone(voiceDeviceSettings.value)
+      nextProcessor = await createVoiceInputProcessor(rawStream, voiceDeviceSettings.value, {
+        onInputLevel: (level) => {
+          inputLevel.value = level
+          updateLocalSpeakingFromInput(level)
+        },
+      })
+      const [nextAudioTrack] = nextProcessor.stream.getAudioTracks()
+      await peerRegistry.replaceLocalAudioTrack(nextAudioTrack ?? null)
+      inputProcessor = nextProcessor
+      localStream.value = nextProcessor.stream
+      setAudioTracksMuted(localStream.value, wasMuted)
+      previousProcessor.close()
+      stopMediaStream(previousStream)
+      void refreshVoiceDevices()
+    } catch (cause) {
+      nextProcessor?.close()
+      const mediaError = cause instanceof VoiceMediaError ? normalizeMediaError(cause, 'microphone') : null
+      errorCode.value = mediaError?.code ?? null
+      error.value = mediaError?.message ?? (cause instanceof Error ? cause.message : 'Microphone settings reload failed')
+    }
   }
 
   function setMuted(muted: boolean) {
@@ -274,6 +323,19 @@ export function useVoiceRtc(): VoiceTransport {
       localSpeakingReleaseTimer = null
       localSpeaking.value = false
     }, 850)
+  }
+
+  function requiresInputProcessorRestart(
+    previousSettings: VoiceDeviceSettings,
+    nextSettings: VoiceDeviceSettings,
+    patch: Partial<VoiceDeviceSettings>,
+  ) {
+    if (!activeOptions || !localStream.value) return false
+    return (
+      ('inputDeviceId' in patch && previousSettings.inputDeviceId !== nextSettings.inputDeviceId)
+      || ('noiseSuppressionMode' in patch && previousSettings.noiseSuppressionMode !== nextSettings.noiseSuppressionMode)
+      || ('rnnoiseSuppression' in patch && previousSettings.rnnoiseSuppression !== nextSettings.rnnoiseSuppression)
+    )
   }
 
   return {
