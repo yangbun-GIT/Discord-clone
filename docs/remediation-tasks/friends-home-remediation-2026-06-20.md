@@ -2,12 +2,12 @@
 
 ## Document Status
 
-- Status: implementation-backed remediation record.
+- Status: partial implementation record plus remaining Friends-home feature backlog.
 - Source: user-provided Friends home screenshot and current clone behavior on the
   private `@me` Friends surface.
-- Purpose: keep the Friends home usability defects, fixes, verification evidence,
-  and remaining manual QA gates in one place so the next screen pass does not
-  rediscover the same control-policy issues.
+- Purpose: keep the Friends home usability defects, implementation-worthy missing
+  features, fixes, verification evidence, and remaining manual QA gates in one
+  place so the next screen pass does not rediscover the same control-policy issues.
 - Update rule: if a later Friends/DM/sidebar change changes a finding outcome,
   update this document before committing.
 
@@ -26,6 +26,9 @@ In scope:
   narrow viewport action reachability.
 - Shared control policy where the Friends screen exposed active-looking controls
   through `App.vue` global context menus.
+- Implementation-worthy missing Friends/private-home features, including friend
+  profile popout, friend/DM call entry, conversation mute, target-aware friend/DM
+  context menu actions, and start-new-DM from the private sidebar/search popover.
 - Documentation repair when broken setup text directly affects the required project
   handoff path.
 
@@ -33,10 +36,6 @@ Out of scope for this pass:
 
 - Cosmetic Discord pixel parity unrelated to usability.
 - New friend suggestions or contact import.
-- Profile popout, friend-call, and conversation mute implementation were not built
-  in this pass, but they are considered appropriate Discord-clone functionality and
-  should be implemented in a follow-up feature pass before being exposed as active
-  controls again.
 - Backend relationship lifecycle redesign; the current backend-backed friend
   request, accept/reject/cancel, remove, block, and unblock flow is reused.
 - Final DM conversation polish. DM-specific defects should move to the next DM
@@ -45,14 +44,49 @@ Out of scope for this pass:
 ## Document Adequacy Review
 
 - The original finding list covered the visible Friends home issues from the
-  screenshot and the code-level inactive-control gap.
-- The document needed stronger development-document structure, so this review adds
-  status, non-goals, cross-surface policy, acceptance criteria, manual QA, and
-  residual-risk sections.
-- The implementation results are tied to concrete files and verification commands,
-  which is sufficient for handoff.
-- Future work should not reopen this document for broad DM/server design work; open
-  a separate screen-specific remediation document instead.
+  screenshot and the code-level inactive-control gap, but it was too aggressive in
+  classifying appropriate Discord-like features as temporary non-scope.
+- This review corrects that direction: if a visible friend/private-home control
+  represents normal Discord behavior, the document must either include an
+  implementation stage or explicitly justify why it belongs to another screen plan.
+- The current implementation results are still valid as a temporary quality gate:
+  active-looking controls should not remain wired to fake notices. However, the
+  Friends surface should not be considered feature-complete until FH-010 through
+  FH-014 are implemented or deliberately moved to a more specific DM/voice plan.
+- Future work should not reopen this document for broad server design work; open a
+  separate screen-specific remediation document instead.
+
+## Implementation Scope Recheck - 2026-06-20
+
+The Friends home pass was rechecked after the user clarified that Discord-like
+private-home features should be implemented when they are appropriate, not removed
+from the product scope just because they were missing.
+
+Implementation-worthy items that must remain in the Friends/private-home backlog:
+
+- `View Profile`: implement an app-owned friend profile popout before restoring the
+  action.
+- `Start Call`: implement a real friend/DM call entry before restoring the action.
+- `Mute Conversation`: implement a DM mute preference that affects unread or
+  notification emphasis before restoring the action.
+- `Start New DM`: implement the private sidebar `+` and quick-switcher create flow
+  as a real recipient picker and DM open/create action.
+- Friend/DM context menus: restore target-aware right-click actions only after the
+  menu receives a real friend or DM target ID.
+
+Items not treated as missing for this Friends screen pass:
+
+- `Message Friend`: already routes through `handleMessageFriend(...)` and
+  `dms.createDm(...)`.
+- Friend request lifecycle: send, accept, reject, cancel, remove, block, and
+  unblock are already backend-backed and remain regression targets.
+- New friend suggestions/contact import: useful at larger scope, but not necessary
+  for the current clone completion pass.
+- Nitro, Store, and public discovery surfaces: intentionally outside the private
+  Friends home workflow.
+
+This means F10-F14 are not optional polish. They are the feature-completion stages
+needed before the Friends home surface can be considered complete.
 
 ## Findings
 
@@ -137,6 +171,49 @@ Out of scope for this pass:
   `frontend/src/components/FriendsHome.vue`, and `frontend/src/i18n/index.ts`.
 - Verification: muted DMs still receive messages but do not show normal unread
   emphasis; unmuting restores unread behavior.
+
+### FH-013 - Private sidebar Start New DM control should open a real recipient picker
+
+- Priority: P1
+- Location: private sidebar `+` button and quick switcher `Start a new direct
+  message` action.
+- Current behavior: the `createDm` event routes to `handleOpenFriends`, so the
+  control appears to start a new DM but effectively returns to the Friends home.
+- Expected behavior: selecting the `+` button or quick-create action should open an
+  app-owned recipient picker/search using accepted friends and valid users, then
+  create/open the DM.
+- User impact: users cannot start a new conversation from the sidebar where the UI
+  suggests they can.
+- Resolution direction: implement a `CreateDmDialog` or private-sidebar popover
+  that searches accepted friends at minimum, creates/opens the DM through
+  `dms.createDm(...)`, and shows app-owned validation/error feedback.
+- Target files: `frontend/src/components/PrivateChannelSidebar.vue`,
+  `frontend/src/App.vue`, `frontend/src/stores/dms.ts`,
+  `frontend/src/i18n/index.ts`, `frontend/src/styles/base.css`.
+- Verification: the sidebar `+` and quick switcher create action both open the
+  picker, selected friend creates/opens a DM, duplicate one-to-one DMs reuse the
+  existing thread, Escape/outside-click closes the picker, and no browser-native UI
+  is used.
+
+### FH-014 - Friend/DM global context menus should be target-aware before actions return
+
+- Priority: P2
+- Location: global right-click menu for friend rows and DM rows.
+- Current behavior: global context menu items for friend/DM rows were removed
+  because `App.vue` receives only a label/kind, not the target friend or DM ID.
+- Expected behavior: right-clicking a friend or DM should open app-owned actions
+  for the exact target once the target ID is available.
+- User impact: users expect right-click actions to work consistently across friend
+  rows, DM rows, and selected friend cards.
+- Resolution direction: add `data-context-id` or a typed context payload so
+  `App.vue` can route message, profile, call, mute, remove, block, and unblock to
+  the correct target. Restore only actions implemented by FH-010 through FH-013.
+- Target files: `frontend/src/components/FriendsHome.vue`,
+  `frontend/src/components/PrivateChannelSidebar.vue`,
+  `frontend/src/App.vue`, `frontend/src/styles/base.css`,
+  `frontend/src/i18n/index.ts`.
+- Verification: right-click friend/DM menus perform the same real actions as the
+  visible row menu and never fall back to generic local-control notices.
 
 ### FH-002 - Add Friend result feedback is not local to the Add Friend panel
 
@@ -271,11 +348,18 @@ Out of scope for this pass:
 - F7: Presence/status display regression check.
 - F8: Accessibility and keyboard/focus check.
 - F9: Responsive/narrow viewport row action check.
+- F10: Friend profile popout implementation and `View Profile` restoration.
+- F11: Friend/DM call entry design and implementation.
+- F12: Conversation mute preference and unread/notification behavior.
+- F13: Private sidebar `Start New DM` recipient picker implementation.
+- F14: Target-aware friend/DM global context menu restoration.
 
 ## Acceptance Criteria
 
 - No Friends home visible control is left as an enabled placeholder action.
-- Friend row actions perform wired behavior or are hidden until implemented.
+- Friend row actions perform wired behavior; if hidden temporarily, the matching
+  implementation stage must remain in this document and block Friends final
+  completion until implemented or explicitly reassigned.
 - Add Friend displays request progress and success/error feedback in the Add Friend
   panel itself.
 - All/Online/Pending counts are visible before opening the tab.
@@ -285,6 +369,8 @@ Out of scope for this pass:
 - Narrow viewport Friends rows still expose the management overflow menu.
 - App-owned menus and notices remain in use; browser-native alert/confirm/prompt or
   default context menus are not introduced.
+- Normal Discord-like private-home features are not treated as permanently
+  out-of-scope merely because they were previously unimplemented.
 - Existing realtime, DM, voice, and local submission smoke paths still pass.
 
 ## Stage Results
@@ -313,6 +399,16 @@ Out of scope for this pass:
   hiding the only management route.
 - FH-009 completed: the README Korean quick-start block was restored as readable
   UTF-8 Korean.
+- F10 pending: profile popout is implementation-worthy and must be built before
+  `View Profile` returns.
+- F11 pending: friend/DM call entry is implementation-worthy and must be designed
+  against the current guild voice transport before `Start Call` returns.
+- F12 pending: conversation mute is implementation-worthy and must affect DM
+  unread/notification behavior before `Mute Conversation` returns.
+- F13 pending: the private sidebar `+` and quick-create action must open a real
+  start-DM picker instead of routing back to Friends.
+- F14 pending: friend/DM global context menus need target IDs before real actions
+  can be restored there.
 
 ## Verification Log
 
@@ -348,16 +444,30 @@ Run this when visually checking the Friends screen after future changes:
    usable.
 10. Press Escape/outside-click on open menus and confirm app-owned overlays close.
 
+Feature-completion QA to run after F10-F14:
+
+1. Open a friend profile from the row menu and activity panel; confirm the popout is
+   target-correct and dismissible.
+2. Start a friend/DM call from Friends; confirm the recipient can join and the guild
+   voice flow is not broken.
+3. Mute and unmute a DM conversation; confirm muted conversations still receive
+   messages but do not show normal unread emphasis.
+4. Use the private sidebar `+` and quick switcher create action to create/open a DM.
+5. Right-click friend and DM rows; confirm each menu item acts on the correct
+   target and no generic local-control notice appears.
+
 ## Residual Risks And Next Screen Handoff
 
 - The Friends screen now removes inactive friend-call/profile/mute controls only as
   a temporary quality gate. They are appropriate Discord-clone features and should
-  be implemented in follow-up work before being re-exposed as active controls.
+  be implemented by F10-F12 before being re-exposed as active controls.
 - The global context menu intentionally returns no items for friend and DM rows
-  because it does not receive target IDs. If future work adds target-aware context
-  metadata, DM/friend context menu actions can be reintroduced as real actions.
-- DM-specific issues remain outside this document: DM list duplicate handling,
-  conversation timeline clarity, unread behavior, and new DM creation should be
-  covered by the next DM screen remediation pass.
+  because it does not receive target IDs. This is not final behavior; F14 must add
+  target-aware context metadata before friend/DM context actions return.
+- DM-specific conversation polish remains outside this document: DM message
+  timeline clarity and full conversation layout should be covered by the next DM
+  screen remediation pass. However, start-new-DM, conversation mute, and friend/DM
+  call entry are private-home/Friends-adjacent enough to remain tracked here.
 - Final visual parity is not complete; this pass only fixes usability and
-  inactive-control defects on the Friends surface.
+  inactive-control defects on the Friends surface while adding F10-F14 as the
+  missing feature-completion backlog.

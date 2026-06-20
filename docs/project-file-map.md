@@ -179,6 +179,10 @@ For ordinary implementation work:
   - Documents and verifies the first-screen Friends pass for actionable-only menu
     items, tab counts, Add Friend panel feedback, blocked-user access, activity
     status clarity, responsive row actions, and README Korean quick-start repair.
+  - Tracks implementation-worthy Friends/private-home backlog that must not be
+    treated as excluded scope: friend profile popout, friend/DM call entry,
+    conversation mute, start-new-DM recipient picker, and target-aware friend/DM
+    context menus.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh

@@ -105,6 +105,9 @@ the project prompt and context files before changing code.
   - Owns the first-screen Friends pass for tab/search visibility, actionable-only
     friend menus, Add Friend feedback, blocked-user access, activity-panel clarity,
     responsive row actions, and README Korean quick-start repair.
+  - Also owns the remaining Friends/private-home feature-completion backlog for
+    friend profile popout, friend/DM call entry, conversation mute, start-new-DM
+    recipient picker, and target-aware friend/DM context menus.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest user-run manual QA follow-up plan.
   - Owns sustained speech dropout, screen-share participant composition, refresh

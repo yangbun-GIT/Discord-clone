@@ -2203,13 +2203,15 @@ Completed Stage 2 bridge work:
   Profile/Mute Conversation entries were removed from active friend menus and
   global friend/DM context menus as a temporary inactive-control cleanup, but they
   are now explicitly tracked as appropriate Discord-clone follow-up features:
-  app-owned friend profile popout, real friend/DM call flow, and conversation mute
-  behavior. Friends tabs now expose counts, blocked users get an on-demand blocked
-  tab, Add Friend success/error feedback appears inside the Add Friend panel,
-  search empty copy distinguishes no-result from no-data, selected-friend activity
-  copy no longer implies activity for offline/no-activity friends, mobile rows keep
-  management actions reachable, and the README Korean quick-start block was
-  restored as readable UTF-8 Korean.
+  app-owned friend profile popout, real friend/DM call flow, conversation mute
+  behavior, a private-sidebar start-new-DM recipient picker, and target-aware
+  friend/DM context menus. These are not excluded from the Discord clone scope;
+  they are pending feature-completion stages F10-F14. Friends tabs now expose
+  counts, blocked users get an on-demand blocked tab, Add Friend success/error
+  feedback appears inside the Add Friend panel, search empty copy distinguishes
+  no-result from no-data, selected-friend activity copy no longer implies activity
+  for offline/no-activity friends, mobile rows keep management actions reachable,
+  and the README Korean quick-start block was restored as readable UTF-8 Korean.
 
 After each stage or meaningful feature:
 
