@@ -6556,9 +6556,7 @@ select:focus-visible {
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 42px),
-    rgb(10 12 16 / 96%);
+  background: #000000;
   box-shadow: 0 18px 50px rgb(0 0 0 / 32%);
 }
 
@@ -6580,7 +6578,7 @@ select:focus-visible {
   height: 100%;
   min-height: 0;
   object-fit: contain;
-  background: #020617;
+  background: #000000;
 }
 
 .screen-share-tile div {

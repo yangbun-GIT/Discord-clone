@@ -103,6 +103,24 @@ voice-panel behavior.
   peer connections so remote screens clear quickly when a sharing tab refreshes
   or leaves.
 
+### VCV-8: Refreshed participant missed an existing remote screen share
+
+- Location: `frontend/src/composables/voicePeerConnections.ts`,
+  `frontend/src/styles/base.css`
+- Current behavior: if a participant refreshed or left/rejoined while another
+  participant was already sharing a screen, voice could rejoin but the remote
+  screen-share tile could stay missing. A `screen` signal arriving before the
+  remote media stream was created was ignored. Screen-share letterboxing also
+  used the dark blue tile surface.
+- Expected behavior: refreshing should stop only the refreshed user's own screen
+  share. Other participants' active screen shares should load again after voice
+  rejoin or manual rejoin, and the unused area around contained shared video
+  should be black.
+- Fix: `voicePeerConnections.ts` now stores remote screen-share state by peer,
+  reapplies that state when remote tracks arrive, and sends the current local
+  screen-share state during new offer/answer negotiation. `base.css` makes the
+  screen-share tile and video backgrounds black.
+
 ## Verification Plan
 
 - `npm run lint:frontend`
@@ -146,3 +164,12 @@ voice-panel behavior.
   recovery. Docker HTTPS refresh should be run after this change so
   `https://localhost:5173/` and the Cloudflare tunnel origin receive the exact
   1/2, 2x2, and 3x3 grid behavior.
+- Follow-up VCV-8 verification passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`,
+  `npm run smoke:realtime:browser:https`, and `git diff --check` passed. The
+  browser smoke kept `remoteScreenVideos: 1`, `remoteScreenCleared: true`,
+  `voiceAutoRejoinedAfterReload: true`, `voiceRejoinRecovered: true`, and
+  `browserErrors: 0`, confirming the existing screen-share stop/reload path still
+  works after the refreshed-peer state cache. Docker HTTPS refresh should be run
+  after this change so local and Cloudflare tunnel origins receive the black
+  letterboxing and refreshed-peer remote screen-share recovery.

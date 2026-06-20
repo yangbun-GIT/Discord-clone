@@ -129,6 +129,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   const retryCounts = new Map<PeerKey, number>()
   const signalQueues = new Map<PeerKey, Promise<void>>()
   const remoteSpeakingMonitors = new Map<PeerKey, RemoteSpeakingMonitor>()
+  const remoteScreenStates = new Map<PeerKey, boolean>()
 
   function isActivePeer(peer: Pick<PeerEntry, 'channelId'>) {
     return options.getActiveOptions()?.channelId === peer.channelId
@@ -161,11 +162,35 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     if (!peer) return
     clearRetryTimer(key)
     stopRemoteSpeakingMonitor(key)
+    remoteScreenStates.delete(key)
     peer.connection.close()
     peer.stream.getTracks().forEach((track) => track.stop())
     peers.delete(key)
     signalQueues.delete(key)
     removeRemoteStream(peer)
+  }
+
+  function localScreenShareIsActive() {
+    const screenStream = options.getScreenStream()
+    const screenTrack = screenStream?.getVideoTracks()[0]
+    return Boolean(screenTrack && screenTrack.readyState === 'live')
+  }
+
+  function sendScreenStateToPeer(peer: PeerEntry, sharingScreen: boolean) {
+    const activeOptions = options.getActiveOptions()
+    if (!activeOptions || peer.channelId !== activeOptions.channelId) return
+    activeOptions.sendSignal({
+      channel_id: peer.channelId,
+      target_user_id: peer.userId,
+      type: 'screen',
+      screen_sharing: sharingScreen,
+    })
+  }
+
+  function peerIsSharingScreen(peer: PeerEntry) {
+    const explicitState = remoteScreenStates.get(peerKey(peer.channelId, peer.userId))
+    if (explicitState !== undefined) return explicitState
+    return screenTrackIsActive(peer.stream)
   }
 
   function refreshRemoteStream(peer: PeerEntry) {
@@ -174,7 +199,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       return
     }
     replaceRemoteStream(peer, {
-      sharingScreen: screenTrackIsActive(peer.stream),
+      sharingScreen: peerIsSharingScreen(peer),
       connectionState: peer.connection.connectionState,
     })
   }
@@ -333,7 +358,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       event.track.addEventListener('unmute', () => refreshRemoteStream(peer))
       window.setTimeout(() => refreshRemoteStream(peer), 0)
       window.setTimeout(() => refreshRemoteStream(peer), 250)
-      const sharingScreen = screenTrackIsActive(stream)
+      const sharingScreen = peerIsSharingScreen(peer)
       const current = options.remoteStreams.value.find(
         (remote) => remote.channelId === peer.channelId && remote.userId === userId,
       )
@@ -394,6 +419,9 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
         type: 'offer',
         description: { type: offer.type, sdp: offer.sdp ?? '' },
       })
+      if (localScreenShareIsActive()) {
+        sendScreenStateToPeer(peer, true)
+      }
     })
   }
 
@@ -415,6 +443,9 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
         type: 'offer',
         description: { type: offer.type, sdp: offer.sdp ?? '' },
       })
+      if (localScreenShareIsActive()) {
+        sendScreenStateToPeer(peer, true)
+      }
     })
   }
 
@@ -507,6 +538,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (signal.channel_id !== currentOptions.channelId || peer.channelId !== currentOptions.channelId) return
 
       if (signal.type === 'screen') {
+        remoteScreenStates.set(peerKey(peer.channelId, peer.userId), Boolean(signal.screen_sharing))
         replaceRemoteStream(peer, { sharingScreen: Boolean(signal.screen_sharing) })
         return
       }
@@ -526,6 +558,9 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
           type: 'answer',
           description: { type: answer.type, sdp: answer.sdp ?? '' },
         })
+        if (localScreenShareIsActive()) {
+          sendScreenStateToPeer(peer, true)
+        }
         return
       }
       if (signal.type === 'answer' && signal.description) {
@@ -549,6 +584,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     retryTimers.forEach((timer) => window.clearTimeout(timer))
     retryTimers.clear()
     retryCounts.clear()
+    remoteScreenStates.clear()
     for (const key of remoteSpeakingMonitors.keys()) {
       stopRemoteSpeakingMonitor(key)
     }

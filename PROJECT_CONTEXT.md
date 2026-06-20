@@ -151,6 +151,11 @@ stage widths so simultaneous shares do not overlap or escape the stage. Refreshi
 or leaving while screen sharing broadcasts `screen_sharing: false` before closing
 peer connections, so remote participants clear the video quickly while the
 existing voice reload recovery can rejoin audio without restoring screen sharing.
+Remote screen-share state is retained by peer until the remote media track arrives,
+and the current local screen-share state is resent during new offer/answer
+negotiation, so a refreshed participant can rejoin voice and see another
+participant's already-active screen share again. Screen-share tiles and contained
+video now use black letterboxing instead of the blue participant surface.
 The existing WebRTC, voice panel, screen-share, and gateway signaling flows are
 preserved.
 
