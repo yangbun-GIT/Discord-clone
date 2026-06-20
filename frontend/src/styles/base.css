@@ -3469,9 +3469,9 @@ select:focus-visible {
 
 .dm-chat-intro {
   align-content: start;
-  margin: 0 0 6px;
-  border-bottom: 1px solid var(--border-muted);
-  padding: 6px 0 14px;
+  margin: 0 0 14px;
+  border-bottom: 0;
+  padding: 8px 0 0;
 }
 
 .dm-call-stage {
@@ -4524,6 +4524,11 @@ select:focus-visible {
   margin-top: 3px;
 }
 
+.dm-date-divider + .dm-message-row {
+  border-top: 0;
+  margin-top: 0;
+}
+
 .message-row:hover {
   background: rgb(255 255 255 / 4.5%);
 }
@@ -4544,7 +4549,7 @@ select:focus-visible {
 }
 
 .dm-message-row.own .message-meta {
-  padding-right: 54px;
+  padding-right: 0;
 }
 
 .dm-message-row.own .message-main {
@@ -4616,7 +4621,7 @@ select:focus-visible {
 }
 
 .dm-date-divider {
-  margin-top: 2px;
+  margin: 0 0 12px;
 }
 
 .dm-participant-strip .status-pill {
@@ -4778,8 +4783,8 @@ select:focus-visible {
 }
 
 .message-icon-button {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   border: 0;
@@ -4787,6 +4792,12 @@ select:focus-visible {
   color: #cbd5e1;
   background: transparent;
   padding: 0;
+}
+
+.dm-message-row .message-actions {
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
 }
 
 .message-icon-button:hover,

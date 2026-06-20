@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
@@ -55,6 +56,7 @@ class DmMessageRead(BaseModel):
     author_id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
     author_name: str = Field(min_length=1, max_length=80)
     content: str
+    created_at: datetime | None = None
 
 
 class DmMessageDeleteRead(BaseModel):

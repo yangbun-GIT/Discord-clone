@@ -759,6 +759,10 @@ the current local voice metadata reports `turn_configured: false`.
   and current-author DM message deletion. Deletion uses
   `DELETE /api/dms/{dm_id}/messages/{message_id}` as the REST source of truth and
   `DM_MESSAGE_DELETE` as realtime notification to the other participant.
+  A later display fix replaced synthetic DM message times with persisted
+  `created_at` timestamps, kept only the date divider between the DM intro and
+  first message, prevented intro/action overlap with messages, and centered the
+  current-user delete action inside the message row.
 
 ## Friend Relationship Workflow
 

@@ -406,10 +406,11 @@ class DmRepository:
 
         await ensure_dm_repository_user(database, author)
         message_id = id_generator.generate()
-        await database.execute(
+        row = await database.fetchrow(
             """
             INSERT INTO direct_messages (id, dm_id, author_id, content)
             VALUES ($1, $2, $3, $4)
+            RETURNING created_at
             """,
             message_id,
             dm_id,
@@ -433,6 +434,7 @@ class DmRepository:
             author_id=author.id,
             author_name=author.username,
             content=payload.content,
+            created_at=row["created_at"] if row is not None else None,
         )
 
     async def delete_dm_message(
@@ -515,11 +517,11 @@ class DmRepository:
     async def _messages(self, dm_id: int) -> list[DmMessageRead]:
         rows = await database.fetch(
             """
-            SELECT m.id, m.dm_id, m.author_id, u.username AS author_name, m.content
+            SELECT m.id, m.dm_id, m.author_id, u.username AS author_name, m.content, m.created_at
             FROM direct_messages m
             JOIN users u ON u.id = m.author_id
             WHERE m.dm_id = $1
-            ORDER BY m.id
+            ORDER BY m.created_at, m.id
             """,
             dm_id,
         )
@@ -530,6 +532,7 @@ class DmRepository:
                 author_id=int(row["author_id"]),
                 author_name=str(row["author_name"]),
                 content=str(row["content"]),
+                created_at=row.get("created_at"),
             )
             for row in rows
         ]

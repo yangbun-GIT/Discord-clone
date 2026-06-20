@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 from copy import deepcopy
+from datetime import UTC, datetime
 from threading import Lock
 
 from app.demo.data import create_initial_guilds
@@ -491,6 +492,7 @@ class DemoStore:
                 author_id=author.id,
                 author_name=author.username,
                 content=payload.content,
+                created_at=datetime.now(UTC),
             )
             dm.messages.append(message)
             dm.unread_count = 0

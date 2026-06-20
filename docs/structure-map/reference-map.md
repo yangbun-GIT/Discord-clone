@@ -110,8 +110,9 @@ Browser UI
     - `backend/app/api/router.py`
   - Owns:
     - Authenticated DM list/create, DM message create, and current-author DM
-      message delete endpoints. Message create/delete publish DM gateway events
-      after REST persistence succeeds.
+      message delete endpoints. Message create returns the persisted message
+      timestamp, and create/delete publish DM gateway events after REST
+      persistence succeeds.
 
 - `backend/app/api/routes/users.py`
   - References:
@@ -1049,14 +1050,15 @@ Browser UI
   - Emits message-send, current-user message delete, selected-DM profile,
     call-entry, conversation mute, voice mute/deafen, voice-device refresh, and
     voice-device update actions to `frontend/src/App.vue`.
-  - Owns DM bottom-start scroll behavior, local/remote message row distinction,
-    one-to-one intro status display, active private-call stage display, and local
-    emoji plus DM call input/output popover state with outside-click/Escape
-    dismissal. Current-user and remote DM messages remain left-aligned; current
-    user messages keep a styled row accent and author-only delete action. The
-    composer restores focus after Enter or send-button submission, including after
-    the temporary disabled mutation window closes. Active DM call controls group
-    mute, deafen, quick input/output
+  - Owns DM bottom-start scroll behavior, persisted `created_at` timestamp display,
+    local/remote message row distinction, one-to-one intro status display, active
+    private-call stage display, and local emoji plus DM call input/output popover
+    state with outside-click/Escape dismissal. Current-user and remote DM messages
+    remain left-aligned; current user messages keep a styled row accent and
+    vertically centered author-only delete action. The composer restores focus
+    after Enter or send-button submission, including after the temporary disabled
+    mutation window closes. Active DM call controls group mute, deafen, quick
+    input/output
     settings, and hang-up in one toolbar, and ongoing remote DM calls can render
     as joinable stages.
 - `frontend/src/components/ChatView.vue`

@@ -2324,6 +2324,15 @@ Completed Stage 2 bridge work:
   mutation window to end before restoring focus, and
   `scripts/realtime_browser_smoke.mjs` verifies that the DM textbox remains the
   active element after a submitted DM message.
+- A 2026-06-21 DM timeline display fix made DM message timestamps source from the
+  persisted `created_at` field instead of synthetic index-based times. PostgreSQL
+  DM message creation now returns the inserted row timestamp, demo-store DM
+  message creation stamps the current UTC time, and `DirectMessageView.vue` uses
+  that timestamp for both the date divider and per-message time. The same pass
+  tightened the DM intro/date/message spacing so the intro actions do not overlap
+  the first message, keeps only the date divider as the separator between the intro
+  and message list, and centers current-user delete controls vertically inside the
+  message row.
 
 After each stage or meaningful feature:
 

@@ -206,8 +206,8 @@ For ordinary implementation work:
   `backend/app/services/dm_service.py`, `backend/app/services/dm_storage.py`,
   `backend/app/repositories/dms.py`, `backend/app/demo/store.py`,
   `backend/app/realtime/publisher.py`, and `backend/app/schemas/dm.py`.
-  Use this set before broad searches when changing DM message author actions or
-  realtime DM message removal.
+  Use this set before broad searches when changing DM message timestamps, author
+  actions, timeline separators, or realtime DM message removal.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh
@@ -533,8 +533,9 @@ For ordinary implementation work:
     buttons toggle mute/deafen. Ongoing remote DM calls can render as joinable
     stages after the local user leaves.
   - Keeps all DM messages left-aligned while distinguishing current-user messages
-    with row styling and author-only delete actions; the composer restores focus
-    after Enter or send-button submission.
+    with row styling and vertically centered author-only delete actions; the
+    composer restores focus after Enter or send-button submission. Uses persisted
+    DM message `created_at` values for date divider and message time display.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal

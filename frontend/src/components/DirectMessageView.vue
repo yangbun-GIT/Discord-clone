@@ -28,6 +28,8 @@ const composerInput = ref<HTMLInputElement | null>(null)
 const showJumpToLatest = ref(false)
 const pendingComposerFocusRestore = ref(false)
 const { t } = useI18n()
+const SNOWFLAKE_CUSTOM_EPOCH_MS = Date.UTC(2026, 0, 1)
+const SNOWFLAKE_TIMESTAMP_SHIFT = 14
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
 const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '🙌']
@@ -166,17 +168,25 @@ function handleMessageScroll() {
   showJumpToLatest.value = !isNearBottom()
 }
 
-function messageTime(index: number) {
+function messageDate(message: DirectMessage['messages'][number]) {
+  if (message.created_at) {
+    const timestamp = new Date(message.created_at)
+    if (!Number.isNaN(timestamp.getTime())) return timestamp
+  }
+  return new Date(Math.floor(message.id / 2 ** SNOWFLAKE_TIMESTAMP_SHIFT) + SNOWFLAKE_CUSTOM_EPOCH_MS)
+}
+
+function messageTime(message: DirectMessage['messages'][number]) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
-    new Date(2026, 4, 18, 8, 54 + index),
+    messageDate(message),
   )
 }
 
-const timelineDate = computed(() =>
-  new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(
-    new Date(2026, 4, 18),
-  ),
-)
+const timelineDate = computed(() => {
+  const firstMessage = props.dm?.messages[0]
+  const date = firstMessage ? messageDate(firstMessage) : new Date()
+  return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(date)
+})
 
 watch(
   () => props.dm?.id,
@@ -452,7 +462,7 @@ onBeforeUnmount(() => {
       <div v-if="dm?.messages.length" class="date-divider dm-date-divider"><span>{{ timelineDate }}</span></div>
 
       <article
-        v-for="(message, index) in dm?.messages ?? []"
+        v-for="message in dm?.messages ?? []"
         :key="message.id"
         :class="['message-row', 'dm-message-row', { own: isOwnMessage(message.author_id), remote: !isOwnMessage(message.author_id) }]"
         tabindex="0"
@@ -465,7 +475,7 @@ onBeforeUnmount(() => {
         <div class="message-main">
           <div class="message-meta">
             <strong>{{ message.author_name }}</strong>
-            <span>{{ messageTime(index) }}</span>
+            <span>{{ messageTime(message) }}</span>
             <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
             <div v-if="isOwnMessage(message.author_id)" class="message-actions" :aria-label="t('chat.aria.messageActions')">
               <button

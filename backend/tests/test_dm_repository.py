@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 import pytest
 
 from app.repositories import dms as dms_module
@@ -72,6 +74,24 @@ class FakeDmDatabase:
         if "SELECT id FROM direct_message_channels" in query:
             channel = self.channels.get(int(args[0]))
             return {"id": channel["id"]} if channel else None
+        if "INSERT INTO direct_messages" in query and "RETURNING created_at" in query:
+            message_id = int(args[0])
+            dm_id = int(args[1])
+            author_id = int(args[2])
+            content = str(args[3])
+            created_at = datetime(2026, 5, 18, 8, 55, tzinfo=UTC)
+            self.messages.setdefault(dm_id, []).append(
+                {
+                    "id": message_id,
+                    "dm_id": dm_id,
+                    "author_id": author_id,
+                    "author_name": self.users[author_id]["username"],
+                    "content": content,
+                    "created_at": created_at,
+                }
+            )
+            self.executed.append((query, args))
+            return {"created_at": created_at}
         raise AssertionError(f"unexpected fetchrow query: {query}")
 
     async def fetch(self, query: str, *args: object) -> list[dict[str, object]]:
@@ -186,6 +206,7 @@ async def test_create_dm_message_writes_message_and_updates_unread(
 
     assert message.id == 9901
     assert message.content == "hello postgres dm"
+    assert message.created_at == datetime(2026, 5, 18, 8, 55, tzinfo=UTC)
     assert any("INSERT INTO direct_messages" in query for query, _ in fake_database.executed)
     assert any("UPDATE direct_message_members" in query for query, _ in fake_database.executed)
 
