@@ -50,6 +50,21 @@ Open:
 - App: `http://127.0.0.1:5173`
 - Backend health: `http://127.0.0.1:8000/api/health`
 
+Run the local submission readiness check:
+
+```powershell
+npm run check:submission:local
+```
+
+This command automatically tries the normal HTTP Docker origin and the local HTTPS
+Docker origins. It verifies:
+
+- Frontend app HTML.
+- Same-origin `/api/health`.
+- PostgreSQL-backed health metadata.
+- `/api/meta/voice/readiness`.
+- `/gateway` HELLO over WebSocket or WSS.
+
 Stop the local stack:
 
 ```powershell
@@ -178,6 +193,12 @@ Important WebRTC limitation:
 
 ## Verification Commands
 
+Submission readiness:
+
+```powershell
+npm run check:submission:local
+```
+
 Local Docker/HTTPS regression checks:
 
 ```powershell
@@ -208,6 +229,27 @@ rg -n -i "api[_-]?key|jwt_secret\s*=|password\s*=|credential\s*=|secret\s*=|toke
 
 The secret-pattern search is a guardrail. It may report environment variable
 names or safe placeholder text; never add real secret values to docs or Git.
+
+## Verification Result 2026-06-20
+
+Local package checks run for this packaging pass:
+
+- `npm run check:submission:local`: passed against the running local HTTPS Docker
+  origin. PostgreSQL health metadata was configured, gateway HELLO succeeded, STUN
+  was configured, and TURN was not configured.
+- `npm run check:deployment:config`: passed with placeholder-only production
+  values.
+- `DEPLOYMENT_ORIGIN=https://localhost:5173` plus
+  `DEPLOYMENT_IGNORE_TLS_ERRORS=1 npm run check:deployment:readiness`: passed for
+  local HTTPS readiness with `turn_configured: false`.
+- `npm run smoke:realtime:browser:https`: passed for same-PC HTTPS realtime smoke.
+- `git diff --check`: passed.
+
+Manual or environment-dependent items still not verified in this pass:
+
+- Actual Cloudflare Tunnel URL creation and public access.
+- Real different-network voice and screen sharing.
+- TURN/NAT success with real TURN credentials.
 
 ## Not Part Of The Default Submission
 

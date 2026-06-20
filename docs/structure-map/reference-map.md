@@ -496,6 +496,22 @@ Browser UI
     - Safe external deployment readiness verification for HTTPS origin shape,
       backend health, TURN readiness, and gateway WSS HELLO without credentials.
 
+- `scripts/submission_readiness_check.mjs`
+  - References:
+    - `/`
+    - `/api/health`
+    - `/api/meta/voice/readiness`
+    - `/gateway`
+    - root `package.json` script `check:submission:local`.
+  - Referenced by:
+    - `README.md`
+    - `docs/assignment-submission-guide.md`
+    - `docs/project-file-map.md`
+  - Owns:
+    - Local assignment submission readiness verification.
+    - Auto-detection for normal HTTP Docker origin and local HTTPS Docker origins.
+    - Safe frontend/API/WebSocket/voice metadata checks without printing secrets.
+
 - `docs/assignment-submission-guide.md`
   - References:
     - `README.md`
@@ -504,6 +520,7 @@ Browser UI
     - `scripts/create_lan_https_cert.ps1`
     - `scripts/deployment_readiness_check.mjs`
     - `scripts/realtime_browser_smoke.mjs`
+    - `scripts/submission_readiness_check.mjs`
     - `docs/deployment.md`
     - `docs/voice-qa.md`
     - `docs/realtime-communication-qa.md`

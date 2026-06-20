@@ -2158,6 +2158,16 @@ Completed Stage 2 bridge work:
   it is not a formal deployment and does not replace TURN/NAT media QA. The
   VM/VPS + Caddy + production Compose documents remain future always-on extension
   references.
+- Local submission readiness verification is now scriptable with
+  `npm run check:submission:local`. The script auto-detects the normal HTTP Docker
+  origin or local HTTPS Docker origins, verifies frontend HTML, same-origin
+  `/api/health`, PostgreSQL-backed health metadata,
+  `/api/meta/voice/readiness`, and `/gateway` HELLO, and fails if Docker
+  PostgreSQL is not configured. The 2026-06-20 packaging pass verified the current
+  local HTTPS Docker stack with this script, `npm run check:deployment:config`,
+  local HTTPS deployment readiness, and `npm run smoke:realtime:browser:https`.
+  TURN remained unconfigured, so external different-network voice/screen sharing
+  remains manual and incomplete.
 
 After each stage or meaningful feature:
 

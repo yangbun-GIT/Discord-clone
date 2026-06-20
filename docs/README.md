@@ -119,6 +119,8 @@ the project prompt and context files before changing code.
   - Defines local Docker Compose as the primary grading path, same-Wi-Fi HTTPS LAN
     testing as the local two-PC path, optional Cloudflare Tunnel as temporary
     external access, and VM/VPS deployment as a future extension.
+  - References `npm run check:submission:local` for local grading-readiness
+    verification.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.

@@ -73,6 +73,13 @@ For ordinary implementation work:
   - Uses the official project-local Playwright devDependency from `frontend/`.
   - Does not print JWTs, message bodies, ICE candidates, TURN credentials, media
     device labels, or DM contents.
+- `scripts/submission_readiness_check.mjs`
+  - Local assignment submission readiness check.
+  - Auto-detects the normal HTTP Docker origin or local HTTPS Docker origins and
+    verifies frontend HTML, same-origin `/api/health`,
+    `/api/meta/voice/readiness`, and `/gateway` HELLO.
+  - Fails if Docker PostgreSQL health metadata is not configured; does not print
+    tokens, credentials, message bodies, ICE candidates, or media device labels.
 - `scripts/voice_readiness_check.mjs`
   - Safe operator check for `/api/meta/voice/readiness`.
   - Prints only endpoint, ICE server count, STUN readiness, and TURN readiness.
@@ -133,8 +140,8 @@ For ordinary implementation work:
 - `docs/assignment-submission-guide.md`
   - Default assignment submission and demo guide.
   - Owns local Docker Compose grading flow, same-Wi-Fi HTTPS LAN checks,
-    optional Cloudflare Tunnel temporary external access, feature check order, and
-    submission limitations.
+    optional Cloudflare Tunnel temporary external access, feature check order,
+    `npm run check:submission:local` verification, and submission limitations.
 - `docs/external-deployment-decision.md`
   - Future always-on public deployment decision record.
   - Selects single VM Docker Compose with Caddy and managed TURN first, self-hosted
@@ -690,7 +697,8 @@ For ordinary implementation work:
   - `compose.yaml`, `backend/Dockerfile`, `frontend/Dockerfile`,
     `frontend/nginx.conf`, `compose.production.example.yaml`,
     `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`,
-    `scripts/deployment_readiness_check.mjs`, `docs/deployment.md`,
+    `scripts/deployment_readiness_check.mjs`,
+    `scripts/submission_readiness_check.mjs`, `docs/deployment.md`,
     `docs/assignment-submission-guide.md`,
     `docs/external-deployment-decision.md`, `README.md`.
 - Test updates:

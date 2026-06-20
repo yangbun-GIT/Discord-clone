@@ -749,6 +749,10 @@ the current local voice metadata reports `turn_configured: false`.
   Compose remains documented as a future always-on deployment option, not the
   baseline grading path. External different-network voice and screen sharing still
   require TURN configuration and manual QA before being marked complete.
+- Assignment submission verification follow-up: `npm run check:submission:local`
+  now provides a local grading-readiness check for Docker HTTP or local HTTPS
+  origins, covering frontend HTML, same-origin backend health, PostgreSQL-backed
+  health metadata, safe voice readiness metadata, and `/gateway` HELLO.
 
 ## Friend Relationship Workflow
 

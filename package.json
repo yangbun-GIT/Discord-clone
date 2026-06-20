@@ -13,6 +13,7 @@
     "docker:up:https:detached": "docker compose -f compose.yaml -f compose.https.yaml up -d --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
+    "check:submission:local": "node scripts/submission_readiness_check.mjs",
     "check:voice:readiness": "node scripts/voice_readiness_check.mjs",
     "check:deployment:config": "docker compose --env-file deploy/production.env.example -f compose.production.example.yaml config",
     "check:deployment:readiness": "node scripts/deployment_readiness_check.mjs",

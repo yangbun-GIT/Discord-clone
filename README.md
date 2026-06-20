@@ -27,6 +27,16 @@ Open:
 - App: `http://127.0.0.1:5173`
 - Backend health: `http://127.0.0.1:8000/api/health`
 
+Check the local submission stack:
+
+```powershell
+npm run check:submission:local
+```
+
+This automatically detects the normal HTTP Docker stack or the HTTPS LAN Docker
+stack and verifies the frontend, same-origin backend health, PostgreSQL-backed
+health metadata, voice readiness metadata, and `/gateway` HELLO.
+
 Create two local accounts from the Register screen to test Friends, DM, server
 messages, voice channels, and screen sharing. Use the Demo user button only for
 quick seeded workspace exploration.
@@ -230,6 +240,7 @@ npm run test:backend
 npm run lint:backend
 npm run lint:frontend
 npm --prefix frontend run build
+npm run check:submission:local
 npm run smoke:realtime:browser
 npm run smoke:realtime:browser:https
 npm run smoke:realtime:redis
