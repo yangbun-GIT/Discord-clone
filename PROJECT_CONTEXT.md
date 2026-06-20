@@ -2345,6 +2345,11 @@ Completed Stage 2 bridge work:
   conversations bottom-started near the composer while forcing the intro and
   messages to move as one normal scroll-flow unit, so newly added messages cannot
   overlap the profile/actions intro block.
+- A follow-up DM display correction keeps the active private-call toolbar inside
+  the black DM call stage by giving that stage enough vertical room for avatars,
+  status text, and controls. `DirectMessageView.vue` also inserts additional DM
+  date dividers whenever adjacent persisted message timestamps cross a local
+  calendar date boundary, matching Discord's per-day timeline grouping.
 
 After each stage or meaningful feature:
 

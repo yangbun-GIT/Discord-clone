@@ -3477,16 +3477,17 @@ select:focus-visible {
 
 .dm-call-stage {
   position: relative;
-  min-height: 164px;
+  min-height: 236px;
   margin: -6px -16px 18px;
-  padding: 24px 26px 30px;
+  padding: 28px 26px 36px;
   border-bottom: 1px solid var(--border-subtle);
   background:
     radial-gradient(circle at 50% 20%, rgba(88, 101, 242, 0.34), transparent 28%),
     #050608;
   display: grid;
-  place-items: center;
-  gap: 14px;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
   text-align: center;
 }
 

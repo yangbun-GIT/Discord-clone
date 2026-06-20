@@ -1059,10 +1059,11 @@ Browser UI
     local/remote message row distinction, one-to-one intro status display, active
     private-call stage display, and local emoji plus DM call input/output popover
     state with outside-click/Escape dismissal. Current-user and remote DM messages
-    remain left-aligned; the intro-owned date divider separates profile/actions
-    from the first message, and the `dm-thread-stack` wraps intro plus message rows
-    so they scroll together without interleaving; current user messages keep a
-    styled row accent and vertically centered author-only delete action. The
+    remain left-aligned; the intro-owned first date divider and per-message date
+    boundary dividers separate profile/actions and cross-day messages, and the
+    `dm-thread-stack` wraps intro plus message rows so they scroll together without
+    interleaving. Current user messages keep a styled row accent and vertically
+    centered author-only delete action. The
     composer restores focus
     after Enter or send-button submission, including after the temporary disabled
     mutation window closes. Active DM call controls group mute, deafen, quick

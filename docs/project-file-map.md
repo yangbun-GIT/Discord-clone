@@ -537,10 +537,10 @@ For ordinary implementation work:
   - Keeps all DM messages left-aligned while distinguishing current-user messages
     with row styling and vertically centered author-only delete actions; the
     composer restores focus after Enter or send-button submission. Uses persisted
-    DM message `created_at` values for date divider and message time display; the
-    date divider stays inside the intro block, and the intro plus message rows
-    are wrapped by one `dm-thread-stack` so intro actions and first messages
-    cannot visually interleave during bottom-up scrolling.
+    DM message `created_at` values for message time display, the intro-owned first
+    date divider, and additional per-day dividers between messages. The intro plus
+    message rows are wrapped by one `dm-thread-stack` so intro actions and first
+    messages cannot visually interleave during bottom-up scrolling.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal

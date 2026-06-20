@@ -182,6 +182,24 @@ function messageTime(message: DirectMessage['messages'][number]) {
   )
 }
 
+function messageDateKey(message: DirectMessage['messages'][number]) {
+  const date = messageDate(message)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+function messageDateLabel(message: DirectMessage['messages'][number]) {
+  return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(
+    messageDate(message),
+  )
+}
+
+function shouldShowMessageDateDivider(message: DirectMessage['messages'][number], index: number) {
+  if (index === 0 || !props.dm) return false
+  const previousMessage = props.dm.messages[index - 1]
+  if (!previousMessage) return false
+  return messageDateKey(previousMessage) !== messageDateKey(message)
+}
+
 const timelineDate = computed(() => {
   const firstMessage = props.dm?.messages[0]
   const date = firstMessage ? messageDate(firstMessage) : new Date()
@@ -459,37 +477,40 @@ onBeforeUnmount(() => {
           <p>{{ t('dm.selectConversation') }}</p>
         </section>
 
-        <article
-          v-for="message in dm?.messages ?? []"
-          :key="message.id"
-          :class="['message-row', 'dm-message-row', { own: isOwnMessage(message.author_id), remote: !isOwnMessage(message.author_id) }]"
-          tabindex="0"
-          data-context-kind="dm-message"
-          :data-context-label="message.author_name"
-        >
-          <div class="avatar" aria-hidden="true">
-            {{ message.author_name.slice(0, 1).toUpperCase() }}
+        <template v-for="(message, index) in dm?.messages ?? []" :key="message.id">
+          <div v-if="shouldShowMessageDateDivider(message, index)" class="date-divider dm-date-divider">
+            <span>{{ messageDateLabel(message) }}</span>
           </div>
-          <div class="message-main">
-            <div class="message-meta">
-              <strong>{{ message.author_name }}</strong>
-              <span>{{ messageTime(message) }}</span>
-              <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
-              <div v-if="isOwnMessage(message.author_id)" class="message-actions" :aria-label="t('chat.aria.messageActions')">
-                <button
-                  class="message-icon-button danger"
-                  type="button"
-                  :title="t('chat.deleteMessage')"
-                  :aria-label="t('chat.deleteMessage')"
-                  @click="deleteMessage(message.id)"
-                >
-                  <Trash2 :size="14" aria-hidden="true" />
-                </button>
-              </div>
+          <article
+            :class="['message-row', 'dm-message-row', { own: isOwnMessage(message.author_id), remote: !isOwnMessage(message.author_id) }]"
+            tabindex="0"
+            data-context-kind="dm-message"
+            :data-context-label="message.author_name"
+          >
+            <div class="avatar" aria-hidden="true">
+              {{ message.author_name.slice(0, 1).toUpperCase() }}
             </div>
-            <p>{{ message.content }}</p>
-          </div>
-        </article>
+            <div class="message-main">
+              <div class="message-meta">
+                <strong>{{ message.author_name }}</strong>
+                <span>{{ messageTime(message) }}</span>
+                <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
+                <div v-if="isOwnMessage(message.author_id)" class="message-actions" :aria-label="t('chat.aria.messageActions')">
+                  <button
+                    class="message-icon-button danger"
+                    type="button"
+                    :title="t('chat.deleteMessage')"
+                    :aria-label="t('chat.deleteMessage')"
+                    @click="deleteMessage(message.id)"
+                  >
+                    <Trash2 :size="14" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+              <p>{{ message.content }}</p>
+            </div>
+          </article>
+        </template>
       </div>
     </div>
 
