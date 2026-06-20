@@ -143,8 +143,11 @@ voice workspace now uses a Discord-like stage composition in
 participant and empty-state tiles, darker stage framing, bottom-center voice
 actions for join/screen-share/leave, stage-level microphone/output controls with
 device popovers before screen share, and a real invite action in the empty tile when
-the user has invite permission. The existing WebRTC, voice panel, screen-share, and
-gateway signaling flows are preserved.
+the user has invite permission. Screen-share tiles and participant tiles now share
+one adaptive stage grid so active screen sharing becomes the primary tile while
+local and remote participant cards resize as supporting tiles without overlapping.
+The existing WebRTC, voice panel, screen-share, and gateway signaling flows are
+preserved.
 
 The global dark-theme surface tokens in `frontend/src/styles/base.css` were lowered
 and separated by layer on 2026-06-21 so the app workspace remains darker while

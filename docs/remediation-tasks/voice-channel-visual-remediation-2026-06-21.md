@@ -58,6 +58,20 @@ voice-panel behavior.
   connected. Each `^` trigger opens a clone-owned device popover that reuses the
   existing voice device settings state and closes on outside click or Escape.
 
+### VCV-5: Screen-share layout did not adapt to tile count
+
+- Location: `frontend/src/App.vue`, `frontend/src/styles/base.css`
+- Current behavior: screen-share tiles and participant tiles were rendered as
+  separate stacked grids, so a shared screen plus participants could create
+  oversized rows, overlap-prone composition, and uneven panel sizing.
+- Expected behavior: screen shares and voice participants should be measured as a
+  single stage grid. The shared screen should become the primary tile while local
+  and remote participants receive smaller but stable supporting tiles.
+- Fix: `App.vue` now computes screen-share and participant tile counts and applies
+  stage grid modifier classes. `base.css` uses those classes to switch between
+  normal participant layout, screen-share primary layout, multi-participant
+  supporting columns, and mobile single-column stacking.
+
 ## Verification Plan
 
 - `npm run lint:frontend`
@@ -80,3 +94,8 @@ voice-panel behavior.
 - Follow-up VCV-4 verification passed: `npm run lint:frontend`,
   `npm run test:frontend`, `npm --prefix frontend run build`,
   `npm run smoke:realtime:browser:https`, and `git diff --check` all passed.
+- Follow-up VCV-5 verification passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`,
+  `npm run smoke:realtime:browser:https`, and `git diff --check` passed. The
+  smoke result kept one remote screen video, no duplicate remote sharing
+  participant card, and zero browser errors.

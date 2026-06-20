@@ -101,6 +101,24 @@ const remoteVoiceStreamByUserId = computed(() =>
 const visibleSelectedVoicePeers = computed(() =>
   selectedVoicePeers.value.filter((participant) => !remoteScreenUserIds.value.has(participant.user_id)),
 )
+const voiceWorkspaceScreenShareCount = computed(
+  () => (voiceRtc.screenStream.value ? 1 : 0) + remoteScreenStreams.value.length,
+)
+const voiceWorkspaceParticipantTileCount = computed(
+  () => 1 + visibleSelectedVoicePeers.value.length
+    + (!visibleSelectedVoicePeers.value.length && !remoteScreenStreams.value.length ? 1 : 0),
+)
+const voiceWorkspaceTileCount = computed(
+  () => voiceWorkspaceScreenShareCount.value + voiceWorkspaceParticipantTileCount.value,
+)
+const voiceWorkspaceGridClass = computed(() => ({
+  'voice-workspace-grid--screen-active': voiceWorkspaceScreenShareCount.value > 0,
+  'voice-workspace-grid--screen-single-peer':
+    voiceWorkspaceScreenShareCount.value > 0 && voiceWorkspaceParticipantTileCount.value <= 1,
+  'voice-workspace-grid--screen-many':
+    voiceWorkspaceScreenShareCount.value > 0 && voiceWorkspaceParticipantTileCount.value > 1,
+  'voice-workspace-grid--many': voiceWorkspaceTileCount.value >= 4,
+}))
 const voiceLocationSummary = computed(() => {
   if (connectedDmId.value !== null) {
     const state = isDeafened.value
@@ -1756,11 +1774,7 @@ async function handleSendInviteToFriend(friendId: number) {
         </header>
 
         <div class="voice-workspace-stage">
-          <div
-            v-if="voiceRtc.screenStream.value || remoteScreenStreams.length"
-            class="screen-share-stage"
-            aria-label="Screen shares"
-          >
+          <div class="voice-workspace-grid" :class="voiceWorkspaceGridClass">
             <VoiceVideoSink
               v-if="voiceRtc.screenStream.value"
               class="local-screen-share-tile"
@@ -1779,9 +1793,7 @@ async function handleSendInviteToFriend(friendId: number) {
               :state="remote.connectionState"
               :user-id="remote.userId"
             />
-          </div>
 
-          <div class="voice-workspace-grid">
             <article
               class="voice-tile local"
               :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
