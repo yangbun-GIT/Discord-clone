@@ -1,5 +1,16 @@
 # Friends Home Remediation - 2026-06-20
 
+## Document Status
+
+- Status: implementation-backed remediation record.
+- Source: user-provided Friends home screenshot and current clone behavior on the
+  private `@me` Friends surface.
+- Purpose: keep the Friends home usability defects, fixes, verification evidence,
+  and remaining manual QA gates in one place so the next screen pass does not
+  rediscover the same control-policy issues.
+- Update rule: if a later Friends/DM/sidebar change changes a finding outcome,
+  update this document before committing.
+
 ## Scope
 
 Target surface: the private home Friends screen shown from `@me`.
@@ -7,6 +18,38 @@ Target surface: the private home Friends screen shown from `@me`.
 This pass is not a decorative visual refresh. It focuses on errors, missing or
 misleading behavior, inefficient flows, weak visibility, and usability gaps that
 make the Friends screen harder to use.
+
+In scope:
+
+- Friends header tabs, search, list rows, row actions, context menu behavior,
+  Add Friend feedback, selected-friend activity panel, blocked-user access, and
+  narrow viewport action reachability.
+- Shared control policy where the Friends screen exposed active-looking controls
+  through `App.vue` global context menus.
+- Documentation repair when broken setup text directly affects the required project
+  handoff path.
+
+Out of scope for this pass:
+
+- Cosmetic Discord pixel parity unrelated to usability.
+- New friend suggestions, contact import, profile editing, friend-call feature, or
+  full profile popout implementation.
+- Backend relationship lifecycle redesign; the current backend-backed friend
+  request, accept/reject/cancel, remove, block, and unblock flow is reused.
+- Final DM conversation polish. DM-specific defects should move to the next DM
+  remediation document.
+
+## Document Adequacy Review
+
+- The original finding list covered the visible Friends home issues from the
+  screenshot and the code-level inactive-control gap.
+- The document needed stronger development-document structure, so this review adds
+  status, non-goals, cross-surface policy, acceptance criteria, manual QA, and
+  residual-risk sections.
+- The implementation results are tied to concrete files and verification commands,
+  which is sufficient for handoff.
+- Future work should not reopen this document for broad DM/server design work; open
+  a separate screen-specific remediation document instead.
 
 ## Findings
 
@@ -162,6 +205,21 @@ make the Friends screen harder to use.
 - F8: Accessibility and keyboard/focus check.
 - F9: Responsive/narrow viewport row action check.
 
+## Acceptance Criteria
+
+- No Friends home visible control is left as an enabled placeholder action.
+- Friend row actions perform wired behavior or are hidden until implemented.
+- Add Friend displays request progress and success/error feedback in the Add Friend
+  panel itself.
+- All/Online/Pending counts are visible before opening the tab.
+- Blocked users are reachable when blocked relationships exist.
+- Search empty state clearly means "no matching result", not "no friends".
+- The activity panel does not imply that an offline/no-activity user is active.
+- Narrow viewport Friends rows still expose the management overflow menu.
+- App-owned menus and notices remain in use; browser-native alert/confirm/prompt or
+  default context menus are not introduced.
+- Existing realtime, DM, voice, and local submission smoke paths still pass.
+
 ## Stage Results
 
 - F1 completed: Friends tabs now show All, Online, and pending request counts; the
@@ -197,3 +255,39 @@ make the Friends screen harder to use.
   remote audio sink, DM/server realtime, invite-DM realtime, screen-share cleanup,
   and voice reload/rejoin recovery.
 - `git diff --check` passed after final whitespace cleanup.
+
+## Manual QA Checklist
+
+Run this when visually checking the Friends screen after future changes:
+
+1. Open Friends home at desktop width and confirm All/Online/Friend Requests counts
+   match visible data.
+2. Search for an existing friend and a non-existing friend; confirm the no-result
+   copy is specific to search.
+3. Send a valid friend request from Add Friend and confirm panel-local success
+   feedback appears.
+4. Try an invalid or duplicate friend request and confirm panel-local error feedback
+   appears.
+5. Right-click a friend row and confirm only implemented actions are shown.
+6. Use the row `...` menu and confirm message/remove/block/unblock behavior is
+   available according to relationship state.
+7. Block a friend, confirm the Blocked tab appears, then unblock from that tab.
+8. Select an offline friend and confirm the activity panel clearly says offline or
+   no current activity.
+9. Resize below `620px` and confirm the row overflow action remains visible and
+   usable.
+10. Press Escape/outside-click on open menus and confirm app-owned overlays close.
+
+## Residual Risks And Next Screen Handoff
+
+- The Friends screen now removes inactive friend-call/profile/mute controls instead
+  of implementing those features. If those features become required, add a new
+  implementation plan before re-exposing the controls.
+- The global context menu intentionally returns no items for friend and DM rows
+  because it does not receive target IDs. If future work adds target-aware context
+  metadata, DM/friend context menu actions can be reintroduced as real actions.
+- DM-specific issues remain outside this document: DM list duplicate handling,
+  conversation timeline clarity, unread behavior, and new DM creation should be
+  covered by the next DM screen remediation pass.
+- Final visual parity is not complete; this pass only fixes usability and
+  inactive-control defects on the Friends surface.
