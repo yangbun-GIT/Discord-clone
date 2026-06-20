@@ -52,7 +52,7 @@ Out of scope for this pass:
 - The current implementation results are still valid as a temporary quality gate:
   active-looking controls should not remain wired to fake notices. However, the
   Friends surface should not be considered feature-complete until FH-010 through
-  FH-014 are implemented or deliberately moved to a more specific DM/voice plan.
+  FH-017 are implemented or deliberately moved to a more specific DM/voice plan.
 - Future work should not reopen this document for broad server design work; open a
   separate screen-specific remediation document instead.
 
@@ -73,6 +73,11 @@ Implementation-worthy items that must remain in the Friends/private-home backlog
   as a real recipient picker and DM open/create action.
 - Friend/DM context menus: restore target-aware right-click actions only after the
   menu receives a real friend or DM target ID.
+- Incoming friend request feedback: make new requests visible outside the pending
+  tab through a badge, app-owned notice, or equivalent clone UI feedback.
+- Bottom-anchored message timelines: keep DM and server chat focused on the latest
+  messages by default, with Discord-like bottom-up reading behavior and controlled
+  auto-scroll.
 
 Items not treated as missing for this Friends screen pass:
 
@@ -85,7 +90,7 @@ Items not treated as missing for this Friends screen pass:
 - Nitro, Store, and public discovery surfaces: intentionally outside the private
   Friends home workflow.
 
-This means F10-F14 are not optional polish. They are the feature-completion stages
+This means F10-F17 are not optional polish. They are the feature-completion stages
 needed before the Friends home surface can be considered complete.
 
 ## Findings
@@ -214,6 +219,92 @@ needed before the Friends home surface can be considered complete.
   `frontend/src/i18n/index.ts`.
 - Verification: right-click friend/DM menus perform the same real actions as the
   visible row menu and never fall back to generic local-control notices.
+
+### FH-015 - Incoming friend requests need immediate visible feedback
+
+- Priority: P1
+- Location: server rail `@me` entry, private sidebar Friends/Friend Request entry,
+  global notice surface, and Friends pending tab.
+- Current behavior: `RELATIONSHIP_UPDATE` updates relationship state, but an
+  incoming request can be missed unless the user notices or opens the Friend
+  Request tab.
+- Expected behavior: when a new incoming friend request arrives, the clone should
+  provide app-owned feedback that is visible without hunting through tabs. The
+  request should increment a stable pending badge and, when appropriate, show a
+  dismissible notice or highlight that routes to the pending request view.
+- User impact: users can miss realtime friend requests even though the backend and
+  gateway delivered them.
+- Resolution direction: track the previous incoming-pending count in the frontend,
+  detect increases from gateway or reload data, update the `@me` unread/badge
+  affordance or Friends tab badge, and optionally show a clone-owned notice action
+  that opens the pending tab. Do not use browser-native notifications unless a
+  separate permission flow is deliberately implemented later.
+- Target files: `frontend/src/stores/dms.ts`,
+  `frontend/src/stores/dmGatewayHandlers.ts`, `frontend/src/App.vue`,
+  `frontend/src/components/ServerRail.vue`,
+  `frontend/src/components/PrivateChannelSidebar.vue`,
+  `frontend/src/components/FriendsHome.vue`,
+  `frontend/src/i18n/index.ts`, `frontend/src/styles/base.css`.
+- Verification: in two sessions, send a friend request from user A to user B and
+  confirm user B sees a visible request badge/feedback without manually refreshing;
+  clicking the feedback opens the pending request view; accepting/rejecting clears
+  the feedback.
+
+### FH-016 - DM and server message timelines should default to latest-message anchoring
+
+- Priority: P1
+- Location: `DirectMessageView.vue`, `ChatView.vue`, message list CSS, and message
+  stores.
+- Current behavior: message lists render in document order inside a normal
+  top-down scroll container. When conversations grow, the user can land near the
+  top and must scroll down to see the latest content.
+- Expected behavior: chat should feel Discord-like: the composer stays at the
+  bottom, the latest messages are visible by default, newly sent messages appear at
+  the bottom, and incoming messages auto-scroll only when the user is already near
+  the bottom. If the user is reading older messages, preserve scroll position and
+  offer a "jump to present/latest" control.
+- User impact: long conversations become hard to follow and require unnecessary
+  scrolling after every navigation or reload.
+- Resolution direction: add message-list refs and bottom-anchor helpers to both
+  server and DM chat views. Scroll to bottom on channel/DM switch and after the
+  current user sends a message. For incoming gateway messages, auto-scroll only
+  when near bottom; otherwise show a compact app-owned jump affordance. Keep DOM
+  order chronological for accessibility unless a tested column-reverse strategy is
+  chosen.
+- Target files: `frontend/src/components/DirectMessageView.vue`,
+  `frontend/src/components/ChatView.vue`, `frontend/src/stores/dms.ts`,
+  `frontend/src/stores/guilds.ts`, `frontend/src/styles/base.css`,
+  `frontend/src/i18n/index.ts`, and focused frontend tests if scroll helpers are
+  extracted.
+- Verification: open a long DM and a long server channel, reload, switch away/back,
+  send and receive messages from two sessions, and confirm latest content remains
+  visible unless the user intentionally scrolled upward.
+
+### FH-017 - DM header and profile-side actions need real behavior or clear scope
+
+- Priority: P2
+- Location: DM header controls, right-side profile/member panel, and selected DM
+  context.
+- Current behavior: the clone has some global header controls and selected profile
+  surfaces, but DM-specific call/profile/search/member actions are not consistently
+  implemented as target-aware DM actions.
+- Expected behavior: a DM screen should provide clear entry points for message
+  search, profile view, friend/DM call, and group/member information where those
+  controls are visible. Any action shown as enabled must act on the selected DM or
+  selected participant.
+- User impact: users cannot reliably tell which DM-specific controls work, which
+  are generic workspace controls, and which target they affect.
+- Resolution direction: as part of F17, audit DM header/profile-side controls and
+  either connect them to the same profile/call/search primitives or hide/disable
+  them with explicit scope. Keep this as a follow-on private-home/DM completion
+  stage, not decorative polish.
+- Target files: `frontend/src/App.vue`,
+  `frontend/src/components/DirectMessageView.vue`,
+  `frontend/src/components/PrivateChannelSidebar.vue`,
+  `frontend/src/i18n/index.ts`, `frontend/src/styles/base.css`.
+- Verification: each visible DM header/profile-side button performs a real
+  selected-DM action, has accessible labels, and no longer routes to generic
+  local-control notices.
 
 ### FH-002 - Add Friend result feedback is not local to the Add Friend panel
 
@@ -353,6 +444,9 @@ needed before the Friends home surface can be considered complete.
 - F12: Conversation mute preference and unread/notification behavior.
 - F13: Private sidebar `Start New DM` recipient picker implementation.
 - F14: Target-aware friend/DM global context menu restoration.
+- F15: Incoming friend request feedback, badge, and pending-route affordance.
+- F16: Bottom-anchored DM/server message timeline and latest-message jump behavior.
+- F17: DM header/profile-side target-aware action audit and implementation.
 
 ## Acceptance Criteria
 
@@ -371,6 +465,10 @@ needed before the Friends home surface can be considered complete.
   default context menus are not introduced.
 - Normal Discord-like private-home features are not treated as permanently
   out-of-scope merely because they were previously unimplemented.
+- Incoming friend requests are visible without requiring a manual refresh or hidden
+  tab search.
+- Long DM and server conversations open at the latest message by default and do not
+  force users to scroll down after every navigation.
 - Existing realtime, DM, voice, and local submission smoke paths still pass.
 
 ## Stage Results
@@ -409,6 +507,12 @@ needed before the Friends home surface can be considered complete.
   start-DM picker instead of routing back to Friends.
 - F14 pending: friend/DM global context menus need target IDs before real actions
   can be restored there.
+- F15 pending: incoming friend requests need visible realtime feedback and a clear
+  pending-request route.
+- F16 pending: DM and server message timelines need latest-message anchoring,
+  controlled auto-scroll, and a jump-to-latest affordance.
+- F17 pending: DM header/profile-side controls need a target-aware action audit so
+  useful Discord-like controls are implemented instead of excluded.
 
 ## Verification Log
 
@@ -444,7 +548,7 @@ Run this when visually checking the Friends screen after future changes:
    usable.
 10. Press Escape/outside-click on open menus and confirm app-owned overlays close.
 
-Feature-completion QA to run after F10-F14:
+Feature-completion QA to run after F10-F17:
 
 1. Open a friend profile from the row menu and activity panel; confirm the popout is
    target-correct and dismissible.
@@ -455,6 +559,11 @@ Feature-completion QA to run after F10-F14:
 4. Use the private sidebar `+` and quick switcher create action to create/open a DM.
 5. Right-click friend and DM rows; confirm each menu item acts on the correct
    target and no generic local-control notice appears.
+6. Send a friend request from another session; confirm realtime request feedback is
+   visible and routes to the pending view.
+7. In long DM and server conversations, confirm initial load and self-sent messages
+   keep the latest message visible while preserving scroll when reading older
+   content.
 
 ## Residual Risks And Next Screen Handoff
 
@@ -469,5 +578,5 @@ Feature-completion QA to run after F10-F14:
   screen remediation pass. However, start-new-DM, conversation mute, and friend/DM
   call entry are private-home/Friends-adjacent enough to remain tracked here.
 - Final visual parity is not complete; this pass only fixes usability and
-  inactive-control defects on the Friends surface while adding F10-F14 as the
+  inactive-control defects on the Friends surface while adding F10-F17 as the
   missing feature-completion backlog.

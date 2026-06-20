@@ -181,8 +181,19 @@ For ordinary implementation work:
     status clarity, responsive row actions, and README Korean quick-start repair.
   - Tracks implementation-worthy Friends/private-home backlog that must not be
     treated as excluded scope: friend profile popout, friend/DM call entry,
-    conversation mute, start-new-DM recipient picker, and target-aware friend/DM
-    context menus.
+    conversation mute, start-new-DM recipient picker, target-aware friend/DM
+    context menus, incoming request feedback, bottom-anchored message timelines,
+    and DM header/profile-side actions.
+- `docs/remediation-tasks/friends-dm-usability-implementation-reference.md`
+  - Codex-facing English implementation reference for the next Friends/DM usability
+    pass.
+  - Routes target files for profile popout, DM call, conversation mute,
+    start-new-DM, context menus, incoming request feedback, message scroll
+    anchoring, and DM header/profile actions.
+- `docs/remediation-tasks/friends-dm-usability-checklist-ko.md`
+  - Korean user-facing checklist for the Friends/DM usability backlog.
+  - Explains which missing controls should be implemented and which broad features
+    can remain outside the current pass.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh

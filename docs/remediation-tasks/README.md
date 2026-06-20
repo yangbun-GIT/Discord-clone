@@ -28,3 +28,14 @@ criteria, and regression checks.
 - `realtime-communication-plan.md`
   - Communication implementation plan for WebSocket, realtime text/DM, WebRTC
     voice/screen sharing, LAN/TURN readiness, and communication QA.
+- `friends-home-remediation-2026-06-20.md`
+  - Friends/private-home remediation record and remaining feature-completion
+    backlog.
+  - Tracks friend profile, friend/DM call, conversation mute, start-new-DM,
+    target-aware context menus, incoming request feedback, bottom-anchored message
+    timelines, and DM header/profile actions.
+- `friends-dm-usability-implementation-reference.md`
+  - English Codex-facing implementation reference for the next Friends/DM usability
+    pass.
+- `friends-dm-usability-checklist-ko.md`
+  - Korean user-facing checklist for confirming the Friends/DM usability backlog.

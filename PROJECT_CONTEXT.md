@@ -2206,12 +2206,22 @@ Completed Stage 2 bridge work:
   app-owned friend profile popout, real friend/DM call flow, conversation mute
   behavior, a private-sidebar start-new-DM recipient picker, and target-aware
   friend/DM context menus. These are not excluded from the Discord clone scope;
-  they are pending feature-completion stages F10-F14. Friends tabs now expose
+  they are pending feature-completion stages F10-F17. Friends tabs now expose
   counts, blocked users get an on-demand blocked tab, Add Friend success/error
   feedback appears inside the Add Friend panel, search empty copy distinguishes
   no-result from no-data, selected-friend activity copy no longer implies activity
   for offline/no-activity friends, mobile rows keep management actions reachable,
   and the README Korean quick-start block was restored as readable UTF-8 Korean.
+- Friends/DM usability scope was rechecked after the latest Discord DM screenshots.
+  `docs/remediation-tasks/friends-dm-usability-implementation-reference.md` is the
+  Codex-facing English implementation reference, and
+  `docs/remediation-tasks/friends-dm-usability-checklist-ko.md` is the Korean
+  user-facing checklist. Additional non-optional usability targets are now tracked:
+  incoming friend request feedback, bottom-anchored DM/server message timelines
+  with controlled auto-scroll and jump-to-latest behavior, and target-aware DM
+  header/profile-side actions. These are feature-completion items, not decorative
+  polish, and should be implemented before treating the private Friends/DM surface
+  as complete.
 
 After each stage or meaningful feature:
 

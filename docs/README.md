@@ -107,7 +107,15 @@ the project prompt and context files before changing code.
     responsive row actions, and README Korean quick-start repair.
   - Also owns the remaining Friends/private-home feature-completion backlog for
     friend profile popout, friend/DM call entry, conversation mute, start-new-DM
-    recipient picker, and target-aware friend/DM context menus.
+    recipient picker, target-aware friend/DM context menus, incoming friend request
+    feedback, bottom-anchored message timelines, and DM header/profile-side actions.
+- `docs/remediation-tasks/friends-dm-usability-implementation-reference.md`
+  - English Codex-facing implementation reference for the next Friends/DM usability
+    pass.
+  - Use it when implementing the remaining private-home feature-completion stages.
+- `docs/remediation-tasks/friends-dm-usability-checklist-ko.md`
+  - Korean user-facing checklist for the same Friends/DM usability backlog.
+  - Use it to confirm which missing features are in scope and why.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest user-run manual QA follow-up plan.
   - Owns sustained speech dropout, screen-share participant composition, refresh
