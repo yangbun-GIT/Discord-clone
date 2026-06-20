@@ -721,6 +721,9 @@ Browser UI
       `data-gateway-status` state attribute.
     - Friends/DM call-entry orchestration that opens the selected DM and delegates
       to `useVoiceSessionController.ts` for DM-scoped voice join/leave.
+    - Incoming DM private-call banner state derived from DM voice presence,
+      including accept/decline actions that keep the call in the same DM-scoped
+      WebRTC room.
 
 ### Stores And API
 
@@ -1015,6 +1018,8 @@ Browser UI
   - Groups All friends into optional local favorites plus a single remaining
     friend list with a compact ascending/descending sort; pending requests stay
     separated only when both incoming and outgoing groups are present.
+  - Visually distinguishes favorited friends through row-level favorite styling
+    while persisting the preference in `frontend/src/stores/preferences.ts`.
   - Emits message friend, profile, call-entry, mute, and relationship mutation
     actions to `frontend/src/App.vue`.
 - `frontend/src/components/FriendProfileDialog.vue`

@@ -232,6 +232,37 @@ const {
   },
   t,
 })
+const dismissedIncomingDmCallKeys = ref<string[]>([])
+const incomingDmCall = computed(() => {
+  const currentUserId = session.user?.id ?? null
+  if (currentUserId === null) return null
+  for (const state of guilds.voiceStates) {
+    if ((state.context_type ?? 'guild') !== 'dm') continue
+    if (state.dm_id === null || typeof state.dm_id === 'undefined') continue
+    if (state.user_id === currentUserId) continue
+    if (connectedDmId.value === state.dm_id) continue
+    const key = `${state.dm_id}:${state.user_id}`
+    if (dismissedIncomingDmCallKeys.value.includes(key)) continue
+    const dm = dms.getDm(state.dm_id)
+    if (!dm) continue
+    return {
+      key,
+      dm,
+      callerName: state.username ?? dm.display_name,
+    }
+  }
+  return null
+})
+watch(
+  () => guilds.voiceStates
+    .filter((state) => (state.context_type ?? 'guild') === 'dm' && typeof state.dm_id === 'number')
+    .map((state) => `${state.dm_id}:${state.user_id}`)
+    .join('|'),
+  (activeKeys) => {
+    const activeKeySet = new Set(activeKeys ? activeKeys.split('|') : [])
+    dismissedIncomingDmCallKeys.value = dismissedIncomingDmCallKeys.value.filter((key) => activeKeySet.has(key))
+  },
+)
 const { workspaceTitle, workspaceSubtitle } = useWorkspaceController({
   destination: () => navigation.destination,
   activeGuild: () => activeGuild.value ?? null,
@@ -745,6 +776,21 @@ async function handleStartFriendCall(friendId: number) {
   } catch (error) {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.voiceConnectFailed')
   }
+}
+
+async function handleAcceptIncomingDmCall() {
+  const call = incomingDmCall.value
+  if (!call) return
+  dismissedIncomingDmCallKeys.value = dismissedIncomingDmCallKeys.value.filter((key) => key !== call.key)
+  navigation.openDm(call.dm.id)
+  await connectVoiceToDm(call.dm)
+  setWorkspaceNotice(t('friends.dmCallAccepted', { target: call.callerName }), 'success')
+}
+
+function handleDismissIncomingDmCall() {
+  const call = incomingDmCall.value
+  if (!call) return
+  dismissedIncomingDmCallKeys.value = Array.from(new Set([...dismissedIncomingDmCallKeys.value, call.key]))
 }
 
 async function handleStartContextCall() {
@@ -1369,6 +1415,25 @@ async function handleSendInviteToFriend(friendId: number) {
             <button type="button" class="danger" :aria-label="t('voice.rejoinDismiss')" @click="dismissVoiceRejoin">
               <PhoneOff :size="14" aria-hidden="true" />
               <span>{{ t('voice.leaveSelected') }}</span>
+            </button>
+          </div>
+        </div>
+        <div v-if="incomingDmCall" class="dm-incoming-call-notice" role="alert">
+          <span class="dm-incoming-call-icon" aria-hidden="true">
+            <Phone :size="18" />
+          </span>
+          <div>
+            <strong>{{ t('friends.incomingDmCallTitle', { target: incomingDmCall.callerName }) }}</strong>
+            <span>{{ t('friends.incomingDmCallDescription') }}</span>
+          </div>
+          <div class="dm-incoming-call-actions">
+            <button type="button" class="primary" @click="handleAcceptIncomingDmCall">
+              <Phone :size="15" aria-hidden="true" />
+              <span>{{ t('friends.acceptCall') }}</span>
+            </button>
+            <button type="button" class="danger" @click="handleDismissIncomingDmCall">
+              <PhoneOff :size="15" aria-hidden="true" />
+              <span>{{ t('friends.declineCall') }}</span>
             </button>
           </div>
         </div>

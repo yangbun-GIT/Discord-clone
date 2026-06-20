@@ -2241,6 +2241,7 @@ Completed Stage 2 bridge work:
   to All. `preferences.ts` persists local favorite-friend IDs. `VoicePanel.vue`
   separates the lower user-settings gear to My Account from quick voice popover
   Voice & Video settings, and input/output chevrons toggle their popovers open and
+  closed.
 - The 2026-06-20 DM private voice boundary pass added real DM voice-room signaling
   without replacing the existing guild voice transport. Gateway voice payloads now
   carry an optional `context_type` of `guild` or `dm`; `backend/app/gateway/router.py`,
@@ -2257,6 +2258,14 @@ Completed Stage 2 bridge work:
   Docker backend gateway tests, local submission readiness, and HTTPS realtime
   browser smoke passed after rebuilding the Docker stack. Manual two-account real
   microphone QA for DM private calls remains recommended before final submission.
+- A follow-up Friends/DM usability pass added receiver-side feedback for private
+  DM calls and clearer favorite-friend distinction. `frontend/src/App.vue` now
+  detects an incoming DM voice state from another user, shows an app-owned private
+  call banner with accept/decline actions, and joins the same DM-scoped WebRTC
+  room when accepted. `frontend/src/components/FriendsHome.vue` and
+  `frontend/src/styles/base.css` now render favorited friends with a distinct row
+  accent, badge, and persistent active star state instead of relying only on the
+  group heading.
 
 After each stage or meaningful feature:
 

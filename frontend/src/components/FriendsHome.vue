@@ -460,7 +460,10 @@ watch(
                 v-for="friend in group.friends"
                 :key="friend.id"
                 class="friend-row"
-                :class="{ active: selectedFriend?.id === friend.id }"
+                :class="{
+                  active: selectedFriend?.id === friend.id,
+                  favorite: preferences.isFavoriteFriend(friend.id),
+                }"
                 data-context-kind="friend"
                 :data-context-id="friend.id"
                 :data-context-label="friend.username"
@@ -472,6 +475,12 @@ watch(
                   <span class="friend-name-line">
                     <strong>{{ friend.username }}</strong>
                     <small>{{ friend.handle }}</small>
+                    <small
+                      v-if="preferences.isFavoriteFriend(friend.id)"
+                      class="friend-favorite-label"
+                    >
+                      {{ t('friends.favoriteLabel') }}
+                    </small>
                   </span>
                   <span class="friend-status-line">
                     <span class="presence-dot" :class="friend.status" aria-hidden="true"></span>

@@ -468,6 +468,8 @@ For ordinary implementation work:
     panel while keeping generic settings entry on My Account.
   - Sends a reset key to Friends home when the private sidebar Friends entry is
     clicked so the main Friends tab returns to All.
+  - Detects incoming DM voice states and shows the app-owned private-call
+    accept/decline banner before joining the DM-scoped WebRTC room.
   - Filters global context-menu invite actions through `guilds.canCreateInvite`.
 - `frontend/src/types.ts`
   - Shared frontend DTO and state types.
@@ -503,6 +505,8 @@ For ordinary implementation work:
     locally, keeps the All tab as a single friend list after favorites rather than
     splitting online/offline groups, and shows every strictly-online friend in
     Active Now.
+  - Renders favorited friends as distinct rows with a visual accent, favorite
+    badge, and persistent active star state.
 - `frontend/src/components/FriendProfileDialog.vue`
   - App-owned friend profile popout for username, handle, presence, relationship,
     message, call-entry, and mute actions.

@@ -591,6 +591,15 @@ needed before the Friends home surface can be considered complete.
     contaminating guild voice state; `DirectMessageView.vue` renders a
     Discord-like active DM call stage. Backend gateway-manager tests cover
     DM-only signal routing and DM voice-state snapshots.
+  - F11 receiver-feedback follow-up completed: `App.vue` now treats an existing
+    DM voice state from another participant as an incoming private call and shows
+    an app-owned accept/decline banner. Accepting opens the DM and joins the same
+    DM-scoped WebRTC room; declining only dismisses the current incoming-call
+    prompt until the caller leaves and calls again.
+  - Favorite visibility follow-up completed: `FriendsHome.vue` now marks
+    favorited rows with a favorite class and badge, while `base.css` gives those
+    rows a distinct accent, subtle background, and persistent active star state
+    so favorites are distinguishable outside the group heading.
 
 ## Verification Log
 
@@ -645,6 +654,15 @@ needed before the Friends home surface can be considered complete.
     cleanup, voice reload/rejoin recovery, and voice leave cleanup.
   - Manual two-account real microphone QA for DM private calls is still
     recommended before final submission.
+- 2026-06-20 incoming DM call/favorite distinction follow-up verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, DM/server realtime, invite-DM realtime, screen-share
+    cleanup, voice reload/rejoin recovery, and voice leave cleanup.
+  - `git diff --check` passed; Git only reported line-ending normalization
+    warnings for touched files.
 
 ## Manual QA Checklist
 
