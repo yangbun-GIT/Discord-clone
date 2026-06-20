@@ -69,8 +69,9 @@ For ordinary implementation work:
 - `scripts/realtime_browser_smoke.mjs`
   - C8 two-browser smoke: creates temporary dev sessions, a shared guild/invite,
     friend relationship, and a DM, then verifies invite-DM delivery, server text,
-    DM, owner/member invite permission UI, voice peer visibility, remote audio
-    sink, independent mute/deafen behavior, fake screen-share paths, local
+    DM, DM composer focus retention after send, owner/member invite permission UI,
+    voice peer visibility, remote audio sink, independent mute/deafen behavior,
+    fake screen-share paths, local
     screen-preview rendering, remote screen-video rendering, screen-share stop
     cleanup, server-channel reload retention,
     connected voice-workspace reload retention, connected-tab automatic voice

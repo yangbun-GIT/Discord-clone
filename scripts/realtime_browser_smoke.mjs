@@ -76,10 +76,21 @@ async function openGuild(page, guildName) {
   await page.waitForTimeout(1_500)
 }
 
-async function sendComposerMessage(page, labelPattern, content) {
+async function sendComposerMessage(page, labelPattern, content, options = {}) {
   const input = page.getByRole('textbox', { name: labelPattern }).last()
   await input.fill(content)
   await input.press('Enter')
+  if (!options.expectFocusRetained) return
+  await page.waitForFunction(
+    ({ source, flags }) => {
+      const matcher = new RegExp(source, flags)
+      const inputElement = [...document.querySelectorAll('input[aria-label], textarea[aria-label]')]
+        .find((element) => matcher.test(element.getAttribute('aria-label') ?? ''))
+      return Boolean(inputElement && document.activeElement === inputElement && !inputElement.disabled)
+    },
+    { source: labelPattern.source, flags: labelPattern.flags },
+    { timeout: 10_000 },
+  )
 }
 
 async function waitForTextPresence(page, content, label) {
@@ -291,7 +302,12 @@ async function run() {
     await openDirectMessage(pageB.page, userA.user.username)
 
     const dmContent = `dm-smoke-${suffix}`
-    await sendComposerMessage(pageA.page, new RegExp(`message ${escapeRegex(userB.user.username)}`, 'i'), dmContent)
+    await sendComposerMessage(
+      pageA.page,
+      new RegExp(`message ${escapeRegex(userB.user.username)}`, 'i'),
+      dmContent,
+      { expectFocusRetained: true },
+    )
     await waitForTextPresence(pageB.page, dmContent, 'direct message')
 
     await Promise.all([
@@ -433,6 +449,7 @@ async function run() {
       serverTextRealtime: true,
       serverWorkspacePreservedAfterReload,
       dmRealtime: true,
+      dmComposerFocusRetained: true,
       inviteDmRealtime: true,
       ownerInviteControlVisible,
       memberInviteControlHidden,
@@ -468,6 +485,7 @@ async function run() {
       !result.serverTextRealtime
       || !result.serverWorkspacePreservedAfterReload
       || !result.dmRealtime
+      || !result.dmComposerFocusRetained
       || !result.inviteDmRealtime
       || !result.ownerInviteControlVisible
       || !result.memberInviteControlHidden

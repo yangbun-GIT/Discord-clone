@@ -2320,6 +2320,10 @@ Completed Stage 2 bridge work:
   `대화 닫기` to the app-owned DM row context menu. `DirectMessageView.vue` now
   preserves composer focus after Enter or send-button submission through the
   post-render update, so repeated DM entry stays inside the message input.
+- The DM composer focus fix now explicitly waits for the temporary disabled
+  mutation window to end before restoring focus, and
+  `scripts/realtime_browser_smoke.mjs` verifies that the DM textbox remains the
+  active element after a submitted DM message.
 
 After each stage or meaningful feature:
 

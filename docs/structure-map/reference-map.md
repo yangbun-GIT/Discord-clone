@@ -1054,8 +1054,9 @@ Browser UI
     emoji plus DM call input/output popover state with outside-click/Escape
     dismissal. Current-user and remote DM messages remain left-aligned; current
     user messages keep a styled row accent and author-only delete action. The
-    composer restores focus after Enter or send-button submission. Active DM call
-    controls group mute, deafen, quick input/output
+    composer restores focus after Enter or send-button submission, including after
+    the temporary disabled mutation window closes. Active DM call controls group
+    mute, deafen, quick input/output
     settings, and hang-up in one toolbar, and ongoing remote DM calls can render
     as joinable stages.
 - `frontend/src/components/ChatView.vue`

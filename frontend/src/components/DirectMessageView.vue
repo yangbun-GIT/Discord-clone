@@ -26,6 +26,7 @@ const audioMenu = ref<'input' | 'output' | null>(null)
 const messageList = ref<HTMLElement | null>(null)
 const composerInput = ref<HTMLInputElement | null>(null)
 const showJumpToLatest = ref(false)
+const pendingComposerFocusRestore = ref(false)
 const { t } = useI18n()
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
@@ -60,11 +61,22 @@ function insertEmoji(emoji: string) {
 }
 
 function restoreComposerFocus() {
+  pendingComposerFocusRestore.value = true
   void nextTick(() => {
-    composerInput.value?.focus()
-    window.requestAnimationFrame(() => composerInput.value?.focus())
-    window.setTimeout(() => composerInput.value?.focus(), 0)
+    focusComposerInput()
+    window.requestAnimationFrame(focusComposerInput)
+    window.setTimeout(focusComposerInput, 0)
   })
+}
+
+function focusComposerInput() {
+  if (!pendingComposerFocusRestore.value || props.disabled || !props.dm) return
+  const input = composerInput.value
+  if (!input) return
+  input.focus({ preventScroll: true })
+  const cursorPosition = input.value.length
+  input.setSelectionRange(cursorPosition, cursorPosition)
+  pendingComposerFocusRestore.value = false
 }
 
 function toggleAudioMenu(menu: 'input' | 'output') {
@@ -171,7 +183,15 @@ watch(
   () => {
     draft.value = ''
     showEmojiPanel.value = false
+    pendingComposerFocusRestore.value = false
     void nextTick(() => scrollToLatest())
+  },
+)
+
+watch(
+  () => props.disabled,
+  (isDisabled) => {
+    if (!isDisabled && pendingComposerFocusRestore.value) restoreComposerFocus()
   },
 )
 
