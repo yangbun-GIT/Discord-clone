@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { apiGet } from '../services/api'
 import { browserStorage } from '../services/browserApi'
@@ -15,6 +15,7 @@ type VoiceRtc = ReturnType<typeof useVoiceRtc>
 type Gateway = ReturnType<typeof useGateway>
 
 const VOICE_REJOIN_STORAGE_KEY = 'discord_clone_voice_rejoin'
+const DM_SOLO_AUTO_LEAVE_MS = 180_000
 
 interface VoiceSessionControllerOptions {
   guilds: GuildStore
@@ -45,6 +46,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
   const voiceTurnConfigured = ref(false)
   const connectedDmId = ref<number | null>(null)
   const connectedDmName = ref<string | null>(null)
+  let dmSoloAutoLeaveTimer: number | null = null
 
   const voiceConnected = computed(() => options.guilds.voiceConnected || connectedDmId.value !== null)
   const connectedVoiceChannelId = computed(() =>
@@ -195,6 +197,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
   }
 
   function disconnectVoice() {
+    clearDmSoloAutoLeaveTimer()
     if (options.guilds.connectedVoiceGuildId) {
       options.updateVoiceState({
         context_type: 'guild',
@@ -398,6 +401,29 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     })
   }
 
+  function clearDmSoloAutoLeaveTimer() {
+    if (dmSoloAutoLeaveTimer === null) return
+    window.clearTimeout(dmSoloAutoLeaveTimer)
+    dmSoloAutoLeaveTimer = null
+  }
+
+  function scheduleDmSoloAutoLeaveIfNeeded() {
+    clearDmSoloAutoLeaveTimer()
+    const userId = options.session.user?.id
+    if (!userId || connectedDmId.value === null || !options.voiceRtc.isCapturing.value) return
+    const participants = connectedVoiceStates.value
+    const localParticipantPresent = participants.some((state) => state.user_id === userId)
+    const remoteParticipantCount = participants.filter((state) => state.user_id !== userId).length
+    if (!localParticipantPresent || remoteParticipantCount > 0) return
+    dmSoloAutoLeaveTimer = window.setTimeout(() => {
+      dmSoloAutoLeaveTimer = null
+      if (connectedDmId.value === null) return
+      const currentParticipants = connectedVoiceStates.value
+      const currentRemoteCount = currentParticipants.filter((state) => state.user_id !== userId).length
+      if (currentRemoteCount === 0) disconnectVoice()
+    }, DM_SOLO_AUTO_LEAVE_MS)
+  }
+
   watch(
     () => connectedVoiceStates.value.map((state) => `${state.context_type ?? 'guild'}:${state.dm_id ?? state.channel_id}:${state.user_id}`).join('|'),
     () => {
@@ -406,6 +432,15 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
         options.setError(error instanceof Error ? error.message : options.t('app.error.voicePeerSyncFailed'))
       })
     },
+  )
+
+  watch(
+    () => [
+      connectedDmId.value,
+      options.voiceRtc.isCapturing.value,
+      connectedVoiceStates.value.map((state) => state.user_id).sort((a, b) => a - b).join('|'),
+    ].join(':'),
+    scheduleDmSoloAutoLeaveIfNeeded,
   )
 
   watch(
@@ -420,6 +455,10 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       })
     },
   )
+
+  onBeforeUnmount(() => {
+    clearDmSoloAutoLeaveTimer()
+  })
 
   return {
     isDeafened,

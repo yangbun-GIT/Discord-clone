@@ -13,6 +13,7 @@ const props = defineProps<{
   disabled: boolean
   muted?: boolean
   callActive?: boolean
+  callJoinable?: boolean
   voiceDeviceSettings: VoiceDeviceSettings
   voiceDevices: VoiceDeviceList
 }>()
@@ -181,7 +182,7 @@ onBeforeUnmount(() => {
 <template>
   <section class="chat-view" :aria-label="t('dm.aria.directMessages')">
     <div ref="messageList" class="message-list message-list-bottom" @scroll="handleMessageScroll">
-      <section v-if="dm && callActive" class="dm-call-stage" :aria-label="t('dm.callActive')">
+      <section v-if="dm && (callActive || callJoinable)" class="dm-call-stage" :aria-label="t('dm.callActive')">
         <div class="dm-call-avatars" aria-hidden="true">
           <span class="dm-call-avatar local">{{ currentUser?.username.slice(0, 1).toUpperCase() ?? 'Y' }}</span>
           <span
@@ -194,120 +195,137 @@ onBeforeUnmount(() => {
         </div>
         <div>
           <strong>{{ dm.display_name }}</strong>
-          <span>{{ t('dm.callConnected') }}</span>
+          <span>{{ callActive ? t('dm.callConnected') : t('friends.incomingDmCallDescription') }}</span>
         </div>
-        <div class="dm-call-device-controls" :aria-label="t('voice.aria.controls')">
-          <button
-            type="button"
-            :title="t('voice.openInputMenu')"
-            :aria-label="t('voice.openInputMenu')"
-            :aria-expanded="audioMenu === 'input'"
-            @click="toggleAudioMenu('input')"
+        <div v-if="callActive" class="dm-call-control-stack">
+          <div class="dm-call-device-controls" :aria-label="t('voice.aria.controls')">
+            <button
+              type="button"
+              :title="t('voice.openInputMenu')"
+              :aria-label="t('voice.openInputMenu')"
+              :aria-expanded="audioMenu === 'input'"
+              @click="toggleAudioMenu('input')"
+            >
+              <Mic :size="17" aria-hidden="true" />
+              <ChevronUp :size="13" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              :title="t('voice.openOutputMenu')"
+              :aria-label="t('voice.openOutputMenu')"
+              :aria-expanded="audioMenu === 'output'"
+              @click="toggleAudioMenu('output')"
+            >
+              <Volume2 :size="17" aria-hidden="true" />
+              <ChevronUp :size="13" aria-hidden="true" />
+            </button>
+            <button type="button" :title="t('settings.voiceAndVideoSettings')" @click="openVoiceSettings">
+              <Settings :size="17" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              class="dm-call-leave"
+              :aria-label="t('voice.leaveSelected')"
+              @click="$emit('leaveCall')"
+            >
+              <PhoneOff :size="18" aria-hidden="true" />
+            </button>
+          </div>
+          <div
+            v-if="audioMenu"
+            class="dm-call-device-popover"
+            :aria-label="audioMenu === 'input' ? t('voice.inputMenu') : t('voice.outputMenu')"
           >
-            <Mic :size="17" aria-hidden="true" />
-            <ChevronUp :size="13" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            :title="t('voice.openOutputMenu')"
-            :aria-label="t('voice.openOutputMenu')"
-            :aria-expanded="audioMenu === 'output'"
-            @click="toggleAudioMenu('output')"
-          >
-            <Volume2 :size="17" aria-hidden="true" />
-            <ChevronUp :size="13" aria-hidden="true" />
-          </button>
-          <button type="button" :title="t('settings.voiceAndVideoSettings')" @click="openVoiceSettings">
-            <Settings :size="17" aria-hidden="true" />
-          </button>
+            <template v-if="audioMenu === 'input'">
+              <label class="voice-device-field">
+                <span>{{ t('settings.inputDevice') }}</span>
+                <select
+                  :value="voiceDeviceSettings.inputDeviceId ?? ''"
+                  @change="handleDeviceSelect('inputDeviceId', $event)"
+                >
+                  <option value="">{{ t('settings.defaultDevice') }}</option>
+                  <option v-for="device in voiceDevices.inputs" :key="device.id" :value="device.id">
+                    {{ device.label }}
+                  </option>
+                </select>
+              </label>
+              <label class="voice-device-range">
+                <span>{{ t('settings.inputVolume') }}</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  :value="voiceDeviceSettings.inputVolume"
+                  @input="handleDeviceRange('inputVolume', $event)"
+                />
+                <strong>{{ voiceDeviceSettings.inputVolume }}%</strong>
+              </label>
+              <label class="voice-device-range voice-device-sensitivity">
+                <span>{{ t('settings.inputSensitivity') }}</span>
+                <input
+                  type="range"
+                  min="5"
+                  max="85"
+                  :value="voiceDeviceSettings.inputSensitivity"
+                  @input="handleDeviceRange('inputSensitivity', $event)"
+                />
+                <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
+              </label>
+              <label class="voice-device-field">
+                <span>{{ t('settings.noiseSuppressionEngine') }}</span>
+                <select
+                  :value="voiceDeviceSettings.noiseSuppressionMode"
+                  @change="handleNoiseSuppressionModeChange"
+                >
+                  <option value="off">{{ t('settings.noiseSuppressionOff') }}</option>
+                  <option value="rnnoise">{{ t('settings.rnnoiseSuppression') }}</option>
+                </select>
+              </label>
+              <label class="voice-device-toggle">
+                <span>{{ t('settings.noiseGate') }}</span>
+                <input
+                  type="checkbox"
+                  :checked="voiceDeviceSettings.noiseGate"
+                  @change="handleNoiseGateChange"
+                />
+              </label>
+            </template>
+            <template v-else>
+              <label class="voice-device-field">
+                <span>{{ t('settings.outputDevice') }}</span>
+                <select
+                  :value="voiceDeviceSettings.outputDeviceId ?? ''"
+                  @change="handleDeviceSelect('outputDeviceId', $event)"
+                >
+                  <option value="">{{ t('settings.defaultDevice') }}</option>
+                  <option v-for="device in voiceDevices.outputs" :key="device.id" :value="device.id">
+                    {{ device.label }}
+                  </option>
+                </select>
+              </label>
+              <label class="voice-device-range">
+                <span>{{ t('settings.outputVolume') }}</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  :value="voiceDeviceSettings.outputVolume"
+                  @input="handleDeviceRange('outputVolume', $event)"
+                />
+                <strong>{{ voiceDeviceSettings.outputVolume }}%</strong>
+              </label>
+            </template>
+          </div>
         </div>
-        <div
-          v-if="audioMenu"
-          class="dm-call-device-popover"
-          :aria-label="audioMenu === 'input' ? t('voice.inputMenu') : t('voice.outputMenu')"
+        <button
+          v-else
+          type="button"
+          class="dm-call-join"
+          :aria-label="t('friends.acceptCall')"
+          @click="$emit('startCall')"
         >
-          <template v-if="audioMenu === 'input'">
-            <label class="voice-device-field">
-              <span>{{ t('settings.inputDevice') }}</span>
-              <select
-                :value="voiceDeviceSettings.inputDeviceId ?? ''"
-                @change="handleDeviceSelect('inputDeviceId', $event)"
-              >
-                <option value="">{{ t('settings.defaultDevice') }}</option>
-                <option v-for="device in voiceDevices.inputs" :key="device.id" :value="device.id">
-                  {{ device.label }}
-                </option>
-              </select>
-            </label>
-            <label class="voice-device-range">
-              <span>{{ t('settings.inputVolume') }}</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                :value="voiceDeviceSettings.inputVolume"
-                @input="handleDeviceRange('inputVolume', $event)"
-              />
-              <strong>{{ voiceDeviceSettings.inputVolume }}%</strong>
-            </label>
-            <label class="voice-device-range voice-device-sensitivity">
-              <span>{{ t('settings.inputSensitivity') }}</span>
-              <input
-                type="range"
-                min="5"
-                max="85"
-                :value="voiceDeviceSettings.inputSensitivity"
-                @input="handleDeviceRange('inputSensitivity', $event)"
-              />
-              <strong>{{ voiceDeviceSettings.inputSensitivity }}%</strong>
-            </label>
-            <label class="voice-device-field">
-              <span>{{ t('settings.noiseSuppressionEngine') }}</span>
-              <select
-                :value="voiceDeviceSettings.noiseSuppressionMode"
-                @change="handleNoiseSuppressionModeChange"
-              >
-                <option value="off">{{ t('settings.noiseSuppressionOff') }}</option>
-                <option value="rnnoise">{{ t('settings.rnnoiseSuppression') }}</option>
-              </select>
-            </label>
-            <label class="voice-device-toggle">
-              <span>{{ t('settings.noiseGate') }}</span>
-              <input
-                type="checkbox"
-                :checked="voiceDeviceSettings.noiseGate"
-                @change="handleNoiseGateChange"
-              />
-            </label>
-          </template>
-          <template v-else>
-            <label class="voice-device-field">
-              <span>{{ t('settings.outputDevice') }}</span>
-              <select
-                :value="voiceDeviceSettings.outputDeviceId ?? ''"
-                @change="handleDeviceSelect('outputDeviceId', $event)"
-              >
-                <option value="">{{ t('settings.defaultDevice') }}</option>
-                <option v-for="device in voiceDevices.outputs" :key="device.id" :value="device.id">
-                  {{ device.label }}
-                </option>
-              </select>
-            </label>
-            <label class="voice-device-range">
-              <span>{{ t('settings.outputVolume') }}</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                :value="voiceDeviceSettings.outputVolume"
-                @input="handleDeviceRange('outputVolume', $event)"
-              />
-              <strong>{{ voiceDeviceSettings.outputVolume }}%</strong>
-            </label>
-          </template>
-        </div>
-        <button type="button" class="dm-call-leave" :aria-label="t('voice.leaveSelected')" @click="$emit('leaveCall')">
-          <PhoneOff :size="18" aria-hidden="true" />
+          <Phone :size="18" aria-hidden="true" />
+          <span>{{ t('friends.acceptCall') }}</span>
         </button>
       </section>
 

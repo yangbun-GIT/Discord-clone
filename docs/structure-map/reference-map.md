@@ -987,7 +987,8 @@ Browser UI
       voice join/leave orchestration, mute/deafen gateway updates, safe reload
       rejoin recovery metadata for guild voice channels, automatic rejoin after
       gateway-ready refresh recovery, screen-share toggle orchestration, voice
-      participant sync, and incoming context-scoped voice-signal handling.
+      participant sync, incoming context-scoped voice-signal handling, and DM-only
+      solo-call auto-leave timing.
 
 - `frontend/src/i18n/index.ts`
   - References:
@@ -1036,7 +1037,8 @@ Browser UI
     voice-device refresh, and voice-device update actions to `frontend/src/App.vue`.
   - Owns bottom-anchored DM scroll behavior, active private-call stage display, and
     local emoji plus DM call input/output popover state with outside-click/Escape
-    dismissal.
+    dismissal. Active DM call controls are grouped with hang-up in one toolbar,
+    and ongoing remote DM calls can render as joinable stages.
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.

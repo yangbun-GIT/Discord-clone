@@ -3474,7 +3474,7 @@ select:focus-visible {
   position: relative;
   min-height: 164px;
   margin: -6px -16px 18px;
-  padding: 26px;
+  padding: 24px 26px 30px;
   border-bottom: 1px solid var(--border-subtle);
   background:
     radial-gradient(circle at 50% 20%, rgba(88, 101, 242, 0.34), transparent 28%),
@@ -3483,6 +3483,12 @@ select:focus-visible {
   place-items: center;
   gap: 14px;
   text-align: center;
+}
+
+.dm-call-control-stack {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
 }
 
 .dm-call-device-controls {
@@ -3496,8 +3502,12 @@ select:focus-visible {
   padding: 5px;
 }
 
+.dm-call-device-controls .dm-call-leave {
+  margin-left: 5px;
+}
+
 .dm-call-device-controls button {
-  min-width: 38px;
+  min-width: 36px;
   height: 34px;
   border: 0;
   border-radius: 8px;
@@ -3520,10 +3530,14 @@ select:focus-visible {
 
 .dm-call-device-popover {
   position: absolute;
-  top: 18px;
-  right: 24px;
+  left: 50%;
+  right: auto;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
   z-index: 35;
-  width: min(320px, calc(100% - 48px));
+  width: min(320px, calc(100vw - 72px));
+  max-height: min(440px, calc(100vh - 160px));
+  overflow: auto;
   display: grid;
   gap: 10px;
   border: 1px solid rgb(255 255 255 / 12%);
@@ -3596,7 +3610,8 @@ select:focus-visible {
 
 .dm-call-leave {
   width: 48px;
-  height: 36px;
+  min-width: 48px;
+  height: 34px;
   border: 0;
   border-radius: 8px;
   display: grid;
@@ -3610,6 +3625,33 @@ select:focus-visible {
 .dm-call-leave:focus-visible {
   background: #da373c;
   outline: none;
+}
+
+.dm-call-join {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #248046;
+  color: #ffffff;
+  padding: 0 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dm-call-join:hover,
+.dm-call-join:focus-visible {
+  background: #2d9a55;
+  outline: none;
+}
+
+.dm-call-join span {
+  display: inline;
+  margin-top: 0;
+  color: #ffffff;
 }
 
 .dm-intro-heading {
@@ -5687,7 +5729,7 @@ select:focus-visible {
   position: absolute;
   left: 6px;
   right: 6px;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 16px);
   z-index: 45;
   width: auto;
   max-height: min(520px, calc(100vh - 160px));
@@ -5705,7 +5747,7 @@ select:focus-visible {
 }
 
 .app-shell.voice-connected .voice-device-popover {
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 16px);
 }
 
 .voice-device-field,

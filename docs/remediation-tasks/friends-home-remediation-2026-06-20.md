@@ -610,6 +610,14 @@ needed before the Friends home surface can be considered complete.
     outgoing peer tracks while keeping the active call connected. The lower
     `VoicePanel` quick popover now opens above the whole lower status/voice panel
     so it does not cover the connected call card.
+  - DM call layout/lifecycle follow-up completed: the active DM call stage now
+    groups microphone input, output, Voice & Video settings, and hang-up into one
+    horizontal toolbar. Input/output popovers are anchored to that toolbar instead
+    of the far side of the stage. If one participant leaves while the other remains,
+    the leaver no longer receives repeated incoming-call banners for that same
+    active call; selecting the DM instead shows a joinable call stage. DM calls
+    also get a client-side solo cleanup timer that leaves the call after 3 minutes
+    alone, while guild voice channels remain unchanged.
 
 ## Verification Log
 
@@ -674,6 +682,15 @@ needed before the Friends home surface can be considered complete.
   - `git diff --check` passed; Git only reported line-ending normalization
     warnings for touched files.
 - 2026-06-20 DM call device-control follow-up verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `git diff --check` passed; Git only reported line-ending normalization
+    warnings for touched files.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, DM/server realtime, invite-DM realtime, fake screen-share
+    cleanup, voice reload/rejoin recovery, and voice leave cleanup.
+- 2026-06-20 DM call layout/lifecycle follow-up verification:
   - `npm run lint:frontend` passed.
   - `npm run test:frontend` passed: 7 files, 46 tests.
   - `npm --prefix frontend run build` passed.

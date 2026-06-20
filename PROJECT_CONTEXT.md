@@ -2278,6 +2278,16 @@ Completed Stage 2 bridge work:
   and input-gate changes remain live processor updates. The lower `VoicePanel`
   quick settings popover now opens above the entire status/voice panel instead of
   covering the connected status card.
+- A third DM call follow-up tightened Discord-like active-call controls and call
+  lifecycle behavior. `DirectMessageView.vue` now renders the microphone, output,
+  Voice & Video settings, and hang-up controls in one horizontal call toolbar, and
+  anchors the input/output popovers to that toolbar instead of pinning them to the
+  far side of the call stage. If one user leaves while the other remains in the
+  DM voice room, `App.vue` suppresses repeated incoming-call banners for that
+  still-active call and exposes it as a joinable DM call stage when the DM is
+  selected. `useVoiceSessionController.ts` schedules a DM-only solo-call cleanup:
+  if the local user is alone in a DM call for 3 minutes, the client leaves the DM
+  voice room. Guild voice channels are not affected.
 
 After each stage or meaningful feature:
 

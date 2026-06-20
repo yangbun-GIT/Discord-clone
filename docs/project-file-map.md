@@ -515,6 +515,8 @@ For ordinary implementation work:
     local emoji panel dismissal, and the active DM private-call stage.
   - Active DM calls expose input/output quick settings that reuse the shared
     `useVoiceRtc` device settings and refresh/update events.
+  - Active DM calls keep voice controls and hang-up in one toolbar; ongoing remote
+    DM calls can render as joinable stages after the local user leaves.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal
@@ -658,6 +660,10 @@ For ordinary implementation work:
 - `frontend/src/composables/voiceStats.ts`
   - WebRTC stats collection and quality aggregation used by `useVoiceRtc.ts`;
     consumes channel-scoped peer registry entries.
+- `frontend/src/composables/useVoiceSessionController.ts`
+  - Guild and DM voice join/leave/switch orchestration, voice rejoin handling,
+    mute/deafen publication, screen-share toggle delegation, DM call room state,
+    and DM-only solo-call auto-leave timing.
 - `frontend/src/composables/useGlobalNotice.ts`
   - App notice state, timeout, and dismissal behavior.
 - `frontend/src/composables/useContextMenuController.ts`

@@ -116,6 +116,14 @@ success in one hotspot external-network environment, not as universal
 TURN-backed external media support. Screen-share across the hotspot topology still
 needs a separate manual pass, and `turn_configured` remained `false`.
 
+2026-06-20 DM call lifecycle note: DM private calls are intentionally treated
+separately from guild voice channels. When one participant leaves but another
+participant remains in the DM voice room, the leaver should not receive repeated
+incoming-call banners for that same active call. Opening the DM should show a
+joinable call stage instead. If the local user remains alone in a DM call for 3
+minutes, the client leaves the DM call to avoid keeping an unused private call
+open. Guild/server voice channels do not use this solo cleanup rule.
+
 ### HTTPS LAN Media Path
 
 Use this path when the second device must test real microphone or screen capture.

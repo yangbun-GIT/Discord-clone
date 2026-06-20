@@ -233,6 +233,16 @@ const {
   t,
 })
 const dismissedIncomingDmCallKeys = ref<string[]>([])
+const selectedDmCallJoinable = computed(() => {
+  const currentUserId = session.user?.id ?? null
+  const dm = selectedDm.value
+  if (!dm || currentUserId === null || connectedDmId.value === dm.id) return false
+  return guilds.voiceStates.some((state) =>
+    (state.context_type ?? 'guild') === 'dm'
+    && state.dm_id === dm.id
+    && state.user_id !== currentUserId,
+  )
+})
 const incomingDmCall = computed(() => {
   const currentUserId = session.user?.id ?? null
   if (currentUserId === null) return null
@@ -261,6 +271,13 @@ watch(
   (activeKeys) => {
     const activeKeySet = new Set(activeKeys ? activeKeys.split('|') : [])
     dismissedIncomingDmCallKeys.value = dismissedIncomingDmCallKeys.value.filter((key) => activeKeySet.has(key))
+  },
+)
+watch(
+  connectedDmId,
+  (currentDmId, previousDmId) => {
+    if (currentDmId !== null || previousDmId === null) return
+    dismissActiveRemoteDmCallKeys(previousDmId)
   },
 )
 const { workspaceTitle, workspaceSubtitle } = useWorkspaceController({
@@ -791,6 +808,20 @@ function handleDismissIncomingDmCall() {
   const call = incomingDmCall.value
   if (!call) return
   dismissedIncomingDmCallKeys.value = Array.from(new Set([...dismissedIncomingDmCallKeys.value, call.key]))
+}
+
+function dismissActiveRemoteDmCallKeys(dmId: number) {
+  const currentUserId = session.user?.id ?? null
+  if (currentUserId === null) return
+  const keys = guilds.voiceStates
+    .filter((state) =>
+      (state.context_type ?? 'guild') === 'dm'
+      && state.dm_id === dmId
+      && state.user_id !== currentUserId,
+    )
+    .map((state) => `${state.dm_id}:${state.user_id}`)
+  if (!keys.length) return
+  dismissedIncomingDmCallKeys.value = Array.from(new Set([...dismissedIncomingDmCallKeys.value, ...keys]))
 }
 
 async function handleStartContextCall() {
@@ -1496,6 +1527,7 @@ async function handleSendInviteToFriend(friendId: number) {
         :disabled="dms.isMutating"
         :muted="selectedDmMuted"
         :call-active="connectedDmId === selectedDm?.id"
+        :call-joinable="selectedDmCallJoinable"
         :voice-device-settings="voiceRtc.voiceDeviceSettings.value"
         :voice-devices="voiceRtc.voiceDevices.value"
         @view-profile="handleViewSelectedDmProfile"
