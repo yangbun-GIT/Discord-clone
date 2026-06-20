@@ -11,6 +11,7 @@ class FakeGatewayManager:
         self.channel_syncs: list[tuple[int, int]] = []
         self.guild_syncs: list[tuple[int, set[int], set[int]]] = []
         self.broadcasts: list[tuple[str, int, str, dict[str, Any]]] = []
+        self.voice_snapshot_guilds: list[int] = []
 
     def add_dm_to_user_subscribers(self, dm_id: int, member_ids: set[int]) -> None:
         self.dm_syncs.append((dm_id, member_ids))
@@ -50,6 +51,9 @@ class FakeGatewayManager:
         data: dict[str, Any],
     ) -> None:
         self.broadcasts.append(("dm", dm_id, event, data))
+
+    async def send_guild_voice_state_snapshots(self, guild_id: int) -> None:
+        self.voice_snapshot_guilds.append(guild_id)
 
 
 async def test_fanout_dm_create_syncs_dm_subscribers(monkeypatch) -> None:
@@ -98,6 +102,7 @@ async def test_fanout_guild_update_syncs_members_and_channels(monkeypatch) -> No
 
     assert manager.guild_syncs == [(1001, {42, 43}, {2001, 2002})]
     assert manager.broadcasts == [("guild", 1001, "GUILD_UPDATE", event.data)]
+    assert manager.voice_snapshot_guilds == [1001]
 
 
 async def test_publisher_falls_back_to_local_fanout_when_redis_publish_fails(

@@ -2400,6 +2400,14 @@ Completed Stage 2 bridge work:
   with local HTTPS changes. `docker:up:cloudflare-tunnel` force-recreates the
   tunnel frontend, and `frontend/nginx.conf` sends strict no-cache/no-store
   headers for Cloudflare Quick Tunnel demos.
+- A 2026-06-21 voice presence sync fix closes the late server-join gap. When a
+  user joins or refreshes into a guild after other users are already in a voice
+  channel, `backend/app/realtime/fanout.py` now triggers
+  `GatewayConnectionManager.send_guild_voice_state_snapshots(...)` after
+  `GUILD_UPDATE` fan-out, so the new subscriber receives the current
+  `VOICE_STATE_SNAPSHOT` without waiting for existing participants to mute,
+  deafen, leave, or rejoin. Backend tests cover both manager-level snapshot
+  delivery and the realtime fan-out trigger.
 
 After each stage or meaningful feature:
 

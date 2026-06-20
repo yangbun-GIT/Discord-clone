@@ -390,6 +390,9 @@ Browser UI
       connection is reaped as a zombie or removed after a stale send failure.
     - Voice-state snapshot dispatch for READY and post-join synchronization across
       guild voice channels and DM private voice rooms.
+    - Guild-wide voice-state snapshot rebroadcast for refreshed guild subscribers,
+      so users who join a server after a voice channel is already active can see
+      existing participants immediately.
 
 - `backend/app/gateway/connection.py`
   - References:
@@ -452,6 +455,8 @@ Browser UI
     - Gateway-event fan-out to channel/guild/DM/user subscribers.
     - Local subscription synchronization for DM create, channel create, and guild
       update events.
+    - Triggers a guild voice-state snapshot after `GUILD_UPDATE` fan-out to keep
+      newly joined server members in sync with existing voice-channel occupants.
 
 - `compose.redis-smoke.yaml`
   - References:

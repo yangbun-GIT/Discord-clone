@@ -10,6 +10,8 @@ async def fanout_gateway_event(event: RealtimeGatewayEvent) -> None:
         await gateway_manager.broadcast_channel(event.channel_id, event.event, event.data)
     elif event.guild_id is not None:
         await gateway_manager.broadcast_guild(event.guild_id, event.event, event.data)
+        if event.event == "GUILD_UPDATE":
+            await gateway_manager.send_guild_voice_state_snapshots(event.guild_id)
     elif event.dm_id is not None:
         await gateway_manager.broadcast_dm(event.dm_id, event.event, event.data)
 

@@ -403,6 +403,8 @@ For ordinary implementation work:
   - Separates normal voice websocket disconnects, which use a short recoverable
     grace window, from heartbeat/stale disconnects, which broadcast leave
     immediately.
+  - Sends guild-wide voice snapshots after subscriber changes so newly joined
+    server members can see existing voice-channel occupants.
 - `backend/app/gateway/connection.py`
   - `ClientConnection` and active WebSocket connection registry.
 - `backend/app/gateway/subscriptions.py`
@@ -438,6 +440,8 @@ For ordinary implementation work:
 - `backend/app/realtime/fanout.py`
   - Shared realtime gateway-event fan-out and local subscription synchronization.
   - Used by publisher native fallback and Redis subscriber dispatch.
+  - After `GUILD_UPDATE`, triggers a current voice-state snapshot for the guild to
+    cover late server joins.
 - `backend/app/realtime/redis_bus.py`
   - Optional Redis Pub/Sub wrapper.
 - `backend/app/realtime/events.py`

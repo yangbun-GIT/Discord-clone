@@ -127,6 +127,11 @@ class GatewayConnectionManager:
         )
         await self._disconnect_stale(stale)
 
+    async def send_guild_voice_state_snapshots(self, guild_id: int) -> None:
+        for connection in list(self._connections.connections):
+            if guild_id in connection.guild_ids:
+                await self.send_voice_state_snapshot(connection, guild_ids={guild_id})
+
     async def send_voice_signal(
         self,
         *,

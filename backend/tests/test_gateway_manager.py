@@ -418,6 +418,61 @@ async def test_voice_state_snapshot_sends_current_channel_occupants() -> None:
     }
 
 
+async def test_guild_voice_state_snapshot_sends_to_current_guild_subscribers() -> None:
+    manager = GatewayConnectionManager()
+    actor_websocket = FakeWebSocket()
+    observer_websocket = FakeWebSocket()
+    outsider_websocket = FakeWebSocket()
+    actor = await manager.connect(actor_websocket)  # type: ignore[arg-type]
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    outsider = await manager.connect(outsider_websocket)  # type: ignore[arg-type]
+    actor.guild_ids.add(1001)
+    actor.channel_ids.add(2003)
+    outsider.guild_ids.add(9999)
+
+    await manager.broadcast_voice_state(
+        previous_channel_id=None,
+        channel_id=2003,
+        data={
+            "guild_id": 1001,
+            "channel_id": 2003,
+            "user_id": 42,
+            "username": "yangbun",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    observer.guild_ids.add(1001)
+    observer.channel_ids.add(2003)
+    actor_websocket.sent.clear()
+    observer_websocket.sent.clear()
+    outsider_websocket.sent.clear()
+
+    await manager.send_guild_voice_state_snapshots(1001)
+
+    assert actor_websocket.sent[-1]["t"] == "VOICE_STATE_SNAPSHOT"
+    assert observer_websocket.sent[-1] == {
+        "op": int(Opcode.DISPATCH),
+        "d": {
+            "guild_ids": [1001],
+            "channel_id": None,
+            "states": [
+                {
+                    "guild_id": 1001,
+                    "channel_id": 2003,
+                    "user_id": 42,
+                    "username": "yangbun",
+                    "self_mute": False,
+                    "self_deaf": False,
+                }
+            ],
+        },
+        "s": 1,
+        "t": "VOICE_STATE_SNAPSHOT",
+    }
+    assert outsider_websocket.sent == []
+
+
 async def test_dm_voice_state_snapshot_sends_current_dm_occupants() -> None:
     manager = GatewayConnectionManager()
     observer_websocket = FakeWebSocket()
