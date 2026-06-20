@@ -1007,9 +1007,9 @@ Browser UI
   - Receives relationships/activity state from `frontend/src/App.vue`.
   - Receives a reset key from `frontend/src/App.vue` so sidebar Friends navigation
     returns the visible tab to All.
-  - Groups All friends into local favorites, online, and offline sections with a
-    user-controlled ascending/descending sort; pending requests stay separated only
-    when both incoming and outgoing groups are present.
+  - Groups All friends into optional local favorites plus a single remaining
+    friend list with a compact ascending/descending sort; pending requests stay
+    separated only when both incoming and outgoing groups are present.
   - Emits message friend, profile, call-entry, mute, and relationship mutation
     actions to `frontend/src/App.vue`.
 - `frontend/src/components/FriendProfileDialog.vue`

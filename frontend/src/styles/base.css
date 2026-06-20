@@ -2879,32 +2879,6 @@ select:focus-visible {
   background: transparent;
 }
 
-.friend-list-controls {
-  display: flex;
-  justify-content: flex-end;
-  margin: -6px 16px 8px;
-}
-
-.friend-list-controls button {
-  min-height: 30px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  color: #d7dee8;
-  background: rgb(255 255 255 / 5%);
-  padding: 0 10px;
-  font-size: 0.78rem;
-  font-weight: 850;
-}
-
-.friend-list-controls button:hover,
-.friend-list-controls button:focus-visible {
-  color: #ffffff;
-  background: rgb(255 255 255 / 10%);
-}
-
 .friend-list {
   min-width: 0;
   min-height: 0;
@@ -2913,14 +2887,38 @@ select:focus-visible {
 }
 
 .friend-list-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 10px;
   color: #9ca3af;
   font-size: 0.76rem;
   text-transform: uppercase;
 }
 
+.friend-sort-inline {
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 6px;
+  color: #b5bac1;
+  background: transparent;
+  padding: 0 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.friend-sort-inline:hover,
+.friend-sort-inline:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 8%);
+}
+
 .friend-request-group + .friend-request-group {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .friend-group-heading {

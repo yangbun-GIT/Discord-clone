@@ -572,6 +572,22 @@ needed before the Friends home surface can be considered complete.
     popovers still route to Voice & Video settings.
   - Input/output chevrons now toggle their popovers open and closed, and the
     Voice & Video popover action is a right-aligned settings-icon action.
+- F19 completed: follow-up Friends list density correction from the 2026-06-20
+  visual QA screenshots.
+  - The All tab no longer splits the main friend list into Online and Offline
+    groups. Favorites may still appear first when the user explicitly marks them,
+    but the remaining friends render as one compact sorted list.
+  - The large sort control below search was removed. Sorting is now a small inline
+    control next to the list heading, preventing the empty vertical gap seen in
+    the previous layout.
+  - Friend row shortcut actions were reduced to Favorite and `...`; Profile, Start
+    Call, and Send Message remain available inside the overflow menu instead of
+    being duplicated as three row icons.
+  - Private DM voice calling was rechecked. The current backend gateway accepts
+    voice state and WebRTC signaling only for subscribed guild voice channels, so
+    a real Discord-like private call requires a dedicated DM voice-room/signaling
+    boundary before it can be marked implemented. This pass does not fake private
+    call completion.
 
 ## Verification Log
 
@@ -595,6 +611,20 @@ needed before the Friends home surface can be considered complete.
     cleanup, voice reload/rejoin recovery, and voice leave cleanup.
   - `git diff --check` passed; Git only reported line-ending normalization
     warnings for touched files.
+- 2026-06-20 F19 follow-up verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `git diff --check` passed; Git only reported line-ending normalization
+    warnings for touched files.
+  - `npm run check:submission:local` passed against `https://localhost:5173/`;
+    TURN remained false, which is acceptable for local submission readiness.
+  - Direct HTTPS module check confirmed the served `FriendsHome.vue` no longer has
+    the old large sort-control wrapper, online/offline All-tab group IDs, or
+    direct row profile/call/message shortcut buttons.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, DM/server realtime, invite-DM realtime, screen-share
+    cleanup, voice reload/rejoin recovery, and voice leave cleanup.
 
 ## Manual QA Checklist
 

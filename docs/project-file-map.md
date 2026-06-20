@@ -486,8 +486,8 @@ For ordinary implementation work:
     panels, and permission-aware server invite menu entry.
 - `frontend/src/components/FriendsHome.vue`
   - Friends tabs, friend list, grouped incoming/outgoing friend requests,
-    add-friend flow, favorites/online/offline grouping, sorting controls, and
-    activity panel.
+    add-friend flow, local favorites, compact sorting controls, and activity
+    panel.
   - Emits real Add Friend, pending accept/reject/cancel, remove, block, and unblock
     actions instead of local-only UI results.
   - Shows relationship tab counts, query-aware empty states, Add Friend panel
@@ -495,7 +495,9 @@ For ordinary implementation work:
     and a stable grouped friend-row action cluster.
   - Hides redundant All/Online tab badges, avoids duplicate pending request
     headings when only one request group is visible, lets users favorite friends
-    locally, and shows every strictly-online friend in Active Now.
+    locally, keeps the All tab as a single friend list after favorites rather than
+    splitting online/offline groups, and shows every strictly-online friend in
+    Active Now.
 - `frontend/src/components/FriendProfileDialog.vue`
   - App-owned friend profile popout for username, handle, presence, relationship,
     message, call-entry, and mute actions.

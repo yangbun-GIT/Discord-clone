@@ -96,9 +96,7 @@ const friendGroups = computed(() => {
   if (activeTab.value === 'all') {
     const friends = visibleFriends.value.filter((friend) => friend.relationship === 'friend')
     const favorites = friends.filter((friend) => preferences.isFavoriteFriend(friend.id))
-    const nonFavorites = friends.filter((friend) => !preferences.isFavoriteFriend(friend.id))
-    const online = nonFavorites.filter((friend) => friend.status !== 'offline')
-    const offline = nonFavorites.filter((friend) => friend.status === 'offline')
+    const others = friends.filter((friend) => !preferences.isFavoriteFriend(friend.id))
     return [
       {
         id: 'favorites',
@@ -106,14 +104,9 @@ const friendGroups = computed(() => {
         friends: favorites,
       },
       {
-        id: 'online',
-        label: t('friends.onlineCount', { count: online.length }),
-        friends: online,
-      },
-      {
-        id: 'offline',
-        label: t('friends.offlineCount', { count: offline.length }),
-        friends: offline,
+        id: 'friends',
+        label: t('friends.totalCount', { count: others.length }),
+        friends: others,
       },
     ].filter((group) => group.friends.length > 0)
   }
@@ -424,27 +417,30 @@ watch(
             <Search :size="17" aria-hidden="true" />
             <input v-model="searchQuery" :placeholder="t('friends.search')" autocomplete="off" />
           </label>
-          <div v-if="activeTab === 'all'" class="friend-list-controls">
-            <button type="button" @click="toggleSortDirection">
-              <ArrowUpAZ v-if="sortDirection === 'asc'" :size="15" aria-hidden="true" />
-              <ArrowDownAZ v-else :size="15" aria-hidden="true" />
-              <span>
-                {{ sortDirection === 'asc' ? t('friends.sortAscending') : t('friends.sortDescending') }}
-              </span>
-            </button>
-          </div>
-
           <section class="friend-list" :aria-label="t('friends.listLabel', { tab: activeTabLabel })">
             <h2 class="friend-list-heading">
-              {{
-                activeTab === 'online'
-                  ? t('friends.onlineCount', { count: visibleFriends.length })
-                : activeTab === 'pending'
-                    ? t('friends.pendingCount', { count: visibleFriends.length })
-                  : activeTab === 'blocked'
-                    ? t('friends.blockedCount', { count: visibleFriends.length })
-                  : t('friends.totalCount', { count: visibleFriends.length })
-              }}
+              <span>
+                {{
+                  activeTab === 'online'
+                    ? t('friends.onlineCount', { count: visibleFriends.length })
+                  : activeTab === 'pending'
+                      ? t('friends.pendingCount', { count: visibleFriends.length })
+                    : activeTab === 'blocked'
+                      ? t('friends.blockedCount', { count: visibleFriends.length })
+                    : t('friends.totalCount', { count: visibleFriends.length })
+                }}
+              </span>
+              <button
+                v-if="activeTab === 'all'"
+                type="button"
+                class="friend-sort-inline"
+                :aria-label="sortDirection === 'asc' ? t('friends.sortAscending') : t('friends.sortDescending')"
+                @click="toggleSortDirection"
+              >
+                <ArrowUpAZ v-if="sortDirection === 'asc'" :size="14" aria-hidden="true" />
+                <ArrowDownAZ v-else :size="14" aria-hidden="true" />
+                <span>{{ sortDirection === 'asc' ? t('friends.sortAscending') : t('friends.sortDescending') }}</span>
+              </button>
             </h2>
             <div v-if="!visibleFriends.length" class="friends-empty">{{ emptyCopy }}</div>
             <section
@@ -455,7 +451,7 @@ watch(
               :aria-label="group.label"
             >
               <h3
-                v-if="activeTab === 'all' || (activeTab === 'pending' && friendGroups.length > 1)"
+                v-if="(activeTab === 'all' && group.id === 'favorites') || (activeTab === 'pending' && friendGroups.length > 1)"
                 class="friend-group-heading"
               >
                 {{ group.label }}
@@ -497,33 +493,6 @@ watch(
                     @click.stop="toggleFavorite(friend.id)"
                   >
                     <Star :size="17" aria-hidden="true" />
-                  </button>
-                  <button
-                    v-if="friend.relationship === 'friend'"
-                    type="button"
-                    class="friend-action-button"
-                    :aria-label="t('friends.viewProfile')"
-                    @click.stop="$emit('viewProfile', friend.id)"
-                  >
-                    <UserRound :size="17" aria-hidden="true" />
-                  </button>
-                  <button
-                    v-if="friend.relationship === 'friend'"
-                    type="button"
-                    class="friend-action-button"
-                    :aria-label="t('friends.startCall')"
-                    @click.stop="$emit('callFriend', friend.id)"
-                  >
-                    <Phone :size="17" aria-hidden="true" />
-                  </button>
-                  <button
-                    v-if="friend.relationship === 'friend'"
-                    type="button"
-                    class="friend-action-button"
-                    :aria-label="t('friends.sendMessage')"
-                    @click.stop="$emit('messageFriend', friend.id)"
-                  >
-                    <Send :size="17" aria-hidden="true" />
                   </button>
                   <button
                     v-if="friend.relationship === 'pending_incoming'"
