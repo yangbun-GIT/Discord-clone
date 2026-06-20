@@ -156,6 +156,13 @@ and the current local screen-share state is resent during new offer/answer
 negotiation, so a refreshed participant can rejoin voice and see another
 participant's already-active screen share again. Screen-share tiles and contained
 video now use black letterboxing instead of the blue participant surface.
+Voice signaling now also carries a non-secret per-voice-connection `session_id`.
+The gateway forwards this field in `VOICE_SIGNAL` dispatches, and the P2P registry
+closes/recreates a stale `RTCPeerConnection` when an incoming offer comes from a
+new remote session. This fixes the manual path where B refreshed while A was
+already sharing, then rejoined the voice UI without A's screen share or working
+audio. `scripts/realtime_browser_smoke.mjs` now verifies this path through
+`remoteScreenVideosAfterReceiverReload` and `receiverAudioSinksAfterReload`.
 The existing WebRTC, voice panel, screen-share, and gateway signaling flows are
 preserved.
 

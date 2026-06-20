@@ -33,6 +33,7 @@ type VoiceSignalPayload = {
   context_type?: 'guild' | 'dm'
   channel_id: number
   dm_id?: number | null
+  session_id?: string | null
   target_user_id: number
   type: 'offer' | 'answer' | 'ice' | 'screen'
   description?: Record<string, unknown> | null

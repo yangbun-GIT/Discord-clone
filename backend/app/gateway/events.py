@@ -31,6 +31,7 @@ class VoiceSignalPayload(BaseModel):
     context_type: Literal["guild", "dm"] = "guild"
     channel_id: int
     dm_id: int | None = None
+    session_id: str | None = Field(default=None, max_length=80)
     target_user_id: int
     type: str = Field(pattern="^(offer|answer|ice|screen)$")
     description: dict[str, Any] | None = None

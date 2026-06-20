@@ -513,6 +513,27 @@ The post-C9 remediation pass also verifies that abnormal gateway disconnect clea
 emits voice leave events in backend tests. This does not replace real microphone,
 screen-picker, LAN, or TURN/NAT checks.
 
+## Receiver Refresh While Another User Is Sharing
+
+The 2026-06-21 WebRTC refresh regression pass fixed and automated a scenario where
+participant A was already screen sharing, participant B refreshed the page, and B
+returned to the voice UI without a working peer. Voice signaling now includes a
+non-secret per-voice-connection session identifier, and the P2P registry recreates
+the remote peer when a refreshed browser sends a new offer.
+
+Automated HTTPS smoke coverage now keeps A's screen share active while refreshing
+B, then verifies:
+
+- B auto-rejoins the voice channel.
+- B receives A's remote screen-share video again.
+- B has a remote audio sink after the refresh.
+- Stopping A's screen share still clears B's remote screen tile.
+
+Latest result: `npm run smoke:realtime:browser:https` passed with
+`remoteScreenVideosAfterReceiverReload: 1`, `receiverAudioSinksAfterReload: 1`,
+`remoteScreenCleared: true`, `voiceRejoinRecovered: true`, and
+`browserErrors: 0`.
+
 This is still not a real internet voice completion. The current local metadata
 reports `turn_configured: false`, so real microphone quality, real screen picker
 UX, different-PC LAN, and TURN/NAT internet voice remain manual release gates.

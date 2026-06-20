@@ -399,6 +399,16 @@ async function run() {
     const remoteScreenVideos = await countRemoteScreenVideos(pageB.page)
     const remoteSharingUserScreenTiles = await pageB.page.locator(`.screen-share-tile[data-user-id="${userA.user.id}"]`).count()
     const duplicateRemoteSharingParticipantCards = await pageB.page.locator(`.voice-tile.remote[data-user-id="${userA.user.id}"]`).count()
+    await pageB.page.reload({ waitUntil: 'networkidle', timeout: 30_000 })
+    await pageB.page.locator('.voice-panel.connected').waitFor({ state: 'visible', timeout: 15_000 })
+    await waitForRemoteScreenTile(pageB.page, pageA.page)
+    const remoteScreenVideosAfterReceiverReload = await countRemoteScreenVideos(pageB.page)
+    await pageB.page.waitForFunction(
+      () => document.querySelectorAll('.voice-audio-sinks audio').length >= 1,
+      null,
+      { timeout: 15_000 },
+    )
+    const receiverAudioSinksAfterReload = await pageB.page.locator('.voice-audio-sinks audio').count()
     const mutePressed = await pageA.page
       .getByRole('button', { name: /Unmute microphone|Mute microphone/i })
       .first()
@@ -470,6 +480,8 @@ async function run() {
       fakeScreenShareVisible: /Screen sharing/.test(bodyA),
       localScreenPreviewVideos,
       remoteScreenVideos,
+      remoteScreenVideosAfterReceiverReload,
+      receiverAudioSinksAfterReload,
       remoteSharingUserScreenTiles,
       duplicateRemoteSharingParticipantCards,
       remoteScreenCleared,
@@ -506,6 +518,8 @@ async function run() {
       || !result.fakeScreenShareVisible
       || result.localScreenPreviewVideos < 1
       || result.remoteScreenVideos < 1
+      || result.remoteScreenVideosAfterReceiverReload < 1
+      || result.receiverAudioSinksAfterReload < 1
       || result.remoteSharingUserScreenTiles !== 1
       || result.duplicateRemoteSharingParticipantCards !== 0
       || !result.remoteScreenCleared

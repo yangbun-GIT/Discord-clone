@@ -353,6 +353,7 @@ async def gateway(websocket: WebSocket) -> None:
                         "context_type": signal_context_type,
                         "channel_id": voice_signal.channel_id,
                         "dm_id": voice_signal.dm_id,
+                        "session_id": voice_signal.session_id,
                         "from_user_id": connection.user_id,
                         "from_username": connection.username,
                         "target_user_id": voice_signal.target_user_id,

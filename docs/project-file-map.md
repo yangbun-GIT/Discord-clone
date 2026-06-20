@@ -72,8 +72,9 @@ For ordinary implementation work:
     DM, DM composer focus retention after send, owner/member invite permission UI,
     voice peer visibility, remote audio sink, independent mute/deafen behavior,
     fake screen-share paths, local
-    screen-preview rendering, remote screen-video rendering, screen-share stop
-    cleanup, server-channel reload retention,
+    screen-preview rendering, remote screen-video rendering, receiver reload while
+    another participant is still screen sharing, screen-share stop cleanup,
+    server-channel reload retention,
     connected voice-workspace reload retention, connected-tab automatic voice
     rejoin recovery, and voice leave cleanup through the app UI.
   - Uses the official project-local Playwright devDependency from `frontend/`.

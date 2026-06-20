@@ -121,6 +121,31 @@ voice-panel behavior.
   screen-share state during new offer/answer negotiation. `base.css` makes the
   screen-share tile and video backgrounds black.
 
+### VCV-9: Refreshed receiver reused a stale WebRTC peer
+
+- Location: `frontend/src/composables/useVoiceRtc.ts`,
+  `frontend/src/composables/voicePeerConnections.ts`,
+  `frontend/src/composables/useGateway.ts`, `frontend/src/types.ts`,
+  `backend/app/gateway/events.py`, `backend/app/gateway/router.py`,
+  `scripts/realtime_browser_smoke.mjs`
+- Current behavior: if A and B were already in a voice channel, A started screen
+  sharing, and B refreshed the page, B could return to the voice UI without a
+  fully working WebRTC peer. B then saw the participant tile instead of A's active
+  screen share, and audio could also fail until B left and rejoined the call.
+  Rejoining could recover audio while still showing a black or missing remote
+  screen-share video.
+- Expected behavior: browser refresh creates a new RTC media session. Existing
+  participants must not reuse the old `RTCPeerConnection` for that user. The new
+  offer should replace the stale peer, negotiate audio again, and receive any
+  already-active remote screen share.
+- Fix: voice signaling now carries a non-secret per-voice-connection `session_id`.
+  The gateway validates and forwards it in `VOICE_SIGNAL` dispatches. The P2P
+  registry tracks the latest remote session per peer and closes/recreates an
+  existing peer when an incoming offer comes from a new session. The smoke test
+  now keeps A's screen share active, refreshes B, and verifies both
+  `remoteScreenVideosAfterReceiverReload >= 1` and
+  `receiverAudioSinksAfterReload >= 1`.
+
 ## Verification Plan
 
 - `npm run lint:frontend`
@@ -173,3 +198,11 @@ voice-panel behavior.
   works after the refreshed-peer state cache. Docker HTTPS refresh should be run
   after this change so local and Cloudflare tunnel origins receive the black
   letterboxing and refreshed-peer remote screen-share recovery.
+- Follow-up VCV-9 verification passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`,
+  `npm run smoke:realtime:browser:https`, `npm run lint:backend`,
+  `npm run test:backend`, and `git diff --check` passed. The browser smoke now
+  directly covers the reported path and returned
+  `remoteScreenVideosAfterReceiverReload: 1`,
+  `receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
+  `voiceRejoinRecovered: true`, and `browserErrors: 0`.

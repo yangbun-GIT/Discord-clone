@@ -189,6 +189,7 @@ export type VoiceSignal = {
   context_type?: 'guild' | 'dm'
   channel_id: number
   dm_id?: number | null
+  session_id?: string | null
   from_user_id: number
   from_username: string | null
   target_user_id: number

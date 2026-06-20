@@ -538,3 +538,21 @@ Pass criteria for the readiness step:
 
 This readiness step does not complete the media gate. It only proves the deployed
 origin is ready for the manual different-network voice and screen-share test.
+
+## 2026-06-21 Voice Refresh Regression
+
+The HTTPS browser smoke now covers the specific receiver-refresh path:
+
+1. Two browser sessions join the same voice channel.
+2. Session A starts screen sharing.
+3. Session B refreshes while A is still sharing.
+4. B auto-rejoins voice.
+5. B must receive A's active screen share and a remote audio sink.
+6. A stops screen sharing, and B must clear the remote screen tile.
+
+The fix adds a non-secret `session_id` to WebRTC voice signaling so a refreshed
+browser is treated as a new RTC media session instead of reusing a stale peer.
+Latest automated HTTPS result passed with
+`remoteScreenVideosAfterReceiverReload: 1`,
+`receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
+`voiceRejoinRecovered: true`, and `browserErrors: 0`.

@@ -18,6 +18,7 @@ export type VoiceTransportKind = 'p2p-webrtc' | 'sfu-webrtc'
 
 export type SendVoiceTransportSignal = (payload: {
   channel_id: number
+  session_id?: string | null
   target_user_id: number
   type: 'offer' | 'answer' | 'ice' | 'screen'
   description?: Record<string, unknown> | null

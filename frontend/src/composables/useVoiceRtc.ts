@@ -55,12 +55,18 @@ let statsTimer: number | null = null
 let inputProcessor: VoiceInputProcessor | null = null
 let localSpeakingReleaseTimer: number | null = null
 let inputRestartTask: Promise<void> | null = null
+let rtcSessionId = createRtcSessionId()
+
+function createRtcSessionId() {
+  return `rtc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
 
 const peerRegistry = createVoicePeerRegistry({
   remoteStreams,
   getActiveOptions: () => activeOptions,
   getLocalStream: () => localStream.value,
   getScreenStream: () => screenStream.value,
+  getSessionId: () => rtcSessionId,
 })
 
 async function collectQualityStats() {
@@ -94,6 +100,9 @@ export function useVoiceRtc(): VoiceTransport {
   window.addEventListener('pagehide', handlePageHide)
 
   async function connect(options: ConnectOptions) {
+    if (!isCapturing.value) {
+      rtcSessionId = createRtcSessionId()
+    }
     activeOptions = options
     error.value = null
     errorCode.value = null

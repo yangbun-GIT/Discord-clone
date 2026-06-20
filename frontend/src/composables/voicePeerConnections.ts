@@ -41,6 +41,7 @@ interface VoicePeerRegistryOptions {
   getActiveOptions: () => ConnectOptions | null
   getLocalStream: () => MediaStream | null
   getScreenStream: () => MediaStream | null
+  getSessionId: () => string
 }
 
 function peerKey(channelId: number, userId: number): PeerKey {
@@ -130,6 +131,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   const signalQueues = new Map<PeerKey, Promise<void>>()
   const remoteSpeakingMonitors = new Map<PeerKey, RemoteSpeakingMonitor>()
   const remoteScreenStates = new Map<PeerKey, boolean>()
+  const remoteSessionIds = new Map<PeerKey, string>()
 
   function isActivePeer(peer: Pick<PeerEntry, 'channelId'>) {
     return options.getActiveOptions()?.channelId === peer.channelId
@@ -163,6 +165,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     clearRetryTimer(key)
     stopRemoteSpeakingMonitor(key)
     remoteScreenStates.delete(key)
+    remoteSessionIds.delete(key)
     peer.connection.close()
     peer.stream.getTracks().forEach((track) => track.stop())
     peers.delete(key)
@@ -181,6 +184,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     if (!activeOptions || peer.channelId !== activeOptions.channelId) return
     activeOptions.sendSignal({
       channel_id: peer.channelId,
+      session_id: options.getSessionId(),
       target_user_id: peer.userId,
       type: 'screen',
       screen_sharing: sharingScreen,
@@ -287,7 +291,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     retryTimers.set(key, timer)
   }
 
-  function ensurePeer(userId: number, username: string | null) {
+  function ensurePeer(userId: number, username: string | null, reset = false) {
     const activeOptions = options.getActiveOptions()
     const localStream = options.getLocalStream()
     if (!activeOptions || !localStream) {
@@ -295,6 +299,9 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     }
 
     const key = peerKey(activeOptions.channelId, userId)
+    if (reset && peers.has(key)) {
+      closePeer(key)
+    }
     const existing = peers.get(key)
     if (existing) {
       existing.username = username
@@ -339,6 +346,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (!event.candidate || !currentOptions || currentOptions.channelId !== peer.channelId) return
       currentOptions.sendSignal({
         channel_id: peer.channelId,
+        session_id: options.getSessionId(),
         target_user_id: userId,
         type: 'ice',
         candidate: event.candidate.toJSON() as Record<string, unknown>,
@@ -415,6 +423,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       }
       currentOptions.sendSignal({
         channel_id: currentOptions.channelId,
+        session_id: options.getSessionId(),
         target_user_id: userId,
         type: 'offer',
         description: { type: offer.type, sdp: offer.sdp ?? '' },
@@ -439,6 +448,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       }
       activeOptions.sendSignal({
         channel_id: peer.channelId,
+        session_id: options.getSessionId(),
         target_user_id: peer.userId,
         type: 'offer',
         description: { type: offer.type, sdp: offer.sdp ?? '' },
@@ -468,6 +478,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (peer.channelId !== activeOptions.channelId) continue
       activeOptions.sendSignal({
         channel_id: peer.channelId,
+        session_id: options.getSessionId(),
         target_user_id: peer.userId,
         type: 'screen',
         screen_sharing: sharingScreen,
@@ -531,7 +542,27 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     if (!activeOptions || signal.target_user_id !== activeOptions.currentUserId) return
     if (signal.channel_id !== activeOptions.channelId) return
 
-    const peer = ensurePeer(signal.from_user_id, signal.from_username)
+    const key = peerKey(activeOptions.channelId, signal.from_user_id)
+    const incomingSessionId = typeof signal.session_id === 'string' ? signal.session_id : null
+    const knownSessionId = remoteSessionIds.get(key)
+    if (
+      incomingSessionId
+      && knownSessionId
+      && incomingSessionId !== knownSessionId
+      && signal.type !== 'offer'
+    ) {
+      return
+    }
+    const shouldResetPeer = (
+      signal.type === 'offer'
+      && Boolean(incomingSessionId)
+      && peers.has(key)
+      && knownSessionId !== incomingSessionId
+    )
+    const peer = ensurePeer(signal.from_user_id, signal.from_username, shouldResetPeer)
+    if (incomingSessionId) {
+      remoteSessionIds.set(key, incomingSessionId)
+    }
     await runQueuedSignal(peer, async () => {
       const currentOptions = options.getActiveOptions()
       if (!currentOptions || signal.target_user_id !== currentOptions.currentUserId) return
@@ -554,6 +585,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
         await peer.connection.setLocalDescription(answer)
         currentOptions.sendSignal({
           channel_id: currentOptions.channelId,
+          session_id: options.getSessionId(),
           target_user_id: signal.from_user_id,
           type: 'answer',
           description: { type: answer.type, sdp: answer.sdp ?? '' },
@@ -585,6 +617,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     retryTimers.clear()
     retryCounts.clear()
     remoteScreenStates.clear()
+    remoteSessionIds.clear()
     for (const key of remoteSpeakingMonitors.keys()) {
       stopRemoteSpeakingMonitor(key)
     }

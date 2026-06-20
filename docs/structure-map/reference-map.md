@@ -371,6 +371,10 @@ Browser UI
   - Referenced by:
     - `backend/app/main.py`
     - `backend/tests/test_gateway_routes.py`
+  - Owns:
+    - Discord-style gateway opcode handling, including voice-state updates and
+      voice-signal validation/forwarding with non-secret WebRTC session
+      identifiers used by refreshed browser peer recovery.
 
 - `backend/app/gateway/manager.py`
   - References:
@@ -943,8 +947,8 @@ Browser UI
     - Backend `/gateway` WebSocket.
   - Owns:
     - Gateway identify, heartbeat, ACK timeout, bounded reconnect, dispatch
-      routing, presence updates, and reconnect-success callbacks used for REST
-      reconciliation.
+      routing, presence updates, voice-signal `session_id` transport, and
+      reconnect-success callbacks used for REST reconciliation.
 
 - `frontend/src/composables/useVoiceRtc.ts`
   - References:
@@ -963,7 +967,8 @@ Browser UI
     - Local microphone and screen capture lifecycle, Web Audio input processing
       lifecycle, voice device settings refresh/update state, reserved screen-share
       sender track replacement, screen-share state broadcast, explicit local
-      microphone mute state/setter, and voice RTC cleanup.
+      microphone mute state/setter, per-voice-connection RTC session identifiers,
+      and voice RTC cleanup.
     - Active-call microphone-chain rebuild for input device or RNNoise mode
       changes, with peer sender audio-track replacement instead of leaving the
       current call.
@@ -980,8 +985,9 @@ Browser UI
     - `docs/voice-transport-architecture.md`
   - Owns:
     - Voice transport kind, shared connect options, state shape, and operation
-      signatures that allow the current P2P implementation to remain replaceable
-      by a future SFU-backed transport.
+      signatures including voice signaling session identifiers that allow the
+      current P2P implementation to remain replaceable by a future SFU-backed
+      transport.
 
 - `frontend/src/composables/voiceMedia.ts`
   - Referenced by:
@@ -1025,8 +1031,9 @@ Browser UI
       offer/answer/ICE handling, pending ICE candidate queueing, stale signal
       filtering, bounded failed-peer retry, reserved video transceivers for screen
       sharing, explicit screen-share state signal handling, remote screen-track
-      state refresh, local audio-track replacement for microphone-chain reloads,
-      remote received-audio speaking detection, and participant synchronization.
+      state refresh, remote RTC session tracking with stale peer replacement,
+      local audio-track replacement for microphone-chain reloads, remote
+      received-audio speaking detection, and participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:
