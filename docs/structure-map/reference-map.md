@@ -1052,8 +1052,8 @@ Browser UI
     `frontend/src/App.vue`.
   - Normalizes mixed top-level guild/folder rail layout, appends missing guilds,
     preserves unread/mention/voice indicators, and owns drag/drop reorder,
-    guild-to-folder grouping, folder collapse/expand, and app-owned rail tooltip
-    UI.
+    guild-to-folder grouping, folder collapse/expand, body-level app-owned rail
+    tooltip UI, and icon-sized drag previews.
   - Emits server navigation, add/discovery actions, and `layout-change` events to
     `frontend/src/App.vue`.
 - `frontend/src/components/PrivateChannelSidebar.vue`
@@ -1069,6 +1069,10 @@ Browser UI
 - `frontend/src/components/ServerAddDialog.vue`
   - Receives initial create/join mode and loading state from `frontend/src/App.vue`.
   - Emits create/join/discover/close events and owns localized backdrop-close UI.
+- `frontend/src/components/ServerDiscoveryDialog.vue`
+  - References `frontend/src/i18n/index.ts`.
+  - Emits demo public-server create/close actions to `frontend/src/App.vue` and
+    owns localized backdrop-close discovery UI.
 - `frontend/src/components/ChannelSidebar.vue`
   - Receives active guild, channels, voice state, invite permission, and user/voice
     status from `frontend/src/App.vue`.

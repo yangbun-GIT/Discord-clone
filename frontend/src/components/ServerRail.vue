@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Compass, MessageCircle, Plus, Radio } from 'lucide-vue-next'
+import { Compass, Folder, MessageCircle, Plus, Radio } from 'lucide-vue-next'
 
 import type { Guild, ServerRailFolder, ServerRailGuildMeta, ServerRailItem, ServerRailLayout } from '../types'
 
@@ -181,6 +181,18 @@ function hasMentionGuild(guildId: number) {
   return Boolean(props.guildMeta[guildId]?.mention_count && !isActiveGuild(guildId))
 }
 
+function folderHasActiveGuild(folder: ServerRailFolder) {
+  return folder.guild_ids.some((guildId) => isActiveGuild(guildId))
+}
+
+function folderHasUnreadGuild(folder: ServerRailFolder) {
+  return folder.guild_ids.some((guildId) => hasUnreadGuild(guildId))
+}
+
+function folderHasMentionGuild(folder: ServerRailFolder) {
+  return folder.guild_ids.some((guildId) => hasMentionGuild(guildId))
+}
+
 function isDropTargetGuild(guildId: number, mode: DropMode) {
   return dropTarget.value?.type === 'guild' && dropTarget.value.guildId === guildId && dropTarget.value.mode === mode
 }
@@ -307,12 +319,31 @@ function updateLayout(nextLayout: ServerRailLayout) {
   emit('layout-change', normalizeLayout(nextLayout, props.guilds))
 }
 
+function applyDragImage(event: DragEvent) {
+  if (!event.dataTransfer) return
+  const element = event.currentTarget as HTMLElement
+  const icon = element.querySelector<HTMLElement>('.server-button, .server-folder-label')
+  if (!icon) return
+  const clone = icon.cloneNode(true) as HTMLElement
+  clone.classList.add('server-drag-preview')
+  clone.style.position = 'fixed'
+  clone.style.top = '-1000px'
+  clone.style.left = '-1000px'
+  clone.style.pointerEvents = 'none'
+  clone.style.zIndex = '9999'
+  document.body.appendChild(clone)
+  const rect = icon.getBoundingClientRect()
+  event.dataTransfer.setDragImage(clone, rect.width / 2, rect.height / 2)
+  window.setTimeout(() => clone.remove(), 0)
+}
+
 function handleDragStart(event: DragEvent, source: DragSource) {
   dragSource.value = source
   event.dataTransfer?.setData('text/plain', source.type === 'guild' ? String(source.guildId) : source.folderId)
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
   }
+  applyDragImage(event)
   hideTooltip()
 }
 
@@ -346,6 +377,13 @@ function handleRailEndDragOver(event: DragEvent) {
   if (!dragSource.value) return
   event.preventDefault()
   dropTarget.value = { type: 'rail-end' }
+}
+
+function handleRailDragLeave(event: DragEvent) {
+  const target = event.currentTarget as HTMLElement
+  const relatedTarget = event.relatedTarget
+  if (relatedTarget instanceof Node && target.contains(relatedTarget)) return
+  dropTarget.value = null
 }
 
 function handleDrop() {
@@ -408,7 +446,7 @@ function hideTooltip() {
 </script>
 
 <template>
-  <nav class="server-rail" aria-label="Servers" @dragleave="dropTarget = null">
+  <nav class="server-rail" aria-label="Servers" @dragleave="handleRailDragLeave">
     <div class="server-slot" :class="{ active: homeActive, unread: homeUnreadCount }">
       <span v-if="homeActive || homeUnreadCount" class="server-unread-pill" aria-hidden="true"></span>
       <button
@@ -484,6 +522,9 @@ function hideTooltip() {
         v-else
         class="server-folder"
         :class="{
+          active: item.folder.collapsed && folderHasActiveGuild(item.folder),
+          unread: item.folder.collapsed && folderHasUnreadGuild(item.folder),
+          mentioned: item.folder.collapsed && folderHasMentionGuild(item.folder),
           collapsed: item.folder.collapsed,
           'drop-before': isDropTargetFolder(item.folder.id, 'before'),
           'drop-after': isDropTargetFolder(item.folder.id, 'after'),
@@ -496,6 +537,11 @@ function hideTooltip() {
         @dragover="handleFolderDragOver($event, item.folder.id)"
         @drop.prevent="handleDrop"
       >
+        <span
+          v-if="item.folder.collapsed && (folderHasActiveGuild(item.folder) || folderHasUnreadGuild(item.folder) || folderHasMentionGuild(item.folder))"
+          class="server-unread-pill"
+          aria-hidden="true"
+        ></span>
         <button
           class="server-folder-label"
           type="button"
@@ -507,7 +553,8 @@ function hideTooltip() {
           @focus="showTooltip($event, item.folder.name)"
           @blur="hideTooltip"
         >
-          {{ item.folder.name.slice(0, 2).toUpperCase() }}
+          <Folder :size="15" aria-hidden="true" />
+          <span class="visually-hidden">{{ item.folder.name }}</span>
         </button>
         <div v-if="!item.folder.collapsed" class="server-folder-stack">
           <div
@@ -595,13 +642,15 @@ function hideTooltip() {
       <Compass :size="21" aria-hidden="true" />
     </button>
 
-    <div
-      v-if="tooltip"
-      class="server-rail-tooltip"
-      role="tooltip"
-      :style="{ left: `${tooltip.left}px`, top: `${tooltip.top}px` }"
-    >
-      {{ tooltip.text }}
-    </div>
+    <Teleport to="body">
+      <div
+        v-if="tooltip"
+        class="server-rail-tooltip"
+        role="tooltip"
+        :style="{ left: `${tooltip.left}px`, top: `${tooltip.top}px` }"
+      >
+        {{ tooltip.text }}
+      </div>
+    </Teleport>
   </nav>
 </template>

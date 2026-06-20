@@ -160,6 +160,31 @@ Reasoning:
   - `npm run smoke:realtime:browser:https` passed.
   - `git diff --check` passed.
 
+## Follow-Up Polish - 2026-06-21
+
+- Fixed the drag preview so server/folder dragging shows an icon-sized preview
+  instead of visually grabbing the whole rail slot.
+- Replaced folder text initials with an icon-only folder affordance to avoid
+  misaligned group text.
+- Moved rail tooltips to a body-level teleport so Home, server, folder, add, and
+  discovery tooltip UI is not clipped by the rail/sidebar stacking context.
+- Added collapsed-folder aggregate active/unread/mention markers so the left rail
+  marker behavior stays consistent after servers are moved into or out of groups.
+- Localized `ServerDiscoveryDialog.vue` through `i18n/index.ts` so the public
+  server exploration dialog follows the current Korean/English preference.
+- Verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed.
+  - `npm --prefix frontend run build` passed.
+  - `npm run smoke:realtime:browser:https` passed.
+  - `git diff --check` passed.
+  - `npm run docker:up:https:detached` rebuilt and restarted the local HTTPS
+    stack.
+  - `curl.exe -k https://localhost:5173/api/health` returned healthy backend/DB
+    status.
+  - `curl.exe -k https://localhost:5173/api/meta/voice/readiness` returned STUN
+    configured and TURN not configured, matching current local demo state.
+
 ## Residual Notes
 
 - Drag-and-drop is the primary edit path. Keyboard/focus users receive accessible

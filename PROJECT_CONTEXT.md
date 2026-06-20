@@ -121,6 +121,9 @@ user through `GET/PUT /api/users/me/server-rail`, backed by
 ownership is split across `ServerRail.vue` for drag/folder/tooltip UI,
 `stores/guilds.ts` for layout state and persistence, `services/api.ts` for REST
 wrappers, and `App.vue` for save orchestration and failure notice handling.
+Follow-up polish keeps drag feedback icon-sized, renders tooltips through a
+body-level layer, shows aggregate active/unread/mention markers on collapsed
+folders, and localizes `ServerDiscoveryDialog.vue` through `i18n/index.ts`.
 
 Realtime communication implementation has started from
 `docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and

@@ -335,7 +335,7 @@ select:focus-visible {
 }
 
 .server-slot.drop-group .server-button,
-.server-folder.drop-group {
+.server-folder.drop-group .server-folder-label {
   box-shadow:
     0 0 0 2px rgb(88 101 242 / 62%),
     0 0 0 6px rgb(88 101 242 / 18%);
@@ -418,17 +418,20 @@ select:focus-visible {
   transition: height 160ms ease;
 }
 
-.server-slot.active .server-unread-pill {
+.server-slot.active .server-unread-pill,
+.server-folder.active .server-unread-pill {
   height: 40px;
   background: #f2f3f5;
 }
 
-.server-slot.unread:not(.active) .server-unread-pill {
+.server-slot.unread:not(.active) .server-unread-pill,
+.server-folder.unread:not(.active) .server-unread-pill {
   height: 8px;
   background: #b5bac1;
 }
 
-.server-slot.mentioned:not(.active) .server-unread-pill {
+.server-slot.mentioned:not(.active) .server-unread-pill,
+.server-folder.mentioned:not(.active) .server-unread-pill {
   height: 12px;
   background: #f2f3f5;
 }
@@ -498,8 +501,8 @@ select:focus-visible {
 }
 
 .server-folder-label {
-  width: 30px;
-  height: 18px;
+  width: 32px;
+  height: 24px;
   display: grid;
   place-items: center;
   border: 1px solid rgb(255 255 255 / 16%);
@@ -514,6 +517,18 @@ select:focus-visible {
 .server-folder-label:focus-visible {
   color: #ffffff;
   background: rgb(255 255 255 / 10%);
+}
+
+.server-drag-preview {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 16px;
+  color: #ffffff;
+  background: #5865f2;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
 }
 
 .server-folder.collapsed {
@@ -543,7 +558,7 @@ select:focus-visible {
 
 .server-rail-tooltip {
   position: fixed;
-  z-index: var(--layer-tooltip);
+  z-index: var(--layer-tooltip, 5000);
   pointer-events: none;
   max-width: 220px;
   transform: translateY(-50%);

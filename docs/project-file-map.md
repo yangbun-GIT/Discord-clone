@@ -505,6 +505,8 @@ For ordinary implementation work:
   - Far-left server rail, server switching, user-controlled rail ordering,
     server folder/group drag-drop, folder collapse/expand, unread/mention/voice
     indicators, and app-owned rail tooltips.
+  - Uses icon-sized drag previews, body-level tooltip rendering, and collapsed
+    folder aggregate markers to keep Discord-like rail feedback consistent.
   - Receives normalized rail layout from `App.vue`/`guilds.ts` and emits
     `layout-change` after user reorder/group operations.
 - `frontend/src/components/PrivateChannelSidebar.vue`
@@ -590,7 +592,7 @@ For ordinary implementation work:
   - Localized server create/join dialog.
   - Closes on explicit close/cancel and backdrop click.
 - `frontend/src/components/ServerDiscoveryDialog.vue`
-  - Demo server discovery dialog.
+  - Localized demo server discovery dialog.
 
 ## Frontend: Stores
 
