@@ -5758,22 +5758,41 @@ select:focus-visible {
 }
 
 .voice-workspace-grid--screen-active {
-  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
-  grid-auto-rows: minmax(180px, 1fr);
-  max-height: calc(100vh - 260px);
+  height: min(100%, calc(100vh - 260px));
+  align-content: stretch;
+  grid-auto-rows: minmax(0, 1fr);
 }
 
-.voice-workspace-grid--screen-single-peer {
-  grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.75fr);
+.voice-workspace-grid--count-1 {
+  max-width: 980px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.voice-workspace-grid--screen-many .screen-share-tile:first-child {
-  grid-row: span 2;
+.voice-workspace-grid--count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.voice-workspace-grid--count-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.voice-workspace-grid--count-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.voice-workspace-grid--count-5,
+.voice-workspace-grid--count-6,
+.voice-workspace-grid--count-7,
+.voice-workspace-grid--count-8,
+.voice-workspace-grid--count-9 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .voice-workspace-grid--screen-active .voice-tile,
-.voice-workspace-grid--screen-active .voice-tile.empty {
-  min-height: clamp(180px, 24vh, 300px);
+.voice-workspace-grid--screen-active .voice-tile.empty,
+.voice-workspace-grid--screen-active .screen-share-tile {
+  min-height: 0;
+  height: 100%;
 }
 
 .voice-workspace-grid--many:not(.voice-workspace-grid--screen-active) .voice-tile,
@@ -6548,7 +6567,7 @@ select:focus-visible {
 }
 
 .voice-workspace-grid--screen-active .screen-share-tile {
-  min-height: clamp(260px, 48vh, 620px);
+  min-height: 0;
 }
 
 .screen-share-tile video {
@@ -6801,15 +6820,10 @@ select:focus-visible {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .voice-workspace-grid--screen-active,
-  .voice-workspace-grid--screen-single-peer {
+  .voice-workspace-grid--screen-active {
     grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: auto;
-    max-height: none;
-  }
-
-  .voice-workspace-grid--screen-many .screen-share-tile:first-child {
-    grid-row: auto;
+    height: auto;
   }
 
   .voice-workspace-grid--screen-active .screen-share-tile {

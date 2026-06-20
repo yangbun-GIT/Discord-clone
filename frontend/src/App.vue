@@ -84,6 +84,7 @@ const voiceRtc = useVoiceRtc()
 const settingsInitialPanel = ref<'account' | 'voice'>('account')
 const stageAudioMenu = ref<'input' | 'output' | null>(null)
 let removeDocumentKeyDown: (() => void) | null = null
+const VOICE_WORKSPACE_MAX_TILES = 9
 
 const activeGuild = computed(() => guilds.activeGuild)
 const activeChannel = computed(() => guilds.activeChannel)
@@ -94,6 +95,9 @@ const activeRemoteVoiceStreams = computed(() =>
 const remoteScreenStreams = computed(() =>
   activeRemoteVoiceStreams.value.filter((remote) => remote.sharingScreen),
 )
+const visibleRemoteScreenStreams = computed(() =>
+  remoteScreenStreams.value.slice(0, VOICE_WORKSPACE_MAX_TILES - (voiceRtc.screenStream.value ? 1 : 0)),
+)
 const remoteScreenUserIds = computed(() => new Set(remoteScreenStreams.value.map((remote) => remote.userId)))
 const remoteVoiceStreamByUserId = computed(() =>
   new Map(activeRemoteVoiceStreams.value.map((remote) => [remote.userId, remote])),
@@ -102,22 +106,30 @@ const visibleSelectedVoicePeers = computed(() =>
   selectedVoicePeers.value.filter((participant) => !remoteScreenUserIds.value.has(participant.user_id)),
 )
 const voiceWorkspaceScreenShareCount = computed(
-  () => (voiceRtc.screenStream.value ? 1 : 0) + remoteScreenStreams.value.length,
+  () => (voiceRtc.screenStream.value ? 1 : 0) + visibleRemoteScreenStreams.value.length,
 )
+const voiceWorkspaceCanShowLocalTile = computed(() => voiceWorkspaceScreenShareCount.value < VOICE_WORKSPACE_MAX_TILES)
+const visibleVoiceWorkspacePeers = computed(() => {
+  const localTileCount = voiceWorkspaceCanShowLocalTile.value ? 1 : 0
+  const emptyTileCount = !visibleSelectedVoicePeers.value.length && !visibleRemoteScreenStreams.value.length ? 1 : 0
+  const availablePeerTiles = VOICE_WORKSPACE_MAX_TILES
+    - voiceWorkspaceScreenShareCount.value
+    - localTileCount
+    - emptyTileCount
+  return visibleSelectedVoicePeers.value.slice(0, Math.max(0, availablePeerTiles))
+})
 const voiceWorkspaceParticipantTileCount = computed(
-  () => 1 + visibleSelectedVoicePeers.value.length
-    + (!visibleSelectedVoicePeers.value.length && !remoteScreenStreams.value.length ? 1 : 0),
+  () => (voiceWorkspaceCanShowLocalTile.value ? 1 : 0)
+    + visibleVoiceWorkspacePeers.value.length
+    + (!visibleSelectedVoicePeers.value.length && !visibleRemoteScreenStreams.value.length ? 1 : 0),
 )
 const voiceWorkspaceTileCount = computed(
-  () => voiceWorkspaceScreenShareCount.value + voiceWorkspaceParticipantTileCount.value,
+  () => Math.min(VOICE_WORKSPACE_MAX_TILES, voiceWorkspaceScreenShareCount.value + voiceWorkspaceParticipantTileCount.value),
 )
 const voiceWorkspaceGridClass = computed(() => ({
   'voice-workspace-grid--screen-active': voiceWorkspaceScreenShareCount.value > 0,
-  'voice-workspace-grid--screen-single-peer':
-    voiceWorkspaceScreenShareCount.value > 0 && voiceWorkspaceParticipantTileCount.value <= 1,
-  'voice-workspace-grid--screen-many':
-    voiceWorkspaceScreenShareCount.value > 0 && voiceWorkspaceParticipantTileCount.value > 1,
   'voice-workspace-grid--many': voiceWorkspaceTileCount.value >= 4,
+  [`voice-workspace-grid--count-${voiceWorkspaceTileCount.value}`]: true,
 }))
 const voiceLocationSummary = computed(() => {
   if (connectedDmId.value !== null) {
@@ -1785,7 +1797,7 @@ async function handleSendInviteToFriend(friendId: number) {
               state="connected"
             />
             <VoiceVideoSink
-              v-for="remote in remoteScreenStreams"
+              v-for="remote in visibleRemoteScreenStreams"
               :key="`${remote.channelId}:${remote.userId}`"
               :stream="remote.stream"
               :label="t('voice.remoteScreenLabel', { user: remote.username ?? `User ${remote.userId}` })"
@@ -1795,6 +1807,7 @@ async function handleSendInviteToFriend(friendId: number) {
             />
 
             <article
+              v-if="voiceWorkspaceCanShowLocalTile"
               class="voice-tile local"
               :class="{ connected: selectedVoiceConnected, speaking: voiceRtc.localSpeaking.value }"
             >
@@ -1807,7 +1820,7 @@ async function handleSendInviteToFriend(friendId: number) {
             </article>
 
             <article
-              v-for="participant in visibleSelectedVoicePeers"
+              v-for="participant in visibleVoiceWorkspacePeers"
               :key="participant.user_id"
               class="voice-tile remote"
               :class="{ speaking: remoteVoiceStreamByUserId.get(participant.user_id)?.speaking }"
@@ -1830,7 +1843,7 @@ async function handleSendInviteToFriend(friendId: number) {
               </div>
             </article>
 
-            <article v-if="!visibleSelectedVoicePeers.length && !remoteScreenStreams.length" class="voice-tile empty">
+            <article v-if="!visibleSelectedVoicePeers.length && !visibleRemoteScreenStreams.length" class="voice-tile empty">
               <div class="voice-activity-art" aria-hidden="true">
                 <Sparkles :size="66" />
               </div>

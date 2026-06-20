@@ -72,6 +72,20 @@ voice-panel behavior.
   normal participant layout, screen-share primary layout, multi-participant
   supporting columns, and mobile single-column stacking.
 
+### VCV-6: Multiple simultaneous screen shares could still overlap
+
+- Location: `frontend/src/App.vue`, `frontend/src/styles/base.css`
+- Current behavior: the first screen-share tile could span multiple rows, which
+  worked for one share but broke when two users shared screens and a participant
+  tile was also visible.
+- Expected behavior: a voice workspace should render at most 9 visible stage
+  tiles and choose a stable 1/2/3-column grid from the visible tile count so no
+  tile overlaps or escapes the stage.
+- Fix: `App.vue` now caps the voice workspace to 9 rendered tiles, prioritizing
+  screen-share tiles and filling the remaining slots with local/remote
+  participant tiles. `base.css` removes the screen-share row-span exception and
+  applies explicit `voice-workspace-grid--count-1` through `--count-9` layouts.
+
 ## Verification Plan
 
 - `npm run lint:frontend`
@@ -99,3 +113,10 @@ voice-panel behavior.
   `npm run smoke:realtime:browser:https`, and `git diff --check` passed. The
   smoke result kept one remote screen video, no duplicate remote sharing
   participant card, and zero browser errors.
+- Follow-up VCV-6 verification passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`,
+  `npm run smoke:realtime:browser:https`, and `git diff --check` passed. The
+  browser smoke kept local and remote screen-share rendering healthy with no
+  duplicate remote sharing participant card and zero browser errors. Docker HTTPS
+  refresh should be run after this change so `https://localhost:5173/` and the
+  Cloudflare tunnel origin receive the 9-tile grid update.
