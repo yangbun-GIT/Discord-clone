@@ -9,6 +9,47 @@ Zero-budget Discord clone based on the SRS provided for the project.
 - Realtime: Discord-style gateway opcodes over WebSocket
 - Data model: PostgreSQL schema with JavaScript-safe Snowflake IDs and bitfield permissions
 
+## Assignment Submission Quick Start
+
+The default assignment submission path is local Docker Compose, not an always-on
+public VM deployment. This runs the frontend, backend, PostgreSQL, WebSocket
+gateway, and voice metadata locally so a grader can confirm that the project
+contains both frontend and backend implementation.
+
+Run the full stack:
+
+```powershell
+npm run docker:up
+```
+
+Open:
+
+- App: `http://127.0.0.1:5173`
+- Backend health: `http://127.0.0.1:8000/api/health`
+
+Create two local accounts from the Register screen to test Friends, DM, server
+messages, voice channels, and screen sharing. Use the Demo user button only for
+quick seeded workspace exploration.
+
+Stop the stack:
+
+```powershell
+npm run docker:down
+```
+
+For same-Wi-Fi two-PC microphone/screen-share tests, use the Docker HTTPS LAN path
+below. For temporary external access without a permanent VM, run the local stack and
+expose it with Cloudflare Tunnel:
+
+```powershell
+cloudflared tunnel --url http://localhost:5173
+```
+
+Cloudflare Tunnel is an optional demo path that creates a temporary HTTPS public
+URL to the local app. It is not a formal deployment, and WebRTC media across
+different networks still needs a TURN server for reliable voice/screen sharing.
+The full submission/demo guide is `docs/assignment-submission-guide.md`.
+
 ## Local Setup
 
 Install frontend dependencies:
@@ -169,8 +210,10 @@ LAN success and TURN/NAT internet success are separate release gates. Do not mar
 internet voice complete unless the readiness check reports `turn_configured: true`
 and two users on different networks can complete a real voice/screen-share test.
 
-Deployment notes are maintained in `docs/deployment.md`. Voice QA steps are maintained
-in `docs/voice-qa.md`, and communication QA steps are maintained in
+Assignment submission and demo steps are maintained in
+`docs/assignment-submission-guide.md`. Deployment notes are maintained in
+`docs/deployment.md`. Voice QA steps are maintained in `docs/voice-qa.md`, and
+communication QA steps are maintained in
 `docs/realtime-communication-qa.md`. The documentation index is maintained in
 `docs/README.md`.
 Git workflow notes are maintained in `docs/GITHUB_COLLABORATION_WORKFLOW.md`, and
@@ -208,6 +251,10 @@ communication smoke pass. Real microphone quality, real screen picker UX,
 different-PC LAN, and TURN/NAT internet voice remain separate manual gates.
 
 ## External Deployment Readiness
+
+The default assignment path is local Docker Compose plus optional Cloudflare Tunnel
+for temporary external access. The VM/VPS path below is a future always-on
+deployment option, not a requirement for the current submission.
 
 The project cannot be completed for external voice through GitHub Pages or another
 static-only host. The Vue bundle can be static, but the clone also needs FastAPI,

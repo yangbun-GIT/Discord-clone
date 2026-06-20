@@ -130,14 +130,19 @@ For ordinary implementation work:
     `i18n/index.ts`.
 - `docs/deployment.md`
   - Runtime, Docker, Redis, HTTPS/WebSocket, TURN, and deployment hardening.
+- `docs/assignment-submission-guide.md`
+  - Default assignment submission and demo guide.
+  - Owns local Docker Compose grading flow, same-Wi-Fi HTTPS LAN checks,
+    optional Cloudflare Tunnel temporary external access, feature check order, and
+    submission limitations.
 - `docs/external-deployment-decision.md`
-  - Current decision record for the first external-network QA deployment.
+  - Future always-on public deployment decision record.
   - Selects single VM Docker Compose with Caddy and managed TURN first, self-hosted
     coturn optional.
   - Separates user-prepared resources, Codex-actionable setup, deployment command
     flow, verification checklist, and pending external gates.
 - `docs/external-deployment-runbook.md`
-  - Execution guide for the first public HTTPS/WSS deployment attempt.
+  - Future always-on public HTTPS/WSS deployment runbook.
   - Owns VM preparation, host-only `deploy/production.env` handling, Compose
     startup, readiness command flow, manual external QA, rollback, and current
     pending external status.
@@ -686,6 +691,7 @@ For ordinary implementation work:
     `frontend/nginx.conf`, `compose.production.example.yaml`,
     `deploy/Caddyfile.example`, `deploy/coturn/turnserver.conf.example`,
     `scripts/deployment_readiness_check.mjs`, `docs/deployment.md`,
+    `docs/assignment-submission-guide.md`,
     `docs/external-deployment-decision.md`, `README.md`.
 - Test updates:
   - Backend tests live in `backend/tests`.

@@ -410,6 +410,29 @@ Follow `docs/voice-qa.md#lan-smoke-test`. Record:
 
 LAN success is not TURN/NAT internet success.
 
+## Cloudflare Tunnel QA
+
+Follow `docs/assignment-submission-guide.md#optional-cloudflare-tunnel-demo` and
+`docs/voice-qa.md#optional-cloudflare-tunnel-external-access` when a temporary
+public HTTPS URL is needed for a submission demo.
+
+Record:
+
+- Local stack mode: normal Docker HTTP origin or Docker HTTPS LAN stack.
+- Tunnel command used.
+- Generated public origin domain only, not any Cloudflare token.
+- Whether the app loads through HTTPS.
+- Whether `/api/health` succeeds through the public origin.
+- Whether `/gateway` connects over WSS.
+- Whether server text and DM realtime pass in two sessions.
+- Whether `/api/meta/voice/readiness.turn_configured` is `true` before attempting
+  different-network voice.
+- Whether voice, mute/deafen, and screen share pass from two different networks.
+
+Cloudflare Tunnel success for page/API/WebSocket access is not the same as
+TURN/NAT voice success. The tunnel carries HTTP and WebSocket signaling; WebRTC
+media still needs valid STUN/TURN behavior between browsers.
+
 ## TURN/NAT QA
 
 Follow `docs/external-deployment-decision.md` and

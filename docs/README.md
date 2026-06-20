@@ -114,6 +114,11 @@ the project prompt and context files before changing code.
   - Stage C8 and later communication QA checklist.
   - Documents the automated two-browser smoke, same-PC manual QA, LAN QA, TURN/NAT
     QA, privacy constraints, and the latest C8 automated result.
+- `docs/assignment-submission-guide.md`
+  - Default assignment submission and demo guide.
+  - Defines local Docker Compose as the primary grading path, same-Wi-Fi HTTPS LAN
+    testing as the local two-PC path, optional Cloudflare Tunnel as temporary
+    external access, and VM/VPS deployment as a future extension.
 - `docs/project-file-map.md`
   - Quick project folder/file ownership map for faster path lookup before
     implementation.
@@ -206,6 +211,9 @@ the project prompt and context files before changing code.
 - Update `docs/implementation-plan.md` when stage status or roadmap scope changes.
 - Update `docs/deployment.md` when runtime, deployment, environment, Redis, Docker,
   HTTPS, WebSocket, or TURN assumptions change.
+- Update `docs/assignment-submission-guide.md` when the assignment submission
+  path, local Docker startup, same-Wi-Fi LAN check, Cloudflare Tunnel demo flow,
+  feature verification order, or grading limitations change.
 - Update `docs/external-deployment-decision.md` when the external deployment
   provider, topology, TURN strategy, readiness command flow, or pending external
   gate changes.

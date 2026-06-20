@@ -743,6 +743,12 @@ the current local voice metadata reports `turn_configured: false`.
   readiness checks, manual two-network QA, and rollback. Public deployment remains
   pending because no VM/VPS, public DNS hostname, real TURN credential, or
   different-network media QA is available in the current workspace.
+- Assignment submission packaging follow-up: the default submission path is now
+  local Docker Compose plus optional Cloudflare Tunnel temporary external access,
+  documented in `docs/assignment-submission-guide.md`. VM/VPS + Caddy + production
+  Compose remains documented as a future always-on deployment option, not the
+  baseline grading path. External different-network voice and screen sharing still
+  require TURN configuration and manual QA before being marked complete.
 
 ## Friend Relationship Workflow
 

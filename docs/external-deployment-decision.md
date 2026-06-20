@@ -2,11 +2,20 @@
 
 Date: 2026-06-20
 
+Status: future always-on public deployment option. This is not the default
+assignment submission path. For the current submission/demo flow, use local Docker
+Compose plus optional Cloudflare Tunnel as documented in
+`docs/assignment-submission-guide.md`.
+
 This document selects the first external-network deployment path for the Discord
 clone before any real public internet voice test is claimed complete. It is a
 preparation and decision record only. External voice, screen sharing, and TURN/NAT
 success remain pending until a real HTTPS/WSS host, TURN configuration, and two
 different networks are available.
+
+The selected single-VM path remains useful when the project later needs an
+always-on public endpoint. It should not be treated as a completed deployment or a
+required grading step.
 
 ## Current Readiness Structure
 

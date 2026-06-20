@@ -2148,6 +2148,16 @@ Completed Stage 2 bridge work:
   deployment completion: no VM/VPS, public DNS hostname, real TURN credential,
   public HTTPS/WSS host, or different-network TURN/NAT media QA is available in
   the current workspace.
+- Assignment submission packaging is now separated from future public deployment.
+  The default grading path is local Docker Compose execution (`npm run docker:up`)
+  with the app at `http://127.0.0.1:5173`, documented in
+  `docs/assignment-submission-guide.md` and summarized in `README.md`. Same-Wi-Fi
+  two-PC media testing stays on the existing Docker HTTPS LAN certificate path.
+  Cloudflare Tunnel is documented only as optional temporary external access to
+  the locally running app through `cloudflared tunnel --url http://localhost:5173`;
+  it is not a formal deployment and does not replace TURN/NAT media QA. The
+  VM/VPS + Caddy + production Compose documents remain future always-on extension
+  references.
 
 After each stage or meaningful feature:
 

@@ -496,6 +496,32 @@ Browser UI
     - Safe external deployment readiness verification for HTTPS origin shape,
       backend health, TURN readiness, and gateway WSS HELLO without credentials.
 
+- `docs/assignment-submission-guide.md`
+  - References:
+    - `README.md`
+    - `compose.yaml`
+    - `compose.https.yaml`
+    - `scripts/create_lan_https_cert.ps1`
+    - `scripts/deployment_readiness_check.mjs`
+    - `scripts/realtime_browser_smoke.mjs`
+    - `docs/deployment.md`
+    - `docs/voice-qa.md`
+    - `docs/realtime-communication-qa.md`
+    - `docs/external-deployment-decision.md`
+    - `docs/external-deployment-runbook.md`
+  - Referenced by:
+    - `README.md`
+    - `docs/README.md`
+    - `docs/deployment.md`
+    - `docs/project-file-map.md`
+    - `docs/voice-qa.md`
+    - `docs/realtime-communication-qa.md`
+  - Owns:
+    - Default assignment submission path: local Docker Compose execution.
+    - Same-Wi-Fi HTTPS LAN demo routing.
+    - Optional Cloudflare Tunnel temporary external access guidance.
+    - Feature check order and explicit limits for non-permanent deployment.
+
 - `compose.https.yaml`
   - References:
     - `compose.yaml`

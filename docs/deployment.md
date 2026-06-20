@@ -1,5 +1,34 @@
 # Deployment Notes
 
+## Assignment Submission Scope
+
+The default assignment submission path is local Docker Compose execution. A grader
+can run the frontend, backend, PostgreSQL, WebSocket gateway, and voice metadata on
+one machine with:
+
+```powershell
+npm run docker:up
+```
+
+Then open `http://127.0.0.1:5173`. This is the primary grading path because the
+project requirement is frontend plus backend implementation, not a permanently
+hosted public service.
+
+Optional external access for a short demo can use Cloudflare Tunnel after the local
+stack is running:
+
+```powershell
+cloudflared tunnel --url http://localhost:5173
+```
+
+Cloudflare Tunnel creates a temporary public HTTPS URL to the local origin. It can
+carry the frontend, REST API, and `/gateway` WebSocket traffic through the same
+origin, but it is not a formal deployment and it does not replace WebRTC TURN
+requirements. Different-network voice and screen sharing still need a real TURN
+configuration and manual QA before they can be called complete.
+
+The complete submission guide is `docs/assignment-submission-guide.md`.
+
 ## Runtime Shape
 
 - Build `backend/Dockerfile` with the `runtime` target for production.
@@ -10,7 +39,7 @@
 - Put the frontend and backend behind one HTTPS reverse proxy so `/api` and
   `/gateway` share the same origin.
 
-Recommended external-test topology for this project:
+Recommended future always-on external-test topology for this project:
 
 1. A small single VM or server running Docker Compose.
 2. Caddy as the public HTTPS reverse proxy for the domain.
@@ -19,9 +48,10 @@ Recommended external-test topology for this project:
 5. PostgreSQL and Redis as managed services or Compose services.
 6. TURN through either a managed TURN provider or a self-hosted coturn service.
 
-The deployment decision record is `docs/external-deployment-decision.md`. It
-selects single VM Docker Compose as the first external-network QA path and keeps
-TURN/NAT internet voice marked incomplete until a real HTTPS/WSS deployment, TURN
+The deployment decision record is `docs/external-deployment-decision.md`. It is now
+classified as a future always-on public deployment option. It selects single VM
+Docker Compose as the first future external-network QA path and keeps TURN/NAT
+internet voice marked incomplete until a real HTTPS/WSS deployment, TURN
 configuration, and two different networks are verified.
 
 This is preferred over GitHub Pages or another static-only host because the clone
@@ -202,7 +232,11 @@ $env:REQUIRE_TURN = "1"
 npm run check:deployment:readiness
 ```
 
-## VM Checklist
+## Future VM Checklist
+
+This section is not required for the default assignment submission. Use it only when
+moving from the local Docker Compose + optional Cloudflare Tunnel path to an
+always-on public deployment.
 
 Follow `docs/external-deployment-decision.md` before provisioning external
 resources. It separates user-prepared items from Codex-actionable work and records

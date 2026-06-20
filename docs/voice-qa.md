@@ -60,6 +60,36 @@ If microphone or screen sharing is blocked from `http://<host-ip>`, this is expe
 for many browsers because LAN HTTP is not a secure context. Use the HTTPS LAN media
 path below or run media-capture checks from localhost.
 
+## Optional Cloudflare Tunnel External Access
+
+Use this only as a temporary demo path when a public HTTPS URL is needed without
+provisioning a VM/VPS. It is not an always-on deployment and it does not replace
+TURN/NAT voice QA.
+
+1. Start the normal local Docker stack:
+
+   ```powershell
+   npm run docker:up
+   ```
+
+2. Install `cloudflared` from Cloudflare's official documentation.
+3. Expose the local frontend origin:
+
+   ```powershell
+   cloudflared tunnel --url http://localhost:5173
+   ```
+
+4. Open the printed `https://*.trycloudflare.com` URL from another network.
+5. Confirm the app loads over HTTPS, `/api/health` works, and the gateway connects
+   over WSS.
+6. Test text and DM realtime first. Then test voice only if a TURN-capable
+   `WEBRTC_ICE_SERVERS_JSON` is configured.
+
+Cloudflare Tunnel proxies the app, REST API, and WebSocket signaling. WebRTC media
+still depends on browser ICE candidates and should be treated as incomplete across
+different networks unless `/api/meta/voice/readiness.turn_configured` is `true`
+and a real two-network microphone/screen-share test passes.
+
 ### HTTPS LAN Media Path
 
 Use this path when the second device must test real microphone or screen capture.

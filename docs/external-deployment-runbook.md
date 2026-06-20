@@ -2,6 +2,11 @@
 
 Date: 2026-06-20
 
+Status: future always-on public deployment option. This runbook is retained for a
+later VM/VPS deployment and is not the default assignment submission path. The
+default submission/demo flow is local Docker Compose plus optional Cloudflare
+Tunnel, documented in `docs/assignment-submission-guide.md`.
+
 This runbook is the execution guide for the first public HTTPS/WSS deployment of
 the Discord clone. It assumes the selected topology from
 `docs/external-deployment-decision.md`: one VM running Docker Compose, Caddy,
