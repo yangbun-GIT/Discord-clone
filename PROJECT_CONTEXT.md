@@ -141,9 +141,10 @@ Voice channel visual remediation is recorded in
 voice workspace now uses a Discord-like stage composition in
 `frontend/src/App.vue` and `frontend/src/styles/base.css`: large responsive
 participant and empty-state tiles, darker stage framing, bottom-center voice
-actions for join/screen-share/leave, and a real invite action in the empty tile
-when the user has invite permission. The existing WebRTC, voice panel, screen-share,
-and gateway signaling flows are preserved.
+actions for join/screen-share/leave, stage-level microphone/output controls with
+device popovers before screen share, and a real invite action in the empty tile when
+the user has invite permission. The existing WebRTC, voice panel, screen-share, and
+gateway signaling flows are preserved.
 
 Realtime communication implementation has started from
 `docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and

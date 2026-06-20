@@ -45,6 +45,19 @@ voice-panel behavior.
   action when the user can create invites, and a disabled activity selection action
   to avoid implying unsupported functionality is implemented.
 
+### VCV-4: Stage footer lacked input/output controls
+
+- Location: `frontend/src/App.vue`, `frontend/src/styles/base.css`
+- Current behavior: the voice-channel stage footer exposed screen share and leave
+  actions only, so users had to move to the bottom-left user panel to change mute,
+  deafen, input device, output device, volume, sensitivity, or RNNoise settings.
+- Expected behavior: the active voice-channel stage should expose the same
+  microphone and output controls directly in the bottom stage control bar, placed
+  before screen share.
+- Fix: the stage footer now renders microphone and output control clusters when
+  connected. Each `^` trigger opens a clone-owned device popover that reuses the
+  existing voice device settings state and closes on outside click or Escape.
+
 ## Verification Plan
 
 - `npm run lint:frontend`
@@ -64,3 +77,6 @@ voice-panel behavior.
   remote audio sink, screen-share preview/remote rendering, reload recovery, and
   voice leave cleanup.
 - `git diff --check` passed with line-ending warnings only.
+- Follow-up VCV-4 verification passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`,
+  `npm run smoke:realtime:browser:https`, and `git diff --check` all passed.

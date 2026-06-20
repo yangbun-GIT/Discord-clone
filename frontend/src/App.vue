@@ -3,10 +3,14 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   BellOff,
   Bell,
+  ChevronUp,
   Hash,
+  Headphones,
+  HeadphoneOff,
   Link,
   MessageCircle,
   Mic,
+  MicOff,
   Pin,
   Phone,
   Radio,
@@ -17,6 +21,7 @@ import {
   ScreenShareOff,
   Sparkles,
   Users,
+  Volume2,
   X,
 } from 'lucide-vue-next'
 
@@ -77,6 +82,7 @@ const {
 } = useGateway()
 const voiceRtc = useVoiceRtc()
 const settingsInitialPanel = ref<'account' | 'voice'>('account')
+const stageAudioMenu = ref<'input' | 'output' | null>(null)
 let removeDocumentKeyDown: (() => void) | null = null
 
 const activeGuild = computed(() => guilds.activeGuild)
@@ -609,6 +615,12 @@ function runGlobalContextAction(id: string) {
 function handleWorkspacePointerDown(event: MouseEvent) {
   const target = event.target
   if (!(target instanceof HTMLElement)) return
+  if (
+    stageAudioMenu.value
+    && !target.closest('.voice-stage-device-popover, .voice-stage-audio-control')
+  ) {
+    stageAudioMenu.value = null
+  }
   if (globalContextMenu.value && !target.closest('.global-context-menu')) {
     closeGlobalContextMenu()
   }
@@ -621,8 +633,55 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return
   if (pendingVoiceRejoinChannelId.value) dismissVoiceRejoin()
   if (pendingVoiceSwitchChannelId.value) cancelVoiceSwitch()
+  stageAudioMenu.value = null
   closeGlobalContextMenu()
   if (workspaceNotice.value) clearWorkspaceNotice()
+}
+
+function toggleStageAudioMenu(menu: 'input' | 'output') {
+  if (stageAudioMenu.value === menu) {
+    stageAudioMenu.value = null
+    return
+  }
+  stageAudioMenu.value = menu
+  void voiceRtc.refreshVoiceDevices()
+}
+
+function handleStageDeviceSelect(key: 'inputDeviceId' | 'outputDeviceId', event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLSelectElement)) return
+  voiceRtc.updateVoiceDeviceSettings({ [key]: target.value || null })
+}
+
+function handleStageDeviceRange(
+  key: 'inputVolume' | 'outputVolume' | 'inputSensitivity',
+  event: Event,
+) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  voiceRtc.updateVoiceDeviceSettings({ [key]: Number(target.value) })
+}
+
+function handleStageNoiseGateChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  voiceRtc.updateVoiceDeviceSettings({ noiseGate: target.checked })
+}
+
+function handleStageNoiseSuppressionModeChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLSelectElement)) return
+  const mode = target.value
+  if (mode !== 'off' && mode !== 'rnnoise') return
+  voiceRtc.updateVoiceDeviceSettings({
+    noiseSuppressionMode: mode,
+    rnnoiseSuppression: mode === 'rnnoise',
+  })
+}
+
+function openStageVoiceSettings() {
+  stageAudioMenu.value = null
+  handleOpenVoiceSettings()
 }
 
 async function handleConfirmVoiceRejoin() {
@@ -1784,6 +1843,97 @@ async function handleSendInviteToFriend(friendId: number) {
             </article>
           </div>
 
+          <div
+            v-if="stageAudioMenu"
+            class="voice-stage-device-popover"
+            :aria-label="stageAudioMenu === 'input' ? t('voice.inputMenu') : t('voice.outputMenu')"
+          >
+            <template v-if="stageAudioMenu === 'input'">
+              <label class="voice-device-field">
+                <span>{{ t('settings.inputDevice') }}</span>
+                <select
+                  :value="voiceRtc.voiceDeviceSettings.value.inputDeviceId ?? ''"
+                  @change="handleStageDeviceSelect('inputDeviceId', $event)"
+                >
+                  <option value="">{{ t('settings.defaultDevice') }}</option>
+                  <option v-for="device in voiceRtc.voiceDevices.value.inputs" :key="device.id" :value="device.id">
+                    {{ device.label }}
+                  </option>
+                </select>
+              </label>
+              <label class="voice-device-range">
+                <span>{{ t('settings.inputVolume') }}</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  :value="voiceRtc.voiceDeviceSettings.value.inputVolume"
+                  @input="handleStageDeviceRange('inputVolume', $event)"
+                />
+                <strong>{{ voiceRtc.voiceDeviceSettings.value.inputVolume }}%</strong>
+              </label>
+              <label class="voice-device-range voice-device-sensitivity">
+                <span>{{ t('settings.inputSensitivity') }}</span>
+                <input
+                  type="range"
+                  min="5"
+                  max="85"
+                  :value="voiceRtc.voiceDeviceSettings.value.inputSensitivity"
+                  :aria-label="t('settings.inputSensitivity')"
+                  @input="handleStageDeviceRange('inputSensitivity', $event)"
+                />
+                <strong>{{ voiceRtc.voiceDeviceSettings.value.inputSensitivity }}%</strong>
+              </label>
+              <label class="voice-device-field">
+                <span>{{ t('settings.noiseSuppressionEngine') }}</span>
+                <select
+                  :value="voiceRtc.voiceDeviceSettings.value.noiseSuppressionMode"
+                  @change="handleStageNoiseSuppressionModeChange"
+                >
+                  <option value="off">{{ t('settings.noiseSuppressionOff') }}</option>
+                  <option value="rnnoise">{{ t('settings.rnnoiseSuppression') }}</option>
+                </select>
+              </label>
+              <label class="voice-device-toggle">
+                <span>{{ t('settings.noiseGate') }}</span>
+                <input
+                  type="checkbox"
+                  :checked="voiceRtc.voiceDeviceSettings.value.noiseGate"
+                  @change="handleStageNoiseGateChange"
+                />
+              </label>
+            </template>
+            <template v-else>
+              <label class="voice-device-field">
+                <span>{{ t('settings.outputDevice') }}</span>
+                <select
+                  :value="voiceRtc.voiceDeviceSettings.value.outputDeviceId ?? ''"
+                  @change="handleStageDeviceSelect('outputDeviceId', $event)"
+                >
+                  <option value="">{{ t('settings.defaultDevice') }}</option>
+                  <option v-for="device in voiceRtc.voiceDevices.value.outputs" :key="device.id" :value="device.id">
+                    {{ device.label }}
+                  </option>
+                </select>
+              </label>
+              <label class="voice-device-range">
+                <span>{{ t('settings.outputVolume') }}</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  :value="voiceRtc.voiceDeviceSettings.value.outputVolume"
+                  @input="handleStageDeviceRange('outputVolume', $event)"
+                />
+                <strong>{{ voiceRtc.voiceDeviceSettings.value.outputVolume }}%</strong>
+              </label>
+            </template>
+            <button type="button" class="voice-device-settings-button" @click="openStageVoiceSettings">
+              <Settings :size="16" aria-hidden="true" />
+              <span>{{ t('settings.voiceAndVideoSettings') }}</span>
+            </button>
+          </div>
+
           <div class="voice-stage-controls" aria-label="Voice channel actions">
             <button
               v-if="!selectedVoiceConnected"
@@ -1795,6 +1945,53 @@ async function handleSendInviteToFriend(friendId: number) {
               <Mic :size="18" aria-hidden="true" />
               <span>{{ t('voice.joinSelected') }}</span>
             </button>
+            <span v-if="selectedVoiceConnected" class="voice-stage-audio-control">
+              <button
+                type="button"
+                class="voice-stage-icon-button"
+                :title="voiceRtc.isMuted.value ? t('voice.unmute') : t('voice.mute')"
+                :aria-label="voiceRtc.isMuted.value ? t('voice.unmute') : t('voice.mute')"
+                :aria-pressed="voiceRtc.isMuted.value"
+                @click="handleToggleMute"
+              >
+                <MicOff v-if="voiceRtc.isMuted.value" :size="18" aria-hidden="true" />
+                <Mic v-else :size="18" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="voice-stage-popover-trigger"
+                :title="t('voice.openInputMenu')"
+                :aria-label="t('voice.openInputMenu')"
+                :aria-expanded="stageAudioMenu === 'input'"
+                @click="toggleStageAudioMenu('input')"
+              >
+                <ChevronUp :size="13" aria-hidden="true" />
+              </button>
+            </span>
+            <span v-if="selectedVoiceConnected" class="voice-stage-audio-control">
+              <button
+                type="button"
+                class="voice-stage-icon-button"
+                :title="isDeafened ? t('voice.undeafen') : t('voice.deafen')"
+                :aria-label="isDeafened ? t('voice.undeafen') : t('voice.deafen')"
+                :aria-pressed="isDeafened"
+                @click="handleToggleDeafen"
+              >
+                <HeadphoneOff v-if="isDeafened" :size="18" aria-hidden="true" />
+                <Volume2 v-else-if="voiceConnected" :size="18" aria-hidden="true" />
+                <Headphones v-else :size="18" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="voice-stage-popover-trigger"
+                :title="t('voice.openOutputMenu')"
+                :aria-label="t('voice.openOutputMenu')"
+                :aria-expanded="stageAudioMenu === 'output'"
+                @click="toggleStageAudioMenu('output')"
+              >
+                <ChevronUp :size="13" aria-hidden="true" />
+              </button>
+            </span>
             <button
               type="button"
               class="screen"

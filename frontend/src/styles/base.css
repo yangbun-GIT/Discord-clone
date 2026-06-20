@@ -5967,6 +5967,60 @@ select:focus-visible {
   border-color: rgb(34 197 94 / 32%);
 }
 
+.voice-stage-audio-control {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+}
+
+.voice-stage-controls .voice-stage-audio-control button {
+  min-width: 38px;
+  min-height: 38px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.voice-stage-controls .voice-stage-audio-control button + button {
+  min-width: 30px;
+  border-left: 1px solid rgb(255 255 255 / 8%);
+}
+
+.voice-stage-controls .voice-stage-audio-control button[aria-expanded="true"] {
+  color: #ffffff;
+  background: rgb(88 101 242 / 28%);
+}
+
+.voice-stage-controls .voice-stage-audio-control button[aria-pressed="true"] {
+  color: #fecaca;
+  background: rgb(248 113 113 / 15%);
+}
+
+.voice-stage-device-popover {
+  position: absolute;
+  left: 50%;
+  bottom: calc(clamp(18px, 4vh, 44px) + 62px);
+  z-index: 4;
+  width: min(340px, calc(100% - 32px));
+  max-height: min(520px, calc(100% - 92px));
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  color: #f8fafc;
+  background: #24252a;
+  padding: 13px;
+  box-shadow:
+    0 20px 50px rgb(0 0 0 / 46%),
+    0 1px 0 rgb(255 255 255 / 8%) inset;
+  transform: translateX(-50%);
+}
+
 .voice-workspace-error {
   border: 1px solid rgb(248 113 113 / 24%);
   border-radius: 8px;
@@ -6711,6 +6765,11 @@ select:focus-visible {
     width: calc(100% - 24px);
     justify-content: center;
     overflow-x: auto;
+  }
+
+  .voice-stage-device-popover {
+    width: calc(100% - 24px);
+    bottom: 108px;
   }
 
   .voice-workspace-grid {
