@@ -20,7 +20,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const root = ref<HTMLElement | null>(null)
 const searchOpen = ref(false)
 const searchQuery = ref('')
 let removeDocumentPointerDown: (() => void) | null = null
@@ -51,7 +50,12 @@ function openDmFromSearch(dmId: number) {
 function handleDocumentPointerDown(event: MouseEvent) {
   if (!searchOpen.value) return
   const target = event.target
-  if (target instanceof Node && root.value?.contains(target)) return
+  if (
+    target instanceof HTMLElement
+    && target.closest('.quick-switcher-popover, .dm-search-button')
+  ) {
+    return
+  }
   searchOpen.value = false
 }
 
@@ -73,7 +77,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <aside ref="root" class="private-sidebar" :aria-label="t('channel.aria.privateChannels')">
+  <aside class="private-sidebar" :aria-label="t('channel.aria.privateChannels')">
     <button
       class="dm-search-button"
       type="button"
