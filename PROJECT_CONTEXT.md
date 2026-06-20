@@ -2333,6 +2333,13 @@ Completed Stage 2 bridge work:
   the first message, keeps only the date divider as the separator between the intro
   and message list, and centers current-user delete controls vertically inside the
   message row.
+- The follow-up fix keeps the date divider inside the DM intro block so the
+  profile/actions/date/message order cannot visually interleave during bottom-up
+  scrolling. Realtime publisher payloads now use JSON-safe Pydantic dumps so
+  `created_at` dispatch data is serialized as a string, preventing DM message POST
+  500s during active gateway sessions. `frontend/nginx.conf` also sends `no-store`
+  cache headers for the Cloudflare Tunnel demo frontend so rebuilt bundles appear
+  without stale static-page caching.
 
 After each stage or meaningful feature:
 

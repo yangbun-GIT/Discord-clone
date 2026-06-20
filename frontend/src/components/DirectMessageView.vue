@@ -451,6 +451,7 @@ onBeforeUnmount(() => {
             <span>{{ muted ? t('friends.unmuteConversation') : t('friends.muteConversation') }}</span>
           </button>
         </div>
+        <div v-if="dm.messages.length" class="date-divider dm-date-divider"><span>{{ timelineDate }}</span></div>
       </section>
 
       <section v-else class="dm-chat-intro" :aria-label="t('dm.aria.noSelection')">
@@ -458,8 +459,6 @@ onBeforeUnmount(() => {
         <h2>{{ t('app.status.directMessage') }}</h2>
         <p>{{ t('dm.selectConversation') }}</p>
       </section>
-
-      <div v-if="dm?.messages.length" class="date-divider dm-date-divider"><span>{{ timelineDate }}</span></div>
 
       <article
         v-for="message in dm?.messages ?? []"

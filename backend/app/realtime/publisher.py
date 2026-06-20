@@ -22,7 +22,7 @@ async def publish_message_create(message: MessageRead) -> None:
     event = RealtimeGatewayEvent(
         channel_id=message.channel_id,
         event="MESSAGE_CREATE",
-        data=message.model_dump(),
+        data=message.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -31,7 +31,7 @@ async def publish_message_update(message: MessageRead) -> None:
     event = RealtimeGatewayEvent(
         channel_id=message.channel_id,
         event="MESSAGE_UPDATE",
-        data=message.model_dump(),
+        data=message.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -40,7 +40,7 @@ async def publish_message_delete(message: MessageDeleteRead) -> None:
     event = RealtimeGatewayEvent(
         channel_id=message.channel_id,
         event="MESSAGE_DELETE",
-        data=message.model_dump(),
+        data=message.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -49,7 +49,7 @@ async def publish_channel_create(channel: ChannelRead) -> None:
     event = RealtimeGatewayEvent(
         guild_id=channel.guild_id,
         event="CHANNEL_CREATE",
-        data=channel.model_dump(),
+        data=channel.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -58,7 +58,7 @@ async def publish_guild_update(guild: GuildRead) -> None:
     event = RealtimeGatewayEvent(
         guild_id=guild.id,
         event="GUILD_UPDATE",
-        data=guild.model_dump(),
+        data=guild.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -67,7 +67,7 @@ async def publish_dm_create(dm: DmRead) -> None:
     event = RealtimeGatewayEvent(
         dm_id=dm.id,
         event="DM_CREATE",
-        data=dm.model_dump(),
+        data=dm.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -76,7 +76,7 @@ async def publish_dm_message_create(message: DmMessageRead) -> None:
     event = RealtimeGatewayEvent(
         dm_id=message.dm_id,
         event="DM_MESSAGE_CREATE",
-        data=message.model_dump(),
+        data=message.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -85,7 +85,7 @@ async def publish_dm_message_delete(message: DmMessageDeleteRead) -> None:
     event = RealtimeGatewayEvent(
         dm_id=message.dm_id,
         event="DM_MESSAGE_DELETE",
-        data=message.model_dump(),
+        data=message.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -94,7 +94,7 @@ async def publish_dm_close(*, user_id: int, dm: DmDeleteRead) -> None:
     event = RealtimeGatewayEvent(
         user_id=user_id,
         event="DM_DELETE",
-        data=dm.model_dump(),
+        data=dm.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -107,7 +107,7 @@ async def publish_relationship_update(
     event = RealtimeGatewayEvent(
         user_id=user_id,
         event="RELATIONSHIP_UPDATE",
-        data=relationship.model_dump(),
+        data=relationship.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -120,7 +120,7 @@ async def publish_relationship_delete(
     event = RealtimeGatewayEvent(
         user_id=user_id,
         event="RELATIONSHIP_DELETE",
-        data=relationship.model_dump(),
+        data=relationship.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 
@@ -135,7 +135,7 @@ async def publish_presence_update(
         user_id=user_id,
         guild_id=guild_id,
         event="PRESENCE_UPDATE",
-        data=presence.model_dump(),
+        data=presence.model_dump(mode="json"),
     )
     await _publish_or_broadcast(event)
 

@@ -412,6 +412,8 @@ For ordinary implementation work:
     absent or publish fails.
   - Publishes user-targeted relationship update/delete and presence update
     dispatches.
+  - Uses JSON-safe Pydantic dumps for gateway payloads so timestamp fields such as
+    DM `created_at` do not break WebSocket dispatch serialization.
 - `backend/app/realtime/subscriber.py`
   - Redis-backed gateway event consumption with privacy-safe startup, stop, invalid
     payload, and restart logs.
@@ -535,7 +537,9 @@ For ordinary implementation work:
   - Keeps all DM messages left-aligned while distinguishing current-user messages
     with row styling and vertically centered author-only delete actions; the
     composer restores focus after Enter or send-button submission. Uses persisted
-    DM message `created_at` values for date divider and message time display.
+    DM message `created_at` values for date divider and message time display; the
+    date divider stays inside the intro block so intro actions and first messages
+    cannot visually interleave during bottom-up scrolling.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal

@@ -397,6 +397,9 @@ Browser UI
     - `backend/app/api/routes/dms.py`
     - `backend/app/api/routes/guilds.py`
     - `scripts/realtime_redis_smoke.py` indirectly through REST message creation.
+  - Owns:
+    - JSON-safe gateway payload conversion before Redis publish or local fan-out so
+      timestamp fields such as DM `created_at` serialize as strings.
 
 - `backend/app/realtime/subscriber.py`
   - References:
@@ -583,6 +586,8 @@ Browser UI
   - Owns:
     - HMR-free local `frontend-tunnel` runtime service on port `5174` for
       Cloudflare Quick Tunnel demos.
+    - No-store response caching for the tunnel demo frontend so rebuilt static
+      bundles are not hidden by stale browser/edge cache.
 
 - `compose.production.example.yaml`
   - References:
@@ -1054,8 +1059,10 @@ Browser UI
     local/remote message row distinction, one-to-one intro status display, active
     private-call stage display, and local emoji plus DM call input/output popover
     state with outside-click/Escape dismissal. Current-user and remote DM messages
-    remain left-aligned; current user messages keep a styled row accent and
-    vertically centered author-only delete action. The composer restores focus
+    remain left-aligned; the intro-owned date divider separates profile/actions
+    from the first message without interleaving; current user messages keep a
+    styled row accent and vertically centered author-only delete action. The
+    composer restores focus
     after Enter or send-button submission, including after the temporary disabled
     mutation window closes. Active DM call controls group mute, deafen, quick
     input/output
