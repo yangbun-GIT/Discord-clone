@@ -475,12 +475,21 @@ function contextMenuItems(kind: string) {
       { id: 'pin-message', label: t('context.pinMessage') },
     ]
   }
-  if (kind === 'friend' || kind === 'dm-row') {
+  if (kind === 'friend') {
     return [
       { id: 'view-profile', label: t('friends.viewProfile') },
       { id: 'message-friend', label: t('friends.sendMessage') },
       { id: 'start-dm-call', label: t('friends.startCall') },
       { id: 'mute-dm', label: t('friends.muteConversation') },
+    ]
+  }
+  if (kind === 'dm-row') {
+    return [
+      { id: 'view-profile', label: t('friends.viewProfile') },
+      { id: 'message-friend', label: t('friends.sendMessage') },
+      { id: 'start-dm-call', label: t('friends.startCall') },
+      { id: 'mute-dm', label: t('friends.muteConversation') },
+      { id: 'close-dm', label: t('dm.closeConversation'), danger: true },
     ]
   }
   if (kind === 'user-panel') {
@@ -557,6 +566,8 @@ function runGlobalContextAction(id: string) {
     void handleStartContextCall()
   } else if (id === 'mute-dm') {
     void handleToggleContextMute()
+  } else if (id === 'close-dm') {
+    handleCloseContextDm()
   } else if (id === 'settings' || id === 'open-settings') {
     handleOpenUserSettings()
   } else if (id === 'voice-disconnect') {
@@ -737,6 +748,12 @@ function handleCloseDm(dmId: number) {
     .catch((error) => {
       workspaceError.value = error instanceof Error ? error.message : t('app.error.dmCloseFailed')
     })
+}
+
+function handleCloseContextDm() {
+  const dmId = dmIdFromContextTarget()
+  if (dmId === null) return
+  handleCloseDm(dmId)
 }
 
 async function handleMessageFriend(friendId: number) {
@@ -1278,7 +1295,6 @@ async function handleSendInviteToFriend(friendId: number) {
       @open-friends="handleOpenFriends"
       @open-dm="handleOpenDm"
       @create-dm="showCreateDmDialog = true"
-      @close-dm="handleCloseDm"
       @demo-notice="showDemoNotice"
     />
 

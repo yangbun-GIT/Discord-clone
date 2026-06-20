@@ -2316,6 +2316,11 @@ Completed Stage 2 bridge work:
   and recreating the same DM unhides the conversation without deleting the other
   participant's history.
 
+- A 2026-06-21 DM follow-up removed the visible sidebar X close button and moved
+  `대화 닫기` to the app-owned DM row context menu. `DirectMessageView.vue` now
+  preserves composer focus after Enter or send-button submission through the
+  post-render update, so repeated DM entry stays inside the message input.
+
 After each stage or meaningful feature:
 
 - Update this file's implementation map and integration notes.

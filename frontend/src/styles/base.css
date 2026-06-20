@@ -995,34 +995,6 @@ select:focus-visible {
   text-align: left;
 }
 
-.dm-row-close {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  z-index: 2;
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  color: #b5bac1;
-  background: rgb(17 19 24 / 72%);
-  opacity: 0;
-  transform: translateY(-50%);
-}
-
-.dm-row-wrap:hover .dm-row-close,
-.dm-row-wrap:focus-within .dm-row-close {
-  opacity: 1;
-}
-
-.dm-row-close:hover,
-.dm-row-close:focus-visible {
-  color: #ffffff;
-  background: rgb(255 255 255 / 13%);
-}
-
 .dm-row:hover,
 .dm-row.active {
   border-color: var(--border-muted);

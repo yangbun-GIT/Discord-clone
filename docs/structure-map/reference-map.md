@@ -1017,8 +1017,9 @@ Browser UI
   - Receives relationship/DM state from `frontend/src/App.vue`.
   - Emits friends/DM/search/start-new-DM actions to `frontend/src/App.vue`; DM
     rows expose target IDs for app-owned context menus.
-  - Emits current-user DM close actions to `frontend/src/App.vue`, which routes
-    them to `frontend/src/stores/dms.ts` and the REST DM close endpoint.
+  - Exposes current-user DM close through the app-owned DM row context menu in
+    `frontend/src/App.vue`, which routes the action to `frontend/src/stores/dms.ts`
+    and the REST DM close endpoint.
 - `frontend/src/components/CreateDmDialog.vue`
   - Receives accepted-friend relationship state from `frontend/src/App.vue`.
   - Emits selected recipient IDs to `frontend/src/App.vue` for `dms.createDm(...)`.
@@ -1052,8 +1053,9 @@ Browser UI
     one-to-one intro status display, active private-call stage display, and local
     emoji plus DM call input/output popover state with outside-click/Escape
     dismissal. Current-user and remote DM messages remain left-aligned; current
-    user messages keep a styled row accent and author-only delete action. Active
-    DM call controls group mute, deafen, quick input/output
+    user messages keep a styled row accent and author-only delete action. The
+    composer restores focus after Enter or send-button submission. Active DM call
+    controls group mute, deafen, quick input/output
     settings, and hang-up in one toolbar, and ongoing remote DM calls can render
     as joinable stages.
 - `frontend/src/components/ChatView.vue`

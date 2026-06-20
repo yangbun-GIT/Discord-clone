@@ -51,11 +51,20 @@ function submitMessage() {
   emit('send', content)
   draft.value = ''
   showEmojiPanel.value = false
-  void nextTick(() => composerInput.value?.focus())
+  restoreComposerFocus()
 }
 
 function insertEmoji(emoji: string) {
   draft.value = `${draft.value}${draft.value ? ' ' : ''}${emoji}`.slice(0, 2000)
+  restoreComposerFocus()
+}
+
+function restoreComposerFocus() {
+  void nextTick(() => {
+    composerInput.value?.focus()
+    window.requestAnimationFrame(() => composerInput.value?.focus())
+    window.setTimeout(() => composerInput.value?.focus(), 0)
+  })
 }
 
 function toggleAudioMenu(menu: 'input' | 'output') {
@@ -492,6 +501,7 @@ onBeforeUnmount(() => {
           type="submit"
           :title="t('chat.sendMessage')"
           :disabled="disabled || !dm || !draft.trim()"
+          @pointerdown.prevent
         >
           <Send :size="18" aria-hidden="true" />
         </button>
