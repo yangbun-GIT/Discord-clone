@@ -15,7 +15,10 @@ text-channel message usability.
   the open menu.
 - Expected behavior: the button toggles the menu open and closed.
 - Fix: `toggleServerMenu()` now flips `serverMenuOpen`, and outside click/Escape
-  still dismiss the menu.
+  still dismiss the menu. A follow-up bug where clicking the SVG icon inside the
+  `...` button closed the menu on `mousedown` and immediately reopened it on
+  `click` was fixed by treating SVG targets as generic `Element` nodes for
+  `closest()` checks.
 - Verification: frontend build, frontend lint, and manual code review.
 
 ### S2. Server heading lacked a direct invite action

@@ -159,7 +159,7 @@ function handleDocumentPointerDown(event: MouseEvent) {
   if (!serverMenuOpen.value) return
   const target = event.target
   if (
-    target instanceof HTMLElement
+    target instanceof Element
     && target.closest('.server-context-menu, .guild-heading-actions')
   ) {
     return
