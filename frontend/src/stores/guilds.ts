@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, shallowRef, ref } from 'vue'
 
-import { apiGet, apiPost } from '../services/api'
+import { apiGet, apiPost, fetchServerRailLayout, updateServerRailLayout } from '../services/api'
 import { runDocumentViewTransition } from '../services/browserApi'
-import type { Channel, Guild, Message, MessageDelete, PresenceUpdate } from '../types'
+import type { Channel, Guild, Message, MessageDelete, PresenceUpdate, ServerRailLayout } from '../types'
 import { deleteChannelMessage, editChannelMessage, sendChannelMessage } from './channelMessages'
 import {
   assignGuildRole,
@@ -31,6 +31,7 @@ export const useGuildStore = defineStore('guilds', () => {
   const guilds = shallowRef<Guild[]>([])
   const activeGuildId = ref<number | null>(null)
   const activeChannelId = ref<number | null>(null)
+  const serverRailLayout = ref<ServerRailLayout>({ items: [], folders: [] })
   const isLoading = ref(false)
   const isMutating = ref(false)
   const error = ref<string | null>(null)
@@ -102,6 +103,7 @@ export const useGuildStore = defineStore('guilds', () => {
       const previousChannelId = activeChannelId.value
       const loadedGuilds = await apiGet<Guild[]>('/api/guilds/me', token)
       guilds.value = cleanVisibleGuilds(loadedGuilds)
+      serverRailLayout.value = await fetchServerRailLayout(token)
       const preservedGuild = guilds.value.find((guild) => guild.id === previousGuildId)
       const nextGuild = preservedGuild ?? guilds.value[0] ?? null
       activeGuildId.value = nextGuild?.id ?? null
@@ -113,6 +115,18 @@ export const useGuildStore = defineStore('guilds', () => {
       throw cause
     } finally {
       isLoading.value = false
+    }
+  }
+
+  async function saveServerRailLayout(token: string | null, layout: ServerRailLayout) {
+    const previousLayout = serverRailLayout.value
+    serverRailLayout.value = layout
+    try {
+      serverRailLayout.value = await updateServerRailLayout(layout, token)
+    } catch (cause) {
+      serverRailLayout.value = previousLayout
+      setError(cause, 'Failed to save server rail layout')
+      throw cause
     }
   }
 
@@ -198,6 +212,7 @@ export const useGuildStore = defineStore('guilds', () => {
     activeGuildId.value = null
     activeChannelId.value = null
     resetVoicePresence()
+    serverRailLayout.value = { items: [], folders: [] }
     isLoading.value = false
     isMutating.value = false
     error.value = null
@@ -433,6 +448,7 @@ export const useGuildStore = defineStore('guilds', () => {
     activeGuild,
     activeChannel,
     activeMessages,
+    serverRailLayout,
     voiceChannel,
     connectedVoiceGuild,
     connectedVoiceChannel,
@@ -450,6 +466,7 @@ export const useGuildStore = defineStore('guilds', () => {
     isMutating,
     error,
     loadGuilds,
+    saveServerRailLayout,
     refreshActiveGuild,
     createGuild,
     createInvite,

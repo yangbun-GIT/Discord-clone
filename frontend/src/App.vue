@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   BellOff,
@@ -57,7 +57,7 @@ import { useNavigationStore, type PersistedWorkspaceLocation } from './stores/na
 import { usePreferencesStore } from './stores/preferences'
 import { useSessionStore } from './stores/session'
 import { useStoreStore } from './stores/store'
-import type { ServerRailGuildMeta, UserPresenceStatus } from './types'
+import type { ServerRailGuildMeta, ServerRailLayout, UserPresenceStatus } from './types'
 
 const session = useSessionStore()
 const guilds = useGuildStore()
@@ -723,6 +723,14 @@ function handleSelectGuild(guildId: number) {
   guilds.selectGuild(guildId)
 }
 
+async function handleServerRailLayoutChange(layout: ServerRailLayout) {
+  try {
+    await guilds.saveServerRailLayout(session.token, layout)
+  } catch {
+    setWorkspaceNotice('서버 사이드바 배치를 저장하지 못했습니다.', 'warning')
+  }
+}
+
 function handleOpenFriends() {
   clearWorkspaceNotice()
   activeHeaderPanel.value = null
@@ -1281,8 +1289,10 @@ async function handleSendInviteToFriend(friendId: number) {
       :home-active="isPrivateDestination"
       :home-unread-count="dms.unreadCount"
       :guild-meta="serverRailMeta"
+      :layout="guilds.serverRailLayout"
       @home="handleOpenFriends"
       @select="handleSelectGuild"
+      @layout-change="handleServerRailLayoutChange"
       @create="openCreateGuild"
       @discover="openDiscovery"
     />

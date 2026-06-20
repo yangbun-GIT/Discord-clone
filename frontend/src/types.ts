@@ -136,6 +136,29 @@ export type ServerRailGuildMeta = {
   folder_color: string | null
 }
 
+export type ServerRailItem =
+  | {
+    type: 'guild'
+    guild_id: number
+  }
+  | {
+    type: 'folder'
+    folder_id: string
+  }
+
+export type ServerRailFolder = {
+  id: string
+  name: string
+  color: string | null
+  collapsed: boolean
+  guild_ids: number[]
+}
+
+export type ServerRailLayout = {
+  items: ServerRailItem[]
+  folders: ServerRailFolder[]
+}
+
 export type Invite = {
   code: string
   guild_id: number

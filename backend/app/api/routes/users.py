@@ -7,6 +7,7 @@ from app.api.errors import raise_route_error
 from app.realtime.publisher import publish_relationship_delete, publish_relationship_update
 from app.schemas.auth import UserPublic
 from app.schemas.dm import RelationshipDeleteRead, RelationshipRead, RelationshipRequestCreate
+from app.schemas.user_settings import ServerRailLayout
 from app.services.dm_service import (
     accept_friend_request,
     block_user,
@@ -17,8 +18,24 @@ from app.services.dm_service import (
     send_friend_request,
     unblock_user,
 )
+from app.services.user_settings_service import get_server_rail_layout, set_server_rail_layout
 
 router = APIRouter()
+
+
+@router.get("/me/server-rail", response_model=ServerRailLayout)
+async def get_my_server_rail_layout(
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> ServerRailLayout:
+    return await get_server_rail_layout(current_user)
+
+
+@router.put("/me/server-rail", response_model=ServerRailLayout)
+async def update_my_server_rail_layout(
+    payload: ServerRailLayout,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> ServerRailLayout:
+    return await set_server_rail_layout(user=current_user, layout=payload)
 
 
 @router.get("/me/relationships", response_model=list[RelationshipRead])

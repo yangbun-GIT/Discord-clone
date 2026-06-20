@@ -298,6 +298,8 @@ For ordinary implementation work:
   - Relationship/friend-oriented user routes.
   - Owns relationship reads plus friend request, accept, reject, cancel, remove,
     block, and unblock endpoints.
+  - Also owns `GET/PUT /api/users/me/server-rail` for user-specific server rail
+    order/folder layout persistence.
 - `backend/app/api/routes/store.py`
   - Demo Store catalog and item read routes.
 
@@ -321,13 +323,17 @@ For ordinary implementation work:
   - Provides the PostgreSQL/demo boundary for relationship mutation workflows.
 - `backend/app/services/store_service.py`
   - Demo Store service facade.
+- `backend/app/services/user_settings_service.py`
+  - User-scoped settings service boundary.
+  - Selects PostgreSQL or demo-store fallback for server rail layout persistence.
 
 ## Backend: Repositories And Persistence
 
 - `backend/app/db/pool.py`
   - Async PostgreSQL pool wrapper and migration runner.
 - `backend/app/db/schema.sql`
-  - PostgreSQL schema.
+  - PostgreSQL schema, including `user_server_rail_layouts` for per-user rail
+    order/folder layout JSON.
 - `backend/app/db/seed.py`
   - Idempotent PostgreSQL seed data.
 - `backend/app/repositories/users.py`
@@ -348,6 +354,9 @@ For ordinary implementation work:
     transitions for Add Friend, pending, friend, block, and unblock states.
 - `backend/app/repositories/dm_seed.py`
   - PostgreSQL DM demo relationship/workspace seed support used by `dms.py`.
+- `backend/app/repositories/user_settings.py`
+  - PostgreSQL user settings repository.
+  - Owns server rail layout read/upsert for `user_server_rail_layouts`.
 
 ## Backend: Domain, Demo, Gateway, Realtime
 
@@ -493,9 +502,11 @@ For ordinary implementation work:
 - `frontend/src/components/AuthPanel.vue`
   - Login, register, and demo-session entry.
 - `frontend/src/components/ServerRail.vue`
-  - Far-left server rail and server switching.
-  - Receives server rail metadata from `App.vue`; generated servers should remain
-    top-level unless a real folder feature assigns `folder_name`.
+  - Far-left server rail, server switching, user-controlled rail ordering,
+    server folder/group drag-drop, folder collapse/expand, unread/mention/voice
+    indicators, and app-owned rail tooltips.
+  - Receives normalized rail layout from `App.vue`/`guilds.ts` and emits
+    `layout-change` after user reorder/group operations.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - Friends/DM sidebar.
   - Emits start-new-DM actions to `App.vue`; DM rows carry target IDs for
@@ -591,7 +602,8 @@ For ordinary implementation work:
     `browserStorage` so refresh returns to the previous DM/server/voice page.
 - `frontend/src/stores/guilds.ts`
   - Guild list, active guild/channel, local message state, admin state reflection,
-    guild member presence updates, and gateway state application.
+    guild member presence updates, gateway state application, and persisted
+    server rail layout state/actions.
 - `frontend/src/stores/guildVisibility.ts`
   - Guild/channel/message visibility filtering for visual-test/demo noise.
 - `frontend/src/stores/voicePresence.ts`

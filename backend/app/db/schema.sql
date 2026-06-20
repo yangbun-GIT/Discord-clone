@@ -112,3 +112,9 @@ CREATE TABLE IF NOT EXISTS direct_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_direct_messages_dm_id_id ON direct_messages(dm_id, id DESC);
+
+CREATE TABLE IF NOT EXISTS user_server_rail_layouts (
+    user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    layout_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

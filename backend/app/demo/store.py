@@ -36,6 +36,7 @@ from app.schemas.guild import (
     RoleRead,
 )
 from app.schemas.message import MessageDeleteRead
+from app.schemas.user_settings import ServerRailLayout
 
 
 class DemoStore:
@@ -50,6 +51,7 @@ class DemoStore:
         self._relationships_by_user = self._seed_relationships()
         self._dms = self._seed_dms()
         self._hidden_dm_members: set[tuple[int, int]] = set()
+        self._server_rail_layouts: dict[int, ServerRailLayout] = {}
 
     def list_guilds(self, user_id: int | None = None) -> list[GuildRead]:
         with self._lock:
@@ -66,6 +68,17 @@ class DemoStore:
                     if user_id == guild.owner_id:
                         guild.permissions = ALL_PERMISSIONS
             return visible_guilds
+
+    def get_server_rail_layout(self, user_id: int) -> ServerRailLayout:
+        with self._lock:
+            layout = self._server_rail_layouts.get(user_id)
+            return layout.model_copy(deep=True) if layout else ServerRailLayout()
+
+    def set_server_rail_layout(self, user_id: int, layout: ServerRailLayout) -> ServerRailLayout:
+        with self._lock:
+            saved_layout = layout.model_copy(deep=True)
+            self._server_rail_layouts[user_id] = saved_layout
+            return saved_layout.model_copy(deep=True)
 
     def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
         with self._lock:

@@ -112,6 +112,16 @@ blocker remains before feature implementation. Physical `base.css` and
 `i18n/index.ts` splitting remains intentionally deferred to a focused visual/copy
 feature pass.
 
+Server rail usability remediation is complete in
+`docs/remediation-tasks/server-rail-remediation-2026-06-21.md`. The far-left rail
+now supports user-controlled server ordering, server folders/groups, folder
+collapse/expand, and app-owned hover/focus tooltips. The rail layout is stored per
+user through `GET/PUT /api/users/me/server-rail`, backed by
+`user_server_rail_layouts` in PostgreSQL and the demo store fallback. Frontend
+ownership is split across `ServerRail.vue` for drag/folder/tooltip UI,
+`stores/guilds.ts` for layout state and persistence, `services/api.ts` for REST
+wrappers, and `App.vue` for save orchestration and failure notice handling.
+
 Realtime communication implementation has started from
 `docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and
 verification recovery is complete: `.venv` is a valid Python 3.14.3 environment

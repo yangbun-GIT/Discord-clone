@@ -121,12 +121,15 @@ Browser UI
     - `backend/app/realtime/publisher.py`
     - `backend/app/schemas/auth.py`
     - `backend/app/schemas/dm.py`
+    - `backend/app/schemas/user_settings.py`
     - `backend/app/services/dm_service.py`
+    - `backend/app/services/user_settings_service.py`
   - Referenced by:
     - `backend/app/api/router.py`
   - Owns:
     - Relationship reads plus Add Friend request, accept, reject, cancel, remove,
       block, and unblock REST endpoints.
+    - User-specific server rail layout get/update endpoints.
 
 - `backend/app/api/routes/meta.py`
   - References:
@@ -214,10 +217,31 @@ Browser UI
     - DM PostgreSQL/demo storage provider selection and common async DM storage
       protocol, including author-only DM message deletion.
 
+- `backend/app/repositories/user_settings.py`
+  - References:
+    - `backend/app/db/pool.py`
+    - `backend/app/schemas/user_settings.py`
+  - Referenced by:
+    - `backend/app/services/user_settings_service.py`
+  - Owns:
+    - PostgreSQL read/upsert operations for `user_server_rail_layouts`.
+
 - `backend/app/services/store_service.py`
   - References:
     - `backend/app/demo/store_catalog.py`
     - `backend/app/schemas/auth.py`
+
+- `backend/app/services/user_settings_service.py`
+  - References:
+    - `backend/app/db/pool.py`
+    - `backend/app/demo/store.py`
+    - `backend/app/repositories/user_settings.py`
+    - `backend/app/schemas/user_settings.py`
+  - Referenced by:
+    - `backend/app/api/routes/users.py`
+  - Owns:
+    - PostgreSQL/demo provider selection for user-specific server rail layout
+      persistence.
     - `backend/app/schemas/store.py`
   - Referenced by:
     - `backend/app/api/routes/store.py`
@@ -737,6 +761,8 @@ Browser UI
     - Incoming DM private-call banner state derived from DM voice presence,
       including accept/decline actions that keep the call in the same DM-scoped
       WebRTC room.
+    - Server rail layout save orchestration from `ServerRail.vue` `layout-change`
+      events to `guilds.ts`, including app-owned failure notice handling.
 
 ### Stores And API
 
@@ -749,6 +775,9 @@ Browser UI
     - `frontend/src/stores/guilds.ts`
     - `frontend/src/stores/session.ts`
     - `frontend/src/stores/store.ts`
+  - Owns:
+    - REST client helpers, including server rail layout fetch/update wrappers for
+      `GET/PUT /api/users/me/server-rail`.
 
 - `frontend/src/services/browserApi.ts`
   - Referenced by:
@@ -790,6 +819,8 @@ Browser UI
   - Owns:
     - Guild aggregate state, gateway state application, and guild member
       presence-state updates from `PRESENCE_UPDATE` dispatches.
+    - User-specific server rail layout state, optimistic save/rollback, and
+      `GET/PUT /api/users/me/server-rail` persistence calls.
 
 - `frontend/src/stores/voicePresence.ts`
   - References:
@@ -1017,10 +1048,14 @@ Browser UI
 - `frontend/src/components/AuthPanel.vue`
   - Emits auth events consumed by `frontend/src/App.vue`.
 - `frontend/src/components/ServerRail.vue`
-  - Receives guild list and rail metadata from `frontend/src/App.vue`.
-  - Treats guilds as top-level rail entries unless `App.vue` supplies a real
-    `folder_name`; server creation no longer assigns demo folders automatically.
-  - Emits server navigation and add/discovery actions to `frontend/src/App.vue`.
+  - Receives guild list, rail metadata, and persisted `ServerRailLayout` from
+    `frontend/src/App.vue`.
+  - Normalizes mixed top-level guild/folder rail layout, appends missing guilds,
+    preserves unread/mention/voice indicators, and owns drag/drop reorder,
+    guild-to-folder grouping, folder collapse/expand, and app-owned rail tooltip
+    UI.
+  - Emits server navigation, add/discovery actions, and `layout-change` events to
+    `frontend/src/App.vue`.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - Receives relationship/DM state from `frontend/src/App.vue`.
   - Emits friends/DM/search/start-new-DM actions to `frontend/src/App.vue`; DM

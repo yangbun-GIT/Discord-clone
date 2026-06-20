@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient
+﻿from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
 from app.core.operation_limits import reset_operation_limits
@@ -126,6 +126,34 @@ def test_login_requires_database() -> None:
     )
 
     assert response.status_code == 503
+
+
+def test_server_rail_layout_persists_for_current_user() -> None:
+    client = TestClient(app)
+    headers = auth_headers(user_id=9101, username="rail-user")
+    payload = {
+        "items": [
+            {"type": "folder", "folder_id": "folder-a"},
+            {"type": "guild", "guild_id": 1002},
+        ],
+        "folders": [
+            {
+                "id": "folder-a",
+                "name": "Folder",
+                "color": None,
+                "collapsed": True,
+                "guild_ids": [1001],
+            },
+        ],
+    }
+
+    update_response = client.put("/api/users/me/server-rail", json=payload, headers=headers)
+    get_response = client.get("/api/users/me/server-rail", headers=headers)
+
+    assert update_response.status_code == 200
+    assert update_response.json() == payload
+    assert get_response.status_code == 200
+    assert get_response.json() == payload
 
 
 def test_list_my_guilds_returns_authenticated_user_memberships() -> None:

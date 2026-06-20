@@ -8,6 +8,7 @@ import type {
   Friend,
   RelationshipDelete,
   RelationshipRequestCreate,
+  ServerRailLayout,
   StoreCatalog,
   StoreItemDetail,
 } from '../types'
@@ -77,6 +78,27 @@ export async function apiPatch<TResponse, TPayload>(
   })
   if (!response.ok) {
     throw await readError(response, 'PATCH', path)
+  }
+  return response.json() as Promise<TResponse>
+}
+
+export async function apiPut<TResponse, TPayload>(
+  path: string,
+  payload: TPayload,
+  token?: string | null,
+): Promise<TResponse> {
+  const headers = new Headers({ 'Content-Type': 'application/json' })
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) {
+    throw await readError(response, 'PUT', path)
   }
   return response.json() as Promise<TResponse>
 }
@@ -167,6 +189,17 @@ export function blockFriend(userId: number, token?: string | null): Promise<Frie
 
 export function unblockFriend(userId: number, token?: string | null): Promise<RelationshipDelete> {
   return apiDelete<RelationshipDelete>(`/api/users/me/relationships/${userId}/block`, token)
+}
+
+export function fetchServerRailLayout(token?: string | null): Promise<ServerRailLayout> {
+  return apiGet<ServerRailLayout>('/api/users/me/server-rail', token)
+}
+
+export function updateServerRailLayout(
+  payload: ServerRailLayout,
+  token?: string | null,
+): Promise<ServerRailLayout> {
+  return apiPut<ServerRailLayout, ServerRailLayout>('/api/users/me/server-rail', payload, token)
 }
 
 export function fetchDirectMessages(token?: string | null): Promise<DirectMessage[]> {

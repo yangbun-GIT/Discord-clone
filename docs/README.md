@@ -116,6 +116,10 @@ the project prompt and context files before changing code.
 - `docs/remediation-tasks/friends-dm-usability-checklist-ko.md`
   - Korean user-facing checklist for the same Friends/DM usability backlog.
   - Use it to confirm which missing features are in scope and why.
+- `docs/remediation-tasks/server-rail-remediation-2026-06-21.md`
+  - Server rail usability remediation plan and completion log.
+  - Owns per-user server ordering, server folders/groups, folder collapse/expand,
+    and app-owned rail hover/focus tooltips.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest user-run manual QA follow-up plan.
   - Owns sustained speech dropout, screen-share participant composition, refresh
