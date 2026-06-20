@@ -1,16 +1,16 @@
 :root {
-  --app-bg: #24262b;
-  --surface-app: #24262b;
-  --surface-base: #24262b;
-  --surface-panel: #1f2025;
-  --surface-panel-raised: #2a2c32;
-  --surface-sidebar: #202126;
-  --surface-rail: #111214;
-  --surface-header: #1d1f24;
-  --surface-secondary-layer: #202126;
-  --surface-input: #17191d;
-  --surface-hover: #2b2d33;
-  --surface-selected: #343740;
+  --app-bg: #1b1d22;
+  --surface-app: #1b1d22;
+  --surface-base: #1b1d22;
+  --surface-panel: #202329;
+  --surface-panel-raised: #2a2d35;
+  --surface-sidebar: #22252b;
+  --surface-rail: #0f1013;
+  --surface-header: #17191e;
+  --surface-secondary-layer: #24272e;
+  --surface-input: #15171b;
+  --surface-hover: #2c3038;
+  --surface-selected: #383d48;
   --border-subtle: rgb(255 255 255 / 8%);
   --border-muted: rgb(255 255 255 / 6%);
   --border-strong: rgb(255 255 255 / 12%);
