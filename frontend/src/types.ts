@@ -59,6 +59,11 @@ export type DmMessage = {
   content: string
 }
 
+export type DmMessageDelete = {
+  id: number
+  dm_id: number
+}
+
 export type DmCreate = {
   recipient_ids: number[]
 }

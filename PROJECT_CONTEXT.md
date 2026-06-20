@@ -2296,6 +2296,16 @@ Completed Stage 2 bridge work:
   clipping at the top of the call stage. The lower `VoicePanel` quick popover was
   also raised farther above the lower status/voice panel so it does not cover the
   connected DM call card.
+- A DM message usability follow-up added bottom-start DM layout behavior and
+  current-user message deletion. `DirectMessageView.vue` now uses a DM-only flex
+  spacer so short or empty DM conversations start near the composer while long
+  threads still scroll to the latest message, shows one-to-one intro status
+  instead of duplicating the recipient name, visually distinguishes local vs
+  remote DM messages, and exposes a delete action only on current-user messages.
+  `DELETE /api/dms/{dm_id}/messages/{message_id}` persists author-only deletion
+  through PostgreSQL/demo storage and publishes `DM_MESSAGE_DELETE`; `dms.ts` and
+  `dmGatewayHandlers.ts` remove the message for both the local sender and remote
+  subscribers.
 
 After each stage or meaningful feature:
 

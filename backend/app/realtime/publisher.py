@@ -4,6 +4,7 @@ from app.realtime.events import GATEWAY_EVENTS_CHANNEL, RealtimeGatewayEvent
 from app.realtime.fanout import fanout_gateway_event
 from app.realtime.redis_bus import redis_bus
 from app.schemas.dm import (
+    DmMessageDeleteRead,
     DmMessageRead,
     DmRead,
     PresenceUpdateRead,
@@ -74,6 +75,15 @@ async def publish_dm_message_create(message: DmMessageRead) -> None:
     event = RealtimeGatewayEvent(
         dm_id=message.dm_id,
         event="DM_MESSAGE_CREATE",
+        data=message.model_dump(),
+    )
+    await _publish_or_broadcast(event)
+
+
+async def publish_dm_message_delete(message: DmMessageDeleteRead) -> None:
+    event = RealtimeGatewayEvent(
+        dm_id=message.dm_id,
+        event="DM_MESSAGE_DELETE",
         data=message.model_dump(),
     )
     await _publish_or_broadcast(event)

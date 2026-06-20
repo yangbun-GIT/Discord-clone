@@ -1070,6 +1070,14 @@ function handleSendDmMessage(content: string) {
   })
 }
 
+function handleDeleteDmMessage(messageId: number) {
+  if (!selectedDm.value) return
+  workspaceError.value = null
+  void dms.deleteDmMessage(session.token, selectedDm.value.id, messageId).catch((error) => {
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.messageDeleteFailed')
+  })
+}
+
 function handleEditMessage(messageId: number, content: string) {
   workspaceError.value = null
   void guilds.editMessage(session.token, messageId, content).catch((error) => {
@@ -1542,6 +1550,7 @@ async function handleSendInviteToFriend(friendId: number) {
         @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
         @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
         @send="handleSendDmMessage"
+        @delete-message="handleDeleteDmMessage"
       />
 
       <section

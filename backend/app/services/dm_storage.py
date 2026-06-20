@@ -9,6 +9,7 @@ from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
     DmMessageCreate,
+    DmMessageDeleteRead,
     DmMessageRead,
     DmRead,
     PresenceUpdateRead,
@@ -89,6 +90,14 @@ class DmStorage(Protocol):
         payload: DmMessageCreate,
         author: UserPublic,
     ) -> DmMessageRead: ...
+
+    async def delete_dm_message(
+        self,
+        *,
+        dm_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> DmMessageDeleteRead: ...
 
 
 class PostgresDmStorage:
@@ -175,6 +184,19 @@ class PostgresDmStorage:
     ) -> DmMessageRead:
         return await dm_repository.create_dm_message(dm_id=dm_id, payload=payload, author=author)
 
+    async def delete_dm_message(
+        self,
+        *,
+        dm_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> DmMessageDeleteRead:
+        return await dm_repository.delete_dm_message(
+            dm_id=dm_id,
+            message_id=message_id,
+            actor=actor,
+        )
+
 
 class DemoDmStorage:
     async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
@@ -259,6 +281,15 @@ class DemoDmStorage:
         author: UserPublic,
     ) -> DmMessageRead:
         return demo_store.create_dm_message(dm_id=dm_id, payload=payload, author=author)
+
+    async def delete_dm_message(
+        self,
+        *,
+        dm_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> DmMessageDeleteRead:
+        return demo_store.delete_dm_message(dm_id=dm_id, message_id=message_id, actor=actor)
 
 
 postgres_dm_storage = PostgresDmStorage()

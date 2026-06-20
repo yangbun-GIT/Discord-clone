@@ -57,6 +57,11 @@ class DmMessageRead(BaseModel):
     content: str
 
 
+class DmMessageDeleteRead(BaseModel):
+    id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
+    dm_id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
+
+
 class DmRead(BaseModel):
     id: int = Field(ge=1, le=MAX_JS_SAFE_INTEGER)
     recipient_ids: list[int] = Field(min_length=1, max_length=9)

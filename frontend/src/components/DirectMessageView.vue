@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowDown, BellOff, ChevronUp, HeadphoneOff, Laugh, Mic, MicOff, Phone, PhoneOff, Send, UserRound, Volume2 } from 'lucide-vue-next'
+import { ArrowDown, BellOff, ChevronUp, HeadphoneOff, Laugh, Mic, MicOff, Phone, PhoneOff, Send, Trash2, UserRound, Volume2 } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
@@ -41,6 +41,7 @@ const emit = defineEmits<{
   openVoiceSettings: []
   refreshVoiceDevices: []
   updateVoiceDeviceSettings: [settings: Partial<VoiceDeviceSettings>]
+  deleteMessage: [messageId: number]
 }>()
 
 function submitMessage() {
@@ -99,6 +100,31 @@ function handleNoiseSuppressionModeChange(event: Event) {
 const otherParticipants = computed(() =>
   props.dm?.participants.filter((participant) => participant.id !== props.currentUser?.id) ?? [],
 )
+
+const primaryParticipant = computed(() => otherParticipants.value[0] ?? null)
+
+const primaryParticipantStatusLabel = computed(() => {
+  switch (primaryParticipant.value?.status ?? props.dm?.status ?? 'offline') {
+    case 'online':
+      return t('common.status.online')
+    case 'idle':
+      return t('common.status.idle')
+    case 'dnd':
+      return t('common.status.dnd')
+    case 'offline':
+    default:
+      return t('common.status.offline')
+  }
+})
+
+function isOwnMessage(authorId: number) {
+  return props.currentUser?.id === authorId
+}
+
+function deleteMessage(messageId: number) {
+  if (props.disabled || !props.dm) return
+  emit('deleteMessage', messageId)
+}
 
 function isNearBottom() {
   const element = messageList.value
@@ -349,6 +375,8 @@ onBeforeUnmount(() => {
         </button>
       </section>
 
+      <div class="dm-bottom-spacer" aria-hidden="true"></div>
+
       <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
         <div class="dm-intro-heading">
           <div class="dm-placeholder-avatar">
@@ -361,7 +389,10 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div v-if="otherParticipants.length" class="dm-participant-strip" :aria-label="t('dm.participants')">
-          <span v-for="participant in otherParticipants" :key="participant.id">
+          <span v-if="!dm.is_group" :class="['status-pill', `status-${primaryParticipant?.status ?? dm.status}`]">
+            {{ primaryParticipantStatusLabel }}
+          </span>
+          <span v-for="participant in dm.is_group ? otherParticipants : []" :key="participant.id">
             {{ participant.username }}
           </span>
         </div>
@@ -392,7 +423,7 @@ onBeforeUnmount(() => {
       <article
         v-for="(message, index) in dm?.messages ?? []"
         :key="message.id"
-        class="message-row"
+        :class="['message-row', 'dm-message-row', { own: isOwnMessage(message.author_id), remote: !isOwnMessage(message.author_id) }]"
         tabindex="0"
         data-context-kind="dm-message"
         :data-context-label="message.author_name"
@@ -404,7 +435,18 @@ onBeforeUnmount(() => {
           <div class="message-meta">
             <strong>{{ message.author_name }}</strong>
             <span>{{ messageTime(index) }}</span>
-            <span v-if="currentUser?.id === message.author_id">{{ t('channel.you') }}</span>
+            <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
+            <div v-if="isOwnMessage(message.author_id)" class="message-actions" :aria-label="t('chat.aria.messageActions')">
+              <button
+                class="message-icon-button danger"
+                type="button"
+                :title="t('chat.deleteMessage')"
+                :aria-label="t('chat.deleteMessage')"
+                @click="deleteMessage(message.id)"
+              >
+                <Trash2 :size="14" aria-hidden="true" />
+              </button>
+            </div>
           </div>
           <p>{{ message.content }}</p>
         </div>

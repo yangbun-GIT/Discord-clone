@@ -10,6 +10,7 @@ from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
     DmMessageCreate,
+    DmMessageDeleteRead,
     DmMessageRead,
     DmParticipantRead,
     DmRead,
@@ -386,6 +387,55 @@ class DmRepository:
             author_name=author.username,
             content=payload.content,
         )
+
+    async def delete_dm_message(
+        self,
+        *,
+        dm_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> DmMessageDeleteRead:
+        membership = await database.fetchrow(
+            """
+            SELECT 1 AS exists
+            FROM direct_message_members
+            WHERE dm_id = $1 AND user_id = $2
+            """,
+            dm_id,
+            actor.id,
+        )
+        if membership is None:
+            channel = await database.fetchrow(
+                "SELECT id FROM direct_message_channels WHERE id = $1",
+                dm_id,
+            )
+            if channel is None:
+                raise KeyError(dm_id)
+            raise PermissionError("direct message membership required")
+
+        row = await database.fetchrow(
+            """
+            SELECT id, dm_id, author_id
+            FROM direct_messages
+            WHERE id = $1 AND dm_id = $2
+            """,
+            message_id,
+            dm_id,
+        )
+        if row is None:
+            raise KeyError(message_id)
+        if int(row["author_id"]) != actor.id:
+            raise PermissionError("message author required")
+
+        await database.execute(
+            """
+            DELETE FROM direct_messages
+            WHERE id = $1 AND dm_id = $2
+            """,
+            message_id,
+            dm_id,
+        )
+        return DmMessageDeleteRead(id=message_id, dm_id=dm_id)
 
     async def _participants(self, dm_id: int) -> list[DmParticipantRead]:
         rows = await database.fetch(

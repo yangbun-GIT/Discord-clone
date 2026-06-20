@@ -132,6 +132,36 @@ def test_create_dm_message_rejects_payload_mismatch() -> None:
     assert response.status_code == 400
 
 
+def test_delete_dm_message_requires_author_and_removes_message() -> None:
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/api/dms/801/messages",
+        json={"dm_id": 801, "content": "delete me"},
+        headers=auth_headers(),
+    )
+    assert create_response.status_code == 201
+    message_id = create_response.json()["id"]
+
+    other_member_response = client.delete(
+        f"/api/dms/801/messages/{message_id}",
+        headers=auth_headers(user_id=701, username="Mina"),
+    )
+    assert other_member_response.status_code == 403
+
+    delete_response = client.delete(
+        f"/api/dms/801/messages/{message_id}",
+        headers=auth_headers(),
+    )
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {"id": message_id, "dm_id": 801}
+
+    dms_response = client.get("/api/dms", headers=auth_headers())
+    assert dms_response.status_code == 200
+    dm = next(item for item in dms_response.json() if item["id"] == 801)
+    assert all(message["id"] != message_id for message in dm["messages"])
+
+
 def test_friend_request_endpoint_creates_pending_state() -> None:
     client = TestClient(app)
 

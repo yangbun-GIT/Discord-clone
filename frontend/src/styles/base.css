@@ -4472,7 +4472,14 @@ select:focus-visible {
 }
 
 .message-list-bottom {
+  display: flex;
+  flex-direction: column;
   scroll-behavior: smooth;
+}
+
+.dm-bottom-spacer {
+  flex: 1 0 24px;
+  min-height: 24px;
 }
 
 .jump-to-latest {
@@ -4521,6 +4528,38 @@ select:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
   background: rgb(255 255 255 / 4.5%);
+}
+
+.dm-message-row {
+  border: 1px solid transparent;
+}
+
+.dm-message-row.own {
+  grid-template-columns: minmax(0, 1fr) 40px;
+  border-color: rgb(88 101 242 / 18%);
+  background: rgb(88 101 242 / 8%);
+}
+
+.dm-message-row.own .avatar {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.dm-message-row.own .message-main {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  text-align: right;
+}
+
+.dm-message-row.own .message-meta {
+  justify-content: flex-end;
+  padding-right: 34px;
+  padding-left: 0;
+}
+
+.dm-message-row.remote {
+  border-color: rgb(255 255 255 / 4%);
 }
 
 .message-main {
@@ -4584,6 +4623,35 @@ select:focus-visible {
 
 .dm-date-divider {
   margin-top: 2px;
+}
+
+.dm-participant-strip .status-pill {
+  position: relative;
+  padding-left: 17px;
+}
+
+.dm-participant-strip .status-pill::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: #80848e;
+}
+
+.dm-participant-strip .status-pill.status-online::before {
+  background: #23a55a;
+}
+
+.dm-participant-strip .status-pill.status-idle::before {
+  background: #f0b232;
+}
+
+.dm-participant-strip .status-pill.status-dnd::before {
+  background: #f23f43;
 }
 
 .dm-header-actions {

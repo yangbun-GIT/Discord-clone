@@ -3,12 +3,13 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   handleDmGatewayDispatch,
   isDirectMessagePayload,
+  isDmMessageDeletePayload,
   isDmMessagePayload,
   isPresenceUpdatePayload,
   isRelationshipDeletePayload,
   isRelationshipPayload,
 } from './dmGatewayHandlers'
-import type { DirectMessage, DmMessage, Friend, PresenceUpdate, RelationshipDelete } from '../types'
+import type { DirectMessage, DmMessage, DmMessageDelete, Friend, PresenceUpdate, RelationshipDelete } from '../types'
 
 const dm: DirectMessage = {
   id: 9001,
@@ -29,6 +30,11 @@ const message: DmMessage = {
   author_id: 701,
   author_name: 'Mina',
   content: 'hello',
+}
+
+const deletedMessage: DmMessageDelete = {
+  id: 9101,
+  dm_id: 9001,
 }
 
 const relationship: Friend = {
@@ -60,6 +66,8 @@ describe('dm gateway handlers', () => {
   it('validates direct-message message payload shape', () => {
     expect(isDmMessagePayload(message)).toBe(true)
     expect(isDmMessagePayload({ ...message, dm_id: '9001' })).toBe(false)
+    expect(isDmMessageDeletePayload(deletedMessage)).toBe(true)
+    expect(isDmMessageDeletePayload({ ...deletedMessage, id: '9101' })).toBe(false)
   })
 
   it('validates relationship payload shapes', () => {
@@ -74,6 +82,7 @@ describe('dm gateway handlers', () => {
   it('dispatches valid DM events to focused callbacks', () => {
     const upsertDm = vi.fn()
     const appendMessage = vi.fn()
+    const deleteStoredMessage = vi.fn()
     const upsertRelationship = vi.fn()
     const removeRelationship = vi.fn()
     const updatePresence = vi.fn()
@@ -88,6 +97,15 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('DM_MESSAGE_CREATE', message, {
       upsertDm,
       appendMessage,
+      deleteStoredMessage,
+      upsertRelationship,
+      removeRelationship,
+      updatePresence,
+    })
+    handleDmGatewayDispatch('DM_MESSAGE_DELETE', deletedMessage, {
+      upsertDm,
+      appendMessage,
+      deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
       updatePresence,
@@ -95,6 +113,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('RELATIONSHIP_UPDATE', relationship, {
       upsertDm,
       appendMessage,
+      deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
       updatePresence,
@@ -102,6 +121,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('RELATIONSHIP_DELETE', relationshipDelete, {
       upsertDm,
       appendMessage,
+      deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
       updatePresence,
@@ -109,6 +129,7 @@ describe('dm gateway handlers', () => {
     handleDmGatewayDispatch('PRESENCE_UPDATE', presence, {
       upsertDm,
       appendMessage,
+      deleteStoredMessage,
       upsertRelationship,
       removeRelationship,
       updatePresence,
@@ -116,6 +137,7 @@ describe('dm gateway handlers', () => {
 
     expect(upsertDm).toHaveBeenCalledWith(dm)
     expect(appendMessage).toHaveBeenCalledWith(message.dm_id, message)
+    expect(deleteStoredMessage).toHaveBeenCalledWith(deletedMessage)
     expect(upsertRelationship).toHaveBeenCalledWith(relationship)
     expect(removeRelationship).toHaveBeenCalledWith(relationshipDelete)
     expect(updatePresence).toHaveBeenCalledWith(presence)

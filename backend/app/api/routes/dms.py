@@ -4,11 +4,19 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user
 from app.api.errors import raise_route_error
-from app.core.operation_limits import MESSAGE_CREATE_LIMIT, require_rest_operation
-from app.realtime.publisher import publish_dm_create, publish_dm_message_create
+from app.core.operation_limits import (
+    MESSAGE_CREATE_LIMIT,
+    MESSAGE_MUTATION_LIMIT,
+    require_rest_operation,
+)
+from app.realtime.publisher import (
+    publish_dm_create,
+    publish_dm_message_create,
+    publish_dm_message_delete,
+)
 from app.schemas.auth import UserPublic
-from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageRead, DmRead
-from app.services.dm_service import create_dm, create_dm_message, list_dms
+from app.schemas.dm import DmCreate, DmMessageCreate, DmMessageDeleteRead, DmMessageRead, DmRead
+from app.services.dm_service import create_dm, create_dm_message, delete_dm_message, list_dms
 
 router = APIRouter()
 
@@ -67,5 +75,31 @@ async def create_direct_message_message(
             exc,
             not_found="direct message not found",
             forbidden="direct message membership required",
+            bad_request=str(exc),
+        )
+
+
+@router.delete(
+    "/{dm_id}/messages/{message_id}",
+    response_model=DmMessageDeleteRead,
+)
+async def delete_direct_message_message(
+    dm_id: int,
+    message_id: int,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> DmMessageDeleteRead:
+    await require_rest_operation(
+        f"dm-message-delete:{current_user.id}:{dm_id}",
+        MESSAGE_MUTATION_LIMIT,
+    )
+    try:
+        deleted = await delete_dm_message(dm_id=dm_id, message_id=message_id, actor=current_user)
+        await publish_dm_message_delete(deleted)
+        return deleted
+    except (KeyError, PermissionError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="message not found",
+            forbidden="message author required",
             bad_request=str(exc),
         )

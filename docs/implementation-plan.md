@@ -753,6 +753,12 @@ the current local voice metadata reports `turn_configured: false`.
   now provides a local grading-readiness check for Docker HTTP or local HTTPS
   origins, covering frontend HTML, same-origin backend health, PostgreSQL-backed
   health metadata, safe voice readiness metadata, and `/gateway` HELLO.
+- Friends/DM screen completion follow-up: DM message flow now includes
+  bottom-start conversation placement for short/empty DMs, local-vs-remote message
+  row distinction, one-to-one intro status instead of duplicate username text,
+  and current-author DM message deletion. Deletion uses
+  `DELETE /api/dms/{dm_id}/messages/{message_id}` as the REST source of truth and
+  `DM_MESSAGE_DELETE` as realtime notification to the other participant.
 
 ## Friend Relationship Workflow
 

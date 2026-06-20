@@ -198,6 +198,15 @@ For ordinary implementation work:
   - Korean user-facing checklist for the Friends/DM usability backlog.
   - Explains which missing controls should be implemented and which broad features
     can remain outside the current pass.
+- DM message deletion and bottom-start conversation layout currently span:
+  `frontend/src/components/DirectMessageView.vue`, `frontend/src/stores/dms.ts`,
+  `frontend/src/stores/dmApi.ts`, `frontend/src/stores/dmGatewayHandlers.ts`,
+  `frontend/src/services/api.ts`, `backend/app/api/routes/dms.py`,
+  `backend/app/services/dm_service.py`, `backend/app/services/dm_storage.py`,
+  `backend/app/repositories/dms.py`, `backend/app/demo/store.py`,
+  `backend/app/realtime/publisher.py`, and `backend/app/schemas/dm.py`.
+  Use this set before broad searches when changing DM message author actions or
+  realtime DM message removal.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh

@@ -11,6 +11,7 @@ from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
     DmMessageCreate,
+    DmMessageDeleteRead,
     DmMessageRead,
     DmParticipantRead,
     DmRead,
@@ -472,6 +473,27 @@ class DemoStore:
             dm.messages.append(message)
             dm.unread_count = 0
             return deepcopy(message)
+
+    def delete_dm_message(
+        self,
+        *,
+        dm_id: int,
+        message_id: int,
+        actor: UserPublic,
+    ) -> DmMessageDeleteRead:
+        with self._lock:
+            dm = self._find_dm(dm_id)
+            if not any(participant.id == actor.id for participant in dm.participants):
+                raise PermissionError("direct message membership required")
+
+            message = next((item for item in dm.messages if item.id == message_id), None)
+            if message is None:
+                raise KeyError(message_id)
+            if message.author_id != actor.id:
+                raise PermissionError("message author required")
+
+            dm.messages = [item for item in dm.messages if item.id != message_id]
+            return DmMessageDeleteRead(id=message_id, dm_id=dm_id)
 
     def _find_guild(self, guild_id: int) -> GuildRead:
         for guild in self._guilds:

@@ -108,6 +108,10 @@ Browser UI
     - `backend/app/services/dm_service.py`
   - Referenced by:
     - `backend/app/api/router.py`
+  - Owns:
+    - Authenticated DM list/create, DM message create, and current-author DM
+      message delete endpoints. Message create/delete publish DM gateway events
+      after REST persistence succeeds.
 
 - `backend/app/api/routes/users.py`
   - References:
@@ -191,6 +195,9 @@ Browser UI
     - `backend/app/api/routes/dms.py`
     - `backend/app/api/routes/users.py`
     - `backend/app/gateway/router.py`
+  - Owns:
+    - Async service boundary for relationships, presence, DM list/create, DM
+      message create, and author-only DM message delete.
 
 - `backend/app/services/dm_storage.py`
   - References:
@@ -204,7 +211,7 @@ Browser UI
     - `backend/tests/test_dm_storage.py`
   - Owns:
     - DM PostgreSQL/demo storage provider selection and common async DM storage
-      protocol.
+      protocol, including author-only DM message deletion.
 
 - `backend/app/services/store_service.py`
   - References:
@@ -804,6 +811,8 @@ Browser UI
       lightweight presence update application.
     - Current-user DM identity normalization so sidebar rows display recipients
       while message rows preserve actual authors.
+    - Local REST-backed DM message deletion and `DM_MESSAGE_DELETE` gateway
+      removal for remote subscribers.
 
 - `frontend/src/stores/dmApi.ts`
   - References:
@@ -812,7 +821,8 @@ Browser UI
   - Referenced by:
     - `frontend/src/stores/dms.ts`
   - Owns:
-    - Direct-message REST loaders and mutations.
+    - Direct-message REST loaders and mutations, including DM message create and
+      author-only DM message delete wrappers.
 
 - `frontend/src/stores/dmGatewayHandlers.ts`
   - References:
@@ -822,7 +832,7 @@ Browser UI
     - `frontend/src/stores/dmGatewayHandlers.test.ts`
   - Owns:
     - Direct-message gateway payload validation and callback dispatch, including
-      relationship and presence events.
+      DM create/message create/message delete, relationship, and presence events.
 
 - `frontend/src/stores/dmVisibility.ts`
   - References:
@@ -1033,11 +1043,12 @@ Browser UI
 - `frontend/src/components/DirectMessageView.vue`
   - Receives selected DM and user state from `frontend/src/App.vue`.
   - Receives shared voice device settings/device lists from `frontend/src/App.vue`.
-  - Emits message-send, selected-DM profile, call-entry, conversation mute, voice
-    mute/deafen, voice-device refresh, and voice-device update actions to
-    `frontend/src/App.vue`.
-  - Owns bottom-anchored DM scroll behavior, active private-call stage display, and
-    local emoji plus DM call input/output popover state with outside-click/Escape
+  - Emits message-send, current-user message delete, selected-DM profile,
+    call-entry, conversation mute, voice mute/deafen, voice-device refresh, and
+    voice-device update actions to `frontend/src/App.vue`.
+  - Owns DM bottom-start scroll behavior, local/remote message row distinction,
+    one-to-one intro status display, active private-call stage display, and local
+    emoji plus DM call input/output popover state with outside-click/Escape
     dismissal. Active DM call controls group mute, deafen, quick input/output
     settings, and hang-up in one toolbar, and ongoing remote DM calls can render
     as joinable stages.

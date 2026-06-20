@@ -3,6 +3,7 @@ import type {
   DmCreate,
   DmMessage,
   DmMessageCreate,
+  DmMessageDelete,
   Friend,
   RelationshipDelete,
   RelationshipRequestCreate,
@@ -184,4 +185,12 @@ export function createDirectMessageMessage(
   token?: string | null,
 ): Promise<DmMessage> {
   return apiPost<DmMessage, DmMessageCreate>(`/api/dms/${dmId}/messages`, payload, token)
+}
+
+export function deleteDirectMessageMessage(
+  dmId: number,
+  messageId: number,
+  token?: string | null,
+): Promise<DmMessageDelete> {
+  return apiDelete<DmMessageDelete>(`/api/dms/${dmId}/messages/${messageId}`, token)
 }

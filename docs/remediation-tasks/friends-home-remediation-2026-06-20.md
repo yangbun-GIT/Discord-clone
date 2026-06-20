@@ -716,6 +716,50 @@ needed before the Friends home surface can be considered complete.
     remote audio sink, independent mute/deafen checks, DM/server realtime,
     invite-DM realtime, screen-share cleanup, voice reload/rejoin recovery, and
     voice leave cleanup.
+- 2026-06-20 DM message usability follow-up:
+  - Scope: selected DM message timeline only. This pass intentionally did not
+    change server-channel message composition, DM call layout, or broader Friends
+    UI behavior.
+  - Fixed requested DM issues:
+    - Short or empty DM conversations now start near the composer by using a
+      DM-only flex spacer before the intro/timeline; long conversations still
+      scroll to the latest message.
+    - The one-to-one DM intro pill now shows the recipient presence status instead
+      of duplicating the recipient username under the avatar.
+    - Current-user DM messages are visually distinguished from remote messages.
+    - Current-user DM messages expose a delete action; remote messages do not.
+    - `DELETE /api/dms/{dm_id}/messages/{message_id}` enforces author-only
+      deletion, persists through PostgreSQL/demo storage, and publishes
+      `DM_MESSAGE_DELETE` so the other participant view removes the message.
+  - Target files:
+    - `frontend/src/components/DirectMessageView.vue`
+    - `frontend/src/stores/dms.ts`
+    - `frontend/src/stores/dmApi.ts`
+    - `frontend/src/stores/dmGatewayHandlers.ts`
+    - `frontend/src/services/api.ts`
+    - `frontend/src/types.ts`
+    - `backend/app/api/routes/dms.py`
+    - `backend/app/services/dm_service.py`
+    - `backend/app/services/dm_storage.py`
+    - `backend/app/repositories/dms.py`
+    - `backend/app/demo/store.py`
+    - `backend/app/realtime/publisher.py`
+    - `backend/app/schemas/dm.py`
+  - Verification:
+    - `npm run lint:frontend` passed.
+    - `npm run test:frontend` passed: 7 files, 46 tests.
+    - `npm --prefix frontend run build` passed.
+    - Focused backend DM/demo-store tests passed:
+      `pytest tests/test_dm_api.py tests/test_demo_store.py -q` with 23 tests.
+    - Full backend tests passed: 139 tests.
+    - `npm run lint:backend` passed.
+    - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`,
+      server text realtime, DM realtime, invite-DM realtime, one remote audio
+      sink, screen-share cleanup, reload/rejoin recovery, and voice leave cleanup.
+    - `npm run check:submission:local` passed for `https://localhost:5173/`;
+      TURN remains intentionally unconfigured for local submission readiness.
+    - `git diff --check` passed; Git only reported line-ending normalization
+      warnings for touched files.
 
 ## Manual QA Checklist
 
