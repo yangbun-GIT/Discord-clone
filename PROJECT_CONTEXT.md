@@ -2340,6 +2340,11 @@ Completed Stage 2 bridge work:
   500s during active gateway sessions. `frontend/nginx.conf` also sends `no-store`
   cache headers for the Cloudflare Tunnel demo frontend so rebuilt bundles appear
   without stale static-page caching.
+- A 2026-06-21 DM layout follow-up now wraps the DM intro, intro-owned date
+  divider, and DM message rows in one `dm-thread-stack`. The stack keeps short
+  conversations bottom-started near the composer while forcing the intro and
+  messages to move as one normal scroll-flow unit, so newly added messages cannot
+  overlap the profile/actions intro block.
 
 After each stage or meaningful feature:
 

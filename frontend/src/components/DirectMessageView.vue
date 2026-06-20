@@ -416,81 +416,81 @@ onBeforeUnmount(() => {
         </button>
       </section>
 
-      <div class="dm-bottom-spacer" aria-hidden="true"></div>
-
-      <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
-        <div class="dm-intro-heading">
-          <div class="dm-placeholder-avatar">
-            {{ dm.display_name.slice(0, 1).toUpperCase() }}
-          </div>
-          <div class="dm-intro-title">
-            <h2>{{ dm.display_name }}</h2>
-            <p v-if="dm.is_group">{{ t('dm.groupDescription', { count: dm.member_count }) }}</p>
-            <p v-else>{{ t('dm.beginning') }}</p>
-          </div>
-        </div>
-        <div v-if="otherParticipants.length" class="dm-participant-strip" :aria-label="t('dm.participants')">
-          <span v-if="!dm.is_group" :class="['status-pill', `status-${primaryParticipant?.status ?? dm.status}`]">
-            {{ primaryParticipantStatusLabel }}
-          </span>
-          <span v-for="participant in dm.is_group ? otherParticipants : []" :key="participant.id">
-            {{ participant.username }}
-          </span>
-        </div>
-        <div class="dm-header-actions" :aria-label="t('dm.headerActions')">
-          <button type="button" :disabled="disabled" @click="$emit('viewProfile')">
-            <UserRound :size="16" aria-hidden="true" />
-            <span>{{ t('friends.viewProfile') }}</span>
-          </button>
-          <button type="button" :disabled="disabled" @click="$emit('startCall')">
-            <Phone :size="16" aria-hidden="true" />
-            <span>{{ t('friends.startCall') }}</span>
-          </button>
-          <button type="button" :class="{ active: muted }" :disabled="disabled" @click="$emit('toggleMute')">
-            <BellOff :size="16" aria-hidden="true" />
-            <span>{{ muted ? t('friends.unmuteConversation') : t('friends.muteConversation') }}</span>
-          </button>
-        </div>
-        <div v-if="dm.messages.length" class="date-divider dm-date-divider"><span>{{ timelineDate }}</span></div>
-      </section>
-
-      <section v-else class="dm-chat-intro" :aria-label="t('dm.aria.noSelection')">
-        <div class="dm-placeholder-avatar">D</div>
-        <h2>{{ t('app.status.directMessage') }}</h2>
-        <p>{{ t('dm.selectConversation') }}</p>
-      </section>
-
-      <article
-        v-for="message in dm?.messages ?? []"
-        :key="message.id"
-        :class="['message-row', 'dm-message-row', { own: isOwnMessage(message.author_id), remote: !isOwnMessage(message.author_id) }]"
-        tabindex="0"
-        data-context-kind="dm-message"
-        :data-context-label="message.author_name"
-      >
-        <div class="avatar" aria-hidden="true">
-          {{ message.author_name.slice(0, 1).toUpperCase() }}
-        </div>
-        <div class="message-main">
-          <div class="message-meta">
-            <strong>{{ message.author_name }}</strong>
-            <span>{{ messageTime(message) }}</span>
-            <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
-            <div v-if="isOwnMessage(message.author_id)" class="message-actions" :aria-label="t('chat.aria.messageActions')">
-              <button
-                class="message-icon-button danger"
-                type="button"
-                :title="t('chat.deleteMessage')"
-                :aria-label="t('chat.deleteMessage')"
-                @click="deleteMessage(message.id)"
-              >
-                <Trash2 :size="14" aria-hidden="true" />
-              </button>
+      <div class="dm-thread-stack">
+        <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
+          <div class="dm-intro-heading">
+            <div class="dm-placeholder-avatar">
+              {{ dm.display_name.slice(0, 1).toUpperCase() }}
+            </div>
+            <div class="dm-intro-title">
+              <h2>{{ dm.display_name }}</h2>
+              <p v-if="dm.is_group">{{ t('dm.groupDescription', { count: dm.member_count }) }}</p>
+              <p v-else>{{ t('dm.beginning') }}</p>
             </div>
           </div>
-          <p>{{ message.content }}</p>
-        </div>
-      </article>
+          <div v-if="otherParticipants.length" class="dm-participant-strip" :aria-label="t('dm.participants')">
+            <span v-if="!dm.is_group" :class="['status-pill', `status-${primaryParticipant?.status ?? dm.status}`]">
+              {{ primaryParticipantStatusLabel }}
+            </span>
+            <span v-for="participant in dm.is_group ? otherParticipants : []" :key="participant.id">
+              {{ participant.username }}
+            </span>
+          </div>
+          <div class="dm-header-actions" :aria-label="t('dm.headerActions')">
+            <button type="button" :disabled="disabled" @click="$emit('viewProfile')">
+              <UserRound :size="16" aria-hidden="true" />
+              <span>{{ t('friends.viewProfile') }}</span>
+            </button>
+            <button type="button" :disabled="disabled" @click="$emit('startCall')">
+              <Phone :size="16" aria-hidden="true" />
+              <span>{{ t('friends.startCall') }}</span>
+            </button>
+            <button type="button" :class="{ active: muted }" :disabled="disabled" @click="$emit('toggleMute')">
+              <BellOff :size="16" aria-hidden="true" />
+              <span>{{ muted ? t('friends.unmuteConversation') : t('friends.muteConversation') }}</span>
+            </button>
+          </div>
+          <div v-if="dm.messages.length" class="date-divider dm-date-divider"><span>{{ timelineDate }}</span></div>
+        </section>
+
+        <section v-else class="dm-chat-intro" :aria-label="t('dm.aria.noSelection')">
+          <div class="dm-placeholder-avatar">D</div>
+          <h2>{{ t('app.status.directMessage') }}</h2>
+          <p>{{ t('dm.selectConversation') }}</p>
+        </section>
+
+        <article
+          v-for="message in dm?.messages ?? []"
+          :key="message.id"
+          :class="['message-row', 'dm-message-row', { own: isOwnMessage(message.author_id), remote: !isOwnMessage(message.author_id) }]"
+          tabindex="0"
+          data-context-kind="dm-message"
+          :data-context-label="message.author_name"
+        >
+          <div class="avatar" aria-hidden="true">
+            {{ message.author_name.slice(0, 1).toUpperCase() }}
+          </div>
+          <div class="message-main">
+            <div class="message-meta">
+              <strong>{{ message.author_name }}</strong>
+              <span>{{ messageTime(message) }}</span>
+              <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
+              <div v-if="isOwnMessage(message.author_id)" class="message-actions" :aria-label="t('chat.aria.messageActions')">
+                <button
+                  class="message-icon-button danger"
+                  type="button"
+                  :title="t('chat.deleteMessage')"
+                  :aria-label="t('chat.deleteMessage')"
+                  @click="deleteMessage(message.id)"
+                >
+                  <Trash2 :size="14" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <p>{{ message.content }}</p>
+          </div>
+        </article>
+      </div>
     </div>
 
     <button

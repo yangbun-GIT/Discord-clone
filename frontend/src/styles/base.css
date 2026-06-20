@@ -4482,9 +4482,19 @@ select:focus-visible {
   scroll-behavior: smooth;
 }
 
-.dm-bottom-spacer {
-  flex: 1 0 24px;
-  min-height: 24px;
+.dm-thread-stack {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 0;
+  margin-top: auto;
+  position: relative;
+  isolation: isolate;
+}
+
+.dm-thread-stack > .dm-chat-intro,
+.dm-thread-stack > .dm-message-row {
+  min-width: 0;
 }
 
 .jump-to-latest {
@@ -4525,7 +4535,7 @@ select:focus-visible {
   margin-top: 3px;
 }
 
-.dm-chat-intro + .dm-message-row {
+.dm-thread-stack > .dm-chat-intro + .dm-message-row {
   border-top: 0;
   margin-top: 0;
 }

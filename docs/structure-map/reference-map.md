@@ -1060,7 +1060,8 @@ Browser UI
     private-call stage display, and local emoji plus DM call input/output popover
     state with outside-click/Escape dismissal. Current-user and remote DM messages
     remain left-aligned; the intro-owned date divider separates profile/actions
-    from the first message without interleaving; current user messages keep a
+    from the first message, and the `dm-thread-stack` wraps intro plus message rows
+    so they scroll together without interleaving; current user messages keep a
     styled row accent and vertically centered author-only delete action. The
     composer restores focus
     after Enter or send-button submission, including after the temporary disabled
