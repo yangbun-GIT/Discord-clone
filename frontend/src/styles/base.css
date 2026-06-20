@@ -1,16 +1,16 @@
 :root {
-  --app-bg: #313338;
-  --surface-app: #313338;
-  --surface-base: #313338;
-  --surface-panel: #2b2d31;
-  --surface-panel-raised: #383a40;
-  --surface-sidebar: #2b2d31;
-  --surface-rail: #1e1f22;
-  --surface-header: #313338;
-  --surface-secondary-layer: #2b2d31;
-  --surface-input: #1e1f22;
-  --surface-hover: #35373c;
-  --surface-selected: #404249;
+  --app-bg: #24262b;
+  --surface-app: #24262b;
+  --surface-base: #24262b;
+  --surface-panel: #1f2025;
+  --surface-panel-raised: #2a2c32;
+  --surface-sidebar: #202126;
+  --surface-rail: #111214;
+  --surface-header: #1d1f24;
+  --surface-secondary-layer: #202126;
+  --surface-input: #17191d;
+  --surface-hover: #2b2d33;
+  --surface-selected: #343740;
   --border-subtle: rgb(255 255 255 / 8%);
   --border-muted: rgb(255 255 255 / 6%);
   --border-strong: rgb(255 255 255 / 12%);
@@ -4094,12 +4094,12 @@ select:focus-visible {
 }
 
 .voice-switch-actions .secondary {
-  background: #313338;
+  background: var(--surface-panel-raised);
 }
 
 .voice-switch-actions .secondary:hover,
 .voice-switch-actions .secondary:focus-visible {
-  background: #383a40;
+  background: var(--surface-selected);
 }
 
 .voice-switch-actions .primary {
@@ -4119,7 +4119,7 @@ select:focus-visible {
   border: 1px solid var(--border-strong);
   border-radius: 12px;
   color: #f2f3f5;
-  background: #202127;
+  background: #191b20;
   padding: 20px;
   box-shadow: 0 28px 90px rgb(0 0 0 / 54%);
 }
@@ -5270,7 +5270,7 @@ select:focus-visible {
 
 .dm-composer {
   grid-template-columns: minmax(0, 1fr) auto 36px;
-  background: #383a40;
+  background: var(--surface-panel-raised);
 }
 
 .composer input {
@@ -6013,7 +6013,7 @@ select:focus-visible {
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 8px;
   color: #f8fafc;
-  background: #24252a;
+  background: #1f2025;
   padding: 13px;
   box-shadow:
     0 20px 50px rgb(0 0 0 / 46%),
@@ -6265,7 +6265,7 @@ select:focus-visible {
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 8px;
   color: #f8fafc;
-  background: #24252a;
+  background: #1f2025;
   padding: 13px;
   box-shadow:
     0 20px 50px rgb(0 0 0 / 46%),

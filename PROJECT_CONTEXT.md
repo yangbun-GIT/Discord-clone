@@ -146,6 +146,10 @@ device popovers before screen share, and a real invite action in the empty tile 
 the user has invite permission. The existing WebRTC, voice panel, screen-share, and
 gateway signaling flows are preserved.
 
+The global dark-theme surface tokens in `frontend/src/styles/base.css` were lowered
+on 2026-06-21 so the app, sidebars, panels, popovers, and composers read darker and
+less washed out across Friends, DM, server, and voice surfaces.
+
 Realtime communication implementation has started from
 `docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and
 verification recovery is complete: `.venv` is a valid Python 3.14.3 environment
