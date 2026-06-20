@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
+  BellOff,
   Bell,
   Hash,
   Link,
+  MessageCircle,
   Mic,
   Pin,
+  Phone,
   Radio,
   Search,
   Settings,
@@ -20,7 +23,9 @@ import {
 import AuthPanel from './components/AuthPanel.vue'
 import ChannelSidebar from './components/ChannelSidebar.vue'
 import ChatView from './components/ChatView.vue'
+import CreateDmDialog from './components/CreateDmDialog.vue'
 import DirectMessageView from './components/DirectMessageView.vue'
+import FriendProfileDialog from './components/FriendProfileDialog.vue'
 import FriendsHome from './components/FriendsHome.vue'
 import MemberList from './components/MemberList.vue'
 import PrivateChannelSidebar from './components/PrivateChannelSidebar.vue'
@@ -119,6 +124,7 @@ const localMicrophoneTracksMuted = computed(() => {
   return voiceRtc.isMuted.value && tracks.length > 0 && tracks.every((track) => !track.enabled)
 })
 const selectedDm = computed(() => dms.getDm(navigation.activeDmId))
+const selectedDmMuted = computed(() => preferences.isDmMuted(selectedDm.value?.id ?? null))
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
@@ -160,6 +166,15 @@ const {
   closeMenu: closeGlobalContextMenu,
 } = useContextMenuController()
 const userPresenceStatus = ref<UserPresenceStatus>('online')
+const showCreateDmDialog = ref(false)
+const profileFriendId = ref<number | null>(null)
+const pendingRequestFocusKey = ref(0)
+const activeContextTarget = ref<{ kind: string; id: number | null; label: string } | null>(null)
+const profileFriend = computed(() =>
+  profileFriendId.value === null
+    ? null
+    : dms.relationships.find((friend) => friend.id === profileFriendId.value) ?? null,
+)
 const {
   isDeafened,
   pendingVoiceSwitchChannelId,
@@ -296,8 +311,22 @@ async function openWorkspace() {
   restoreWorkspaceLocation(restoredLocation)
   connectGateway(session.token, {
     onDispatch: (event, data) => {
+      const previousIncomingRequestIds = new Set(
+        dms.relationships
+          .filter((friend) => friend.relationship === 'pending_incoming')
+          .map((friend) => friend.id),
+      )
       guilds.handleGatewayDispatch(event, data)
       dms.handleGatewayDispatch(event, data)
+      if (
+        event === 'RELATIONSHIP_UPDATE'
+        && typeof data.id === 'number'
+        && data.relationship === 'pending_incoming'
+        && !previousIncomingRequestIds.has(data.id)
+      ) {
+        setWorkspaceNotice(t('friends.requestReceived', { username: String(data.username ?? t('friends.friend')) }), 'success')
+        pendingRequestFocusKey.value += 1
+      }
     },
     onReconnect: async () => {
       await reloadWorkspaceState()
@@ -383,7 +412,12 @@ function contextMenuItems(kind: string) {
     ]
   }
   if (kind === 'friend' || kind === 'dm-row') {
-    return []
+    return [
+      { id: 'view-profile', label: t('friends.viewProfile') },
+      { id: 'message-friend', label: t('friends.sendMessage') },
+      { id: 'start-dm-call', label: t('friends.startCall') },
+      { id: 'mute-dm', label: t('friends.muteConversation') },
+    ]
   }
   if (kind === 'user-panel') {
     return [
@@ -424,9 +458,15 @@ function openGlobalContextMenu(event: MouseEvent) {
   if (!(target instanceof HTMLElement)) return
   if (target.closest('.friend-local-menu, .server-context-menu, .global-context-menu')) return
 
-  const contextTarget = target.closest<HTMLElement>('[data-context-kind]')
-  const kind = contextTarget?.dataset.contextKind ?? 'workspace'
-  const label = contextTarget?.dataset.contextLabel ?? workspaceTitle.value
+  const contextElement = target.closest<HTMLElement>('[data-context-kind]')
+  const kind = contextElement?.dataset.contextKind ?? 'workspace'
+  const label = contextElement?.dataset.contextLabel ?? workspaceTitle.value
+  const id = Number(contextElement?.dataset.contextId)
+  activeContextTarget.value = {
+    kind,
+    id: Number.isSafeInteger(id) ? id : null,
+    label,
+  }
   const items = contextMenuItems(kind)
   if (!items.length) return
   const menuWidth = 244
@@ -445,6 +485,14 @@ function runGlobalContextAction(id: string) {
   const actionLabel = globalContextMenu.value?.items.find((item) => item.id === id)?.label ?? globalContextMenu.value?.title ?? ''
   if (id === 'invite') {
     void handleCreateInvite()
+  } else if (id === 'view-profile') {
+    handleViewContextProfile()
+  } else if (id === 'message-friend') {
+    void handleMessageContextTarget()
+  } else if (id === 'start-dm-call') {
+    void handleStartContextCall()
+  } else if (id === 'mute-dm') {
+    void handleToggleContextMute()
   } else if (id === 'settings' || id === 'open-settings') {
     handleOpenUserSettings()
   } else if (id === 'voice-disconnect') {
@@ -455,6 +503,7 @@ function runGlobalContextAction(id: string) {
   } else {
     setWorkspaceNotice(t('app.notice.localControl', { label: actionLabel }))
   }
+  activeContextTarget.value = null
   closeGlobalContextMenu()
 }
 
@@ -610,6 +659,127 @@ async function handleMessageFriend(friendId: number) {
   } catch (error) {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.dmCreateFailed')
   }
+}
+
+function friendFromContextTarget() {
+  const target = activeContextTarget.value
+  if (!target) return null
+  if (target.kind === 'friend' && target.id !== null) {
+    return dms.relationships.find((friend) => friend.id === target.id) ?? null
+  }
+  if (target.kind === 'dm-row' && target.id !== null) {
+    const dm = dms.getDm(target.id)
+    const recipientId = dm?.recipient_ids[0]
+    return recipientId ? dms.relationships.find((friend) => friend.id === recipientId) ?? null : null
+  }
+  return null
+}
+
+function dmIdFromContextTarget() {
+  const target = activeContextTarget.value
+  if (!target) return null
+  if (target.kind === 'dm-row') return target.id
+  if (target.kind === 'friend' && target.id !== null) {
+    return dms.dms.find((dm) => dm.recipient_ids.length === 1 && dm.recipient_ids[0] === target.id)?.id ?? null
+  }
+  return null
+}
+
+function handleViewProfile(friendId: number) {
+  profileFriendId.value = friendId
+}
+
+function handleViewContextProfile() {
+  const friend = friendFromContextTarget()
+  if (friend) handleViewProfile(friend.id)
+}
+
+async function handleMessageContextTarget() {
+  const target = activeContextTarget.value
+  if (!target || target.id === null) return
+  if (target.kind === 'dm-row') {
+    navigation.openDm(target.id)
+    return
+  }
+  if (target.kind === 'friend') {
+    await handleMessageFriend(target.id)
+  }
+}
+
+async function handleStartFriendCall(friendId: number) {
+  await handleMessageFriend(friendId)
+  setWorkspaceNotice(t('friends.dmCallNeedsVoiceChannel'))
+}
+
+async function handleStartContextCall() {
+  const friend = friendFromContextTarget()
+  if (!friend) return
+  await handleStartFriendCall(friend.id)
+}
+
+async function handleStartSelectedDmCall() {
+  const friendId = selectedDm.value?.recipient_ids[0]
+  if (!friendId) return
+  await handleStartFriendCall(friendId)
+}
+
+function handleViewSelectedDmProfile() {
+  const friendId = selectedDm.value?.recipient_ids[0]
+  if (friendId) handleViewProfile(friendId)
+}
+
+async function handleToggleFriendMute(friendId: number) {
+  const existingDmId = dms.dms.find((dm) => dm.recipient_ids.length === 1 && dm.recipient_ids[0] === friendId)?.id
+  const dmId = existingDmId ?? (await dms.createDm(session.token, [friendId]))?.id ?? null
+  if (!dmId) return
+  preferences.toggleDmMuted(dmId)
+  setWorkspaceNotice(
+    preferences.isDmMuted(dmId) ? t('friends.conversationMuted') : t('friends.conversationUnmuted'),
+    'success',
+  )
+}
+
+async function handleToggleContextMute() {
+  const dmId = dmIdFromContextTarget()
+  if (dmId !== null) {
+    preferences.toggleDmMuted(dmId)
+    setWorkspaceNotice(
+      preferences.isDmMuted(dmId) ? t('friends.conversationMuted') : t('friends.conversationUnmuted'),
+      'success',
+    )
+    return
+  }
+  const friend = friendFromContextTarget()
+  if (friend) await handleToggleFriendMute(friend.id)
+}
+
+function handleToggleSelectedDmMute() {
+  const dmId = selectedDm.value?.id
+  if (!dmId) return
+  preferences.toggleDmMuted(dmId)
+  setWorkspaceNotice(
+    preferences.isDmMuted(dmId) ? t('friends.conversationMuted') : t('friends.conversationUnmuted'),
+    'success',
+  )
+}
+
+async function handleCreateDm(recipientIds: number[]) {
+  workspaceError.value = null
+  try {
+    const dm = await dms.createDm(session.token, recipientIds)
+    if (dm) {
+      showCreateDmDialog.value = false
+      navigation.openDm(dm.id)
+      setWorkspaceNotice(t('dm.createSuccess'), 'success')
+    }
+  } catch (error) {
+    workspaceError.value = error instanceof Error ? error.message : t('app.error.dmCreateFailed')
+  }
+}
+
+function handleFocusFriendRequests() {
+  pendingRequestFocusKey.value += 1
+  navigation.openFriends()
 }
 
 async function runRelationshipMutation(
@@ -972,7 +1142,7 @@ async function handleSendInviteToFriend(friendId: number) {
       :active-destination="navigation.destination"
       @open-friends="handleOpenFriends"
       @open-dm="handleOpenDm"
-      @create-dm="handleOpenFriends"
+      @create-dm="showCreateDmDialog = true"
       @demo-notice="showDemoNotice"
     />
 
@@ -1203,6 +1373,7 @@ async function handleSendInviteToFriend(friendId: number) {
         :disabled="dms.isMutating"
         :action-notice="workspaceNotice"
         :action-error="workspaceError ?? dms.error"
+        :pending-request-focus-key="pendingRequestFocusKey"
         @add-friend="handleAddFriend"
         @accept-friend="handleAcceptFriend"
         @reject-friend="handleRejectFriend"
@@ -1211,6 +1382,9 @@ async function handleSendInviteToFriend(friendId: number) {
         @block-friend="handleBlockFriend"
         @unblock-friend="handleUnblockFriend"
         @message-friend="handleMessageFriend"
+        @view-profile="handleViewProfile"
+        @call-friend="handleStartFriendCall"
+        @toggle-mute-friend="handleToggleFriendMute"
       />
 
       <DirectMessageView
@@ -1218,6 +1392,10 @@ async function handleSendInviteToFriend(friendId: number) {
         :dm="selectedDm"
         :current-user="session.user"
         :disabled="dms.isMutating"
+        :muted="selectedDmMuted"
+        @view-profile="handleViewSelectedDmProfile"
+        @start-call="handleStartSelectedDmCall"
+        @toggle-mute="handleToggleSelectedDmMute"
         @send="handleSendDmMessage"
       />
 
@@ -1545,5 +1723,22 @@ async function handleSendInviteToFriend(friendId: number) {
         {{ item.label }}
       </button>
     </div>
+
+    <CreateDmDialog
+      :open="showCreateDmDialog"
+      :friends="dms.relationships"
+      :disabled="dms.isMutating"
+      @close="showCreateDmDialog = false"
+      @create="handleCreateDm"
+    />
+
+    <FriendProfileDialog
+      :friend="profileFriend"
+      :muted="Boolean(profileFriend && dms.dms.some((dm) => dm.recipient_ids.length === 1 && dm.recipient_ids[0] === profileFriend?.id && preferences.isDmMuted(dm.id)))"
+      @close="profileFriendId = null"
+      @message="handleMessageFriend"
+      @call="handleStartFriendCall"
+      @toggle-mute="handleToggleFriendMute"
+    />
   </main>
 </template>

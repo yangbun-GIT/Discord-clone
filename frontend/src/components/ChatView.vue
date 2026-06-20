@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  ArrowDown,
   Check,
   ImagePlus,
   Laugh,
@@ -11,7 +12,7 @@ import {
   Trash2,
   X,
 } from 'lucide-vue-next'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
 import { addDocumentEventListener } from '../services/browserApi'
@@ -31,7 +32,9 @@ const replyTargetId = ref<number | null>(null)
 const optionsMessageId = ref<number | null>(null)
 const activeComposerPanel = ref<'upload' | 'templates' | 'emoji' | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+const messageList = ref<HTMLElement | null>(null)
 const selectedFileLabel = ref('')
+const showJumpToLatest = ref(false)
 const { t } = useI18n()
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
@@ -64,6 +67,23 @@ function submitMessage() {
   draft.value = ''
   replyTargetId.value = null
   activeComposerPanel.value = null
+}
+
+function isNearBottom() {
+  const element = messageList.value
+  if (!element) return true
+  return element.scrollHeight - element.scrollTop - element.clientHeight < 96
+}
+
+function scrollToLatest(behavior: ScrollBehavior = 'auto') {
+  const element = messageList.value
+  if (!element) return
+  element.scrollTo({ top: element.scrollHeight, behavior })
+  showJumpToLatest.value = false
+}
+
+function handleMessageScroll() {
+  showJumpToLatest.value = !isNearBottom()
 }
 
 function canEditMessage(message: Message) {
@@ -163,6 +183,7 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
 onMounted(() => {
   removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
   removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
+  void nextTick(() => scrollToLatest())
 })
 
 onBeforeUnmount(() => {
@@ -171,11 +192,30 @@ onBeforeUnmount(() => {
   removeDocumentPointerDown = null
   removeDocumentKeyDown = null
 })
+
+watch(
+  () => props.channel?.id,
+  () => {
+    draft.value = ''
+    activeComposerPanel.value = null
+    replyTargetId.value = null
+    void nextTick(() => scrollToLatest())
+  },
+)
+
+watch(
+  () => props.messages.length,
+  async () => {
+    const shouldStick = !showJumpToLatest.value && isNearBottom()
+    await nextTick()
+    if (shouldStick) scrollToLatest()
+  },
+)
 </script>
 
 <template>
   <section class="chat-view" :aria-label="t('chat.aria.messages')">
-    <div class="message-list">
+    <div ref="messageList" class="message-list message-list-bottom" @scroll="handleMessageScroll">
       <div v-if="messages.length" class="date-divider"><span>{{ timelineDate }}</span></div>
       <article
         v-for="(message, index) in messages"
@@ -289,6 +329,16 @@ onBeforeUnmount(() => {
         <span>{{ t('chat.emptyChannelHint') }}</span>
       </div>
     </div>
+
+    <button
+      v-if="showJumpToLatest"
+      type="button"
+      class="jump-to-latest"
+      @click="scrollToLatest('smooth')"
+    >
+      <ArrowDown :size="15" aria-hidden="true" />
+      <span>{{ t('chat.jumpToLatest') }}</span>
+    </button>
 
     <section class="composer-shell" :aria-label="t('chat.aria.composer')">
       <div v-if="replyTarget" class="composer-reply-bar">

@@ -159,6 +159,63 @@ feedback, or usability.
 - Always-on public deployment. This remains separate from local/Cloudflare demo
   flow.
 
+## 2026-06-20 Implementation Pass Status
+
+- F10 Friend Profile Popout: implemented.
+  - Added `frontend/src/components/FriendProfileDialog.vue`.
+  - Friend rows, activity panel, and target-aware context menus can open an
+    app-owned profile dialog with username, handle, presence, activity,
+    relationship state, message entry, call entry, and mute toggle.
+- F11 Friend/DM Call Entry: partially implemented, not complete as real private
+  voice calling.
+  - Friend/DM call controls now open the target DM and show clone-owned guidance.
+  - The existing backend gateway still authorizes voice through guild voice
+    channel subscriptions only. A true friend/DM call still needs a backend
+    private-call room or DM voice mapping before it can be marked complete.
+  - Do not report this as real friend/DM voice-call completion.
+- F12 Conversation Mute: implemented as a local preference.
+  - `frontend/src/stores/preferences.ts` persists muted DM IDs.
+  - `frontend/src/stores/dms.ts` suppresses unread increments for muted inactive
+    DMs while still receiving and rendering messages.
+  - Friend, DM row, profile, and DM screen actions can toggle mute state.
+- F13 Start New DM Recipient Picker: implemented.
+  - Added `frontend/src/components/CreateDmDialog.vue`.
+  - Private sidebar `+` and quick switcher create action open a friend recipient
+    picker and create/open a DM through `dms.createDm(...)`.
+- F14 Target-Aware Friend/DM Context Menus: implemented for the actions that can
+  currently execute.
+  - Friend and DM rows now provide `data-context-id`.
+  - `App.vue` routes profile, message, mute, and call-entry actions to the exact
+    friend/DM target.
+  - The call action remains limited by F11.
+- F15 Incoming Friend Request Feedback: partially implemented.
+  - `RELATIONSHIP_UPDATE` increases for new `pending_incoming` relationships now
+    show a clone-owned notice and focus the Friends pending view.
+  - A dedicated `@me`/sidebar pending-request badge is still a follow-up if more
+    persistent request attention is needed.
+- F16 Bottom-Anchored DM And Server Message Timelines: implemented.
+  - `DirectMessageView.vue` and `ChatView.vue` scroll to latest on DM/channel
+    switch, keep latest visible while near bottom, preserve older scroll position,
+    and show a jump-to-latest control.
+- F17 DM Header And Profile-Side Action Audit: partially implemented.
+  - DM screen now exposes profile, call-entry, and mute actions scoped to the
+    selected DM.
+  - Full DM search and richer group/member profile-side information remain
+    follow-up items.
+- Verification for this pass:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed with 7 files / 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `npm run smoke:realtime:browser:https` passed with server text realtime,
+    DM realtime, invite-DM realtime, voice smoke, screen-share smoke, refresh
+    recovery, and `browserErrors: 0`.
+  - After `npm run docker:up:https:detached`, `npm run check:submission:local`
+    passed for `https://localhost:5173/` with frontend, API health, database,
+    STUN, and gateway HELLO available; TURN remained intentionally unconfigured.
+  - After the Docker rebuild, `npm run smoke:realtime:browser:https` passed again
+    with `browserErrors: 0`.
+  - `git diff --check` passed with line-ending warnings only.
+
 ## Stage Process
 
 For each stage:

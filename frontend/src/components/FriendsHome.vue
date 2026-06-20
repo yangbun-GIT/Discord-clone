@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
+  BellOff,
   Check,
   MoreHorizontal,
+  Phone,
   Search,
   Send,
   UserRound,
@@ -20,6 +22,7 @@ const props = defineProps<{
   disabled?: boolean
   actionNotice?: string | null
   actionError?: string | null
+  pendingRequestFocusKey?: number
 }>()
 
 const emit = defineEmits<{
@@ -31,6 +34,9 @@ const emit = defineEmits<{
   removeFriend: [friendId: number]
   blockFriend: [friendId: number]
   unblockFriend: [friendId: number]
+  viewProfile: [friendId: number]
+  callFriend: [friendId: number]
+  toggleMuteFriend: [friendId: number]
 }>()
 
 const activeTab = ref<'online' | 'all' | 'pending' | 'blocked' | 'add'>('all')
@@ -175,10 +181,19 @@ function closeFriendMenu() {
 }
 
 function handleMenuAction(
-  action: 'message' | 'remove' | 'block' | 'unblock',
+  action: 'message' | 'profile' | 'call' | 'mute' | 'remove' | 'block' | 'unblock',
 ) {
   if (action === 'message' && openMenuFriend.value) {
     emit('messageFriend', openMenuFriend.value.id)
+  }
+  if (action === 'profile' && openMenuFriend.value) {
+    emit('viewProfile', openMenuFriend.value.id)
+  }
+  if (action === 'call' && openMenuFriend.value) {
+    emit('callFriend', openMenuFriend.value.id)
+  }
+  if (action === 'mute' && openMenuFriend.value) {
+    emit('toggleMuteFriend', openMenuFriend.value.id)
   }
   if (action === 'remove' && openMenuFriend.value) {
     emit('removeFriend', openMenuFriend.value.id)
@@ -251,6 +266,14 @@ watch(
     addFriendResult.value = error
     addFriendResultTone.value = 'error'
     pendingAddFriend.value = false
+  },
+)
+
+watch(
+  () => props.pendingRequestFocusKey,
+  (key, previousKey) => {
+    if (!key || key === previousKey) return
+    activeTab.value = 'pending'
   },
 )
 </script>
@@ -375,6 +398,7 @@ watch(
                 class="friend-row"
                 :class="{ active: selectedFriend?.id === friend.id }"
                 data-context-kind="friend"
+                :data-context-id="friend.id"
                 :data-context-label="friend.username"
                 @click="selectedFriendId = friend.id"
                 @contextmenu.stop.prevent="openFriendMenu($event, friend, 'context')"
@@ -395,6 +419,24 @@ watch(
                   </span>
                 </span>
                 <span class="friend-actions" :aria-label="t('friends.more')">
+                  <button
+                    v-if="friend.relationship === 'friend'"
+                    type="button"
+                    class="friend-action-button"
+                    :aria-label="t('friends.viewProfile')"
+                    @click.stop="$emit('viewProfile', friend.id)"
+                  >
+                    <UserRound :size="17" aria-hidden="true" />
+                  </button>
+                  <button
+                    v-if="friend.relationship === 'friend'"
+                    type="button"
+                    class="friend-action-button"
+                    :aria-label="t('friends.startCall')"
+                    @click.stop="$emit('callFriend', friend.id)"
+                  >
+                    <Phone :size="17" aria-hidden="true" />
+                  </button>
                   <button
                     v-if="friend.relationship === 'friend'"
                     type="button"
@@ -481,6 +523,14 @@ watch(
               <Send :size="16" aria-hidden="true" />
               <span>{{ t('friends.sendMessage') }}</span>
             </button>
+            <button
+              v-if="selectedFriend.relationship === 'friend'"
+              type="button"
+              @click="$emit('viewProfile', selectedFriend.id)"
+            >
+              <UserRound :size="16" aria-hidden="true" />
+              <span>{{ t('friends.viewProfile') }}</span>
+            </button>
           </article>
         </aside>
       </div>
@@ -507,10 +557,37 @@ watch(
         v-if="openMenuFriend.relationship === 'friend'"
         type="button"
         role="menuitem"
+        @click="handleMenuAction('profile')"
+      >
+        <UserRound :size="15" aria-hidden="true" />
+        <span>{{ t('friends.viewProfile') }}</span>
+      </button>
+      <button
+        v-if="openMenuFriend.relationship === 'friend'"
+        type="button"
+        role="menuitem"
         @click="handleMenuAction('message')"
       >
         <Send :size="15" aria-hidden="true" />
         <span>{{ t('friends.sendMessage') }}</span>
+      </button>
+      <button
+        v-if="openMenuFriend.relationship === 'friend'"
+        type="button"
+        role="menuitem"
+        @click="handleMenuAction('call')"
+      >
+        <Phone :size="15" aria-hidden="true" />
+        <span>{{ t('friends.startCall') }}</span>
+      </button>
+      <button
+        v-if="openMenuFriend.relationship === 'friend'"
+        type="button"
+        role="menuitem"
+        @click="handleMenuAction('mute')"
+      >
+        <BellOff :size="15" aria-hidden="true" />
+        <span>{{ t('friends.muteConversation') }}</span>
       </button>
       <button
         v-if="openMenuFriend.relationship === 'friend'"

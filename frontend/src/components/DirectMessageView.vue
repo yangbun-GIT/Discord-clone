@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Laugh, Send } from 'lucide-vue-next'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ArrowDown, BellOff, Laugh, Phone, Send, UserRound } from 'lucide-vue-next'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
 import { addDocumentEventListener } from '../services/browserApi'
@@ -10,10 +10,13 @@ const props = defineProps<{
   dm: DirectMessage | null
   currentUser: User | null
   disabled: boolean
+  muted?: boolean
 }>()
 
 const draft = ref('')
 const showEmojiPanel = ref(false)
+const messageList = ref<HTMLElement | null>(null)
+const showJumpToLatest = ref(false)
 const { t } = useI18n()
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
@@ -21,6 +24,9 @@ const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '�
 
 const emit = defineEmits<{
   send: [content: string]
+  viewProfile: []
+  startCall: []
+  toggleMute: []
 }>()
 
 function submitMessage() {
@@ -39,6 +45,23 @@ const otherParticipants = computed(() =>
   props.dm?.participants.filter((participant) => participant.id !== props.currentUser?.id) ?? [],
 )
 
+function isNearBottom() {
+  const element = messageList.value
+  if (!element) return true
+  return element.scrollHeight - element.scrollTop - element.clientHeight < 96
+}
+
+function scrollToLatest(behavior: ScrollBehavior = 'auto') {
+  const element = messageList.value
+  if (!element) return
+  element.scrollTo({ top: element.scrollHeight, behavior })
+  showJumpToLatest.value = false
+}
+
+function handleMessageScroll() {
+  showJumpToLatest.value = !isNearBottom()
+}
+
 function messageTime(index: number) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
     new Date(2026, 4, 18, 8, 54 + index),
@@ -56,6 +79,16 @@ watch(
   () => {
     draft.value = ''
     showEmojiPanel.value = false
+    void nextTick(() => scrollToLatest())
+  },
+)
+
+watch(
+  () => props.dm?.messages.length ?? 0,
+  async () => {
+    const shouldStick = !showJumpToLatest.value && isNearBottom()
+    await nextTick()
+    if (shouldStick) scrollToLatest()
   },
 )
 
@@ -73,6 +106,7 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
 onMounted(() => {
   removeDocumentPointerDown = addDocumentEventListener('mousedown', handleDocumentPointerDown)
   removeDocumentKeyDown = addDocumentEventListener('keydown', handleDocumentKeyDown)
+  void nextTick(() => scrollToLatest())
 })
 
 onBeforeUnmount(() => {
@@ -85,7 +119,7 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="chat-view" :aria-label="t('dm.aria.directMessages')">
-    <div class="message-list">
+    <div ref="messageList" class="message-list message-list-bottom" @scroll="handleMessageScroll">
       <section v-if="dm" class="dm-chat-intro" :aria-label="t('dm.aria.conversation')">
         <div class="dm-intro-heading">
           <div class="dm-placeholder-avatar">
@@ -101,6 +135,20 @@ onBeforeUnmount(() => {
           <span v-for="participant in otherParticipants" :key="participant.id">
             {{ participant.username }}
           </span>
+        </div>
+        <div class="dm-header-actions" :aria-label="t('dm.headerActions')">
+          <button type="button" :disabled="disabled" @click="$emit('viewProfile')">
+            <UserRound :size="16" aria-hidden="true" />
+            <span>{{ t('friends.viewProfile') }}</span>
+          </button>
+          <button type="button" :disabled="disabled" @click="$emit('startCall')">
+            <Phone :size="16" aria-hidden="true" />
+            <span>{{ t('friends.startCall') }}</span>
+          </button>
+          <button type="button" :class="{ active: muted }" :disabled="disabled" @click="$emit('toggleMute')">
+            <BellOff :size="16" aria-hidden="true" />
+            <span>{{ muted ? t('friends.unmuteConversation') : t('friends.muteConversation') }}</span>
+          </button>
         </div>
       </section>
 
@@ -133,6 +181,16 @@ onBeforeUnmount(() => {
         </div>
       </article>
     </div>
+
+    <button
+      v-if="showJumpToLatest"
+      type="button"
+      class="jump-to-latest"
+      @click="scrollToLatest('smooth')"
+    >
+      <ArrowDown :size="15" aria-hidden="true" />
+      <span>{{ t('chat.jumpToLatest') }}</span>
+    </button>
 
     <section class="composer-shell" :aria-label="t('chat.aria.composer')">
       <form class="composer dm-composer" @submit.prevent="submitMessage">

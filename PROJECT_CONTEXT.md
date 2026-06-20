@@ -2222,6 +2222,17 @@ Completed Stage 2 bridge work:
   header/profile-side actions. These are feature-completion items, not decorative
   polish, and should be implemented before treating the private Friends/DM surface
   as complete.
+- The 2026-06-20 Friends/DM usability implementation pass added:
+  `frontend/src/components/CreateDmDialog.vue`,
+  `frontend/src/components/FriendProfileDialog.vue`, local muted-DM persistence in
+  `frontend/src/stores/preferences.ts`, muted-DM unread suppression in
+  `frontend/src/stores/dms.ts`, target-aware friend/DM context routing in
+  `frontend/src/App.vue`, bottom-anchored DM/server timelines in
+  `DirectMessageView.vue` and `ChatView.vue`, and app-owned incoming friend request
+  notice/focus behavior. True private friend/DM voice calling is still not
+  complete: current backend voice state/signaling remains guild voice-channel
+  subscription based, so the call action only opens the DM and shows clone-owned
+  guidance until a DM private-call room or DM voice mapping is implemented.
 
 After each stage or meaningful feature:
 

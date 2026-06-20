@@ -144,6 +144,7 @@ onBeforeUnmount(() => {
         :class="{ active: activeDestination === 'dm' && dm.id === activeDmId }"
         :aria-current="activeDestination === 'dm' && dm.id === activeDmId ? 'page' : undefined"
         data-context-kind="dm-row"
+        :data-context-id="dm.id"
         :data-context-label="dm.display_name"
         @click="$emit('openDm', dm.id)"
       >

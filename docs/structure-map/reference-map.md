@@ -450,9 +450,11 @@ Browser UI
     - `frontend/src/App.vue`
     - `frontend/src/components/ServerRail.vue`
     - `frontend/src/components/PrivateChannelSidebar.vue`
+    - `frontend/src/components/CreateDmDialog.vue`
     - `frontend/src/components/ChannelSidebar.vue`
     - `frontend/src/components/ChatView.vue`
     - `frontend/src/components/DirectMessageView.vue`
+    - `frontend/src/components/FriendProfileDialog.vue`
     - `frontend/src/components/VoicePanel.vue`
   - Referenced by:
     - `docs/realtime-communication-qa.md`
@@ -783,15 +785,16 @@ Browser UI
     - `frontend/src/stores/dmApi.ts`
     - `frontend/src/stores/dmGatewayHandlers.ts`
     - `frontend/src/stores/dmVisibility.ts`
+    - `frontend/src/stores/preferences.ts`
     - `frontend/src/types.ts`
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/stores/gatewayIdempotency.test.ts`
   - Owns:
     - DM list/message state, active-DM unread clearing, inactive-DM unread
-      incrementing for gateway message dispatch, relationship identity sync into
-      matching DM rows, and relationship-only lightweight presence update
-      application.
+      incrementing for gateway message dispatch, muted-DM unread suppression,
+      relationship identity sync into matching DM rows, and relationship-only
+      lightweight presence update application.
     - Current-user DM identity normalization so sidebar rows display recipients
       while message rows preserve actual authors.
 
@@ -850,6 +853,9 @@ Browser UI
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/i18n/index.ts`
+    - `frontend/src/stores/dms.ts`
+  - Owns:
+    - Locale preference and local muted-DM ID persistence.
 
 - `frontend/src/stores/store.ts`
   - References:
@@ -985,7 +991,11 @@ Browser UI
   - Emits server navigation and add/discovery actions to `frontend/src/App.vue`.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - Receives relationship/DM state from `frontend/src/App.vue`.
-  - Emits friends/DM/search/menu actions to `frontend/src/App.vue`.
+  - Emits friends/DM/search/start-new-DM actions to `frontend/src/App.vue`; DM
+    rows expose target IDs for app-owned context menus.
+- `frontend/src/components/CreateDmDialog.vue`
+  - Receives accepted-friend relationship state from `frontend/src/App.vue`.
+  - Emits selected recipient IDs to `frontend/src/App.vue` for `dms.createDm(...)`.
 - `frontend/src/components/ChannelSidebar.vue`
   - Receives active guild, channels, voice state, invite permission, and user/voice
     status from `frontend/src/App.vue`.
@@ -994,17 +1004,23 @@ Browser UI
 - `frontend/src/components/FriendsHome.vue`
   - Receives relationships/activity state from `frontend/src/App.vue`.
   - Groups incoming/outgoing friend requests separately from online presence.
-  - Emits message friend and relationship mutation actions to
+  - Emits message friend, profile, call-entry, mute, and relationship mutation
+    actions to `frontend/src/App.vue`.
+- `frontend/src/components/FriendProfileDialog.vue`
+  - Receives the selected friend and mute state from `frontend/src/App.vue`.
+  - Emits profile-dialog message, call-entry, mute, and close actions to
     `frontend/src/App.vue`.
 - `frontend/src/components/DirectMessageView.vue`
   - Receives selected DM and user state from `frontend/src/App.vue`.
-  - Emits message-send actions to `frontend/src/App.vue`.
-  - Owns local emoji panel state and outside-click/Escape dismissal.
+  - Emits message-send, selected-DM profile, call-entry, and mute actions to
+    `frontend/src/App.vue`.
+  - Owns bottom-anchored DM scroll behavior and local emoji panel state with
+    outside-click/Escape dismissal.
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.
-  - Owns local message options and composer panel state with outside-click/Escape
-    dismissal.
+  - Owns bottom-anchored server-message scroll behavior, local message options,
+    and composer panel state with outside-click/Escape dismissal.
 - `frontend/src/components/MemberList.vue`
   - Receives members, roles, and permission flags from `frontend/src/App.vue`.
   - Emits role/member actions to `frontend/src/App.vue`.

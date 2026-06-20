@@ -23,6 +23,7 @@ import {
   cleanVisibleRelationships,
   isVisibleDmMessage,
 } from './dmVisibility'
+import { usePreferencesStore } from './preferences'
 
 export const useDmStore = defineStore('dms', () => {
   const relationships = shallowRef<Friend[]>([])
@@ -191,10 +192,11 @@ export const useDmStore = defineStore('dms', () => {
     options: { markUnread?: boolean } = {},
   ) {
     if (!isVisibleDmMessage(message)) return
+    const preferences = usePreferencesStore()
     dms.value = dms.value.map((dm) => {
       if (dm.id !== dmId) return dm
       if (dm.messages.some((existingMessage) => existingMessage.id === message.id)) return dm
-      const markUnread = options.markUnread ?? activeDmId.value !== dmId
+      const markUnread = options.markUnread ?? (activeDmId.value !== dmId && !preferences.isDmMuted(dmId))
       return {
         ...dm,
         unread_count: markUnread ? Math.min(dm.unread_count + 1, 999) : 0,

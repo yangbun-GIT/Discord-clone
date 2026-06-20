@@ -190,6 +190,10 @@ For ordinary implementation work:
   - Routes target files for profile popout, DM call, conversation mute,
     start-new-DM, context menus, incoming request feedback, message scroll
     anchoring, and DM header/profile actions.
+  - Records the 2026-06-20 implementation pass status: profile popout, local DM
+    mute, recipient picker, target-aware context routing, request notice, and
+    bottom-anchored timelines are implemented; true private DM voice calling is
+    still a backend follow-up.
 - `docs/remediation-tasks/friends-dm-usability-checklist-ko.md`
   - Korean user-facing checklist for the Friends/DM usability backlog.
   - Explains which missing controls should be implemented and which broad features
@@ -471,6 +475,10 @@ For ordinary implementation work:
   - Far-left server rail and server switching.
 - `frontend/src/components/PrivateChannelSidebar.vue`
   - Friends/DM sidebar.
+  - Emits start-new-DM actions to `App.vue`; DM rows carry target IDs for
+    context-menu routing.
+- `frontend/src/components/CreateDmDialog.vue`
+  - App-owned accepted-friend recipient picker for starting 1:1 or group DMs.
 - `frontend/src/components/ChannelSidebar.vue`
   - Server heading, events, categories, text/voice channel rows, lower user/voice
     panels, and permission-aware server invite menu entry.
@@ -482,11 +490,16 @@ For ordinary implementation work:
   - Shows relationship tab counts, query-aware empty states, Add Friend panel
     feedback from workspace notice/error state, blocked-user access when needed,
     and a stable grouped friend-row action cluster.
+- `frontend/src/components/FriendProfileDialog.vue`
+  - App-owned friend profile popout for username, handle, presence, relationship,
+    message, call-entry, and mute actions.
 - `frontend/src/components/DirectMessageView.vue`
-  - DM intro, message timeline, composer, and local emoji panel dismissal.
+  - DM intro, bottom-anchored message timeline, selected-DM actions, composer,
+    and local emoji panel dismissal.
 - `frontend/src/components/ChatView.vue`
-  - Server text-channel timeline, message actions/options, attachments, reactions,
-    composer panels, and outside-click/Escape dismissal for local overlays.
+  - Server text-channel bottom-anchored timeline, message actions/options,
+    attachments, reactions, composer panels, and outside-click/Escape dismissal
+    for local overlays.
 - `frontend/src/components/MemberList.vue`
   - Server member list and role/member controls.
 - `frontend/src/components/VoicePanel.vue`
@@ -542,6 +555,8 @@ For ordinary implementation work:
   - Owns relationship mutation actions and idempotent relationship update/delete
     state application, relationship identity sync into matching DM rows, and
     current-user DM identity normalization for REST/gateway payloads.
+  - Suppresses inactive unread increments for locally muted DMs while still
+    applying realtime message delivery.
   - Applies lightweight `PRESENCE_UPDATE` gateway dispatches to relationship rows
     only; DM sidebar rows and DM intro surfaces do not repaint status/activity.
 - `frontend/src/stores/dmApi.ts`
@@ -554,7 +569,7 @@ For ordinary implementation work:
 - `frontend/src/stores/dmVisibility.ts`
   - Direct-message relationship/participant/message visibility filtering.
 - `frontend/src/stores/preferences.ts`
-  - User preferences such as locale/theme-like settings.
+  - User preferences such as locale/theme-like settings and locally muted DM IDs.
 - `frontend/src/stores/store.ts`
   - Deferred/demo Store state.
 
@@ -695,6 +710,8 @@ For ordinary implementation work:
     `frontend/src/stores/dmGatewayHandlers.ts`,
     `frontend/src/stores/dmVisibility.ts`,
     `frontend/src/components/PrivateChannelSidebar.vue`,
+    `frontend/src/components/CreateDmDialog.vue`,
+    `frontend/src/components/FriendProfileDialog.vue`,
     `frontend/src/components/DirectMessageView.vue`.
 - Realtime gateway:
   - Backend: `backend/app/gateway/*`, `backend/app/realtime/*`.

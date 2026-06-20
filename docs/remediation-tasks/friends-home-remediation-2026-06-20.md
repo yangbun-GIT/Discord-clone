@@ -306,6 +306,46 @@ needed before the Friends home surface can be considered complete.
   selected-DM action, has accessible labels, and no longer routes to generic
   local-control notices.
 
+#### 2026-06-20 implementation result
+
+- Completed:
+  - FH-010 profile viewing now opens `FriendProfileDialog.vue` from friend rows,
+    the activity panel, profile dialog actions, and target-aware context menus.
+  - FH-012 conversation mute is implemented as a local preference in
+    `preferences.ts`; muted inactive DMs still receive messages but no longer
+    increment unread emphasis.
+  - FH-013 private sidebar `+` and quick-switcher create actions now open
+    `CreateDmDialog.vue` and create/open DMs through the existing DM API.
+  - FH-014 friend/DM rows now carry target IDs, and global context menu actions
+    route to the selected friend/DM.
+  - FH-016 DM and server chat timelines now anchor to latest messages by default
+    and expose a jump-to-latest control when the user scrolls upward.
+- Partially completed:
+  - FH-011 friend/DM call entry opens the target DM and shows clone-owned guidance,
+    but real friend/DM private voice calling is not complete. The backend gateway
+    still validates voice state and WebRTC signaling against subscribed guild
+    voice channels. A private DM call room or DM voice mapping is required before
+    this can be marked complete.
+  - FH-015 incoming friend requests now show a clone-owned notice and focus the
+    pending request view on realtime `RELATIONSHIP_UPDATE`; a persistent
+    `@me`/private-sidebar pending badge remains a possible follow-up.
+  - FH-017 selected-DM profile, call-entry, and mute actions are wired. Full
+    selected-DM search and richer group/member profile-side information remain
+    follow-up work.
+- Verification performed during this implementation pass:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed with 7 files / 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `npm run smoke:realtime:browser:https` passed with server text realtime,
+    DM realtime, invite-DM realtime, voice smoke, screen-share smoke, refresh
+    recovery, and `browserErrors: 0`.
+  - After `npm run docker:up:https:detached`, `npm run check:submission:local`
+    passed for `https://localhost:5173/`; TURN remained intentionally
+    unconfigured.
+  - After the Docker rebuild, `npm run smoke:realtime:browser:https` passed again
+    with `browserErrors: 0`.
+  - `git diff --check` passed with line-ending warnings only.
+
 ### FH-002 - Add Friend result feedback is not local to the Add Friend panel
 
 - Priority: P1
