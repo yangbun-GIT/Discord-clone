@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 from app.domain.permissions import MAX_JS_SAFE_INTEGER
@@ -61,6 +63,11 @@ class MessageRead(BaseModel):
     author_id: int
     author_name: str
     content: str
+    created_at: datetime | None = None
+
+
+class GuildActionRead(BaseModel):
+    ok: bool
 
 
 class GuildRead(BaseModel):

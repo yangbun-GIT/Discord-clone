@@ -11,6 +11,7 @@ import {
   Plus,
   Radio,
   Settings,
+  Trash2,
   UserPlus,
 } from 'lucide-vue-next'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -38,6 +39,9 @@ const emit = defineEmits<{
   channelSettings: [channelId: number]
   joinVoice: [channelId: number]
   leaveVoice: [channelId: number]
+  serverSettings: []
+  leaveGuild: []
+  deleteGuild: []
   demoNotice: [label: string]
 }>()
 
@@ -52,6 +56,8 @@ let removeDocumentKeyDown: (() => void) | null = null
 
 const textChannels = computed(() => propsChannels(0))
 const voiceChannels = computed(() => propsChannels(1))
+const isGuildOwner = computed(() => props.currentUserId === props.guild.owner_id)
+const canLeaveGuild = computed(() => props.currentUserId !== null && !isGuildOwner.value)
 
 function propsChannels(type: 0 | 1) {
   return props.guild.channels.filter((item) => item.type === type)
@@ -115,7 +121,7 @@ function toggleServerMenu() {
   serverMenuOpen.value = !serverMenuOpen.value
 }
 
-function runServerMenuAction(action: 'invite' | 'text' | 'voice' | 'settings') {
+function runServerMenuAction(action: 'invite' | 'text' | 'voice' | 'settings' | 'leave' | 'delete') {
   serverMenuOpen.value = false
   if (action === 'invite') {
     if (!props.canCreateInvite) return
@@ -130,7 +136,15 @@ function runServerMenuAction(action: 'invite' | 'text' | 'voice' | 'settings') {
     openChannelForm(1)
     return
   }
-  emit('demoNotice', t('channel.aria.serverMenu'))
+  if (action === 'settings') {
+    emit('serverSettings')
+    return
+  }
+  if (action === 'leave') {
+    emit('leaveGuild')
+    return
+  }
+  emit('deleteGuild')
 }
 
 function selectVoiceChannel(channelId: number) {
@@ -146,7 +160,7 @@ function handleDocumentPointerDown(event: MouseEvent) {
   const target = event.target
   if (
     target instanceof HTMLElement
-    && target.closest('.server-context-menu, .guild-heading > button')
+    && target.closest('.server-context-menu, .guild-heading-actions')
   ) {
     return
   }
@@ -174,15 +188,26 @@ onBeforeUnmount(() => {
   <aside class="channel-sidebar" :aria-label="t('channel.aria.channels')">
     <div class="guild-heading">
       <span>{{ guild.name }}</span>
-      <button
-        type="button"
-        :title="t('channel.aria.serverMenu')"
-        :aria-label="t('channel.aria.serverMenu')"
-        :aria-expanded="serverMenuOpen"
-        @click.stop="toggleServerMenu"
-      >
-        <MoreHorizontal :size="18" aria-hidden="true" />
-      </button>
+      <div class="guild-heading-actions">
+        <button
+          v-if="canCreateInvite"
+          type="button"
+          :title="t('channel.aria.createInvite')"
+          :aria-label="t('channel.aria.createInvite')"
+          @click.stop="$emit('createInvite')"
+        >
+          <UserPlus :size="17" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          :title="t('channel.aria.serverMenu')"
+          :aria-label="t('channel.aria.serverMenu')"
+          :aria-expanded="serverMenuOpen"
+          @click.stop="toggleServerMenu"
+        >
+          <MoreHorizontal :size="18" aria-hidden="true" />
+        </button>
+      </div>
       <div v-if="serverMenuOpen" class="server-context-menu" role="menu" @click.stop>
         <button
           v-if="canCreateInvite"
@@ -204,6 +229,27 @@ onBeforeUnmount(() => {
         <button type="button" role="menuitem" @click="runServerMenuAction('settings')">
           <Settings :size="15" aria-hidden="true" />
           <span>{{ t('channel.menu.serverSettings') }}</span>
+        </button>
+        <div class="server-menu-separator" role="separator" aria-hidden="true"></div>
+        <button
+          v-if="canLeaveGuild"
+          class="danger"
+          type="button"
+          role="menuitem"
+          @click="runServerMenuAction('leave')"
+        >
+          <LogOut :size="15" aria-hidden="true" />
+          <span>{{ t('channel.menu.leaveServer') }}</span>
+        </button>
+        <button
+          v-if="isGuildOwner"
+          class="danger"
+          type="button"
+          role="menuitem"
+          @click="runServerMenuAction('delete')"
+        >
+          <Trash2 :size="15" aria-hidden="true" />
+          <span>{{ t('channel.menu.deleteServer') }}</span>
         </button>
       </div>
     </div>

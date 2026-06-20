@@ -83,6 +83,9 @@ Browser UI
     - `backend/app/services/guild_service.py`
   - Referenced by:
     - `backend/app/api/router.py`
+  - Owns:
+    - Guild list/read/create, invite, role, member, channel creation, non-owner
+      leave-server, and owner-only delete-server REST endpoints.
 
 - `backend/app/api/routes/channels.py`
   - References:
@@ -261,7 +264,8 @@ Browser UI
     - `backend/app/repositories/guild_invites.py`
     - `backend/tests/test_guild_repository.py`
   - Owns:
-    - Guild aggregate list/read/create SQL and compatibility wrapper methods.
+    - Guild aggregate list/read/create SQL, leave/delete guild mutations, and
+      compatibility wrapper methods.
 
 - `backend/app/repositories/guild_common.py`
   - References:
@@ -294,6 +298,8 @@ Browser UI
     - `backend/tests/test_guild_repository.py`
   - Own:
     - Channel, invite, member, message, and role SQL respectively.
+    - `guild_messages.py` returns message `created_at` values so server text
+      channels can render real message times and per-day dividers.
 
 - `backend/app/repositories/dms.py`
   - References:
@@ -1076,8 +1082,14 @@ Browser UI
 - `frontend/src/components/ChannelSidebar.vue`
   - Receives active guild, channels, voice state, invite permission, and user/voice
     status from `frontend/src/App.vue`.
-  - Emits channel, invite, voice, user, and menu actions to `frontend/src/App.vue`;
-    hides the server invite menu action when invite permission is absent.
+  - Emits channel, invite, voice, user, server-settings, leave-server, delete-server,
+    and menu actions to `frontend/src/App.vue`; hides invite actions when invite
+    permission is absent and shows delete only to server owners.
+- `frontend/src/components/ServerSettingsDialog.vue`
+  - Receives the selected guild, current user ID, and loading state from
+    `frontend/src/App.vue`.
+  - Emits close, create-invite, leave-server, and delete-server actions back to
+    `frontend/src/App.vue`.
 - `frontend/src/components/FriendsHome.vue`
   - Receives relationships/activity state from `frontend/src/App.vue`.
   - Receives a reset key from `frontend/src/App.vue` so sidebar Friends navigation
@@ -1117,8 +1129,9 @@ Browser UI
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.
-  - Owns bottom-anchored server-message scroll behavior, local message options,
-    and composer panel state with outside-click/Escape dismissal.
+  - Owns bottom-anchored server-message scroll behavior, persisted timestamp and
+    per-day divider rendering, author-separated message rows, local message
+    options, and composer panel state with outside-click/Escape dismissal.
 - `frontend/src/components/MemberList.vue`
   - Receives members, roles, and permission flags from `frontend/src/App.vue`.
   - Emits role/member actions to `frontend/src/App.vue`.

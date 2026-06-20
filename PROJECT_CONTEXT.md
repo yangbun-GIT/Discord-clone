@@ -125,6 +125,17 @@ Follow-up polish keeps drag feedback icon-sized, renders tooltips through a
 body-level layer, shows aggregate active/unread/mention markers on collapsed
 folders, and localizes `ServerDiscoveryDialog.vue` through `i18n/index.ts`.
 
+Server workspace remediation is complete in
+`docs/remediation-tasks/server-settings-chat-remediation-2026-06-21.md`. Server
+heading actions now include a permission-aware invite icon, the `...` menu toggles
+open/closed, and a functional `ServerSettingsDialog.vue` exposes invite,
+leave-server, and owner-only delete-server flows through app-owned confirmation UI.
+Backend support is provided by `DELETE /api/guilds/{guild_id}/leave` and
+`DELETE /api/guilds/{guild_id}`, with PostgreSQL and demo-store implementations.
+Server text channels now use bottom-anchored message behavior, persisted
+`created_at` timestamps, per-day dividers, and clearer author row styling while
+preserving existing message action flows.
+
 Realtime communication implementation has started from
 `docs/remediation-tasks/realtime-communication-plan.md`. Stage C0 environment and
 verification recovery is complete: `.venv` is a valid Python 3.14.3 environment

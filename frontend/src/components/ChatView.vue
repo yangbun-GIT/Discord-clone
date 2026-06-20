@@ -33,19 +33,19 @@ const optionsMessageId = ref<number | null>(null)
 const activeComposerPanel = ref<'upload' | 'templates' | 'emoji' | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const messageList = ref<HTMLElement | null>(null)
+const composerInput = ref<HTMLInputElement | null>(null)
 const selectedFileLabel = ref('')
 const showJumpToLatest = ref(false)
 const { t } = useI18n()
 let removeDocumentPointerDown: (() => void) | null = null
 let removeDocumentKeyDown: (() => void) | null = null
-const emojiOptions = ['😀', '😂', '👍', '🎉', '🔥', '💬', '✨', '🙌']
+
+const SNOWFLAKE_CUSTOM_EPOCH_MS = 1_420_070_400_000
+const SNOWFLAKE_TIMESTAMP_SHIFT = 22
+const authorAccentPalette = ['#5865f2', '#57f287', '#fee75c', '#eb459e', '#f47fff', '#00a8fc']
+const emojiOptions = ['😀', '👍', '🎉', '🔥', '💬', '✅', '✨', '🙌']
 const replyTarget = computed(
   () => props.messages.find((message) => message.id === replyTargetId.value) ?? null,
-)
-const timelineDate = computed(() =>
-  new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(
-    new Date(2026, 4, 18),
-  ),
 )
 const activeComposerPanelLabel = computed(() => {
   if (activeComposerPanel.value === 'upload') return t('chat.uploadFile')
@@ -60,13 +60,15 @@ const emit = defineEmits<{
   delete: [messageId: number]
 }>()
 
-function submitMessage() {
+async function submitMessage() {
   const content = draft.value.trim()
   if (!content) return
   emit('send', content)
   draft.value = ''
   replyTargetId.value = null
   activeComposerPanel.value = null
+  await nextTick()
+  composerInput.value?.focus()
 }
 
 function isNearBottom() {
@@ -119,6 +121,7 @@ function toggleComposerPanel(panel: 'upload' | 'templates' | 'emoji') {
 
 function insertText(value: string) {
   draft.value = `${draft.value}${draft.value ? ' ' : ''}${value}`.slice(0, 2000)
+  void nextTick(() => composerInput.value?.focus())
 }
 
 function openFilePicker() {
@@ -157,10 +160,48 @@ function submitEdit(message: Message) {
   cancelEdit()
 }
 
-function messageTime(index: number) {
+function fallbackDateFromSnowflake(id: number) {
+  if (!Number.isSafeInteger(id)) return new Date()
+  return new Date(Math.floor(id / 2 ** SNOWFLAKE_TIMESTAMP_SHIFT) + SNOWFLAKE_CUSTOM_EPOCH_MS)
+}
+
+function messageDate(message: Message) {
+  if (message.created_at) {
+    const createdAt = new Date(message.created_at)
+    if (!Number.isNaN(createdAt.valueOf())) return createdAt
+  }
+  return fallbackDateFromSnowflake(message.id)
+}
+
+function messageTime(message: Message) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
-    new Date(2026, 4, 18, 8, 54 + index),
+    messageDate(message),
   )
+}
+
+function messageDateKey(message: Message) {
+  const date = messageDate(message)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+function messageDateLabel(message: Message) {
+  return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(
+    messageDate(message),
+  )
+}
+
+function shouldShowMessageDateDivider(message: Message, index: number) {
+  if (index === 0) return true
+  const previousMessage = props.messages[index - 1]
+  return !previousMessage || messageDateKey(previousMessage) !== messageDateKey(message)
+}
+
+function isOwnMessage(authorId: number) {
+  return props.currentUser?.id === authorId
+}
+
+function authorAccent(message: Message) {
+  return authorAccentPalette[Math.abs(message.author_id) % authorAccentPalette.length]
 }
 
 function handleDocumentPointerDown(event: MouseEvent) {
@@ -216,117 +257,122 @@ watch(
 <template>
   <section class="chat-view" :aria-label="t('chat.aria.messages')">
     <div ref="messageList" class="message-list message-list-bottom" @scroll="handleMessageScroll">
-      <div v-if="messages.length" class="date-divider"><span>{{ timelineDate }}</span></div>
-      <article
-        v-for="(message, index) in messages"
-        :key="message.id"
-        class="message-row"
-        :class="{ 'options-open': optionsMessageId === message.id }"
-        tabindex="0"
-        data-context-kind="message"
-        :data-context-label="message.author_name"
-        @keydown.esc="optionsMessageId = null"
-      >
-        <div class="avatar" aria-hidden="true">
-          {{ message.author_name.slice(0, 1).toUpperCase() }}
-        </div>
-        <div class="message-main">
-          <div class="message-meta">
-            <strong>{{ message.author_name }}</strong>
-            <span>{{ messageTime(index) }}</span>
-            <div
-              class="message-actions"
-              :aria-label="t('chat.aria.messageActions')"
-            >
-              <button
-                class="message-icon-button"
-                type="button"
-                :title="t('chat.reply')"
-                :aria-label="t('chat.reply')"
-                @click="startReply(message)"
-              >
-                <Reply :size="14" aria-hidden="true" />
-              </button>
-              <button
-                v-if="canEditMessage(message)"
-                class="message-icon-button"
-                type="button"
-                :title="t('chat.editMessage')"
-                :aria-label="t('chat.editMessage')"
-                @click="startEdit(message)"
-              >
-                <Pencil :size="14" aria-hidden="true" />
-              </button>
-              <button
-                v-if="canDeleteMessage(message)"
-                class="message-icon-button danger"
-                type="button"
-                :title="t('chat.deleteMessage')"
-                :aria-label="t('chat.deleteMessage')"
-                @click="deleteMessage(message)"
-              >
-                <Trash2 :size="14" aria-hidden="true" />
-              </button>
-              <button
-                class="message-icon-button"
-                type="button"
-                :title="t('chat.moreActions')"
-                :aria-label="t('chat.moreActions')"
-                :aria-expanded="optionsMessageId === message.id"
-                @click="toggleOptions(message)"
-              >
-                <MoreHorizontal :size="15" aria-hidden="true" />
-              </button>
-              <div v-if="optionsMessageId === message.id" class="message-options-menu" role="menu">
-                <button type="button" role="menuitem" @click="startReply(message)">
-                  <Reply :size="14" aria-hidden="true" />
-                  <span>{{ t('chat.reply') }}</span>
-                </button>
-                <button v-if="canEditMessage(message)" type="button" role="menuitem" @click="startEdit(message)">
-                  <Pencil :size="14" aria-hidden="true" />
-                  <span>{{ t('chat.edit') }}</span>
-                </button>
-                <button
-                  v-if="canDeleteMessage(message)"
-                  class="danger"
-                  type="button"
-                  role="menuitem"
-                  @click="deleteMessage(message)"
-                >
-                  <Trash2 :size="14" aria-hidden="true" />
-                  <span>{{ t('chat.delete') }}</span>
-                </button>
-              </div>
+      <div class="guild-thread-stack">
+        <template v-if="messages.length">
+          <template v-for="(message, index) in messages" :key="message.id">
+            <div v-if="shouldShowMessageDateDivider(message, index)" class="date-divider">
+              <span>{{ messageDateLabel(message) }}</span>
             </div>
-          </div>
-          <div v-if="replyTargetId === message.id" class="reply-preview" :aria-label="t('chat.aria.replyTarget')">
-            {{ t('chat.replyingTo', { author: message.author_name }) }}
-          </div>
-          <form
-            v-if="editingMessageId === message.id"
-            class="message-edit-form"
-            @submit.prevent="submitEdit(message)"
-          >
-            <input
-              v-model="editDraft"
-              :aria-label="t('chat.aria.editContent')"
-              maxlength="2000"
-              autofocus
-              @keydown.esc.prevent="cancelEdit"
-            />
-            <button type="submit" :title="t('chat.saveMessage')" :disabled="!editDraft.trim()">
-              <Check :size="15" aria-hidden="true" />
-            </button>
-            <button type="button" :title="t('chat.cancelEdit')" @click="cancelEdit">
-              <X :size="15" aria-hidden="true" />
-            </button>
-          </form>
-          <p v-else>{{ message.content }}</p>
+            <article
+              class="message-row guild-message-row"
+              :class="{ 'options-open': optionsMessageId === message.id, own: isOwnMessage(message.author_id) }"
+              :style="{ '--message-author-accent': authorAccent(message) }"
+              tabindex="0"
+              data-context-kind="message"
+              :data-context-label="message.author_name"
+              @keydown.esc="optionsMessageId = null"
+            >
+              <div class="avatar" aria-hidden="true">
+                {{ message.author_name.slice(0, 1).toUpperCase() }}
+              </div>
+              <div class="message-main">
+                <div class="message-meta">
+                  <strong>{{ message.author_name }}</strong>
+                  <span>{{ messageTime(message) }}</span>
+                  <span v-if="isOwnMessage(message.author_id)">{{ t('channel.you') }}</span>
+                  <div class="message-actions" :aria-label="t('chat.aria.messageActions')">
+                    <button
+                      class="message-icon-button"
+                      type="button"
+                      :title="t('chat.reply')"
+                      :aria-label="t('chat.reply')"
+                      @click="startReply(message)"
+                    >
+                      <Reply :size="14" aria-hidden="true" />
+                    </button>
+                    <button
+                      v-if="canEditMessage(message)"
+                      class="message-icon-button"
+                      type="button"
+                      :title="t('chat.editMessage')"
+                      :aria-label="t('chat.editMessage')"
+                      @click="startEdit(message)"
+                    >
+                      <Pencil :size="14" aria-hidden="true" />
+                    </button>
+                    <button
+                      v-if="canDeleteMessage(message)"
+                      class="message-icon-button danger"
+                      type="button"
+                      :title="t('chat.deleteMessage')"
+                      :aria-label="t('chat.deleteMessage')"
+                      @click="deleteMessage(message)"
+                    >
+                      <Trash2 :size="14" aria-hidden="true" />
+                    </button>
+                    <button
+                      class="message-icon-button"
+                      type="button"
+                      :title="t('chat.moreActions')"
+                      :aria-label="t('chat.moreActions')"
+                      :aria-expanded="optionsMessageId === message.id"
+                      @click="toggleOptions(message)"
+                    >
+                      <MoreHorizontal :size="15" aria-hidden="true" />
+                    </button>
+                    <div v-if="optionsMessageId === message.id" class="message-options-menu" role="menu">
+                      <button type="button" role="menuitem" @click="startReply(message)">
+                        <Reply :size="14" aria-hidden="true" />
+                        <span>{{ t('chat.reply') }}</span>
+                      </button>
+                      <button v-if="canEditMessage(message)" type="button" role="menuitem" @click="startEdit(message)">
+                        <Pencil :size="14" aria-hidden="true" />
+                        <span>{{ t('chat.edit') }}</span>
+                      </button>
+                      <button
+                        v-if="canDeleteMessage(message)"
+                        class="danger"
+                        type="button"
+                        role="menuitem"
+                        @click="deleteMessage(message)"
+                      >
+                        <Trash2 :size="14" aria-hidden="true" />
+                        <span>{{ t('chat.delete') }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="replyTargetId === message.id" class="reply-preview" :aria-label="t('chat.aria.replyTarget')">
+                  {{ t('chat.replyingTo', { author: message.author_name }) }}
+                </div>
+                <form
+                  v-if="editingMessageId === message.id"
+                  class="message-edit-form"
+                  @submit.prevent="submitEdit(message)"
+                >
+                  <input
+                    v-model="editDraft"
+                    :aria-label="t('chat.aria.editContent')"
+                    maxlength="2000"
+                    autofocus
+                    @keydown.esc.prevent="cancelEdit"
+                  />
+                  <button type="submit" :title="t('chat.saveMessage')" :disabled="!editDraft.trim()">
+                    <Check :size="15" aria-hidden="true" />
+                  </button>
+                  <button type="button" :title="t('chat.cancelEdit')" @click="cancelEdit">
+                    <X :size="15" aria-hidden="true" />
+                  </button>
+                </form>
+                <p v-else>{{ message.content }}</p>
+              </div>
+            </article>
+          </template>
+        </template>
+        <div v-else class="channel-empty-intro">
+          <strong>{{ channel ? `#${channel.name}` : t('chat.loadingChannel') }}</strong>
+          <span>{{ t('chat.emptyChannelHint') }}</span>
         </div>
-      </article>
-      <div v-if="!messages.length" class="channel-empty-intro">
-        <strong>{{ channel ? `#${channel.name}` : t('chat.loadingChannel') }}</strong>
-        <span>{{ t('chat.emptyChannelHint') }}</span>
       </div>
     </div>
 
@@ -360,6 +406,7 @@ watch(
           </button>
         </div>
         <input
+          ref="composerInput"
           v-model="draft"
           :aria-label="t('chat.messageChannel', { channel: channel?.name ?? 'channel' })"
           :placeholder="channel ? t('chat.messageChannel', { channel: `#${channel.name}` }) : t('chat.loadingChannel')"

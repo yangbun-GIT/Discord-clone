@@ -26,7 +26,7 @@ class ServerRailFolder(BaseModel):
     guild_ids: list[int] = Field(default_factory=list, max_length=100)
 
     @model_validator(mode="after")
-    def validate_unique_guilds(self) -> "ServerRailFolder":
+    def validate_unique_guilds(self) -> ServerRailFolder:
         if len(set(self.guild_ids)) != len(self.guild_ids):
             raise ValueError("folder guild_ids must be unique")
         return self
@@ -37,7 +37,7 @@ class ServerRailLayout(BaseModel):
     folders: list[ServerRailFolder] = Field(default_factory=list, max_length=100)
 
     @model_validator(mode="after")
-    def validate_layout_uniqueness(self) -> "ServerRailLayout":
+    def validate_layout_uniqueness(self) -> ServerRailLayout:
         folder_ids = [folder.id for folder in self.folders]
         if len(set(folder_ids)) != len(folder_ids):
             raise ValueError("folder ids must be unique")

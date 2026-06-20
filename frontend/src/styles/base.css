@@ -1218,6 +1218,13 @@ select:focus-visible {
   white-space: nowrap;
 }
 
+.guild-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
 .guild-heading button,
 .events-entry {
   border: 0;
@@ -1277,6 +1284,22 @@ select:focus-visible {
 .server-context-menu button:focus-visible {
   color: #ffffff;
   background: rgb(255 255 255 / 9%);
+}
+
+.server-context-menu button.danger {
+  color: #ff9ca3;
+}
+
+.server-context-menu button.danger:hover,
+.server-context-menu button.danger:focus-visible {
+  color: #ffffff;
+  background: rgb(237 66 69 / 88%);
+}
+
+.server-menu-separator {
+  height: 1px;
+  margin: 4px 3px;
+  background: rgb(255 255 255 / 8%);
 }
 
 .events-entry {
@@ -4088,6 +4111,148 @@ select:focus-visible {
   background: #4752c4;
 }
 
+.server-settings-dialog,
+.guild-action-confirm-dialog {
+  width: min(560px, calc(100vw - 44px));
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: #f2f3f5;
+  background: #202127;
+  padding: 20px;
+  box-shadow: 0 28px 90px rgb(0 0 0 / 54%);
+}
+
+.server-settings-header,
+.guild-action-confirm-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.server-settings-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.server-settings-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #111827;
+  background: #5eead4;
+  font-weight: 900;
+}
+
+.server-settings-header h2,
+.guild-action-confirm-dialog h2,
+.server-settings-header p,
+.guild-action-confirm-dialog p {
+  margin: 0;
+}
+
+.server-settings-header h2,
+.guild-action-confirm-dialog h2 {
+  font-size: 1.18rem;
+  font-weight: 900;
+}
+
+.server-settings-header p,
+.guild-action-confirm-dialog p,
+.server-settings-note {
+  color: #b5bac1;
+  line-height: 1.5;
+}
+
+.server-settings-header > button,
+.guild-action-confirm-dialog header button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #b5bac1;
+  background: transparent;
+}
+
+.server-settings-header > button:hover,
+.guild-action-confirm-dialog header button:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 8%);
+}
+
+.server-settings-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.server-settings-stats article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 3%);
+  padding: 12px;
+  color: #d7dee8;
+  font-weight: 800;
+}
+
+.server-settings-actions,
+.guild-action-confirm-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.server-settings-actions button,
+.guild-action-confirm-dialog footer button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 8px;
+  color: #ffffff;
+  background: #3b3d45;
+  padding: 0 14px;
+  font-weight: 900;
+}
+
+.server-settings-actions button:hover,
+.guild-action-confirm-dialog footer button:hover {
+  background: #4b4d56;
+}
+
+.server-settings-actions button.danger,
+.guild-action-confirm-dialog footer button.danger {
+  border-color: rgb(237 66 69 / 40%);
+  background: #da373c;
+}
+
+.server-settings-actions button.danger:hover,
+.guild-action-confirm-dialog footer button.danger:hover {
+  background: #ed4245;
+}
+
+.server-settings-note {
+  margin: 0;
+  border-top: 1px solid rgb(255 255 255 / 7%);
+  padding-top: 14px;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 720px) {
   .voice-switch-dialog {
     gap: 24px;
@@ -4594,6 +4759,14 @@ select:focus-visible {
   isolation: isolate;
 }
 
+.guild-thread-stack {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 0;
+  margin-top: auto;
+}
+
 .dm-thread-stack > .dm-chat-intro,
 .dm-thread-stack > .dm-message-row {
   min-width: 0;
@@ -4672,6 +4845,26 @@ select:focus-visible {
 
 .dm-message-row.remote {
   border-color: rgb(255 255 255 / 4%);
+}
+
+.guild-message-row {
+  border: 1px solid rgb(255 255 255 / 4%);
+  border-left: 3px solid var(--message-author-accent, #5865f2);
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.guild-message-row + .guild-message-row {
+  margin-top: 5px;
+}
+
+.guild-message-row.own {
+  border-color: rgb(88 101 242 / 18%);
+  border-left-color: #5865f2;
+  background: rgb(88 101 242 / 7%);
+}
+
+.guild-message-row .message-main {
+  max-width: min(900px, 100%);
 }
 
 .message-main {

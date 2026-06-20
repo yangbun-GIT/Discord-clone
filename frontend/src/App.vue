@@ -32,6 +32,7 @@ import PrivateChannelSidebar from './components/PrivateChannelSidebar.vue'
 import ServerAddDialog from './components/ServerAddDialog.vue'
 import ServerDiscoveryDialog from './components/ServerDiscoveryDialog.vue'
 import ServerRail from './components/ServerRail.vue'
+import ServerSettingsDialog from './components/ServerSettingsDialog.vue'
 import SettingsView from './components/SettingsView.vue'
 import VoiceAudioSink from './components/VoiceAudioSink.vue'
 import VoicePanel from './components/VoicePanel.vue'
@@ -157,6 +158,8 @@ const channelSearchQuery = ref('')
 const showAddServer = ref(false)
 const addServerMode = ref<'create' | 'join'>('create')
 const showDiscovery = ref(false)
+const serverSettingsGuildId = ref<number | null>(null)
+const pendingGuildAction = ref<{ type: 'leave' | 'delete'; guildId: number } | null>(null)
 const showMemberList = ref(true)
 const {
   showInvite,
@@ -181,6 +184,16 @@ const profileFriendId = ref<number | null>(null)
 const pendingRequestFocusKey = ref(0)
 const friendsHomeResetKey = ref(0)
 const activeContextTarget = ref<{ kind: string; id: number | null; label: string } | null>(null)
+const serverSettingsGuild = computed(() =>
+  serverSettingsGuildId.value === null
+    ? null
+    : guilds.guilds.find((guild) => guild.id === serverSettingsGuildId.value) ?? null,
+)
+const pendingGuildActionGuild = computed(() =>
+  pendingGuildAction.value === null
+    ? null
+    : guilds.guilds.find((guild) => guild.id === pendingGuildAction.value?.guildId) ?? null,
+)
 const profileFriend = computed(() =>
   profileFriendId.value === null
     ? null
@@ -514,10 +527,15 @@ function contextMenuItems(kind: string) {
     ]
   }
   if (kind === 'server') {
+    const targetGuildId = activeContextTarget.value?.id ?? activeGuild.value?.id ?? null
+    const targetGuild = guilds.guilds.find((guild) => guild.id === targetGuildId) ?? activeGuild.value
+    const isOwner = Boolean(targetGuild && session.user?.id === targetGuild.owner_id)
     return [
       { id: 'mark-read', label: t('context.markRead') },
       ...inviteMenuItems,
-      { id: 'settings', label: t('channel.menu.serverSettings') },
+      { id: 'server-settings', label: t('channel.menu.serverSettings') },
+      ...(targetGuild && !isOwner ? [{ id: 'leave-guild', label: t('channel.menu.leaveServer'), danger: true }] : []),
+      ...(targetGuild && isOwner ? [{ id: 'delete-guild', label: t('channel.menu.deleteServer'), danger: true }] : []),
     ]
   }
   return [
@@ -568,6 +586,12 @@ function runGlobalContextAction(id: string) {
     void handleToggleContextMute()
   } else if (id === 'close-dm') {
     handleCloseContextDm()
+  } else if (id === 'server-settings') {
+    handleOpenContextServerSettings()
+  } else if (id === 'leave-guild') {
+    handleRequestContextGuildAction('leave')
+  } else if (id === 'delete-guild') {
+    handleRequestContextGuildAction('delete')
   } else if (id === 'settings' || id === 'open-settings') {
     handleOpenUserSettings()
   } else if (id === 'voice-disconnect') {
@@ -1090,8 +1114,68 @@ async function copyToClipboard(value: string, successMessage: string, failureMes
   }
 }
 
+function resolveTargetGuildId() {
+  return activeContextTarget.value?.id ?? activeGuild.value?.id ?? null
+}
+
+function handleOpenServerSettings(guildId = activeGuild.value?.id ?? null) {
+  if (guildId === null) return
+  const targetGuild = guilds.guilds.find((guild) => guild.id === guildId)
+  if (!targetGuild) return
+  if (guilds.activeGuildId !== guildId) {
+    guilds.selectGuild(guildId)
+    navigation.openServerChannel()
+  }
+  serverSettingsGuildId.value = guildId
+}
+
+function handleOpenContextServerSettings() {
+  handleOpenServerSettings(resolveTargetGuildId())
+}
+
 function handleChannelSettings() {
   showHeaderPlaceholder(t('channel.aria.settings'))
+}
+
+function handleRequestGuildAction(type: 'leave' | 'delete', guildId = activeGuild.value?.id ?? null) {
+  if (guildId === null) return
+  pendingGuildAction.value = { type, guildId }
+}
+
+function handleRequestContextGuildAction(type: 'leave' | 'delete') {
+  handleRequestGuildAction(type, resolveTargetGuildId())
+}
+
+async function handleConfirmGuildAction() {
+  const action = pendingGuildAction.value
+  if (!action) return
+  workspaceError.value = null
+  try {
+    if (guilds.connectedVoiceGuildId === action.guildId) {
+      disconnectVoice()
+    }
+    if (action.type === 'leave') {
+      await guilds.leaveGuild(session.token, action.guildId)
+      setWorkspaceNotice(t('app.notice.serverLeft'), 'success')
+    } else {
+      await guilds.deleteGuild(session.token, action.guildId)
+      setWorkspaceNotice(t('app.notice.serverDeleted'), 'success')
+    }
+    if (serverSettingsGuildId.value === action.guildId) {
+      serverSettingsGuildId.value = null
+    }
+    if (!guilds.activeGuild) {
+      navigation.openFriends()
+    }
+  } catch (error) {
+    workspaceError.value = error instanceof Error
+      ? error.message
+      : action.type === 'leave'
+        ? t('app.error.guildLeaveFailed')
+        : t('app.error.guildDeleteFailed')
+  } finally {
+    pendingGuildAction.value = null
+  }
 }
 
 function handleSendMessage(content: string) {
@@ -1323,6 +1407,9 @@ async function handleSendInviteToFriend(friendId: number) {
       @create-channel="handleCreateChannel"
       @create-invite="handleCreateInvite"
       @channel-settings="handleChannelSettings"
+      @server-settings="handleOpenServerSettings(activeGuild.id)"
+      @leave-guild="handleRequestGuildAction('leave', activeGuild.id)"
+      @delete-guild="handleRequestGuildAction('delete', activeGuild.id)"
       @join-voice="handleOpenVoiceChannel"
       @leave-voice="handleLeaveVoiceChannel"
       @demo-notice="showDemoNotice"
@@ -1770,6 +1857,56 @@ async function handleSendInviteToFriend(friendId: number) {
       @close="closeDiscovery"
       @create-server="handleCreateGuild"
     />
+
+    <ServerSettingsDialog
+      v-if="serverSettingsGuild"
+      :guild="serverSettingsGuild"
+      :current-user-id="session.user?.id ?? null"
+      :loading="guilds.isMutating || isInviteWorking"
+      @close="serverSettingsGuildId = null"
+      @create-invite="handleCreateInvite"
+      @leave-guild="handleRequestGuildAction('leave', serverSettingsGuild.id)"
+      @delete-guild="handleRequestGuildAction('delete', serverSettingsGuild.id)"
+    />
+
+    <section
+      v-if="pendingGuildAction && pendingGuildActionGuild"
+      class="modal-layer"
+      :aria-label="pendingGuildAction.type === 'delete' ? t('serverSettings.confirmDeleteTitle') : t('serverSettings.confirmLeaveTitle')"
+      @click.self="pendingGuildAction = null"
+    >
+      <div class="guild-action-confirm-dialog" role="dialog" aria-modal="true">
+        <header>
+          <h2>
+            {{
+              pendingGuildAction.type === 'delete'
+                ? t('serverSettings.confirmDeleteTitle')
+                : t('serverSettings.confirmLeaveTitle')
+            }}
+          </h2>
+          <button type="button" :aria-label="t('common.close')" @click="pendingGuildAction = null">
+            <X :size="18" aria-hidden="true" />
+          </button>
+        </header>
+        <p>
+          {{
+            pendingGuildAction.type === 'delete'
+              ? t('serverSettings.confirmDeleteDescription', { server: pendingGuildActionGuild.name })
+              : t('serverSettings.confirmLeaveDescription', { server: pendingGuildActionGuild.name })
+          }}
+        </p>
+        <footer>
+          <button type="button" @click="pendingGuildAction = null">{{ t('common.cancel') }}</button>
+          <button type="button" class="danger" :disabled="guilds.isMutating" @click="handleConfirmGuildAction">
+            {{
+              pendingGuildAction.type === 'delete'
+                ? t('serverSettings.deleteServer')
+                : t('serverSettings.leaveServer')
+            }}
+          </button>
+        </footer>
+      </div>
+    </section>
 
     <section
       v-if="showInvite"

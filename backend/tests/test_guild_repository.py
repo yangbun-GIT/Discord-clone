@@ -57,6 +57,7 @@ class FakeGuildDatabase:
                 "guild_id": 1001,
                 "type": 0,
                 "owner_id": self.guild_owner_id,
+                "created_at": None,
             }
         if "FROM invites" in query:
             return {"guild_id": 1001}
@@ -305,6 +306,53 @@ async def test_remove_member_deletes_non_owner_member(monkeypatch: pytest.Monkey
 
     assert "DELETE FROM guild_members" in fake_database.executed[0][0]
     assert fake_database.executed[0][1] == (1001, 43)
+
+
+@pytest.mark.asyncio
+async def test_leave_guild_deletes_current_member(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_database = FakeGuildDatabase(guild_owner_id=42)
+    patch_guild_repository_database(monkeypatch, fake_database)
+    monkeypatch.setattr(guilds_module, "read_guild", fake_read_guild)
+
+    await GuildRepository().leave_guild(
+        1001,
+        UserPublic(id=43, username="member", status=1),
+    )
+
+    assert "DELETE FROM guild_members" in fake_database.executed[0][0]
+    assert fake_database.executed[0][1] == (1001, 43)
+
+
+@pytest.mark.asyncio
+async def test_leave_guild_rejects_owner(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_database = FakeGuildDatabase(guild_owner_id=42)
+    patch_guild_repository_database(monkeypatch, fake_database)
+
+    with pytest.raises(ValueError):
+        await GuildRepository().leave_guild(1001, owner())
+
+
+@pytest.mark.asyncio
+async def test_delete_guild_allows_owner(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_database = FakeGuildDatabase(guild_owner_id=42)
+    patch_guild_repository_database(monkeypatch, fake_database)
+
+    await GuildRepository().delete_guild(1001, owner())
+
+    assert "DELETE FROM guilds" in fake_database.executed[0][0]
+    assert fake_database.executed[0][1] == (1001,)
+
+
+@pytest.mark.asyncio
+async def test_delete_guild_rejects_non_owner(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_database = FakeGuildDatabase(guild_owner_id=42)
+    patch_guild_repository_database(monkeypatch, fake_database)
+
+    with pytest.raises(PermissionError):
+        await GuildRepository().delete_guild(
+            1001,
+            UserPublic(id=43, username="member", status=1),
+        )
 
 
 @pytest.mark.asyncio

@@ -137,12 +137,12 @@ async def list_members(guild_id: int, owner_id: int) -> list[MemberRead]:
 async def list_messages(guild_id: int) -> list[MessageRead]:
     rows = await database.fetch(
         """
-        SELECT m.id, m.channel_id, m.author_id, u.username AS author_name, m.content
+        SELECT m.id, m.channel_id, m.author_id, u.username AS author_name, m.content, m.created_at
         FROM messages m
         JOIN channels c ON c.id = m.channel_id
         JOIN users u ON u.id = m.author_id
         WHERE c.guild_id = $1
-        ORDER BY m.id ASC
+        ORDER BY m.created_at ASC, m.id ASC
         LIMIT 200
         """,
         guild_id,
@@ -154,6 +154,7 @@ async def list_messages(guild_id: int) -> list[MessageRead]:
             author_id=int(row["author_id"]),
             author_name=str(row["author_name"]),
             content=str(row["content"]),
+            created_at=row["created_at"],
         )
         for row in rows
     ]

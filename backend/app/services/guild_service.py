@@ -59,6 +59,14 @@ async def remove_member(guild_id: int, member_id: int, actor: UserPublic) -> Gui
     return await get_guild_storage().remove_member(guild_id, member_id, actor)
 
 
+async def leave_guild(guild_id: int, actor: UserPublic) -> GuildRead:
+    return await get_guild_storage().leave_guild(guild_id, actor)
+
+
+async def delete_guild(guild_id: int, actor: UserPublic) -> None:
+    await get_guild_storage().delete_guild(guild_id, actor)
+
+
 async def create_channel(
     guild_id: int,
     payload: ChannelCreate,

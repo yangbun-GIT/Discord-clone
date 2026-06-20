@@ -72,3 +72,11 @@ export function removeGuildMember(
     token,
   )
 }
+
+export function leaveGuildMembership(token: string | null, guildId: number) {
+  return apiDelete<{ ok: boolean }>(`/api/guilds/${guildId}/leave`, token)
+}
+
+export function deleteGuildById(token: string | null, guildId: number) {
+  return apiDelete<{ ok: boolean }>(`/api/guilds/${guildId}`, token)
+}

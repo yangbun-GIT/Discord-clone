@@ -48,16 +48,18 @@ class MessageRepository:
             author_name=author.username,
             content=content,
         )
-        await database.execute(
+        message_row = await database.fetchrow(
             """
             INSERT INTO messages (id, channel_id, author_id, content)
             VALUES ($1, $2, $3, $4)
+            RETURNING created_at
             """,
             message.id,
             message.channel_id,
             message.author_id,
             message.content,
         )
+        message.created_at = message_row["created_at"] if message_row is not None else None
         return message
 
     async def update_message(
@@ -87,6 +89,7 @@ class MessageRepository:
             author_id=int(row["author_id"]),
             author_name=str(row["author_name"]),
             content=content,
+            created_at=row["created_at"],
         )
 
     async def delete_message(
@@ -119,7 +122,8 @@ class MessageRepository:
                 u.username AS author_name,
                 c.guild_id,
                 c.type,
-                g.owner_id
+                g.owner_id,
+                m.created_at
             FROM messages m
             JOIN channels c ON c.id = m.channel_id
             JOIN guilds g ON g.id = c.guild_id

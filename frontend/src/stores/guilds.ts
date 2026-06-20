@@ -11,6 +11,8 @@ import {
   createGuildInvite,
   createGuildRole,
   joinGuildInvite,
+  deleteGuildById,
+  leaveGuildMembership,
   removeGuildMember,
   removeGuildRole,
 } from './guildAdmin'
@@ -93,6 +95,26 @@ export const useGuildStore = defineStore('guilds', () => {
     guilds.value = existing
       ? guilds.value.map((guild) => (guild.id === cleanGuild.id ? cleanGuild : guild))
       : [...guilds.value, cleanGuild]
+  }
+
+  function removeGuildLocally(guildId: number) {
+    guilds.value = guilds.value.filter((guild) => guild.id !== guildId)
+    serverRailLayout.value = {
+      items: serverRailLayout.value.items.filter((item) => item.type !== 'guild' || item.guild_id !== guildId),
+      folders: serverRailLayout.value.folders
+        .map((folder) => ({
+          ...folder,
+          guild_ids: folder.guild_ids.filter((id) => id !== guildId),
+        }))
+        .filter((folder) => folder.guild_ids.length > 0),
+    }
+    if (connectedVoiceGuildId.value === guildId) {
+      resetVoicePresence()
+    }
+    if (activeGuildId.value !== guildId) return
+    const nextGuild = guilds.value[0] ?? null
+    activeGuildId.value = nextGuild?.id ?? null
+    activeChannelId.value = nextGuild?.channels[0]?.id ?? null
   }
 
   async function loadGuilds(token: string | null) {
@@ -313,6 +335,36 @@ export const useGuildStore = defineStore('guilds', () => {
     }
   }
 
+  async function leaveGuild(token: string | null, guildId = activeGuildId.value) {
+    if (!guildId) return
+    isMutating.value = true
+    error.value = null
+    try {
+      await leaveGuildMembership(token, guildId)
+      removeGuildLocally(guildId)
+    } catch (cause) {
+      setError(cause, 'Failed to leave server')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
+  async function deleteGuild(token: string | null, guildId = activeGuildId.value) {
+    if (!guildId) return
+    isMutating.value = true
+    error.value = null
+    try {
+      await deleteGuildById(token, guildId)
+      removeGuildLocally(guildId)
+    } catch (cause) {
+      setError(cause, 'Failed to delete server')
+      throw cause
+    } finally {
+      isMutating.value = false
+    }
+  }
+
   function appendMessage(message: Message) {
     if (!isVisibleGuildMessage(message)) return
     guilds.value = guilds.value.map((guild) => {
@@ -481,6 +533,8 @@ export const useGuildStore = defineStore('guilds', () => {
     assignRole,
     removeRole,
     removeMember,
+    leaveGuild,
+    deleteGuild,
     handleGatewayDispatch,
     sendMessage,
     editMessage,

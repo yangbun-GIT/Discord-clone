@@ -9,6 +9,7 @@ from app.schemas.auth import UserPublic
 from app.schemas.guild import (
     ChannelCreate,
     ChannelRead,
+    GuildActionRead,
     GuildCreate,
     GuildRead,
     InviteRead,
@@ -21,8 +22,10 @@ from app.services.guild_service import (
     create_guild,
     create_invite,
     create_role,
+    delete_guild,
     get_guild_for_user,
     join_invite,
+    leave_guild,
     list_guilds_for_user,
     remove_member,
     remove_member_role,
@@ -181,6 +184,47 @@ async def remove_guild_member(
             not_found="member not found",
             forbidden="administrator permission required",
             bad_request=str(exc),
+        )
+
+
+@router.delete(
+    "/{guild_id}/leave",
+    response_model=GuildActionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def leave_user_guild(
+    guild_id: int,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> GuildActionRead:
+    try:
+        guild = await leave_guild(guild_id, current_user)
+        await publish_guild_update(guild)
+        return GuildActionRead(ok=True)
+    except (KeyError, ValueError) as exc:
+        raise_route_error(
+            exc,
+            not_found="guild not found",
+            bad_request=str(exc),
+        )
+
+
+@router.delete(
+    "/{guild_id}",
+    response_model=GuildActionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def delete_user_guild(
+    guild_id: int,
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> GuildActionRead:
+    try:
+        await delete_guild(guild_id, current_user)
+        return GuildActionRead(ok=True)
+    except (KeyError, PermissionError) as exc:
+        raise_route_error(
+            exc,
+            not_found="guild not found",
+            forbidden="server owner permission required",
         )
 
 

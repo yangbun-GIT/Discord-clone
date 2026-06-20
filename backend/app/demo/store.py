@@ -199,6 +199,30 @@ class DemoStore:
             guild.members = [member for member in guild.members if member.id != member_id]
             return deepcopy(guild)
 
+    def leave_guild(self, guild_id: int, actor: UserPublic) -> GuildRead:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            if actor.id == guild.owner_id:
+                raise ValueError("owner must delete the server instead of leaving")
+            self._find_member(guild, actor.id)
+            guild.members = [member for member in guild.members if member.id != actor.id]
+            return deepcopy(guild)
+
+    def delete_guild(self, guild_id: int, actor: UserPublic) -> None:
+        with self._lock:
+            guild = self._find_guild(guild_id)
+            self._require_owner(guild, actor)
+            self._guilds = [
+                existing_guild
+                for existing_guild in self._guilds
+                if existing_guild.id != guild_id
+            ]
+            self._invites = {
+                code: invite_guild_id
+                for code, invite_guild_id in self._invites.items()
+                if invite_guild_id != guild_id
+            }
+
     def join_invite(self, code: str, user: UserPublic) -> GuildRead:
         with self._lock:
             guild_id = self._invites.get(code)
@@ -255,6 +279,7 @@ class DemoStore:
                 author_id=author_id,
                 author_name=author_name,
                 content=content,
+                created_at=datetime.now(UTC),
             )
             guild.messages.append(message)
             return deepcopy(message)

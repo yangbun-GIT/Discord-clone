@@ -46,6 +46,50 @@ class GuildRepository:
             return None
         return await read_guild(guild_row, user_id)
 
+    async def leave_guild(self, guild_id: int, actor: UserPublic) -> GuildRead:
+        guild_row = await database.fetchrow(
+            "SELECT id, name, owner_id FROM guilds WHERE id = $1",
+            guild_id,
+        )
+        if guild_row is None:
+            raise KeyError(guild_id)
+        if int(guild_row["owner_id"]) == actor.id:
+            raise ValueError("owner must delete the server instead of leaving")
+
+        member_row = await database.fetchrow(
+            """
+            SELECT 1
+            FROM guild_members
+            WHERE guild_id = $1 AND user_id = $2
+            """,
+            guild_id,
+            actor.id,
+        )
+        if member_row is None:
+            raise KeyError(guild_id)
+
+        await database.execute(
+            """
+            DELETE FROM guild_members
+            WHERE guild_id = $1 AND user_id = $2
+            """,
+            guild_id,
+            actor.id,
+        )
+        return await read_guild(guild_row, actor.id)
+
+    async def delete_guild(self, guild_id: int, actor: UserPublic) -> None:
+        guild_row = await database.fetchrow(
+            "SELECT id, owner_id FROM guilds WHERE id = $1",
+            guild_id,
+        )
+        if guild_row is None:
+            raise KeyError(guild_id)
+        if int(guild_row["owner_id"]) != actor.id:
+            raise PermissionError("server owner permission required")
+
+        await database.execute("DELETE FROM guilds WHERE id = $1", guild_id)
+
     async def create_guild(self, payload: GuildCreate, owner: UserPublic) -> GuildRead:
         guild_id = id_generator.generate()
         text_channel = ChannelRead(

@@ -289,7 +289,8 @@ For ordinary implementation work:
 - `backend/app/api/routes/meta.py`
   - Runtime metadata endpoints such as voice config and safe voice readiness.
 - `backend/app/api/routes/guilds.py`
-  - Guild list/read/create, invite, roles, members, and channel creation routes.
+  - Guild list/read/create, invite, roles, members, channel creation, leave server,
+    and owner-only delete server routes.
 - `backend/app/api/routes/channels.py`
   - Channel message create/update/delete routes.
 - `backend/app/api/routes/dms.py`
@@ -341,6 +342,7 @@ For ordinary implementation work:
 - `backend/app/repositories/guilds.py`
   - Core guild aggregate list/read/create persistence and compatibility facade for
     historical broad repository calls.
+  - Owns PostgreSQL leave-server and owner-only delete-server mutations.
 - `backend/app/repositories/guild_common.py`
   - Shared guild repository helpers for aggregate reads, permission calculation,
     user upsert, role/member validation, and Snowflake IDs.
@@ -348,6 +350,8 @@ For ordinary implementation work:
   `guild_invites.py`, `guild_members.py`, `guild_messages.py`, `guild_roles.py`
   - Domain-specific repository entry points used by `guild_storage.py`.
   - Own channel, invite, member, message, and role SQL respectively.
+  - `guild_messages.py` returns persisted message `created_at` values for server
+    text timeline rendering.
 - `backend/app/repositories/dms.py`
   - Direct-message persistence.
   - Owns PostgreSQL relationship reads and paired-row relationship mutation
@@ -520,7 +524,11 @@ For ordinary implementation work:
   - App-owned accepted-friend recipient picker for starting 1:1 or group DMs.
 - `frontend/src/components/ChannelSidebar.vue`
   - Server heading, events, categories, text/voice channel rows, lower user/voice
-    panels, and permission-aware server invite menu entry.
+    panels, permission-aware server invite icon/menu entry, server settings entry,
+    and leave/delete server menu actions.
+- `frontend/src/components/ServerSettingsDialog.vue`
+  - App-owned server settings summary dialog.
+  - Emits invite, non-owner leave, and owner-only delete actions to `App.vue`.
 - `frontend/src/components/FriendsHome.vue`
   - Friends tabs, friend list, grouped incoming/outgoing friend requests,
     add-friend flow, local favorites, compact sorting controls, and activity
@@ -558,6 +566,7 @@ For ordinary implementation work:
     messages cannot visually interleave during bottom-up scrolling.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
+    persisted timestamp/per-day divider rendering, author-separated message rows,
     attachments, reactions, composer panels, and outside-click/Escape dismissal
     for local overlays.
 - `frontend/src/components/MemberList.vue`
@@ -606,6 +615,8 @@ For ordinary implementation work:
   - Guild list, active guild/channel, local message state, admin state reflection,
     guild member presence updates, gateway state application, and persisted
     server rail layout state/actions.
+  - Owns client-side leave/delete server mutations and local rail/workspace cleanup
+    after a server is removed from the current user.
 - `frontend/src/stores/guildVisibility.ts`
   - Guild/channel/message visibility filtering for visual-test/demo noise.
 - `frontend/src/stores/voicePresence.ts`
@@ -614,7 +625,8 @@ For ordinary implementation work:
 - `frontend/src/stores/channelMessages.ts`
   - Server text-channel message REST mutations.
 - `frontend/src/stores/guildAdmin.ts`
-  - Guild invite, channel, role, and member REST mutations.
+  - Guild invite, channel, role, member, leave-server, and delete-server REST
+    mutations.
 - `frontend/src/stores/guildGatewayHandlers.ts`
   - Typed gateway-event validation and event-to-store callback dispatch.
 - `frontend/src/stores/dms.ts`

@@ -39,3 +39,9 @@ criteria, and regression checks.
     pass.
 - `friends-dm-usability-checklist-ko.md`
   - Korean user-facing checklist for confirming the Friends/DM usability backlog.
+- `server-rail-remediation-2026-06-21.md`
+  - Server rail ordering, folder/grouping, collapse, and hover/focus tooltip
+    remediation record.
+- `server-settings-chat-remediation-2026-06-21.md`
+  - Server heading, settings, leave/delete, and server text-channel timeline
+    remediation record.

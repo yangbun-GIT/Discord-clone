@@ -71,6 +71,10 @@ class GuildMemberStorage(Protocol):
         actor: UserPublic,
     ) -> GuildRead: ...
 
+    async def leave_guild(self, guild_id: int, actor: UserPublic) -> GuildRead: ...
+
+    async def delete_guild(self, guild_id: int, actor: UserPublic) -> None: ...
+
 
 class GuildChannelStorage(Protocol):
     async def create_channel(
@@ -175,6 +179,12 @@ class PostgresGuildStorage:
     ) -> GuildRead:
         return await member_repository.remove_member(guild_id, member_id, actor)
 
+    async def leave_guild(self, guild_id: int, actor: UserPublic) -> GuildRead:
+        return await guild_repository.leave_guild(guild_id, actor)
+
+    async def delete_guild(self, guild_id: int, actor: UserPublic) -> None:
+        await guild_repository.delete_guild(guild_id, actor)
+
     async def create_channel(
         self,
         guild_id: int,
@@ -274,6 +284,12 @@ class DemoGuildStorage:
         actor: UserPublic,
     ) -> GuildRead:
         return demo_store.remove_member(guild_id, member_id, actor)
+
+    async def leave_guild(self, guild_id: int, actor: UserPublic) -> GuildRead:
+        return demo_store.leave_guild(guild_id, actor)
+
+    async def delete_guild(self, guild_id: int, actor: UserPublic) -> None:
+        demo_store.delete_guild(guild_id, actor)
 
     async def create_channel(
         self,

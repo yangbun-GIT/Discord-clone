@@ -120,6 +120,11 @@ the project prompt and context files before changing code.
   - Server rail usability remediation plan and completion log.
   - Owns per-user server ordering, server folders/groups, folder collapse/expand,
     and app-owned rail hover/focus tooltips.
+- `docs/remediation-tasks/server-settings-chat-remediation-2026-06-21.md`
+  - Server workspace remediation record.
+  - Owns server heading invite/menu behavior, functional server settings,
+    leave/delete server flows, and bottom-anchored server text message timestamp
+    and author-separation behavior.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest user-run manual QA follow-up plan.
   - Owns sustained speech dropout, screen-share participant composition, refresh
