@@ -124,6 +124,12 @@ joinable call stage instead. If the local user remains alone in a DM call for 3
 minutes, the client leaves the DM call to avoid keeping an unused private call
 open. Guild/server voice channels do not use this solo cleanup rule.
 
+2026-06-20 DM call toolbar note: active DM calls expose direct microphone mute and
+output deafen controls inside the call stage. The adjacent chevrons only open and
+close the input/output quick settings popovers, and the red hang-up button remains
+separate. The lower-left quick settings popover should appear above the full
+status/voice panel and must not cover the connected DM call card.
+
 ### HTTPS LAN Media Path
 
 Use this path when the second device must test real microphone or screen capture.

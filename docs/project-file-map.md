@@ -515,8 +515,10 @@ For ordinary implementation work:
     local emoji panel dismissal, and the active DM private-call stage.
   - Active DM calls expose input/output quick settings that reuse the shared
     `useVoiceRtc` device settings and refresh/update events.
-  - Active DM calls keep voice controls and hang-up in one toolbar; ongoing remote
-    DM calls can render as joinable stages after the local user leaves.
+  - Active DM calls keep mute, deafen, quick input/output settings, and hang-up in
+    one toolbar; chevrons open/close settings while the main microphone/output
+    buttons toggle mute/deafen. Ongoing remote DM calls can render as joinable
+    stages after the local user leaves.
 - `frontend/src/components/ChatView.vue`
   - Server text-channel bottom-anchored timeline, message actions/options,
     attachments, reactions, composer panels, and outside-click/Escape dismissal
@@ -536,8 +538,8 @@ For ordinary implementation work:
     refresh/open buttons.
   - Closes quick input/output popovers on outside click or Escape and orders the
     connected voice-session card below the user status card.
-  - Quick input/output popovers open above the full lower user/voice panel so
-    they do not cover the connected status card.
+  - Quick input/output popovers open above the full lower user/voice panel with
+    extra clearance so they do not cover the connected status card.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Remote audio stream rendering, output volume, output device sink selection when
     supported, and local deafen-to-audio-muted binding.

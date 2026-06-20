@@ -1033,12 +1033,14 @@ Browser UI
 - `frontend/src/components/DirectMessageView.vue`
   - Receives selected DM and user state from `frontend/src/App.vue`.
   - Receives shared voice device settings/device lists from `frontend/src/App.vue`.
-  - Emits message-send, selected-DM profile, call-entry, mute, voice settings,
-    voice-device refresh, and voice-device update actions to `frontend/src/App.vue`.
+  - Emits message-send, selected-DM profile, call-entry, conversation mute, voice
+    mute/deafen, voice-device refresh, and voice-device update actions to
+    `frontend/src/App.vue`.
   - Owns bottom-anchored DM scroll behavior, active private-call stage display, and
     local emoji plus DM call input/output popover state with outside-click/Escape
-    dismissal. Active DM call controls are grouped with hang-up in one toolbar,
-    and ongoing remote DM calls can render as joinable stages.
+    dismissal. Active DM call controls group mute, deafen, quick input/output
+    settings, and hang-up in one toolbar, and ongoing remote DM calls can render
+    as joinable stages.
 - `frontend/src/components/ChatView.vue`
   - Receives active channel, messages, and current user from `frontend/src/App.vue`.
   - Emits send/edit/delete actions to `frontend/src/App.vue`.
@@ -1060,8 +1062,8 @@ Browser UI
     live input level.
   - Owns quick input/output popover state, toggle-open chevrons,
     outside-click/Escape dismissal, and the lower-left user-status/connected-session
-    card ordering. Its popovers are anchored above the full lower panel to avoid
-    covering connected voice status.
+    card ordering. Its popovers are anchored above the full lower panel with extra
+    clearance to avoid covering connected voice status.
 - `frontend/src/components/VoiceAudioSink.vue`
   - Receives current-channel remote audio stream from
     `frontend/src/App.vue`/`useVoiceRtc`.

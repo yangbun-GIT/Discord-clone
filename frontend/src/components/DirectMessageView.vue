@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowDown, BellOff, ChevronUp, Laugh, Mic, Phone, PhoneOff, Send, Settings, UserRound, Volume2 } from 'lucide-vue-next'
+import { ArrowDown, BellOff, ChevronUp, HeadphoneOff, Laugh, Mic, MicOff, Phone, PhoneOff, Send, UserRound, Volume2 } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useI18n } from '../i18n'
@@ -12,6 +12,8 @@ const props = defineProps<{
   currentUser: User | null
   disabled: boolean
   muted?: boolean
+  voiceMuted?: boolean
+  deafened?: boolean
   callActive?: boolean
   callJoinable?: boolean
   voiceDeviceSettings: VoiceDeviceSettings
@@ -34,6 +36,8 @@ const emit = defineEmits<{
   startCall: []
   leaveCall: []
   toggleMute: []
+  toggleVoiceMute: []
+  toggleDeafen: []
   openVoiceSettings: []
   refreshVoiceDevices: []
   updateVoiceDeviceSettings: [settings: Partial<VoiceDeviceSettings>]
@@ -90,11 +94,6 @@ function handleNoiseSuppressionModeChange(event: Event) {
     noiseSuppressionMode: mode,
     rnnoiseSuppression: mode === 'rnnoise',
   })
-}
-
-function openVoiceSettings() {
-  audioMenu.value = null
-  emit('openVoiceSettings')
 }
 
 const otherParticipants = computed(() =>
@@ -199,29 +198,50 @@ onBeforeUnmount(() => {
         </div>
         <div v-if="callActive" class="dm-call-control-stack">
           <div class="dm-call-device-controls" :aria-label="t('voice.aria.controls')">
-            <button
-              type="button"
-              :title="t('voice.openInputMenu')"
-              :aria-label="t('voice.openInputMenu')"
-              :aria-expanded="audioMenu === 'input'"
-              @click="toggleAudioMenu('input')"
-            >
-              <Mic :size="17" aria-hidden="true" />
-              <ChevronUp :size="13" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              :title="t('voice.openOutputMenu')"
-              :aria-label="t('voice.openOutputMenu')"
-              :aria-expanded="audioMenu === 'output'"
-              @click="toggleAudioMenu('output')"
-            >
-              <Volume2 :size="17" aria-hidden="true" />
-              <ChevronUp :size="13" aria-hidden="true" />
-            </button>
-            <button type="button" :title="t('settings.voiceAndVideoSettings')" @click="openVoiceSettings">
-              <Settings :size="17" aria-hidden="true" />
-            </button>
+            <span class="dm-call-control-cluster">
+              <button
+                type="button"
+                :title="voiceMuted ? t('voice.unmute') : t('voice.mute')"
+                :aria-label="voiceMuted ? t('voice.unmute') : t('voice.mute')"
+                :aria-pressed="voiceMuted"
+                @click="$emit('toggleVoiceMute')"
+              >
+                <MicOff v-if="voiceMuted" :size="17" aria-hidden="true" />
+                <Mic v-else :size="17" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="dm-call-popover-trigger"
+                :title="t('voice.openInputMenu')"
+                :aria-label="t('voice.openInputMenu')"
+                :aria-expanded="audioMenu === 'input'"
+                @click="toggleAudioMenu('input')"
+              >
+                <ChevronUp :size="13" aria-hidden="true" />
+              </button>
+            </span>
+            <span class="dm-call-control-cluster">
+              <button
+                type="button"
+                :title="deafened ? t('voice.undeafen') : t('voice.deafen')"
+                :aria-label="deafened ? t('voice.undeafen') : t('voice.deafen')"
+                :aria-pressed="deafened"
+                @click="$emit('toggleDeafen')"
+              >
+                <HeadphoneOff v-if="deafened" :size="17" aria-hidden="true" />
+                <Volume2 v-else :size="17" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="dm-call-popover-trigger"
+                :title="t('voice.openOutputMenu')"
+                :aria-label="t('voice.openOutputMenu')"
+                :aria-expanded="audioMenu === 'output'"
+                @click="toggleAudioMenu('output')"
+              >
+                <ChevronUp :size="13" aria-hidden="true" />
+              </button>
+            </span>
             <button
               type="button"
               class="dm-call-leave"

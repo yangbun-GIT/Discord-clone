@@ -618,6 +618,13 @@ needed before the Friends home surface can be considered complete.
     active call; selecting the DM instead shows a joinable call stage. DM calls
     also get a client-side solo cleanup timer that leaves the call after 3 minutes
     alone, while guild voice channels remain unchanged.
+  - DM call toolbar correction completed: the active DM call toolbar now exposes
+    direct microphone mute and output deafen toggles, uses the chevrons only for
+    input/output quick settings open-close behavior, removes the extra settings
+    icon from the call stage, keeps hang-up as a distinct red control, opens the
+    call-stage settings popover downward to avoid top clipping, and raises the
+    lower-left quick settings popover so it does not cover the connected DM call
+    card.
 
 ## Verification Log
 
@@ -699,6 +706,16 @@ needed before the Friends home surface can be considered complete.
   - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
     remote audio sink, DM/server realtime, invite-DM realtime, fake screen-share
     cleanup, voice reload/rejoin recovery, and voice leave cleanup.
+- 2026-06-20 DM toolbar correction verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed: 7 files, 46 tests.
+  - `npm --prefix frontend run build` passed.
+  - `git diff --check` passed; Git only reported line-ending normalization
+    warnings for touched files.
+  - `npm run smoke:realtime:browser:https` passed with `browserErrors: 0`, one
+    remote audio sink, independent mute/deafen checks, DM/server realtime,
+    invite-DM realtime, screen-share cleanup, voice reload/rejoin recovery, and
+    voice leave cleanup.
 
 ## Manual QA Checklist
 

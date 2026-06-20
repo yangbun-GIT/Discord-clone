@@ -3503,7 +3503,16 @@ select:focus-visible {
 }
 
 .dm-call-device-controls .dm-call-leave {
-  margin-left: 5px;
+  margin-left: 8px;
+}
+
+.dm-call-control-cluster {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: transparent;
 }
 
 .dm-call-device-controls button {
@@ -3520,6 +3529,25 @@ select:focus-visible {
   cursor: pointer;
 }
 
+.dm-call-control-cluster > button {
+  border-radius: 0;
+}
+
+.dm-call-control-cluster > button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.dm-call-control-cluster > button:last-child {
+  min-width: 22px;
+  border-left: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 0 8px 8px 0;
+}
+
+.dm-call-device-controls button[aria-pressed="true"] {
+  color: #fecaca;
+  background: rgb(248 113 113 / 14%);
+}
+
 .dm-call-device-controls button:hover,
 .dm-call-device-controls button:focus-visible,
 .dm-call-device-controls button[aria-expanded="true"] {
@@ -3532,7 +3560,8 @@ select:focus-visible {
   position: absolute;
   left: 50%;
   right: auto;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
+  bottom: auto;
   transform: translateX(-50%);
   z-index: 35;
   width: min(320px, calc(100vw - 72px));
@@ -3609,8 +3638,8 @@ select:focus-visible {
 }
 
 .dm-call-leave {
-  width: 48px;
-  min-width: 48px;
+  width: 52px;
+  min-width: 52px;
   height: 34px;
   border: 0;
   border-radius: 8px;
@@ -5729,7 +5758,7 @@ select:focus-visible {
   position: absolute;
   left: 6px;
   right: 6px;
-  bottom: calc(100% + 16px);
+  bottom: calc(100% + 28px);
   z-index: 45;
   width: auto;
   max-height: min(520px, calc(100vh - 160px));
@@ -5747,7 +5776,7 @@ select:focus-visible {
 }
 
 .app-shell.voice-connected .voice-device-popover {
-  bottom: calc(100% + 16px);
+  bottom: calc(100% + 28px);
 }
 
 .voice-device-field,

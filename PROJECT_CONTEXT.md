@@ -2288,6 +2288,14 @@ Completed Stage 2 bridge work:
   selected. `useVoiceSessionController.ts` schedules a DM-only solo-call cleanup:
   if the local user is alone in a DM call for 3 minutes, the client leaves the DM
   voice room. Guild voice channels are not affected.
+- A fourth DM call toolbar follow-up scoped the active private-call controls to
+  the requested Discord-like behavior: microphone and output buttons now toggle
+  mute/deafen directly, their chevrons open and close the corresponding quick
+  settings, the separate call-stage settings icon was removed, the hang-up control
+  remains a distinct red button, and the DM call popover opens downward to avoid
+  clipping at the top of the call stage. The lower `VoicePanel` quick popover was
+  also raised farther above the lower status/voice panel so it does not cover the
+  connected DM call card.
 
 After each stage or meaningful feature:
 
