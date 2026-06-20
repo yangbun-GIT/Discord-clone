@@ -448,7 +448,7 @@ function hideTooltip() {
 <template>
   <nav class="server-rail" aria-label="Servers" @dragleave="handleRailDragLeave">
     <div class="server-slot" :class="{ active: homeActive, unread: homeUnreadCount }">
-      <span v-if="homeActive || homeUnreadCount" class="server-unread-pill" aria-hidden="true"></span>
+      <span v-if="homeActive" class="server-unread-pill" aria-hidden="true"></span>
       <button
         class="server-button home"
         :class="{ active: homeActive }"
@@ -488,11 +488,7 @@ function hideTooltip() {
         @dragover="handleGuildDragOver($event, item.guild.id)"
         @drop.prevent="handleDrop"
       >
-        <span
-          v-if="isActiveGuild(item.guild.id) || hasUnreadGuild(item.guild.id)"
-          class="server-unread-pill"
-          aria-hidden="true"
-        ></span>
+        <span v-if="isActiveGuild(item.guild.id)" class="server-unread-pill" aria-hidden="true"></span>
         <button
           class="server-button"
           :class="{ active: isActiveGuild(item.guild.id), muted: guildMeta[item.guild.id]?.muted }"
@@ -538,7 +534,7 @@ function hideTooltip() {
         @drop.prevent="handleDrop"
       >
         <span
-          v-if="item.folder.collapsed && (folderHasActiveGuild(item.folder) || folderHasUnreadGuild(item.folder) || folderHasMentionGuild(item.folder))"
+          v-if="item.folder.collapsed && folderHasActiveGuild(item.folder)"
           class="server-unread-pill"
           aria-hidden="true"
         ></span>
@@ -576,11 +572,7 @@ function hideTooltip() {
             @dragover.stop="handleGuildDragOver($event, guild.id)"
             @drop.stop.prevent="handleFolderGuildDrop(item.folder.id, guild.id)"
           >
-            <span
-              v-if="isActiveGuild(guild.id) || hasUnreadGuild(guild.id)"
-              class="server-unread-pill"
-              aria-hidden="true"
-            ></span>
+            <span v-if="isActiveGuild(guild.id)" class="server-unread-pill" aria-hidden="true"></span>
             <button
               class="server-button"
               :class="{ active: isActiveGuild(guild.id), muted: guildMeta[guild.id]?.muted }"

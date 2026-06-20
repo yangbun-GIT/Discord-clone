@@ -172,6 +172,10 @@ Reasoning:
   marker behavior stays consistent after servers are moved into or out of groups.
 - Localized `ServerDiscoveryDialog.vue` through `i18n/index.ts` so the public
   server exploration dialog follows the current Korean/English preference.
+- Tightened the left rail pill rule so the vertical bar is reserved for the
+  currently active Home/server/collapsed folder only. Inactive unread or mention
+  state remains available through badges and labels, avoiding the appearance that
+  a previous server is still selected.
 - Verification:
   - `npm run lint:frontend` passed.
   - `npm run test:frontend` passed.
