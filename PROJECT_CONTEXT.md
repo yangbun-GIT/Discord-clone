@@ -175,6 +175,14 @@ a `screen-repair` signal so the active screen sharer creates a fresh offer with
 the current display track attached.
 `scripts/realtime_browser_smoke.mjs` now verifies this path through
 `remoteScreenVideosAfterReceiverReload` and `receiverAudioSinksAfterReload`.
+The 2026-06-21 dual screen-share guard keeps already connected peers alive during
+normal screen-share renegotiation; peer recreation is now limited to changed
+remote `session_id`, closed state, or failed state. The HTTPS smoke also covers
+the path where A shares screen, B recovers A's share/audio after reload, then B
+starts sharing too and both pages keep screen tiles plus remote audio sinks. The
+gateway `voice-signal` limit was raised to allow normal ICE candidate bursts
+during reload and simultaneous screen-share negotiation without closing the
+authenticated gateway connection.
 The existing WebRTC, voice panel, screen-share, and gateway signaling flows are
 preserved.
 

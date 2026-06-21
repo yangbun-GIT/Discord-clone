@@ -144,6 +144,72 @@ async function countRemoteScreenVideos(page) {
   )
 }
 
+async function waitForScreenTileByUser(page, userId, label) {
+  try {
+    await page.waitForFunction(
+      (expectedUserId) => [...document.querySelectorAll(`.screen-share-tile[data-user-id="${expectedUserId}"] video`)]
+        .some((video) => {
+          const stream = video.srcObject
+          return stream instanceof MediaStream
+            && stream.getVideoTracks().some((track) => track.readyState === 'live')
+            && video.muted
+            && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+            && video.videoWidth > 0
+            && video.videoHeight > 0
+        }),
+      String(userId),
+      { timeout: 12_000 },
+    )
+  } catch {
+    const debug = await page.evaluate((expectedUserId) => ({
+      label: document.querySelector(`.screen-share-tile[data-user-id="${expectedUserId}"]`)?.textContent ?? null,
+      screenTiles: [...document.querySelectorAll('.screen-share-tile')].map((tile) => ({
+        userId: tile.getAttribute('data-user-id'),
+        text: tile.textContent,
+        videos: [...tile.querySelectorAll('video')].map((video) => {
+          const stream = video.srcObject
+          return {
+            readyState: video.readyState,
+            videoWidth: video.videoWidth,
+            videoHeight: video.videoHeight,
+            tracks: stream instanceof MediaStream
+              ? stream.getVideoTracks().map((track) => ({
+                  readyState: track.readyState,
+                  muted: track.muted,
+                }))
+              : [],
+          }
+        }),
+      })),
+      audioSinks: document.querySelectorAll('.voice-audio-sinks audio').length,
+    }), String(userId))
+    throw new Error(`${label} screen tile was not observed: ${JSON.stringify(debug)}`)
+  }
+}
+
+async function waitForAudioSink(page, label) {
+  try {
+    await page.waitForFunction(
+      () => document.querySelectorAll('.voice-audio-sinks audio').length >= 1,
+      null,
+      { timeout: 15_000 },
+    )
+  } catch {
+    const debug = await page.evaluate(() => ({
+      voicePanelText: document.querySelector('.voice-panel')?.textContent ?? null,
+      voiceWorkspaceText: document.querySelector('.voice-workspace')?.textContent ?? null,
+      remoteTiles: [...document.querySelectorAll('.voice-tile, .screen-share-tile')].map((tile) => ({
+        className: tile.className,
+        userId: tile.getAttribute('data-user-id'),
+        text: tile.textContent,
+      })),
+      audioSinks: document.querySelectorAll('.voice-audio-sinks audio').length,
+      appMuted: document.querySelector('.app-shell')?.getAttribute('data-local-microphone-muted'),
+    }))
+    throw new Error(`${label} audio sink was not observed: ${JSON.stringify(debug)}`)
+  }
+}
+
 async function waitForRemoteScreenTile(receiverPage, senderPage) {
   try {
     await receiverPage.waitForFunction(
@@ -438,6 +504,20 @@ async function run() {
       { timeout: 15_000 },
     )
     const receiverAudioSinksAfterReload = await pageB.page.locator('.voice-audio-sinks audio').count()
+    await clickVoiceAction(pageB.page, /^Share screen$/i)
+    await pageB.page.waitForTimeout(2_500)
+    await waitForScreenTileByUser(pageA.page, userB.user.id, 'B-to-A dual screen-share')
+    await waitForScreenTileByUser(pageB.page, userA.user.id, 'A-to-B dual screen-share')
+    const dualScreenVideosOnA = await countRemoteScreenVideos(pageA.page)
+    const dualScreenVideosOnB = await countRemoteScreenVideos(pageB.page)
+    const audioSinksOnAAfterDualShare = await pageA.page.locator('.voice-audio-sinks audio').count()
+    const audioSinksOnBAfterDualShare = await pageB.page.locator('.voice-audio-sinks audio').count()
+    await clickVoiceAction(pageB.page, /^Stop screen share$/i)
+    await pageA.page.waitForFunction(
+      (userId) => !document.querySelector(`.screen-share-tile[data-user-id="${userId}"] video`),
+      String(userB.user.id),
+      { timeout: 10_000 },
+    )
     const mutePressed = await pageA.page
       .getByRole('button', { name: /Unmute microphone|Mute microphone/i })
       .first()
@@ -468,11 +548,7 @@ async function run() {
       .first()
       .isVisible()
       .catch(() => false)
-    await pageA.page.waitForFunction(
-      () => document.querySelectorAll('.voice-audio-sinks audio').length >= 1,
-      null,
-      { timeout: 15_000 },
-    )
+    await waitForAudioSink(pageA.page, 'B reload to A')
     const voiceRejoinRecovered = await pageA.page.locator('.voice-audio-sinks audio').count() >= 1
     await clickVoiceAction(pageB.page, /Disconnect voice/i)
     await pageA.page.waitForFunction(
@@ -511,6 +587,10 @@ async function run() {
       remoteScreenVideos,
       remoteScreenVideosAfterReceiverReload,
       receiverAudioSinksAfterReload,
+      dualScreenVideosOnA,
+      dualScreenVideosOnB,
+      audioSinksOnAAfterDualShare,
+      audioSinksOnBAfterDualShare,
       remoteSharingUserScreenTiles,
       duplicateRemoteSharingParticipantCards,
       remoteScreenCleared,
@@ -549,6 +629,10 @@ async function run() {
       || result.remoteScreenVideos < 1
       || result.remoteScreenVideosAfterReceiverReload < 1
       || result.receiverAudioSinksAfterReload < 1
+      || result.dualScreenVideosOnA < 1
+      || result.dualScreenVideosOnB < 1
+      || result.audioSinksOnAAfterDualShare < 1
+      || result.audioSinksOnBAfterDualShare < 1
       || result.remoteSharingUserScreenTiles !== 1
       || result.duplicateRemoteSharingParticipantCards !== 0
       || !result.remoteScreenCleared
@@ -571,7 +655,7 @@ async function run() {
 }
 
 run().catch((error) => {
-  const message = error instanceof Error ? error.message : String(error)
+  const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
   console.error(message.replace(/(?:server|dm)-smoke-\d+/g, '[redacted-message]'))
   process.exit(1)
 })

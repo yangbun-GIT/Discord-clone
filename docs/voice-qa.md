@@ -561,6 +561,33 @@ This is still not a real internet voice completion. The current local metadata
 reports `turn_configured: false`, so real microphone quality, real screen picker
 UX, different-PC LAN, and TURN/NAT internet voice remain manual release gates.
 
+## Dual Screen-Share Negotiation Guard 2026-06-21
+
+Manual issue: A and B could keep a voice call stable while only A shared screen,
+but when B also started screen sharing, B's shared screen did not render and voice
+audio could stop flowing.
+
+Root cause class: normal screen-share renegotiation offers were allowed to rebuild
+an already connected peer connection. Rebuilding a healthy peer during a second
+screen-share negotiation can tear down the audio sender/receiver path together
+with the video track path.
+
+Current fix:
+
+- Incoming offers now reuse an existing healthy peer connection.
+- Peer recreation is limited to a changed remote voice session id, closed
+  signaling/connection state, or failed connection state.
+- Gateway voice-signal throttling now allows normal WebRTC ICE candidate bursts
+  during reload and dual screen-share renegotiation. The previous per-pair burst
+  limit could close the gateway while peers were still exchanging candidates.
+- The HTTPS realtime smoke adds a dual-share regression path: A shares, B reloads
+  and recovers A's share/audio, B starts sharing too, A receives B's screen tile,
+  B still sees A's screen tile, and both pages keep remote audio sinks.
+
+This protects the existing single-share and refresh-rejoin behavior while covering
+the two-user simultaneous screen-share path. Real screen-picker manual QA is still
+required because the automated path uses browser fake capture.
+
 ## 2026-06-21 Screen Picker Cancel Handling
 
 Manual expectation for the real Chrome display-capture picker:

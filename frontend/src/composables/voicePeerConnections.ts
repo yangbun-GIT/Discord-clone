@@ -8,7 +8,8 @@ import type {
 } from './voiceTransport'
 
 const PEER_RETRY_DELAY_MS = 1_000
-const MAX_PEER_RETRY_COUNT = 1
+const MAX_PEER_RETRY_COUNT = 2
+const PEER_CONNECTIVITY_CHECK_MS = 4_000
 const SCREEN_REPAIR_DELAY_MS = 2_500
 const MAX_SCREEN_REPAIR_COUNT = 2
 const SIGNALING_STABLE_WAIT_MS = 2_000
@@ -68,6 +69,10 @@ function participantPeers(participants: VoiceState[], currentUserId: number) {
 
 function streamHasLiveTrack(stream: MediaStream) {
   return stream.getTracks().some((track) => track.readyState === 'live')
+}
+
+function streamHasLiveAudioTrack(stream: MediaStream) {
+  return stream.getAudioTracks().some((track) => track.readyState === 'live')
 }
 
 function waitForStableSignaling(connection: RTCPeerConnection) {
@@ -130,6 +135,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   const peers = new Map<PeerKey, PeerEntry>()
   const retryTimers = new Map<PeerKey, number>()
   const retryCounts = new Map<PeerKey, number>()
+  const connectivityTimers = new Map<PeerKey, number>()
   const screenRepairTimers = new Map<PeerKey, number>()
   const screenRepairCounts = new Map<PeerKey, number>()
   const signalQueues = new Map<PeerKey, Promise<void>>()
@@ -163,6 +169,14 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     }
   }
 
+  function clearConnectivityTimer(key: PeerKey) {
+    const timer = connectivityTimers.get(key)
+    if (timer !== undefined) {
+      window.clearTimeout(timer)
+      connectivityTimers.delete(key)
+    }
+  }
+
   function clearScreenRepairTimer(key: PeerKey) {
     const timer = screenRepairTimers.get(key)
     if (timer !== undefined) {
@@ -171,11 +185,18 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     }
   }
 
-  function closePeer(key: PeerKey, options: { preserveScreenRepairCount?: boolean } = {}) {
+  function closePeer(
+    key: PeerKey,
+    options: { preserveScreenRepairCount?: boolean, preservePeerRetryCount?: boolean } = {},
+  ) {
     const peer = peers.get(key)
     if (!peer) return
     clearRetryTimer(key)
+    clearConnectivityTimer(key)
     clearScreenRepairTimer(key)
+    if (!options.preservePeerRetryCount) {
+      retryCounts.delete(key)
+    }
     if (!options.preserveScreenRepairCount) {
       screenRepairCounts.delete(key)
     }
@@ -294,22 +315,32 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       retryTimers.delete(key)
       const currentPeer = peers.get(key)
       if (!currentPeer || !isActivePeer(currentPeer)) return
-      closePeer(key)
+      closePeer(key, { preservePeerRetryCount: true })
 
       const activeOptions = options.getActiveOptions()
       if (!activeOptions || activeOptions.channelId !== peer.channelId) return
-      if (activeOptions.currentUserId < peer.userId) {
-        void createOfferFor(peer.userId, peer.username)
-        return
-      }
-      try {
-        ensurePeer(peer.userId, peer.username)
-      } catch {
-        // The next participant sync or voice signal will rebuild this peer.
-      }
+      void createOfferFor(peer.userId, peer.username)
     }, PEER_RETRY_DELAY_MS)
 
     retryTimers.set(key, timer)
+  }
+
+  function scheduleConnectivityCheck(peer: PeerEntry) {
+    const key = peerKey(peer.channelId, peer.userId)
+    if (!isActivePeer(peer) || connectivityTimers.has(key)) return
+
+    const timer = window.setTimeout(() => {
+      connectivityTimers.delete(key)
+      const currentPeer = peers.get(key)
+      if (!currentPeer || !isActivePeer(currentPeer)) return
+      if (
+        currentPeer.connection.connectionState === 'connected'
+        && streamHasLiveAudioTrack(currentPeer.stream)
+      ) return
+      schedulePeerRetry(currentPeer)
+    }, PEER_CONNECTIVITY_CHECK_MS)
+
+    connectivityTimers.set(key, timer)
   }
 
   function scheduleScreenRepair(peer: PeerEntry) {
@@ -411,7 +442,11 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (!stream.getTracks().includes(event.track)) {
         stream.addTrack(event.track)
       }
-      if (event.track.kind === 'audio') startRemoteSpeakingMonitor(peer)
+      if (event.track.kind === 'audio') {
+        retryCounts.delete(key)
+        clearConnectivityTimer(key)
+        startRemoteSpeakingMonitor(peer)
+      }
       event.track.addEventListener('ended', () => refreshRemoteStream(peer))
       event.track.addEventListener('mute', () => refreshRemoteStream(peer))
       event.track.addEventListener('unmute', () => refreshRemoteStream(peer))
@@ -442,10 +477,15 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (!isActivePeer(peer)) return
       replaceRemoteStream(peer, { connectionState: connection.connectionState })
       if (connection.connectionState === 'connected') {
-        retryCounts.delete(key)
+        if (streamHasLiveAudioTrack(peer.stream)) {
+          retryCounts.delete(key)
+          clearConnectivityTimer(key)
+        } else {
+          scheduleConnectivityCheck(peer)
+        }
         return
       }
-      if (connection.connectionState === 'failed') {
+      if (connection.connectionState === 'failed' || connection.connectionState === 'disconnected') {
         schedulePeerRetry(peer)
         return
       }
@@ -454,6 +494,7 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       }
     })
 
+    scheduleConnectivityCheck(peer)
     return peer
   }
 
@@ -561,6 +602,8 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       }
       if (activeOptions.currentUserId < participant.user_id) {
         await createOfferFor(participant.user_id, participant.username)
+        const peer = peers.get(key)
+        if (peer) scheduleConnectivityCheck(peer)
         continue
       }
       if (localScreenShareIsActive()) {
@@ -568,6 +611,8 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
         sendScreenStateToPeer(peer, true)
         await renegotiatePeer(peer)
       }
+      const peer = peers.get(key)
+      if (peer) scheduleConnectivityCheck(peer)
     }
   }
 
@@ -641,8 +686,10 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       signal.type === 'offer'
       && existingPeer !== undefined
       && (
-        (Boolean(incomingSessionId) && knownSessionId !== incomingSessionId)
-        || existingPeer.connection.connectionState !== 'new'
+        (Boolean(incomingSessionId) && Boolean(knownSessionId) && knownSessionId !== incomingSessionId)
+        || existingPeer.connection.signalingState === 'closed'
+        || existingPeer.connection.connectionState === 'closed'
+        || existingPeer.connection.connectionState === 'failed'
       )
     )
     const peer = ensurePeer(signal.from_user_id, signal.from_username, shouldResetPeer)
@@ -711,6 +758,8 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     retryTimers.forEach((timer) => window.clearTimeout(timer))
     retryTimers.clear()
     retryCounts.clear()
+    connectivityTimers.forEach((timer) => window.clearTimeout(timer))
+    connectivityTimers.clear()
     screenRepairTimers.forEach((timer) => window.clearTimeout(timer))
     screenRepairTimers.clear()
     screenRepairCounts.clear()

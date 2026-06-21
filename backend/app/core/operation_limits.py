@@ -22,7 +22,7 @@ class OperationLimit:
 GATEWAY_IDENTIFY_LIMIT = OperationLimit(capacity=5, refill_per_second=5 / 60)
 GATEWAY_HEARTBEAT_LIMIT = OperationLimit(capacity=3, refill_per_second=2 / 30)
 VOICE_STATE_LIMIT = OperationLimit(capacity=12, refill_per_second=12 / 60)
-VOICE_SIGNAL_LIMIT = OperationLimit(capacity=60, refill_per_second=60 / 60)
+VOICE_SIGNAL_LIMIT = OperationLimit(capacity=240, refill_per_second=120 / 60)
 MESSAGE_CREATE_LIMIT = OperationLimit(capacity=10, refill_per_second=10 / 10)
 MESSAGE_MUTATION_LIMIT = OperationLimit(capacity=20, refill_per_second=20 / 60)
 
