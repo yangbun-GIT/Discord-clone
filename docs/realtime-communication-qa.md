@@ -550,8 +550,9 @@ The HTTPS browser smoke now covers the specific receiver-refresh path:
 5. B must receive A's active screen share and a remote audio sink.
 6. A stops screen sharing, and B must clear the remote screen tile.
 
-The fix adds a non-secret `session_id` to WebRTC voice signaling so a refreshed
-browser is treated as a new RTC media session instead of reusing a stale peer.
+The fix adds a non-secret `session_id` to WebRTC voice signaling and voice-state
+snapshots so a refreshed browser is treated as a new RTC media session instead
+of reusing a stale peer.
 Latest automated HTTPS result passed with
 `remoteScreenVideosAfterReceiverReload: 1`,
 `receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
@@ -571,9 +572,16 @@ black or missing on B. The frontend P2P path now adds a second repair layer:
   current screen track to a fresh `RTCPeerConnection`.
 - A user who is already screen sharing proactively renegotiates with later or
   rejoined participants during voice participant sync.
+- Participant sync resets an existing peer when the voice-state snapshot reports
+  a different session id for the same remote user.
+- If a refreshed receiver has a screen-share tile but no usable video track, it
+  sends a `screen-repair` signal so the active screen sharer creates the next
+  offer with the current display track attached.
 
 Verification passed for `npm run lint:frontend`, `npm run test:frontend`,
-`npm --prefix frontend run build`, and `git diff --check`. The stricter
-`npm run smoke:realtime:browser:https` frame assertion currently fails in the
-fake-screen automation path with `videoWidth: 0` and `videoHeight: 0`, so the real
-shared tab/window two-browser refresh scenario remains a required manual QA gate.
+`npm --prefix frontend run build`, `npm run lint:backend`,
+`npm run test:backend`, `git diff --check`, and
+`npm run smoke:realtime:browser:https`. The HTTPS smoke returned
+`remoteScreenVideosAfterReceiverReload: 1`,
+`receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
+`voiceRejoinRecovered: true`, and `browserErrors: 0`.

@@ -947,8 +947,9 @@ Browser UI
     - Backend `/gateway` WebSocket.
   - Owns:
     - Gateway identify, heartbeat, ACK timeout, bounded reconnect, dispatch
-      routing, presence updates, voice-signal `session_id` transport, and
-      reconnect-success callbacks used for REST reconciliation.
+      routing, presence updates, voice signal/state `session_id` transport,
+      `screen-repair` forwarding, and reconnect-success callbacks used for REST
+      reconciliation.
 
 - `frontend/src/composables/useVoiceRtc.ts`
   - References:

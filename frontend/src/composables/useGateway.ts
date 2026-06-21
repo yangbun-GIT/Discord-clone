@@ -2,7 +2,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 
 import { useI18n } from '../i18n'
 import { getNavigatorPlatform, getWebSocketUrl } from '../services/browserApi'
-import type { UserPresenceStatus } from '../types'
+import type { UserPresenceStatus, VoiceSignal } from '../types'
 
 type GatewayStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'offline' | 'error'
 
@@ -25,6 +25,7 @@ type VoiceStatePayload = {
   guild_id?: number | null
   channel_id: number | null
   dm_id?: number | null
+  session_id?: string | null
   self_mute?: boolean
   self_deaf?: boolean
 }
@@ -35,7 +36,7 @@ type VoiceSignalPayload = {
   dm_id?: number | null
   session_id?: string | null
   target_user_id: number
-  type: 'offer' | 'answer' | 'ice' | 'screen'
+  type: VoiceSignal['type']
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
   screen_sharing?: boolean | null

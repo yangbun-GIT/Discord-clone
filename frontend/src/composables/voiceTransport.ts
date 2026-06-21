@@ -20,7 +20,7 @@ export type SendVoiceTransportSignal = (payload: {
   channel_id: number
   session_id?: string | null
   target_user_id: number
-  type: 'offer' | 'answer' | 'ice' | 'screen'
+  type: VoiceSignal['type']
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
   screen_sharing?: boolean | null
@@ -53,6 +53,7 @@ export interface VoiceTransportState {
 
 export interface VoiceTransport extends VoiceTransportState {
   kind: VoiceTransportKind
+  getSessionId: () => string
   connect: (options: VoiceTransportConnectOptions) => Promise<void>
   disconnect: () => void
   setMuted: (muted: boolean) => void

@@ -352,6 +352,7 @@ export function useVoiceRtc(): VoiceTransport {
 
   return {
     kind: P2P_VOICE_TRANSPORT_KIND,
+    getSessionId: () => rtcSessionId,
     localStream,
     screenStream,
     remoteStreams,

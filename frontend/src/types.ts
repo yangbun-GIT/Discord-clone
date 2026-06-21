@@ -173,6 +173,7 @@ export type VoiceState = {
   dm_id?: number | null
   user_id: number
   username: string | null
+  session_id?: string | null
   self_mute: boolean
   self_deaf: boolean
 }
@@ -193,7 +194,7 @@ export type VoiceSignal = {
   from_user_id: number
   from_username: string | null
   target_user_id: number
-  type: 'offer' | 'answer' | 'ice' | 'screen'
+  type: 'offer' | 'answer' | 'ice' | 'screen' | 'screen-repair'
   description?: Record<string, unknown> | null
   candidate?: Record<string, unknown> | null
   screen_sharing?: boolean | null

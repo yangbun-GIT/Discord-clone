@@ -274,6 +274,7 @@ async def gateway(websocket: WebSocket) -> None:
                             "dm_id": dm_id,
                             "user_id": connection.user_id,
                             "username": connection.username,
+                            "session_id": voice_state.session_id,
                             "self_mute": voice_state.self_mute,
                             "self_deaf": voice_state.self_deaf,
                         },

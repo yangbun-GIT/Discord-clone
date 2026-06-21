@@ -245,3 +245,42 @@ voice-panel behavior.
     (`videoWidth: 0`, `videoHeight: 0`). Recheck the real two-browser scenario
     with an actual shared tab/window: A shares screen, B refreshes, B should
     auto-rejoin voice and then receive A's live screen again without a black tile.
+
+## Follow-up VCV-11: refreshed participant state reused an old peer
+
+- Reported issue: after the VCV-10 repair, the black remote screen could still
+  occur in the real-browser path, and audio input/output could also fail after a
+  refresh until the user explicitly left and rejoined the voice channel.
+- Root cause boundary: `VOICE_SIGNAL` already identified a new RTC session, but
+  the participant list used by auto-rejoin/sync did not expose the refreshed
+  session. A client could therefore keep the old peer for the same remote user
+  during participant sync. A receiver-side repair offer could also leave the
+  active sender's display track out of the next negotiation.
+- Fix:
+  - `VoiceStatePayload` now accepts a non-secret `session_id`.
+  - The gateway includes `session_id` in `VOICE_STATE_UPDATE` and
+    `VOICE_STATE_SNAPSHOT` while leaving old leave-event payloads unchanged.
+  - `VoiceSignalPayload` accepts a `screen-repair` signal so a refreshed receiver
+    with a screen tile but no video track can ask the current screen sharer to
+    create a fresh offer with the active display track attached.
+  - `useVoiceSessionController.ts` publishes the current transport session id
+    whenever it joins or republishes guild/DM voice state.
+  - `voicePeerConnections.ts` now resets an existing peer when the participant
+    snapshot shows that the same remote user has a different RTC session. Its
+    bounded screen repair path now requests a sender-side renegotiation instead
+    of relying on the refreshed receiver to be the offerer.
+  - `backend/tests/test_gateway_manager.py` verifies that voice-state snapshots
+    preserve the RTC session id.
+- Verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed.
+  - `npm --prefix frontend run build` passed.
+  - `npm run lint:backend` passed.
+  - `npm run test:backend` passed.
+  - `git diff --check` passed with line-ending warnings only.
+  - HTTPS Docker frontend/tunnel origins were rebuilt with
+    `npm run docker:up:https:detached`.
+  - `npm run smoke:realtime:browser:https` passed with
+    `remoteScreenVideosAfterReceiverReload: 1`,
+    `receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
+    `voiceRejoinRecovered: true`, and `browserErrors: 0`.

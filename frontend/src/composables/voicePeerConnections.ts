@@ -330,7 +330,13 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
 
       const activeOptions = options.getActiveOptions()
       if (!activeOptions || activeOptions.channelId !== peer.channelId) return
-      void createOfferFor(peer.userId, peer.username).catch(() => {})
+      activeOptions.sendSignal({
+        channel_id: peer.channelId,
+        session_id: options.getSessionId(),
+        target_user_id: peer.userId,
+        type: 'screen-repair',
+        screen_sharing: true,
+      })
     }, SCREEN_REPAIR_DELAY_MS)
 
     screenRepairTimers.set(key, timer)
@@ -544,6 +550,15 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       closePeer(key)
     }
     for (const participant of participantPeers(participants, activeOptions.currentUserId)) {
+      const key = peerKey(activeOptions.channelId, participant.user_id)
+      const participantSessionId = typeof participant.session_id === 'string' ? participant.session_id : null
+      const knownSessionId = remoteSessionIds.get(key)
+      if (participantSessionId) {
+        if (knownSessionId && knownSessionId !== participantSessionId && peers.has(key)) {
+          closePeer(key)
+        }
+        remoteSessionIds.set(key, participantSessionId)
+      }
       if (activeOptions.currentUserId < participant.user_id) {
         await createOfferFor(participant.user_id, participant.username)
         continue
@@ -601,7 +616,24 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       && knownSessionId
       && incomingSessionId !== knownSessionId
       && signal.type !== 'offer'
+      && signal.type !== 'screen-repair'
     ) {
+      return
+    }
+    if (signal.type === 'screen-repair') {
+      if (incomingSessionId) {
+        remoteSessionIds.set(key, incomingSessionId)
+      }
+      if (!localScreenShareIsActive()) {
+        const existingPeer = peers.get(key)
+        if (existingPeer) {
+          sendScreenStateToPeer(existingPeer, false)
+        }
+        return
+      }
+      const repairPeer = ensurePeer(signal.from_user_id, signal.from_username, true)
+      sendScreenStateToPeer(repairPeer, true)
+      await renegotiatePeer(repairPeer)
       return
     }
     const existingPeer = peers.get(key)

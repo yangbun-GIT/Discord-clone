@@ -473,6 +473,35 @@ async def test_guild_voice_state_snapshot_sends_to_current_guild_subscribers() -
     assert outsider_websocket.sent == []
 
 
+async def test_voice_state_snapshot_preserves_rtc_session_id() -> None:
+    manager = GatewayConnectionManager()
+    observer_websocket = FakeWebSocket()
+    observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
+    observer.guild_ids.add(1001)
+    observer.channel_ids.add(2003)
+
+    await manager.broadcast_voice_state(
+        channel_id=2003,
+        data={
+            "guild_id": 1001,
+            "channel_id": 2003,
+            "user_id": 42,
+            "username": "yangbun",
+            "session_id": "rtc-refresh-session",
+            "self_mute": False,
+            "self_deaf": False,
+        },
+    )
+    await manager.send_voice_state_snapshot(
+        observer,
+        guild_ids={1001},
+        channel_id=2003,
+    )
+
+    assert observer_websocket.sent[-1]["t"] == "VOICE_STATE_SNAPSHOT"
+    assert observer_websocket.sent[-1]["d"]["states"][0]["session_id"] == "rtc-refresh-session"
+
+
 async def test_dm_voice_state_snapshot_sends_current_dm_occupants() -> None:
     manager = GatewayConnectionManager()
     observer_websocket = FakeWebSocket()

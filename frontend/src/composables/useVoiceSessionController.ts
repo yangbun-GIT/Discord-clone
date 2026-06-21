@@ -267,6 +267,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       context_type: 'guild',
       guild_id: target.guild.id,
       channel_id: target.channel.id,
+      session_id: options.voiceRtc.getSessionId(),
       self_mute: options.voiceRtc.isMuted.value,
       self_deaf: isDeafened.value,
     })
@@ -305,6 +306,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       guild_id: null,
       channel_id: dm.id,
       dm_id: dm.id,
+      session_id: options.voiceRtc.getSessionId(),
       self_mute: options.voiceRtc.isMuted.value,
       self_deaf: isDeafened.value,
     })
@@ -368,6 +370,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
         guild_id: null,
         channel_id: connectedDmId.value,
         dm_id: connectedDmId.value,
+        session_id: options.voiceRtc.getSessionId(),
         self_mute: options.voiceRtc.isMuted.value,
         self_deaf: isDeafened.value,
       })
@@ -378,6 +381,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       context_type: 'guild',
       guild_id: options.guilds.connectedVoiceGuildId,
       channel_id: options.guilds.connectedVoiceChannelId,
+      session_id: options.voiceRtc.getSessionId(),
       self_mute: options.voiceRtc.isMuted.value,
       self_deaf: isDeafened.value,
     })
@@ -425,7 +429,9 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
   }
 
   watch(
-    () => connectedVoiceStates.value.map((state) => `${state.context_type ?? 'guild'}:${state.dm_id ?? state.channel_id}:${state.user_id}`).join('|'),
+    () => connectedVoiceStates.value.map((state) =>
+      `${state.context_type ?? 'guild'}:${state.dm_id ?? state.channel_id}:${state.user_id}:${state.session_id ?? ''}`,
+    ).join('|'),
     () => {
       if (!options.voiceRtc.isCapturing.value || !options.session.user) return
       void options.voiceRtc.syncParticipants(connectedVoiceStates.value).catch((error) => {

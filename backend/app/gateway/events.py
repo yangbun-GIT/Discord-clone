@@ -23,6 +23,7 @@ class VoiceStatePayload(BaseModel):
     guild_id: int | None = None
     channel_id: int | None = None
     dm_id: int | None = None
+    session_id: str | None = Field(default=None, max_length=80)
     self_mute: bool = False
     self_deaf: bool = False
 
@@ -33,7 +34,7 @@ class VoiceSignalPayload(BaseModel):
     dm_id: int | None = None
     session_id: str | None = Field(default=None, max_length=80)
     target_user_id: int
-    type: str = Field(pattern="^(offer|answer|ice|screen)$")
+    type: str = Field(pattern="^(offer|answer|ice|screen|screen-repair)$")
     description: dict[str, Any] | None = None
     candidate: dict[str, Any] | None = None
     screen_sharing: bool | None = None

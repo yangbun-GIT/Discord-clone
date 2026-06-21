@@ -216,7 +216,10 @@ For ordinary implementation work:
     `frontend/src/i18n/index.ts`.
   - Tracks the receiver-refresh screen-share repair path across
     `frontend/src/components/VoiceVideoSink.vue`,
-    `frontend/src/composables/voicePeerConnections.ts`, and
+    `frontend/src/composables/voicePeerConnections.ts`,
+    `frontend/src/composables/useVoiceSessionController.ts`,
+    `backend/app/gateway/events.py`, `backend/app/gateway/router.py`,
+    `backend/app/gateway/voice_service.py`, and
     `scripts/realtime_browser_smoke.mjs`.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
