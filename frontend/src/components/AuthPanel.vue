@@ -40,6 +40,7 @@ function submit() {
   <main class="auth-shell" :aria-label="t('auth.aria.shell')">
     <section class="auth-panel">
       <div class="auth-mark">DC</div>
+      <p class="auth-helper">{{ t('auth.helper') }}</p>
 
       <div class="auth-tabs" role="tablist" :aria-label="t('auth.aria.tabs')">
         <button
@@ -87,6 +88,7 @@ function submit() {
         </button>
       </form>
 
+      <p v-if="!isSubmittable" class="auth-hint">{{ t('auth.requirements') }}</p>
       <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
 
       <button class="demo-button" type="button" :disabled="loading" @click="emit('demo')">
