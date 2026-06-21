@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
 import {
   BellOff,
   Bell,
@@ -189,7 +189,10 @@ const isAuthenticating = ref(false)
 const isCreatingGuild = ref(false)
 const isInviteWorking = ref(false)
 const activeHeaderPanel = ref<'threads' | 'notifications' | 'pins' | 'search' | null>(null)
-const notificationMode = ref<'all' | 'mentions' | 'none'>('all')
+const notificationMode = computed({
+  get: () => preferences.notificationMode,
+  set: (mode) => preferences.setNotificationMode(mode),
+})
 const channelSearchQuery = ref('')
 const showAddServer = ref(false)
 const addServerMode = ref<'create' | 'join'>('create')
@@ -230,6 +233,14 @@ const pendingGuildActionGuild = computed(() =>
     ? null
     : guilds.guilds.find((guild) => guild.id === pendingGuildAction.value?.guildId) ?? null,
 )
+
+watchEffect(() => {
+  const root = globalThis.document?.documentElement
+  if (!root) return
+  root.dataset.theme = preferences.theme
+  root.dataset.density = preferences.density
+  root.classList.toggle('motion-reduced', preferences.reduceMotion)
+})
 const profileFriend = computed(() =>
   profileFriendId.value === null
     ? null

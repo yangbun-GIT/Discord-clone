@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import {
   Accessibility,
+  Bell,
   BellOff,
   Clock3,
   Headphones,
@@ -11,12 +12,22 @@ import {
   Monitor,
   RefreshCw,
   Shield,
+  ScreenShare,
   Volume2,
   UserRound,
   X,
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
+import { usePreferencesStore } from '../stores/preferences'
+import type {
+  AppDensity,
+  AppTheme,
+  FriendRequestPolicy,
+  NotificationMode,
+  ScreenShareQuality,
+  TimeFormat,
+} from '../stores/preferences'
 import {
   readVoiceProcessingSettings,
   voiceProcessingPreset,
@@ -32,7 +43,9 @@ import type { User, UserPresenceStatus } from '../types'
 type SettingsPanel =
   | 'account'
   | 'privacy'
+  | 'notifications'
   | 'voice'
+  | 'screen'
   | 'appearance'
   | 'accessibility'
   | 'keybinds'
@@ -63,12 +76,9 @@ const emit = defineEmits<{
 }>()
 
 const activePanel = ref<SettingsPanel>(props.initialPanel ?? 'account')
-const compactMode = ref(false)
-const reduceMotion = ref(false)
-const dmSafety = ref(true)
-const timeFormat = ref<'auto' | '24h'>('auto')
 const voiceProcessing = ref<VoiceProcessingSettings>(readVoiceProcessingSettings())
 const { language, setLanguage, t } = useI18n()
+const preferences = usePreferencesStore()
 
 watch(() => props.initialPanel, (panel) => {
   if (panel) activePanel.value = panel
@@ -83,7 +93,9 @@ const settingsGroups = computed<Array<{ id: SettingsGroup; label: string }>>(() 
 const panels = computed<Array<{ id: SettingsPanel; label: string; group: SettingsGroup; icon: unknown }>>(() => [
   { id: 'account', label: t('settings.myAccount'), group: 'account', icon: UserRound },
   { id: 'privacy', label: t('settings.privacy'), group: 'account', icon: Shield },
+  { id: 'notifications', label: t('settings.notifications'), group: 'account', icon: Bell },
   { id: 'voice', label: t('settings.voice'), group: 'experience', icon: Headphones },
+  { id: 'screen', label: t('settings.screenShare'), group: 'experience', icon: ScreenShare },
   { id: 'appearance', label: t('settings.appearance'), group: 'experience', icon: Monitor },
   { id: 'accessibility', label: t('settings.accessibility'), group: 'experience', icon: Accessibility },
   { id: 'keybinds', label: t('settings.keybinds'), group: 'experience', icon: KeyRound },
@@ -191,6 +203,63 @@ function handleNoiseSuppressionModeChange(event: Event) {
     rnnoiseSuppression: mode === 'rnnoise',
   })
 }
+
+function handleBooleanPreference(
+  setter: (enabled: boolean) => void,
+  event: Event,
+) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  setter(target.checked)
+}
+
+function handleThemeChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = target.value
+  if (value !== 'dark' && value !== 'darker') return
+  preferences.setTheme(value as AppTheme)
+}
+
+function handleDensityChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = target.value
+  if (value !== 'comfortable' && value !== 'compact') return
+  preferences.setDensity(value as AppDensity)
+}
+
+function handleNotificationModeChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = target.value
+  if (value !== 'all' && value !== 'mentions' && value !== 'none') return
+  preferences.setNotificationMode(value as NotificationMode)
+}
+
+function handleFriendRequestPolicyChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = target.value
+  if (value !== 'everyone' && value !== 'friends_of_friends' && value !== 'none') return
+  preferences.setFriendRequestPolicy(value as FriendRequestPolicy)
+}
+
+function handleTimeFormatChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = target.value
+  if (value !== 'auto' && value !== '24h') return
+  preferences.setTimeFormat(value as TimeFormat)
+}
+
+function handleScreenShareQualityChange(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = target.value
+  if (value !== 'balanced' && value !== 'sharp' && value !== 'smooth') return
+  preferences.setScreenShareQuality(value as ScreenShareQuality)
+}
 </script>
 
 <template>
@@ -288,22 +357,142 @@ function handleNoiseSuppressionModeChange(event: Event) {
         <section class="settings-card">
           <h2>{{ t('settings.dmSafety') }}</h2>
           <label class="settings-toggle">
-            <span>{{ t('settings.dmSafetyFilter') }}</span>
-            <input v-model="dmSafety" type="checkbox" />
+            <span>
+              <strong>{{ t('settings.dmSafetyFilter') }}</strong>
+              <small>{{ t('settings.dmSafetyFilterDescription') }}</small>
+            </span>
+            <input
+              :checked="preferences.dmSafety"
+              type="checkbox"
+              @change="handleBooleanPreference(preferences.setDmSafety, $event)"
+            />
+          </label>
+          <label class="settings-toggle">
+            <span>
+              <strong>{{ t('settings.allowUnknownDms') }}</strong>
+              <small>{{ t('settings.allowUnknownDmsDescription') }}</small>
+            </span>
+            <input
+              :checked="preferences.allowUnknownDms"
+              type="checkbox"
+              @change="handleBooleanPreference(preferences.setAllowUnknownDms, $event)"
+            />
+          </label>
+          <label class="settings-toggle">
+            <span>
+              <strong>{{ t('settings.showActivityStatus') }}</strong>
+              <small>{{ t('settings.showActivityStatusDescription') }}</small>
+            </span>
+            <input
+              :checked="preferences.showActivityStatus"
+              type="checkbox"
+              @change="handleBooleanPreference(preferences.setShowActivityStatus, $event)"
+            />
           </label>
         </section>
         <section class="settings-card">
-          <h2>{{ t('settings.serverPrivacy') }}</h2>
-          <dl>
-            <div>
-              <dt>{{ t('settings.inviteAccess') }}</dt>
-              <dd>{{ t('common.status.protected') }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('settings.memberData') }}</dt>
-              <dd>{{ t('common.status.scoped') }}</dd>
-            </div>
-          </dl>
+          <h2>{{ t('settings.friendRequestPolicy') }}</h2>
+          <p>{{ t('settings.friendRequestPolicyDescription') }}</p>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.friendRequestPolicy')">
+            <label>
+              <input
+                type="radio"
+                name="friend-request-policy"
+                value="everyone"
+                :checked="preferences.friendRequestPolicy === 'everyone'"
+                @change="handleFriendRequestPolicyChange"
+              />
+              <span>
+                <strong>{{ t('settings.friendRequestEveryone') }}</strong>
+                <small>{{ t('settings.friendRequestEveryoneDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="friend-request-policy"
+                value="friends_of_friends"
+                :checked="preferences.friendRequestPolicy === 'friends_of_friends'"
+                @change="handleFriendRequestPolicyChange"
+              />
+              <span>
+                <strong>{{ t('settings.friendRequestFriends') }}</strong>
+                <small>{{ t('settings.friendRequestFriendsDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="friend-request-policy"
+                value="none"
+                :checked="preferences.friendRequestPolicy === 'none'"
+                @change="handleFriendRequestPolicyChange"
+              />
+              <span>
+                <strong>{{ t('settings.friendRequestNone') }}</strong>
+                <small>{{ t('settings.friendRequestNoneDescription') }}</small>
+              </span>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <div v-else-if="activePanel === 'notifications'" class="settings-section-grid">
+        <section class="settings-card">
+          <h2>{{ t('settings.notifications') }}</h2>
+          <p>{{ t('settings.notificationsDescription') }}</p>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.notificationMode')">
+            <label>
+              <input
+                type="radio"
+                name="settings-notification-mode"
+                value="all"
+                :checked="preferences.notificationMode === 'all'"
+                @change="handleNotificationModeChange"
+              />
+              <span>
+                <strong>{{ t('headerPanel.notifications.all') }}</strong>
+                <small>{{ t('settings.notificationAllDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="settings-notification-mode"
+                value="mentions"
+                :checked="preferences.notificationMode === 'mentions'"
+                @change="handleNotificationModeChange"
+              />
+              <span>
+                <strong>{{ t('headerPanel.notifications.mentions') }}</strong>
+                <small>{{ t('settings.notificationMentionsDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="settings-notification-mode"
+                value="none"
+                :checked="preferences.notificationMode === 'none'"
+                @change="handleNotificationModeChange"
+              />
+              <span>
+                <strong>{{ t('headerPanel.notifications.none') }}</strong>
+                <small>{{ t('settings.notificationNoneDescription') }}</small>
+              </span>
+            </label>
+          </div>
+          <label class="settings-toggle">
+            <span>
+              <strong>{{ t('settings.soundEffects') }}</strong>
+              <small>{{ t('settings.soundEffectsDescription') }}</small>
+            </span>
+            <input
+              :checked="preferences.soundEffects"
+              type="checkbox"
+              @change="handleBooleanPreference(preferences.setSoundEffects, $event)"
+            />
+          </label>
         </section>
       </div>
 
@@ -548,23 +737,115 @@ function handleNoiseSuppressionModeChange(event: Event) {
         </section>
       </div>
 
+      <div v-else-if="activePanel === 'screen'" class="settings-section-grid">
+        <section class="settings-card">
+          <h2>{{ t('settings.screenShare') }}</h2>
+          <p>{{ t('settings.screenShareDescription') }}</p>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.screenShareQuality')">
+            <label>
+              <input
+                type="radio"
+                name="screen-share-quality"
+                value="balanced"
+                :checked="preferences.screenShareQuality === 'balanced'"
+                @change="handleScreenShareQualityChange"
+              />
+              <span>
+                <strong>{{ t('settings.screenShareBalanced') }}</strong>
+                <small>{{ t('settings.screenShareBalancedDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="screen-share-quality"
+                value="sharp"
+                :checked="preferences.screenShareQuality === 'sharp'"
+                @change="handleScreenShareQualityChange"
+              />
+              <span>
+                <strong>{{ t('settings.screenShareSharp') }}</strong>
+                <small>{{ t('settings.screenShareSharpDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="screen-share-quality"
+                value="smooth"
+                :checked="preferences.screenShareQuality === 'smooth'"
+                @change="handleScreenShareQualityChange"
+              />
+              <span>
+                <strong>{{ t('settings.screenShareSmooth') }}</strong>
+                <small>{{ t('settings.screenShareSmoothDescription') }}</small>
+              </span>
+            </label>
+          </div>
+          <small class="settings-device-note">{{ t('settings.screenShareApplyNote') }}</small>
+        </section>
+      </div>
+
       <div v-else-if="activePanel === 'appearance'" class="settings-section-grid">
         <section class="settings-card">
           <h2>{{ t('settings.appearance') }}</h2>
-          <dl>
-            <div>
-              <dt>{{ t('settings.theme') }}</dt>
-              <dd>{{ t('settings.themeDark') }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('settings.density') }}</dt>
-              <dd>{{ compactMode ? t('common.status.connected') : t('common.status.ready') }}</dd>
-            </div>
-          </dl>
-          <label class="settings-toggle">
-            <span>{{ t('settings.compactSpacing') }}</span>
-            <input v-model="compactMode" type="checkbox" />
-          </label>
+          <p>{{ t('settings.appearanceDescription') }}</p>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.theme')">
+            <label>
+              <input
+                type="radio"
+                name="app-theme"
+                value="dark"
+                :checked="preferences.theme === 'dark'"
+                @change="handleThemeChange"
+              />
+              <span>
+                <strong>{{ t('settings.themeDark') }}</strong>
+                <small>{{ t('settings.themeDarkDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="app-theme"
+                value="darker"
+                :checked="preferences.theme === 'darker'"
+                @change="handleThemeChange"
+              />
+              <span>
+                <strong>{{ t('settings.themeDarker') }}</strong>
+                <small>{{ t('settings.themeDarkerDescription') }}</small>
+              </span>
+            </label>
+          </div>
+          <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.density')">
+            <label>
+              <input
+                type="radio"
+                name="app-density"
+                value="comfortable"
+                :checked="preferences.density === 'comfortable'"
+                @change="handleDensityChange"
+              />
+              <span>
+                <strong>{{ t('settings.densityComfortable') }}</strong>
+                <small>{{ t('settings.densityComfortableDescription') }}</small>
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="app-density"
+                value="compact"
+                :checked="preferences.density === 'compact'"
+                @change="handleDensityChange"
+              />
+              <span>
+                <strong>{{ t('settings.densityCompact') }}</strong>
+                <small>{{ t('settings.compactSpacing') }}</small>
+              </span>
+            </label>
+          </div>
         </section>
       </div>
 
@@ -572,8 +853,15 @@ function handleNoiseSuppressionModeChange(event: Event) {
         <section class="settings-card">
           <h2>{{ t('settings.accessibility') }}</h2>
           <label class="settings-toggle">
-            <span>{{ t('settings.reduceMotion') }}</span>
-            <input v-model="reduceMotion" type="checkbox" />
+            <span>
+              <strong>{{ t('settings.reduceMotion') }}</strong>
+              <small>{{ t('settings.reduceMotionDescription') }}</small>
+            </span>
+            <input
+              :checked="preferences.reduceMotion"
+              type="checkbox"
+              @change="handleBooleanPreference(preferences.setReduceMotion, $event)"
+            />
           </label>
           <dl>
             <div>
@@ -624,12 +912,30 @@ function handleNoiseSuppressionModeChange(event: Event) {
           <h2>{{ t('settings.timeFormat') }}</h2>
           <div class="settings-radio-list" role="radiogroup" :aria-label="t('settings.timeFormat')">
             <label>
-              <input v-model="timeFormat" type="radio" name="time-format" value="auto" />
-              <span>{{ t('settings.timeAutomatic') }}</span>
+              <input
+                type="radio"
+                name="time-format"
+                value="auto"
+                :checked="preferences.timeFormat === 'auto'"
+                @change="handleTimeFormatChange"
+              />
+              <span>
+                <strong>{{ t('settings.timeAutomatic') }}</strong>
+                <small>{{ t('settings.timeAutomaticDescription') }}</small>
+              </span>
             </label>
             <label>
-              <input v-model="timeFormat" type="radio" name="time-format" value="24h" />
-              <span>{{ t('settings.time24') }}</span>
+              <input
+                type="radio"
+                name="time-format"
+                value="24h"
+                :checked="preferences.timeFormat === '24h'"
+                @change="handleTimeFormatChange"
+              />
+              <span>
+                <strong>{{ t('settings.time24') }}</strong>
+                <small>{{ t('settings.time24Description') }}</small>
+              </span>
             </label>
           </div>
         </section>

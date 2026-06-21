@@ -55,6 +55,36 @@
   -webkit-font-smoothing: antialiased;
 }
 
+:root[data-theme="darker"] {
+  --app-bg: #101216;
+  --surface-app: #101216;
+  --surface-base: #121419;
+  --surface-panel: #171a20;
+  --surface-panel-raised: #222630;
+  --surface-sidebar: #191d24;
+  --surface-header: #0f1116;
+  --surface-secondary-layer: #1b1f27;
+  --surface-input: #0d0f13;
+  --surface-hover: #252a33;
+  --surface-selected: #333946;
+}
+
+:root[data-density="compact"] {
+  --row-height: var(--row-height-compact);
+  --composer-min-height: 40px;
+  --voice-panel-height: 62px;
+  --voice-panel-height-connected: 112px;
+}
+
+:root.motion-reduced *,
+:root.motion-reduced *::before,
+:root.motion-reduced *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 1ms !important;
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+}
+
 @view-transition {
   navigation: auto;
 }

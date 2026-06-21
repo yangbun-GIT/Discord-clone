@@ -2455,6 +2455,18 @@ Completed Stage 2 bridge work:
   surfaces fully opaque, darkened the outside dim layer, and centered the settings
   content/cards into a narrower Discord-like reading column without changing the
   settings feature set.
+- A 2026-06-21 settings functionality pass connected appropriate clone-local
+  settings to real state instead of leaving them as static demo rows.
+  `frontend/src/stores/preferences.ts` now persists notification mode,
+  privacy/friend-request policy, unknown-DM/activity toggles, theme, density,
+  reduced motion, time format, sound effects, and screen-share quality.
+  `frontend/src/App.vue` applies theme/density/reduced-motion preferences at the
+  document root and binds the header notification filter to the same preference.
+  `frontend/src/components/SettingsView.vue` exposes Notifications, Screen
+  Sharing, richer Privacy, Appearance, Accessibility, and Language/Time controls.
+  `frontend/src/composables/voiceMedia.ts` reads screen-share quality at
+  `getDisplayMedia` time so balanced/sharp/smooth choices affect the next screen
+  share without changing an already-active share.
 
 After each stage or meaningful feature:
 

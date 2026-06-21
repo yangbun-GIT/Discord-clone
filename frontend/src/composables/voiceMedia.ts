@@ -7,12 +7,14 @@ const VOICE_CONSTRAINT_SUPPORT_KEY = 'discord_clone_voice_constraint_support'
 const VOICE_PROCESSING_SETTINGS_KEY = 'discord_clone_voice_processing_settings'
 const VOICE_DEVICE_SETTINGS_KEY = 'discord_clone_voice_device_settings'
 const VOICE_DEVICE_STABILITY_MIGRATION_KEY = 'discord_clone_voice_device_stability_migrated'
+const APP_PREFERENCES_STORAGE_KEY = 'discord-clone-preferences'
 const SILENCE_DB = -64
 const SPEECH_REFERENCE_DB = -18
 const GATE_CLOSE_DELAY_MS = 650
 const GATE_ATTENUATED_GAIN = 0.06
 
 export type VoiceNoiseSuppressionMode = 'off' | 'rnnoise'
+type ScreenShareQuality = 'balanced' | 'sharp' | 'smooth'
 type VoiceNoiseSuppressionNode = AudioNode & { destroy?: () => void; dispose?: () => void }
 
 type ExtendedMediaTrackSupportedConstraints = MediaTrackSupportedConstraints & {
@@ -228,17 +230,49 @@ export async function captureDisplay() {
   assertDisplayCaptureAvailable()
   return requestStreamWithTimeout(
     navigator.mediaDevices.getDisplayMedia({
-      video: {
-        frameRate: { ideal: 15, max: 30 },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
+      video: buildScreenShareConstraints(readScreenShareQualityPreference()),
       audio: false,
     }),
     'screen-timeout',
   ).catch((error: unknown) => {
     throw normalizeMediaError(error, 'screen')
   })
+}
+
+function readScreenShareQualityPreference(): ScreenShareQuality {
+  try {
+    const rawPreferences = getLocalStorage()?.getItem(APP_PREFERENCES_STORAGE_KEY)
+    if (!rawPreferences) return 'balanced'
+    const parsed = JSON.parse(rawPreferences) as { screenShareQuality?: unknown }
+    const quality = parsed.screenShareQuality
+    return quality === 'sharp' || quality === 'smooth' || quality === 'balanced'
+      ? quality
+      : 'balanced'
+  } catch {
+    return 'balanced'
+  }
+}
+
+function buildScreenShareConstraints(quality: ScreenShareQuality): MediaTrackConstraints {
+  if (quality === 'sharp') {
+    return {
+      frameRate: { ideal: 15, max: 30 },
+      width: { ideal: 1920, max: 1920 },
+      height: { ideal: 1080, max: 1080 },
+    }
+  }
+  if (quality === 'smooth') {
+    return {
+      frameRate: { ideal: 30, max: 30 },
+      width: { ideal: 1280, max: 1280 },
+      height: { ideal: 720, max: 720 },
+    }
+  }
+  return {
+    frameRate: { ideal: 15, max: 30 },
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+  }
 }
 
 export function getSupportedVoiceConstraints(): VoiceConstraintSupport {

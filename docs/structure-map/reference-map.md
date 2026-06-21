@@ -926,11 +926,13 @@ Browser UI
   - Referenced by:
     - `frontend/src/App.vue`
     - `frontend/src/components/FriendsHome.vue`
+    - `frontend/src/components/SettingsView.vue`
     - `frontend/src/i18n/index.ts`
     - `frontend/src/stores/dms.ts`
   - Owns:
-    - Locale preference, local muted-DM ID persistence, and local favorite-friend
-      ID persistence.
+    - Locale, appearance, accessibility, notification, privacy/friend-request,
+      screen-share quality, local muted-DM ID, and local favorite-friend ID
+      persistence.
 
 - `frontend/src/stores/store.ts`
   - References:
@@ -1006,6 +1008,10 @@ Browser UI
   - Talks to:
     - Browser `navigator.mediaDevices`, `localStorage`, `AudioContext`, and media
       stream tracks.
+  - Reads:
+    - The persisted screen-share quality preference from local storage at display
+      capture time so the next `getDisplayMedia` call can use balanced, sharp, or
+      smooth video constraints.
   - Owns:
     - Typed microphone/screen capture errors, local voice-processing preferences,
       local voice device preferences, browser-supported audio constraint detection,

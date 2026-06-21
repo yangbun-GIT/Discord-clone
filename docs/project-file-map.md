@@ -616,6 +616,9 @@ For ordinary implementation work:
   - User settings shell and settings sections, including Voice & Video device,
     volume, sensitivity, live input-level meter, and native audio-processing
     controls.
+  - Also owns local settings panels for privacy/friend-request policy,
+    notifications, appearance density/theme, accessibility motion reduction,
+    language/time format, and screen-share quality selection.
   - Accepts an initial panel from `App.vue` so voice controls can land directly on
     Voice & Video instead of My Account.
   - Owns the close control inside the Discord-like settings modal; page-level
@@ -673,8 +676,9 @@ For ordinary implementation work:
 - `frontend/src/stores/dmVisibility.ts`
   - Direct-message relationship/participant/message visibility filtering.
 - `frontend/src/stores/preferences.ts`
-  - User preferences such as locale/theme-like settings, locally muted DM IDs, and
-    locally favorited friend IDs.
+  - User preferences such as locale, theme, density, reduced motion, time format,
+    notification mode, privacy/friend-request policy, screen-share quality,
+    locally muted DM IDs, and locally favorited friend IDs.
 - `frontend/src/stores/store.ts`
   - Deferred/demo Store state.
 
@@ -720,6 +724,8 @@ For ordinary implementation work:
   - Owns microphone input volume, RMS-based input-level sampling from the pre-gate
     microphone path, optional soft input sensitivity/noise gate behavior, and input
     device selection helpers used before WebRTC peer tracks are created.
+  - Reads the persisted screen-share quality preference at display-capture time and
+    maps it to browser `getDisplayMedia` video constraints for the next share.
 - `frontend/src/composables/voiceMedia.test.ts`
   - Unit coverage for typed microphone/screen media error normalization and
     voice-processing/device-setting constraint generation plus RMS input-level
