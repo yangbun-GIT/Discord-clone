@@ -53,7 +53,7 @@ class FakeGuildDatabase:
                 "id": 3001,
                 "channel_id": 2001,
                 "author_id": 42,
-                "author_name": "yangbun",
+                "author_name": "admin",
                 "guild_id": 1001,
                 "type": 0,
                 "owner_id": self.guild_owner_id,
@@ -87,7 +87,7 @@ class FakeGuildDatabase:
         if "SELECT id, guild_id, name, permissions, position" in query:
             return []
         if "SELECT u.id, u.username, u.status" in query:
-            return [{"id": 42, "username": "yangbun", "status": 1}]
+            return [{"id": 42, "username": "admin", "status": 1}]
         if "SELECT mr.user_id, r.id, r.name" in query:
             return []
         if "FROM messages m" in query:
@@ -102,7 +102,7 @@ class FakeGuildDatabase:
 
 
 def owner() -> UserPublic:
-    return UserPublic(id=42, username="yangbun", status=1)
+    return UserPublic(id=42, username="admin", status=1)
 
 
 def patch_guild_repository_database(
@@ -143,7 +143,7 @@ async def fake_read_guild(guild_row: object, user_id: int) -> GuildRead:
         owner_id=42,
         permissions=ALL_PERMISSIONS,
         channels=[],
-        members=[MemberRead(id=user_id, username="yangbun", status=1, role="Owner")],
+        members=[MemberRead(id=user_id, username="admin", status=1, role="Owner")],
         messages=[],
     )
 
@@ -363,7 +363,7 @@ async def test_update_message_allows_author(monkeypatch: pytest.MonkeyPatch) -> 
     message = await GuildRepository().update_message(
         channel_id=2001,
         message_id=3001,
-        actor=UserPublic(id=42, username="yangbun", status=1),
+        actor=UserPublic(id=42, username="admin", status=1),
         content="edited",
     )
 

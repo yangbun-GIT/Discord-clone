@@ -4,7 +4,7 @@ from app.core.security import create_access_token
 from app.main import app
 
 
-def auth_headers(user_id: int = 42, username: str = "yangbun") -> dict[str, str]:
+def auth_headers(user_id: int = 42, username: str = "admin") -> dict[str, str]:
     token = create_access_token(subject=str(user_id), claims={"username": username})
     return {"Authorization": f"Bearer {token}"}
 
@@ -104,7 +104,7 @@ def test_create_dm_message_sanitizes_content() -> None:
     assert response.status_code == 201
     payload = response.json()
     assert payload["dm_id"] == 801
-    assert payload["author_name"] == "yangbun"
+    assert payload["author_name"] == "admin"
     assert payload["content"] == "hello &lt;b&gt;team&lt;/b&gt;"
 
 
@@ -203,7 +203,7 @@ def test_friend_request_accept_endpoint_turns_rows_into_friends() -> None:
 
     client.post(
         "/api/users/me/relationships/requests",
-        json={"username": "yangbun"},
+        json={"username": "admin"},
         headers=auth_headers(user_id=705, username="Nora"),
     )
     response = client.post(

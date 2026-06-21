@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from typing import Any, Protocol
 
+from app.demo.data import create_initial_guilds
 from app.schemas.auth import UserPublic
 
 
@@ -18,10 +19,11 @@ GUIDE_DM_ID_OFFSET = 80_000_000_000_000
 GUIDE_USERNAME = "Guide"
 GUIDE_HANDLE = "discord.guide"
 GUIDE_MESSAGE = (
-    "Discord Clone에 오신 것을 환영합니다. 왼쪽 사이드바에서 친구와 서버를 이동하고, "
+    "Discord Clone에 오신 것을 환영합니다. 왼쪽 서버 목록에서 서버를 이동하고, "
     "친구 추가, DM, 서버 초대, 텍스트 채팅, 음성 채널, 화면 공유를 확인해 보세요. "
     "하단 사용자 패널의 설정에서 언어와 음성 장치를 조정할 수 있습니다."
 )
+DEFAULT_GUILD_IDS = tuple(guild.id for guild in create_initial_guilds())
 
 DEMO_DM_PROFILES = [
     (GUIDE_USER_ID, GUIDE_USERNAME, GUIDE_HANDLE, "online", "Clone guide"),
@@ -107,7 +109,7 @@ async def reset_postgres_development_workspace(
             user_id=user_id,
             username=username,
         )
-        await _ensure_postgres_dm_demo_workspace_locked(
+        await _ensure_postgres_guide_workspace_locked(
             database=database,
             id_generator=id_generator,
             user_id=user_id,
@@ -144,6 +146,22 @@ async def _reset_postgres_development_workspace_locked(
     )
     await database.execute(
         """
+        DELETE FROM guilds
+        WHERE owner_id = $1 AND NOT (id = ANY($2::bigint[]))
+        """,
+        user_id,
+        list(DEFAULT_GUILD_IDS),
+    )
+    await database.execute(
+        """
+        DELETE FROM guild_members
+        WHERE user_id = $1 AND NOT (guild_id = ANY($2::bigint[]))
+        """,
+        user_id,
+        list(DEFAULT_GUILD_IDS),
+    )
+    await database.execute(
+        """
         INSERT INTO users (id, username, password_hash, status)
         VALUES ($1, $2, $3, 1)
         ON CONFLICT (id) DO UPDATE SET
@@ -166,6 +184,152 @@ async def _reset_postgres_development_workspace_locked(
         user_id,
         username.lower(),
     )
+    await _restore_postgres_default_guilds_locked(database)
+
+
+async def _restore_postgres_default_guilds_locked(database: Any) -> None:
+    for guild in create_initial_guilds():
+        for member in guild.members:
+            await database.execute(
+                """
+                INSERT INTO users (id, username, password_hash, status)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (id) DO UPDATE SET
+                    username = EXCLUDED.username,
+                    status = EXCLUDED.status
+                """,
+                member.id,
+                member.username,
+                "dev-session",
+                member.status,
+            )
+
+        await database.execute(
+            """
+            INSERT INTO guilds (id, name, owner_id)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                owner_id = EXCLUDED.owner_id
+            """,
+            guild.id,
+            guild.name,
+            guild.owner_id,
+        )
+        await database.execute("DELETE FROM invites WHERE guild_id = $1", guild.id)
+        await database.execute("DELETE FROM roles WHERE guild_id = $1", guild.id)
+        await database.execute("DELETE FROM guild_members WHERE guild_id = $1", guild.id)
+        await database.execute("DELETE FROM channels WHERE guild_id = $1", guild.id)
+
+        for member in guild.members:
+            await database.execute(
+                """
+                INSERT INTO guild_members (guild_id, user_id)
+                VALUES ($1, $2)
+                ON CONFLICT (guild_id, user_id) DO NOTHING
+                """,
+                guild.id,
+                member.id,
+            )
+
+        for channel in guild.channels:
+            await database.execute(
+                """
+                INSERT INTO channels (id, guild_id, name, type, position)
+                VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (id) DO UPDATE SET
+                    guild_id = EXCLUDED.guild_id,
+                    name = EXCLUDED.name,
+                    type = EXCLUDED.type,
+                    position = EXCLUDED.position
+                """,
+                channel.id,
+                channel.guild_id,
+                channel.name,
+                channel.type,
+                channel.position,
+            )
+
+        for message in guild.messages:
+            await database.execute(
+                """
+                INSERT INTO messages (id, channel_id, author_id, content)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (id) DO UPDATE SET
+                    channel_id = EXCLUDED.channel_id,
+                    author_id = EXCLUDED.author_id,
+                    content = EXCLUDED.content
+                """,
+                message.id,
+                message.channel_id,
+                message.author_id,
+                message.content,
+            )
+
+
+async def _ensure_postgres_guide_workspace_locked(
+    *,
+    database: Any,
+    id_generator: IdGenerator,
+    user_id: int,
+    find_existing_dm: FindExistingDm,
+) -> None:
+    await _release_reserved_seed_usernames(database)
+    await _upsert_postgres_dm_profile(
+        database=database,
+        profile_id=GUIDE_USER_ID,
+        username=GUIDE_USERNAME,
+        handle=GUIDE_HANDLE,
+        status="online",
+        activity="Clone guide",
+    )
+    if user_id != GUIDE_USER_ID:
+        await database.execute(
+            """
+            INSERT INTO relationships (user_id, related_user_id, relationship)
+            VALUES ($1, $2, 'friend')
+            ON CONFLICT (user_id, related_user_id) DO UPDATE SET
+                relationship = EXCLUDED.relationship
+            """,
+            user_id,
+            GUIDE_USER_ID,
+        )
+
+    existing_dm_id = await find_existing_dm(sorted([user_id, GUIDE_USER_ID]))
+    if existing_dm_id is not None:
+        return
+
+    dm_id = GUIDE_DM_ID_OFFSET + user_id
+    await database.execute(
+        """
+        INSERT INTO direct_message_channels (id, is_group)
+        VALUES ($1, false)
+        ON CONFLICT (id) DO NOTHING
+        """,
+        dm_id,
+    )
+    for participant_id in (user_id, GUIDE_USER_ID):
+        await database.execute(
+            """
+            INSERT INTO direct_message_members (dm_id, user_id, unread_count)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (dm_id, user_id) DO NOTHING
+            """,
+            dm_id,
+            participant_id,
+            1 if participant_id == user_id else 0,
+        )
+    await database.execute(
+        """
+        INSERT INTO direct_messages (id, dm_id, author_id, content)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (id) DO NOTHING
+        """,
+        id_generator.generate(),
+        dm_id,
+        GUIDE_USER_ID,
+        GUIDE_MESSAGE,
+    )
 
 
 async def _ensure_postgres_dm_demo_workspace_locked(
@@ -177,32 +341,13 @@ async def _ensure_postgres_dm_demo_workspace_locked(
 ) -> None:
     await _release_reserved_seed_usernames(database)
     for profile_id, username, handle, status, activity in DEMO_DM_PROFILES:
-        await database.execute(
-            """
-            INSERT INTO users (id, username, password_hash, status)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (id) DO UPDATE SET
-                username = EXCLUDED.username,
-                status = EXCLUDED.status
-            """,
-            profile_id,
-            username,
-            "dev-session",
-            1 if status == "online" else 0,
-        )
-        await database.execute(
-            """
-            INSERT INTO dm_profiles (user_id, handle, presence_status, activity)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (user_id) DO UPDATE SET
-                handle = EXCLUDED.handle,
-                presence_status = EXCLUDED.presence_status,
-                activity = EXCLUDED.activity
-            """,
-            profile_id,
-            handle,
-            status,
-            activity,
+        await _upsert_postgres_dm_profile(
+            database=database,
+            profile_id=profile_id,
+            username=username,
+            handle=handle,
+            status=status,
+            activity=activity,
         )
 
     relationship_count = await database.fetchrow(
@@ -279,6 +424,44 @@ async def _ensure_postgres_dm_demo_workspace_locked(
             related_user_id,
             message,
         )
+
+
+async def _upsert_postgres_dm_profile(
+    *,
+    database: Any,
+    profile_id: int,
+    username: str,
+    handle: str,
+    status: str,
+    activity: str | None,
+) -> None:
+    await database.execute(
+        """
+        INSERT INTO users (id, username, password_hash, status)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (id) DO UPDATE SET
+            username = EXCLUDED.username,
+            status = EXCLUDED.status
+        """,
+        profile_id,
+        username,
+        "dev-session",
+        1 if status == "online" else 0,
+    )
+    await database.execute(
+        """
+        INSERT INTO dm_profiles (user_id, handle, presence_status, activity)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) DO UPDATE SET
+            handle = EXCLUDED.handle,
+            presence_status = EXCLUDED.presence_status,
+            activity = EXCLUDED.activity
+        """,
+        profile_id,
+        handle,
+        status,
+        activity,
+    )
 
 
 async def _release_reserved_seed_usernames(database: Any) -> None:

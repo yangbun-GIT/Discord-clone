@@ -4,7 +4,7 @@ from app.core.security import create_access_token
 from app.main import app
 
 
-def auth_headers(user_id: int = 42, username: str = "yangbun") -> dict[str, str]:
+def auth_headers(user_id: int = 42, username: str = "admin") -> dict[str, str]:
     token = create_access_token(subject=str(user_id), claims={"username": username})
     return {"Authorization": f"Bearer {token}"}
 

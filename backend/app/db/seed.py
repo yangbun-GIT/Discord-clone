@@ -1,45 +1,29 @@
 from app.db.pool import database
 from app.demo.data import create_initial_guilds
+from app.repositories.dm_seed import (
+    ADMIN_DEMO_USER_ID,
+    GUIDE_DM_ID_OFFSET,
+    GUIDE_HANDLE,
+    GUIDE_MESSAGE,
+    GUIDE_USER_ID,
+    GUIDE_USERNAME,
+)
 
 DM_PROFILES = [
-    (42, "admin", "admin", "online", None),
-    (700, "Guide", "discord.guide", "online", "Clone guide"),
-    (701, "Mina", "mina.study", "online", "Reading in voice"),
-    (702, "Joon", "joon.dev", "online", "Working on layout"),
-    (703, "Rina", "rina.notes", "idle", "Reviewing notes"),
-    (704, "Haru", "haru.music", "offline", None),
-    (705, "Nora", "nora.design", "offline", None),
+    (ADMIN_DEMO_USER_ID, "admin", "admin", "online", None),
+    (GUIDE_USER_ID, GUIDE_USERNAME, GUIDE_HANDLE, "online", "Clone guide"),
 ]
 
 RELATIONSHIPS = [
-    (42, 701, "friend"),
-    (42, 702, "friend"),
-    (42, 703, "friend"),
-    (42, 704, "friend"),
-    (42, 705, "pending_incoming"),
+    (ADMIN_DEMO_USER_ID, GUIDE_USER_ID, "friend"),
 ]
 
 DM_SEEDS = [
     (
-        801,
-        [42, 701],
-        2,
-        [
-            (8101, 701, "오늘 자료방 정리는 끝났어."),
-            (8102, 42, "좋아. 채널 목록도 더 깔끔하게 맞춰볼게."),
-        ],
-    ),
-    (
-        802,
-        [42, 702],
-        0,
-        [(8201, 702, "저녁에 음성 채널에서 다시 얘기하자.")],
-    ),
-    (
-        803,
-        [42, 701, 702, 703],
+        GUIDE_DM_ID_OFFSET + ADMIN_DEMO_USER_ID,
+        [ADMIN_DEMO_USER_ID, GUIDE_USER_ID],
         1,
-        [(8301, 703, "회의 전에 공유할 파일만 정리해둘게.")],
+        [(GUIDE_DM_ID_OFFSET + ADMIN_DEMO_USER_ID + 1, GUIDE_USER_ID, GUIDE_MESSAGE)],
     ),
 ]
 
@@ -123,7 +107,7 @@ async def seed_database() -> None:
 
 
 async def release_reserved_seed_usernames() -> None:
-    reserved_users = [(42, "admin"), (700, "Guide")]
+    reserved_users = [(ADMIN_DEMO_USER_ID, "admin"), (GUIDE_USER_ID, GUIDE_USERNAME)]
     for reserved_id, username in reserved_users:
         await database.execute(
             """
@@ -197,7 +181,7 @@ async def seed_dm_workspace() -> None:
                 """,
                 dm_id,
                 participant_id,
-                unread_count if participant_id == 42 else 0,
+                unread_count if participant_id == ADMIN_DEMO_USER_ID else 0,
             )
         for message_id, author_id, content in messages:
             await database.execute(

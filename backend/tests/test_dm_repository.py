@@ -20,7 +20,7 @@ class FakeDmDatabase:
     def __init__(self) -> None:
         self.executed: list[tuple[str, tuple[object, ...]]] = []
         self.users = {
-            42: {"id": 42, "username": "yangbun", "status": 1},
+            42: {"id": 42, "username": "admin", "status": 1},
             701: {"id": 701, "username": "Mina", "status": 1},
             704: {"id": 704, "username": "Haru", "status": 0},
         }
@@ -50,7 +50,7 @@ class FakeDmDatabase:
                     "dm_id": 801,
                     "author_id": 701,
                     "author_name": "Mina",
-                    "content": "오늘 자료방 정리는 끝났어.",
+                    "content": "오늘 자료 정리 끝났어",
                 }
             ]
         }
@@ -163,7 +163,7 @@ class FakeDmDatabase:
 
 
 def user() -> UserPublic:
-    return UserPublic(id=42, username="yangbun", status=1)
+    return UserPublic(id=42, username="admin", status=1)
 
 
 @pytest.mark.asyncio

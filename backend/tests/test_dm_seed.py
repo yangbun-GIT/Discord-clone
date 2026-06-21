@@ -2,6 +2,7 @@ import pytest
 
 from app.repositories.dm_seed import (
     ADMIN_DEMO_USER_ID,
+    GUIDE_USER_ID,
     ensure_postgres_dm_demo_workspace,
     reset_postgres_development_workspace,
 )
@@ -142,11 +143,22 @@ async def test_development_workspace_reset_clears_admin_dm_state() -> None:
         in executed_queries
     )
     assert "DELETE FROM user_server_rail_layouts WHERE user_id = $1" in executed_queries
+    assert any("DELETE FROM guilds" in query for query in executed_queries)
+    assert any("DELETE FROM guild_members" in query for query in executed_queries)
 
     relationship_inserts = [
         args
         for query, args in database.executed
         if "INSERT INTO relationships" in query
     ]
-    assert relationship_inserts
-    assert all(args[0] == ADMIN_DEMO_USER_ID for args in relationship_inserts)
+    assert relationship_inserts == [(ADMIN_DEMO_USER_ID, GUIDE_USER_ID)]
+
+    dm_member_inserts = [
+        args
+        for query, args in database.executed
+        if "INSERT INTO direct_message_members" in query
+    ]
+    assert dm_member_inserts == [
+        (80_000_000_000_042, ADMIN_DEMO_USER_ID, 1),
+        (80_000_000_000_042, GUIDE_USER_ID, 0),
+    ]

@@ -8,7 +8,14 @@ from threading import Lock
 from app.demo.data import create_initial_guilds
 from app.domain.permissions import ALL_PERMISSIONS
 from app.domain.snowflake import SnowflakeGenerator
-from app.repositories.dm_seed import ADMIN_DEMO_USER_ID
+from app.repositories.dm_seed import (
+    ADMIN_DEMO_USER_ID,
+    DEFAULT_GUILD_IDS,
+    GUIDE_HANDLE,
+    GUIDE_MESSAGE,
+    GUIDE_USER_ID,
+    GUIDE_USERNAME,
+)
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
@@ -600,6 +607,57 @@ class DemoStore:
                 if membership[0] not in removed_dm_ids and membership[1] != user.id
             }
             self._server_rail_layouts.pop(user.id, None)
+            default_guilds = create_initial_guilds()
+            non_default_guilds = [
+                guild
+                for guild in self._guilds
+                if guild.id not in DEFAULT_GUILD_IDS and guild.owner_id != user.id
+            ]
+            for guild in non_default_guilds:
+                guild.members = [member for member in guild.members if member.id != user.id]
+            self._guilds = default_guilds + non_default_guilds
+            guide_profile = self._dm_profiles.setdefault(
+                GUIDE_USER_ID,
+                DmParticipantRead(
+                    id=GUIDE_USER_ID,
+                    username=GUIDE_USERNAME,
+                    handle=GUIDE_HANDLE,
+                    status="online",
+                    activity="Clone guide",
+                ),
+            )
+            self._relationships_by_user[user.id] = [
+                RelationshipRead(
+                    id=guide_profile.id,
+                    username=guide_profile.username,
+                    handle=guide_profile.handle,
+                    status=guide_profile.status,
+                    activity=guide_profile.activity,
+                    relationship="friend",
+                )
+            ]
+            guide_dm = DmRead(
+                id=80_000_000_000_000 + user.id,
+                recipient_ids=[GUIDE_USER_ID],
+                participants=[self._dm_profiles[user.id], guide_profile],
+                display_name=guide_profile.username,
+                status=guide_profile.status,
+                activity=guide_profile.activity,
+                unread_count=1,
+                is_group=False,
+                member_count=2,
+                messages=[
+                    DmMessageRead(
+                        id=self._id_generator.generate(),
+                        dm_id=80_000_000_000_000 + user.id,
+                        author_id=GUIDE_USER_ID,
+                        author_name=GUIDE_USERNAME,
+                        content=GUIDE_MESSAGE,
+                        created_at=datetime.now(UTC),
+                    )
+                ],
+            )
+            self._dms.append(guide_dm)
 
     def _find_guild(self, guild_id: int) -> GuildRead:
         for guild in self._guilds:
@@ -837,6 +895,13 @@ class DemoStore:
 
     def _seed_dm_profiles(self) -> dict[int, DmParticipantRead]:
         return {
+            GUIDE_USER_ID: DmParticipantRead(
+                id=GUIDE_USER_ID,
+                username=GUIDE_USERNAME,
+                handle=GUIDE_HANDLE,
+                status="online",
+                activity="Clone guide",
+            ),
             42: DmParticipantRead(
                 id=42,
                 username="admin",

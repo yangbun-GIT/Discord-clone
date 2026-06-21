@@ -6,7 +6,7 @@ from app.core.security import create_access_token
 from app.main import app
 
 
-def auth_token(user_id: int = 42, username: str = "yangbun") -> str:
+def auth_token(user_id: int = 42, username: str = "admin") -> str:
     return create_access_token(subject=str(user_id), claims={"username": username})
 
 

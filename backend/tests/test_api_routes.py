@@ -1,4 +1,4 @@
-﻿from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
 from app.core.operation_limits import reset_operation_limits
@@ -6,12 +6,12 @@ from app.core.security import create_access_token, decode_access_token
 from app.main import app
 
 
-def auth_headers(user_id: int = 42, username: str = "yangbun") -> dict[str, str]:
+def auth_headers(user_id: int = 42, username: str = "admin") -> dict[str, str]:
     token = create_access_token(subject=str(user_id), claims={"username": username})
     return {"Authorization": f"Bearer {token}"}
 
 
-def auth_token(user_id: int = 42, username: str = "yangbun") -> str:
+def auth_token(user_id: int = 42, username: str = "admin") -> str:
     return create_access_token(subject=str(user_id), claims={"username": username})
 
 
@@ -48,7 +48,7 @@ def test_auth_me_returns_current_user() -> None:
     response = client.get("/api/auth/me", headers=auth_headers())
 
     assert response.status_code == 200
-    assert response.json()["username"] == "yangbun"
+    assert response.json()["username"] == "admin"
 
 
 def test_voice_meta_returns_ice_servers() -> None:
@@ -122,7 +122,7 @@ def test_login_requires_database() -> None:
 
     response = client.post(
         "/api/auth/login",
-        json={"username": "yangbun", "password": "password123"},
+        json={"username": "admin", "password": "password123"},
     )
 
     assert response.status_code == 503
@@ -162,7 +162,7 @@ def test_list_my_guilds_returns_authenticated_user_memberships() -> None:
     response = client.get("/api/guilds/me", headers=auth_headers())
 
     assert response.status_code == 200
-    assert response.json()[0]["name"] == "Study Hall"
+    assert response.json()[0]["name"] == "SRS Lab"
 
 
 def test_list_my_guilds_filters_non_members() -> None:
@@ -366,13 +366,13 @@ def test_create_message_returns_created_payload() -> None:
 
     assert response.status_code == 201
     assert response.json()["content"] == "hello"
-    assert response.json()["author_name"] == "yangbun"
+    assert response.json()["author_name"] == "admin"
 
 
 def test_create_message_rate_limit_returns_429() -> None:
     reset_operation_limits()
     client = TestClient(app)
-    headers = auth_headers(user_id=42, username="yangbun")
+    headers = auth_headers(user_id=42, username="admin")
 
     responses = [
         client.post(
@@ -413,7 +413,7 @@ def test_update_message_requires_author_or_manager() -> None:
     client = TestClient(app)
     create_response = client.post(
         "/api/channels/2001/messages",
-        json={"channel_id": 2001, "content": "owned by yangbun"},
+        json={"channel_id": 2001, "content": "owned by admin"},
         headers=auth_headers(),
     )
     message_id = create_response.json()["id"]
@@ -449,7 +449,7 @@ def test_delete_message_requires_author_or_manager() -> None:
     client = TestClient(app)
     create_response = client.post(
         "/api/channels/2001/messages",
-        json={"channel_id": 2001, "content": "owned by yangbun"},
+        json={"channel_id": 2001, "content": "owned by admin"},
         headers=auth_headers(),
     )
     message_id = create_response.json()["id"]
@@ -557,7 +557,7 @@ def test_presence_update_fans_out_to_friend_and_guild_subscribers() -> None:
     with TestClient(app) as client:
         client.post(
             "/api/users/me/relationships/requests",
-            json={"username": "yangbun"},
+            json={"username": "admin"},
             headers=auth_headers(user_id=701, username="Mina"),
         )
         with (
@@ -596,7 +596,7 @@ def test_presence_update_fans_out_to_friend_and_guild_subscribers() -> None:
 
     assert friend_event["d"] == {
         "user_id": 42,
-        "username": "yangbun",
+        "username": "admin",
         "status": "idle",
         "activity": None,
     }

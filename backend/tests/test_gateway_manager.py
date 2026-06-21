@@ -47,7 +47,7 @@ async def test_reap_zombies_broadcasts_voice_leave() -> None:
     stale = await manager.connect(stale_websocket)  # type: ignore[arg-type]
     observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
     stale.user_id = 42
-    stale.username = "yangbun"
+    stale.username = "admin"
     stale.voice_guild_id = 1001
     stale.voice_channel_id = 2003
     stale.channel_ids.add(2003)
@@ -65,7 +65,7 @@ async def test_reap_zombies_broadcasts_voice_leave() -> None:
                 "guild_id": 1001,
                 "channel_id": None,
                 "user_id": 42,
-                "username": "yangbun",
+                "username": "admin",
                 "self_mute": False,
                 "self_deaf": False,
             },
@@ -111,7 +111,7 @@ async def test_disconnect_broadcasts_voice_leave_after_grace_to_channel_subscrib
     leaver = await manager.connect(leaver_websocket)  # type: ignore[arg-type]
     observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
     leaver.user_id = 42
-    leaver.username = "yangbun"
+    leaver.username = "admin"
     leaver.voice_guild_id = 1001
     leaver.voice_channel_id = 2003
     leaver.channel_ids.add(2003)
@@ -132,7 +132,7 @@ async def test_disconnect_broadcasts_voice_leave_after_grace_to_channel_subscrib
                 "guild_id": 1001,
                 "channel_id": None,
                 "user_id": 42,
-                "username": "yangbun",
+                "username": "admin",
                 "self_mute": False,
                 "self_deaf": False,
             },
@@ -150,7 +150,7 @@ async def test_disconnect_voice_leave_is_cancelled_by_same_user_rejoin() -> None
     leaver = await manager.connect(leaver_websocket)  # type: ignore[arg-type]
     observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
     leaver.user_id = 42
-    leaver.username = "yangbun"
+    leaver.username = "admin"
     leaver.voice_guild_id = 1001
     leaver.voice_channel_id = 2003
     leaver.channel_ids.add(2003)
@@ -163,7 +163,7 @@ async def test_disconnect_voice_leave_is_cancelled_by_same_user_rejoin() -> None
             "guild_id": 1001,
             "channel_id": 2003,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "self_mute": False,
             "self_deaf": False,
         },
@@ -173,7 +173,7 @@ async def test_disconnect_voice_leave_is_cancelled_by_same_user_rejoin() -> None
     await manager.disconnect(leaver)
     rejoin = await manager.connect(rejoin_websocket)  # type: ignore[arg-type]
     rejoin.user_id = 42
-    rejoin.username = "yangbun"
+    rejoin.username = "admin"
     rejoin.channel_ids.add(2003)
     await manager.broadcast_voice_state(
         previous_channel_id=None,
@@ -182,7 +182,7 @@ async def test_disconnect_voice_leave_is_cancelled_by_same_user_rejoin() -> None
             "guild_id": 1001,
             "channel_id": 2003,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "self_mute": False,
             "self_deaf": False,
         },
@@ -208,7 +208,7 @@ async def test_disconnect_voice_leave_is_skipped_when_same_user_connection_remai
     observer = await manager.connect(observer_websocket)  # type: ignore[arg-type]
     for connection in (leaver, remaining):
         connection.user_id = 42
-        connection.username = "yangbun"
+        connection.username = "admin"
         connection.voice_guild_id = 1001
         connection.voice_channel_id = 2003
         connection.channel_ids.add(2003)
@@ -221,7 +221,7 @@ async def test_disconnect_voice_leave_is_skipped_when_same_user_connection_remai
             "guild_id": 1001,
             "channel_id": 2003,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "self_mute": False,
             "self_deaf": False,
         },
@@ -386,7 +386,7 @@ async def test_voice_state_snapshot_sends_current_channel_occupants() -> None:
             "guild_id": 1001,
             "channel_id": 2003,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "self_mute": False,
             "self_deaf": False,
         },
@@ -407,7 +407,7 @@ async def test_voice_state_snapshot_sends_current_channel_occupants() -> None:
                     "guild_id": 1001,
                     "channel_id": 2003,
                     "user_id": 42,
-                    "username": "yangbun",
+                    "username": "admin",
                     "self_mute": False,
                     "self_deaf": False,
                 }
@@ -437,7 +437,7 @@ async def test_guild_voice_state_snapshot_sends_to_current_guild_subscribers() -
             "guild_id": 1001,
             "channel_id": 2003,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "self_mute": False,
             "self_deaf": False,
         },
@@ -461,7 +461,7 @@ async def test_guild_voice_state_snapshot_sends_to_current_guild_subscribers() -
                     "guild_id": 1001,
                     "channel_id": 2003,
                     "user_id": 42,
-                    "username": "yangbun",
+                    "username": "admin",
                     "self_mute": False,
                     "self_deaf": False,
                 }
@@ -486,7 +486,7 @@ async def test_voice_state_snapshot_preserves_rtc_session_id() -> None:
             "guild_id": 1001,
             "channel_id": 2003,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "session_id": "rtc-refresh-session",
             "self_mute": False,
             "self_deaf": False,
@@ -518,7 +518,7 @@ async def test_dm_voice_state_snapshot_sends_current_dm_occupants() -> None:
             "channel_id": 7001,
             "dm_id": 7001,
             "user_id": 42,
-            "username": "yangbun",
+            "username": "admin",
             "self_mute": False,
             "self_deaf": False,
         },
@@ -542,7 +542,7 @@ async def test_dm_voice_state_snapshot_sends_current_dm_occupants() -> None:
                     "channel_id": 7001,
                     "dm_id": 7001,
                     "user_id": 42,
-                    "username": "yangbun",
+                    "username": "admin",
                     "self_mute": False,
                     "self_deaf": False,
                 }
