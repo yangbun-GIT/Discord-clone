@@ -33,6 +33,7 @@ export type VoiceMediaErrorCode =
   | 'device-busy'
   | 'constraints-unsatisfied'
   | 'permission-timeout'
+  | 'screen-cancelled'
   | 'screen-permission-denied'
   | 'screen-unavailable'
   | 'screen-timeout'
@@ -325,14 +326,11 @@ export function normalizeMediaError(
     return new VoiceMediaError('unknown', 'Media capture failed', error)
   }
   if (kind === 'screen') {
-    if (error.name === 'NotAllowedError') {
-      return new VoiceMediaError('screen-permission-denied', 'Screen capture was denied', error)
+    if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+      return new VoiceMediaError('screen-cancelled', 'Screen sharing was cancelled', error)
     }
     if (error.name === 'NotFoundError' || error.name === 'NotReadableError') {
       return new VoiceMediaError('screen-unavailable', 'Screen capture is unavailable', error)
-    }
-    if (error.name === 'AbortError') {
-      return new VoiceMediaError('screen-unavailable', 'Screen capture was cancelled', error)
     }
     return new VoiceMediaError('unknown', 'Screen capture failed', error)
   }

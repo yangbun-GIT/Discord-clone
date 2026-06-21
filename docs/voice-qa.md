@@ -561,6 +561,22 @@ This is still not a real internet voice completion. The current local metadata
 reports `turn_configured: false`, so real microphone quality, real screen picker
 UX, different-PC LAN, and TURN/NAT internet voice remain manual release gates.
 
+## 2026-06-21 Screen Picker Cancel Handling
+
+Manual expectation for the real Chrome display-capture picker:
+
+1. Join a voice channel.
+2. Press screen share.
+3. Cancel the native browser picker.
+4. The app must show one app-owned screen-share notice with a retry action.
+5. The lower-left voice connection error card must not appear for this cancel.
+6. The top-right workspace error and bottom workspace banner must not duplicate the
+   same screen-share cancel.
+7. The notice must clear by close, outside click, Escape, or automatic timeout.
+
+This cancellation is not a microphone or voice connection failure. Treat a failure
+here as a screen-share UX regression unless voice audio also disconnects.
+
 ## Manual LAN Result 2026-06-20
 
 The same-Wi-Fi notebook HTTPS path passed for real voice after the local root CA and

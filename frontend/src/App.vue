@@ -153,6 +153,7 @@ const voiceLocationSummary = computed(() => {
   return `${guilds.connectedVoiceGuild.name} / ${guilds.connectedVoiceChannel.name} · ${state}`
 })
 const voiceErrorMessage = computed(() => {
+  if (isScreenShareErrorCode(voiceRtc.errorCode.value)) return null
   if (!voiceRtc.errorCode.value) return voiceRtc.error.value
   return t(voiceMediaErrorKey(voiceRtc.errorCode.value))
 })
@@ -175,6 +176,8 @@ const selectedDmMuted = computed(() => preferences.isDmMuted(selectedDm.value?.i
 const isBooting = ref(true)
 const authError = ref<string | null>(null)
 const workspaceError = ref<string | null>(null)
+const screenShareNotice = ref<string | null>(null)
+let screenShareNoticeTimer: number | null = null
 const {
   notice: workspaceNotice,
   tone: workspaceNoticeTone,
@@ -419,6 +422,14 @@ watch(
 )
 
 watch(
+  () => voiceRtc.errorCode.value,
+  (errorCode) => {
+    if (!isScreenShareErrorCode(errorCode)) return
+    setScreenShareNotice(t(voiceMediaErrorKey(errorCode)))
+  },
+)
+
+watch(
   () => gatewayStatus.value,
   (status) => {
     if (status !== 'connected' || !session.user) return
@@ -519,6 +530,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   removeDocumentKeyDown?.()
   removeDocumentKeyDown = null
+  clearScreenShareNotice()
   clearWorkspaceNotice()
 })
 
@@ -668,6 +680,9 @@ function handleWorkspacePointerDown(event: MouseEvent) {
   if (workspaceNotice.value && !target.closest('.app-notice')) {
     clearWorkspaceNotice()
   }
+  if (screenShareNotice.value && !target.closest('.screen-share-notice')) {
+    clearScreenShareNotice()
+  }
 }
 
 function handleDocumentKeyDown(event: KeyboardEvent) {
@@ -677,6 +692,43 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
   stageAudioMenu.value = null
   closeGlobalContextMenu()
   if (workspaceNotice.value) clearWorkspaceNotice()
+  if (screenShareNotice.value) clearScreenShareNotice()
+}
+
+function isScreenShareErrorCode(errorCode: VoiceMediaErrorCode | null): errorCode is VoiceMediaErrorCode {
+  return errorCode?.startsWith('screen-') ?? false
+}
+
+function setScreenShareNotice(message: string) {
+  if (screenShareNoticeTimer !== null) {
+    window.clearTimeout(screenShareNoticeTimer)
+    screenShareNoticeTimer = null
+  }
+  workspaceError.value = null
+  screenShareNotice.value = message
+  screenShareNoticeTimer = window.setTimeout(() => {
+    screenShareNotice.value = null
+    screenShareNoticeTimer = null
+    if (isScreenShareErrorCode(voiceRtc.errorCode.value)) {
+      voiceRtc.clearError()
+    }
+  }, 5200)
+}
+
+function clearScreenShareNotice() {
+  if (screenShareNoticeTimer !== null) {
+    window.clearTimeout(screenShareNoticeTimer)
+    screenShareNoticeTimer = null
+  }
+  screenShareNotice.value = null
+  if (isScreenShareErrorCode(voiceRtc.errorCode.value)) {
+    voiceRtc.clearError()
+  }
+}
+
+function handleRetryScreenShareFromNotice() {
+  clearScreenShareNotice()
+  handleToggleScreenShare()
 }
 
 function toggleStageAudioMenu(menu: 'input' | 'output') {
@@ -793,6 +845,8 @@ function voiceMediaErrorKey(errorCode: VoiceMediaErrorCode): TranslationKey {
       return 'voice.error.constraints'
     case 'permission-timeout':
       return 'voice.error.permissionTimeout'
+    case 'screen-cancelled':
+      return 'voice.error.screenCancelled'
     case 'screen-permission-denied':
       return 'voice.error.screenPermissionDenied'
     case 'screen-unavailable':
@@ -1677,6 +1731,18 @@ async function handleSendInviteToFriend(friendId: number) {
       <div class="workspace-alerts">
         <div v-if="authError || workspaceError || guilds.error || dms.error" class="app-error" role="alert">
           {{ authError ?? workspaceError ?? guilds.error ?? dms.error }}
+        </div>
+        <div v-if="screenShareNotice" class="screen-share-notice" role="status">
+          <span>{{ screenShareNotice }}</span>
+          <div class="screen-share-notice-actions">
+            <button type="button" @click="handleRetryScreenShareFromNotice">
+              <ScreenShare :size="14" aria-hidden="true" />
+              <span>{{ t('voice.retryScreenShare') }}</span>
+            </button>
+            <button type="button" class="ghost" :aria-label="t('common.close')" @click="clearScreenShareNotice">
+              <X :size="14" aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <div v-if="pendingVoiceRejoinSummary" class="voice-rejoin-notice" role="status">
           <div>

@@ -401,6 +401,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     options.setError(null)
     if (!voiceConnected.value) return
     void options.voiceRtc.toggleScreenShare().catch((error) => {
+      if (options.voiceRtc.errorCode.value?.startsWith('screen-')) return
       options.setError(error instanceof Error ? error.message : options.t('app.error.screenShareFailed'))
     })
   }

@@ -59,6 +59,13 @@ Remaining
 voice media verification still depends on a browser session with
 microphone and screen-capture permissions granted.
 
+2026-06-21 screen-share picker cancellation is handled as a non-fatal screen-share
+notice, not as a voice connection failure. `frontend/src/composables/voiceMedia.ts`
+normalizes Chrome picker cancel/deny to `screen-cancelled`; `useVoiceRtc.ts`
+exposes `clearError()`; and `frontend/src/App.vue` routes `screen-*` media errors
+to one auto-dismissing retry notice instead of the lower-left voice error card,
+top-right workspace error, and bottom workspace banner.
+
 Stage 11 completion work has started. The controlling plan is
 `docs/discord-stage-11-completion-plan.md`, and the Stage 11.0 baseline/scope lock
 is `docs/stage-11-baseline.md`. Stage 11.1 global layer consolidation is complete:

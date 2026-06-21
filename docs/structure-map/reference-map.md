@@ -976,6 +976,8 @@ Browser UI
       sender track replacement, screen-share state broadcast, explicit local
       microphone mute state/setter, per-voice-connection RTC session identifiers,
       and voice RTC cleanup.
+    - Exposes `clearError()` so `frontend/src/App.vue` can dismiss non-fatal
+      screen-share picker notices without leaving or resetting the voice session.
     - Active-call microphone-chain rebuild for input device or RNNoise mode
       changes, with peer sender audio-track replacement instead of leaving the
       current call.
@@ -1017,6 +1019,9 @@ Browser UI
       local voice device preferences, browser-supported audio constraint detection,
       optional denoiser setup before WebRTC transmission: off baseline and RNNoise
       through `@sapphi-red/web-noise-suppressor`.
+    - Display-capture picker cancel/deny normalization as `screen-cancelled`, which
+      routes to an app-owned retry notice instead of the voice connection error
+      card.
     - Microphone input volume, pre-gate RMS-based input-level sampling, optional
       soft sensitivity/noise-gate processing, sustained-input stable defaults,
       one-time default setting migration, and media-track cleanup.

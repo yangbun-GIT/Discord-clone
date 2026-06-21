@@ -59,6 +59,7 @@ export interface VoiceTransport extends VoiceTransportState {
   setMuted: (muted: boolean) => void
   toggleMute: () => void
   toggleScreenShare: () => Promise<void>
+  clearError: () => void
   syncParticipants: (participants: VoiceState[]) => Promise<void>
   handleSignal: (signal: VoiceSignal) => Promise<void>
   refreshVoiceDevices: () => Promise<void>

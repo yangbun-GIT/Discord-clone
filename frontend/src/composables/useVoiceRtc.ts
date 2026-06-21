@@ -299,6 +299,11 @@ export function useVoiceRtc(): VoiceTransport {
     await startScreenShare()
   }
 
+  function clearError() {
+    error.value = null
+    errorCode.value = null
+  }
+
   async function syncParticipants(participants: VoiceState[]) {
     await peerRegistry.syncParticipants(participants)
   }
@@ -372,6 +377,7 @@ export function useVoiceRtc(): VoiceTransport {
     setMuted,
     toggleMute,
     toggleScreenShare,
+    clearError,
     syncParticipants,
     handleSignal,
     refreshVoiceDevices,

@@ -703,7 +703,8 @@ For ordinary implementation work:
   - Composes media capture, input processing, VAD, peer registry, screen share,
     output device settings, and stats modules.
   - Exposes explicit local microphone mute state/setter plus voice device setting
-    state/update/refresh helpers for voice controls.
+    state/update/refresh helpers for voice controls, and `clearError()` so the app
+    can clear non-fatal screen-share picker notices without leaving voice.
   - Rebuilds and swaps the local microphone processor track while keeping active
     peer connections alive when input device or RNNoise mode changes require a
     new capture/AudioWorklet graph.
@@ -717,6 +718,9 @@ For ordinary implementation work:
   - Browser microphone/display capture helpers, native audio constraint support
   detection/storage, voice device preference storage, typed media error
     normalization, Web Audio input processing, and media-track helpers.
+  - Normalizes display-capture picker cancel/deny as a non-fatal
+    `screen-cancelled` path so the app can show a single retry notice instead of a
+    voice connection error.
   - Persists local voice-processing preferences and builds microphone constraints
     from browser support plus user-selected echo/noise/gain settings.
   - Defaults the speech-stability path to minimal browser auto-processing for

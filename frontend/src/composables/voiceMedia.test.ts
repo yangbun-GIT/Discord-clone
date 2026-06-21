@@ -76,9 +76,9 @@ describe('normalizeMediaError', () => {
   })
 
   it('maps screen capture failures separately from microphone failures', () => {
-    expect(normalizeMediaError(domError('NotAllowedError'), 'screen').code).toBe('screen-permission-denied')
+    expect(normalizeMediaError(domError('NotAllowedError'), 'screen').code).toBe('screen-cancelled')
     expect(normalizeMediaError(domError('NotFoundError'), 'screen').code).toBe('screen-unavailable')
-    expect(normalizeMediaError(domError('AbortError'), 'screen').code).toBe('screen-unavailable')
+    expect(normalizeMediaError(domError('AbortError'), 'screen').code).toBe('screen-cancelled')
   })
 
   it('falls back to unknown for unclassified failures', () => {

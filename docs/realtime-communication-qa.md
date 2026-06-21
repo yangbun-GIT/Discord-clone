@@ -585,3 +585,16 @@ Verification passed for `npm run lint:frontend`, `npm run test:frontend`,
 `remoteScreenVideosAfterReceiverReload: 1`,
 `receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
 `voiceRejoinRecovered: true`, and `browserErrors: 0`.
+
+## 2026-06-21 Screen-Share Cancel Regression Check
+
+The display-capture picker cancel/deny path is intentionally separated from voice
+connection failure handling:
+
+- `NotAllowedError` and `AbortError` from `getDisplayMedia` are normalized to a
+  screen-share cancellation notice.
+- The app should render exactly one app-owned notice with a retry action.
+- The voice connection error card, top-right workspace error, and bottom workspace
+  banner should not duplicate that same cancel event.
+- This does not complete real screen sharing; it only verifies that cancelling the
+  picker is a clean, non-fatal UX path.

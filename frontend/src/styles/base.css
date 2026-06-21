@@ -2242,6 +2242,59 @@ select:focus-visible {
   background: rgb(255 255 255 / 10%);
 }
 
+.screen-share-notice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgb(250 204 21 / 34%);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fef3c7;
+  font-size: 0.9rem;
+  background: rgb(63 48 16 / 94%);
+  box-shadow: var(--shadow-panel);
+  pointer-events: auto;
+}
+
+.screen-share-notice > span {
+  min-width: 0;
+}
+
+.screen-share-notice-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.screen-share-notice-actions button {
+  min-height: 28px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 6px;
+  padding: 0 9px;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  background: rgb(255 255 255 / 8%);
+}
+
+.screen-share-notice-actions button:hover,
+.screen-share-notice-actions button:focus-visible {
+  color: #ffffff;
+  background: rgb(255 255 255 / 14%);
+}
+
+.screen-share-notice-actions .ghost {
+  width: 28px;
+  padding: 0;
+  color: #fde68a;
+  background: transparent;
+}
+
 .voice-rejoin-notice {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
