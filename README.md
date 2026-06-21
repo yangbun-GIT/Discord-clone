@@ -102,6 +102,17 @@ npm run docker:up:https:detached
 
 상시 public VM/VPS 배포 없이 외부 네트워크에서 임시로 접속 테스트를 해야 한다면 Cloudflare Quick Tunnel을 사용할 수 있습니다.
 
+수정 사항을 Cloudflare URL에도 바로 반영하려면 Vite 개발 서버에 직접 연결하는 아래 방식을 사용합니다.
+
+```powershell
+npm run docker:up:https:detached
+npm run tunnel:cloudflare:dev
+```
+
+이 방식은 `https://localhost:5173`을 그대로 터널링하므로 로컬에서 수정된 프론트엔드 코드가 Cloudflare 임시 URL에도 즉시 반영됩니다. 개발 중 외부 기기 확인이 필요할 때는 이 방식을 권장합니다.
+
+정적 빌드 결과를 확인해야 하는 경우에는 아래 방식도 사용할 수 있습니다. 이 경우 프론트엔드 수정 후 `frontend-tunnel` 컨테이너를 다시 빌드해야 합니다.
+
 ```powershell
 npm run docker:up:https:detached
 npm run docker:up:cloudflare-tunnel

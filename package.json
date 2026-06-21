@@ -12,6 +12,7 @@
     "docker:up:https": "docker compose -f compose.yaml -f compose.https.yaml up --build",
     "docker:up:https:detached": "docker compose -f compose.yaml -f compose.https.yaml -f compose.cloudflare-tunnel.yaml up -d --build",
     "docker:up:cloudflare-tunnel": "docker compose -f compose.yaml -f compose.cloudflare-tunnel.yaml up -d --build --force-recreate frontend-tunnel",
+    "tunnel:cloudflare:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_cloudflare_dev_tunnel.ps1",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "check:submission:local": "node scripts/submission_readiness_check.mjs",
