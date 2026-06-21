@@ -111,3 +111,7 @@ async def delete_dm_message(
     actor: UserPublic,
 ) -> DmMessageDeleteRead:
     return await get_dm_storage().delete_dm_message(dm_id=dm_id, message_id=message_id, actor=actor)
+
+
+async def reset_development_workspace(user: UserPublic) -> None:
+    await get_dm_storage().reset_development_workspace(user)

@@ -8,6 +8,7 @@ from threading import Lock
 from app.demo.data import create_initial_guilds
 from app.domain.permissions import ALL_PERMISSIONS
 from app.domain.snowflake import SnowflakeGenerator
+from app.repositories.dm_seed import ADMIN_DEMO_USER_ID
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
     DmCreate,
@@ -558,6 +559,47 @@ class DemoStore:
 
             dm.messages = [item for item in dm.messages if item.id != message_id]
             return DmMessageDeleteRead(id=message_id, dm_id=dm_id)
+
+    def reset_development_workspace(self, user: UserPublic) -> None:
+        if user.id != ADMIN_DEMO_USER_ID:
+            raise PermissionError(
+                "development workspace reset is only available for the admin test account",
+            )
+
+        with self._lock:
+            self._dm_profiles[user.id] = DmParticipantRead(
+                id=user.id,
+                username=user.username,
+                handle=user.username.lower(),
+                status="online",
+                activity=None,
+            )
+            self._relationships_by_user[user.id] = []
+            for owner_id, relationships in list(self._relationships_by_user.items()):
+                if owner_id == user.id:
+                    continue
+                self._relationships_by_user[owner_id] = [
+                    relationship
+                    for relationship in relationships
+                    if relationship.id != user.id
+                ]
+
+            removed_dm_ids = {
+                dm.id
+                for dm in self._dms
+                if any(participant.id == user.id for participant in dm.participants)
+            }
+            self._dms = [
+                dm
+                for dm in self._dms
+                if dm.id not in removed_dm_ids
+            ]
+            self._hidden_dm_members = {
+                membership
+                for membership in self._hidden_dm_members
+                if membership[0] not in removed_dm_ids and membership[1] != user.id
+            }
+            self._server_rail_layouts.pop(user.id, None)
 
     def _find_guild(self, guild_id: int) -> GuildRead:
         for guild in self._guilds:

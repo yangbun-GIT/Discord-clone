@@ -85,6 +85,89 @@ async def ensure_postgres_dm_demo_workspace(
         await database.execute("SELECT pg_advisory_unlock($1)", lock_key)
 
 
+async def reset_postgres_development_workspace(
+    *,
+    database: Any,
+    id_generator: IdGenerator,
+    user_id: int,
+    username: str,
+    find_existing_dm: FindExistingDm,
+) -> None:
+    if user_id != ADMIN_DEMO_USER_ID:
+        raise PermissionError(
+            "development workspace reset is only available for the admin test account",
+        )
+
+    lock_key = DEMO_WORKSPACE_LOCK_OFFSET + user_id
+    await database.execute("SELECT pg_advisory_lock($1)", lock_key)
+    try:
+        await _release_reserved_seed_usernames(database)
+        await _reset_postgres_development_workspace_locked(
+            database=database,
+            user_id=user_id,
+            username=username,
+        )
+        await _ensure_postgres_dm_demo_workspace_locked(
+            database=database,
+            id_generator=id_generator,
+            user_id=user_id,
+            find_existing_dm=find_existing_dm,
+        )
+    finally:
+        await database.execute("SELECT pg_advisory_unlock($1)", lock_key)
+
+
+async def _reset_postgres_development_workspace_locked(
+    *,
+    database: Any,
+    user_id: int,
+    username: str,
+) -> None:
+    dm_rows = await database.fetch(
+        "SELECT dm_id FROM direct_message_members WHERE user_id = $1",
+        user_id,
+    )
+    dm_ids = [int(row["dm_id"]) for row in dm_rows]
+    if dm_ids:
+        await database.execute(
+            "DELETE FROM direct_message_channels WHERE id = ANY($1::bigint[])",
+            dm_ids,
+        )
+
+    await database.execute(
+        "DELETE FROM relationships WHERE user_id = $1 OR related_user_id = $1",
+        user_id,
+    )
+    await database.execute(
+        "DELETE FROM user_server_rail_layouts WHERE user_id = $1",
+        user_id,
+    )
+    await database.execute(
+        """
+        INSERT INTO users (id, username, password_hash, status)
+        VALUES ($1, $2, $3, 1)
+        ON CONFLICT (id) DO UPDATE SET
+            username = EXCLUDED.username,
+            status = EXCLUDED.status
+        """,
+        user_id,
+        username,
+        "dev-session",
+    )
+    await database.execute(
+        """
+        INSERT INTO dm_profiles (user_id, handle, presence_status, activity)
+        VALUES ($1, $2, 'online', NULL)
+        ON CONFLICT (user_id) DO UPDATE SET
+            handle = EXCLUDED.handle,
+            presence_status = EXCLUDED.presence_status,
+            activity = EXCLUDED.activity
+        """,
+        user_id,
+        username.lower(),
+    )
+
+
 async def _ensure_postgres_dm_demo_workspace_locked(
     *,
     database: Any,

@@ -5,6 +5,7 @@ from app.domain.snowflake import SnowflakeGenerator
 from app.repositories.dm_seed import (
     ensure_dm_repository_user,
     ensure_postgres_dm_demo_workspace,
+    reset_postgres_development_workspace,
 )
 from app.schemas.auth import UserPublic
 from app.schemas.dm import (
@@ -718,6 +719,15 @@ class DmRepository:
             database=database,
             id_generator=id_generator,
             user_id=user_id,
+            find_existing_dm=self._find_existing_dm,
+        )
+
+    async def reset_development_workspace(self, user: UserPublic) -> None:
+        await reset_postgres_development_workspace(
+            database=database,
+            id_generator=id_generator,
+            user_id=user.id,
+            username=user.username,
             find_existing_dm=self._find_existing_dm,
         )
 

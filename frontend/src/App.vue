@@ -812,14 +812,14 @@ function handleDemo() {
   void runAuth(() => session.ensureDevSession())
 }
 
-function handleLogout() {
+async function handleLogout() {
   disconnectVoice()
   dismissVoiceRejoin()
   disconnectGateway()
   authError.value = null
   workspaceError.value = null
   clearWorkspaceNotice()
-  session.logout()
+  await session.logout()
   navigation.clearPersistedWorkspaceLocation()
   navigation.resetNavigation()
   guilds.resetGuilds()

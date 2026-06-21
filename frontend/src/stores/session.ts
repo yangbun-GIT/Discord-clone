@@ -17,6 +17,7 @@ type AuthCredentials = {
 }
 
 const SESSION_STORAGE_KEY = 'discord-clone-session'
+const DEVELOPMENT_ADMIN_USER_ID = 42
 
 export const useSessionStore = defineStore('session', () => {
   const token = ref<string | null>(null)
@@ -66,7 +67,23 @@ export const useSessionStore = defineStore('session', () => {
     setSession(session)
   }
 
-  function logout() {
+  async function resetDevelopmentSessionIfNeeded() {
+    const currentToken = token.value
+    if (!currentToken || user.value?.id !== DEVELOPMENT_ADMIN_USER_ID) return
+
+    try {
+      await apiPost<{ reset: boolean }, Record<string, never>>(
+        '/api/dev/session/reset',
+        {},
+        currentToken,
+      )
+    } catch {
+      // Logout must still succeed even if the local reset endpoint is unavailable.
+    }
+  }
+
+  async function logout() {
+    await resetDevelopmentSessionIfNeeded()
     clearSession()
   }
 

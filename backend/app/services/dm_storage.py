@@ -102,6 +102,8 @@ class DmStorage(Protocol):
         actor: UserPublic,
     ) -> DmMessageDeleteRead: ...
 
+    async def reset_development_workspace(self, user: UserPublic) -> None: ...
+
 
 class PostgresDmStorage:
     async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
@@ -203,6 +205,9 @@ class PostgresDmStorage:
             actor=actor,
         )
 
+    async def reset_development_workspace(self, user: UserPublic) -> None:
+        await dm_repository.reset_development_workspace(user)
+
 
 class DemoDmStorage:
     async def list_relationships(self, user: UserPublic) -> list[RelationshipRead]:
@@ -299,6 +304,9 @@ class DemoDmStorage:
         actor: UserPublic,
     ) -> DmMessageDeleteRead:
         return demo_store.delete_dm_message(dm_id=dm_id, message_id=message_id, actor=actor)
+
+    async def reset_development_workspace(self, user: UserPublic) -> None:
+        demo_store.reset_development_workspace(user)
 
 
 postgres_dm_storage = PostgresDmStorage()
