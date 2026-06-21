@@ -162,8 +162,9 @@ Manual QA follow-up result:
 - API-level owner/member invite permission was checked: owner invite creation
   returned `201`; normal member invite creation returned `403`. Browser
   visibility/disabled-state QA remains pending.
-- Detailed staged follow-up is tracked in
-  `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`.
+- Detailed staged follow-up was handled in local-only remediation notes. Those
+  work documents are intentionally ignored by Git and are not required for
+  submitted project execution.
 
 Voice input feedback and gate update:
 
@@ -325,8 +326,8 @@ Manual two-account product-flow result:
 - Browser microphone permission that was not answered produced an app-owned voice
   problem notice, so real voice QA must explicitly include permission grant and
   denial branches.
-- Related product-flow defects and implementation requirements are tracked in
-  `docs/remediation-tasks/friend-relationship-implementation-plan.md`.
+- Related product-flow defects were handled in local-only remediation notes. The
+  submitted repository keeps only the current implementation and QA summary.
 
 Manual two-account voice/product recheck:
 
@@ -351,8 +352,9 @@ Manual two-account voice/product recheck:
 - Member invite controls exposed a raw English permission error
   `create invite permission required`; this should become localized app-owned UX and
   unauthorized invite controls should be hidden or disabled.
-- Follow-up implementation stages C10-C13 are tracked in
-  `docs/remediation-tasks/realtime-communication-plan.md`.
+- Follow-up implementation stages were handled in local-only remediation notes.
+  This submitted QA document records the resulting behavior and remaining manual
+  verification boundaries.
 
 Chrome profile control note:
 

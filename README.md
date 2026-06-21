@@ -383,11 +383,10 @@ Assignment submission and demo steps are maintained in
 communication QA steps are maintained in
 `docs/realtime-communication-qa.md`. The documentation index is maintained in
 `docs/README.md`.
-Git workflow notes are maintained in `docs/GITHUB_COLLABORATION_WORKFLOW.md`, and
-prompt-alignment status is maintained in `docs/PROMPT_COMPLIANCE.md`.
-The current Discord app clone roadmap is maintained in
-`docs/discord-app-clone-implementation-plan.md`. The deferred Store-like shop roadmap
-is maintained in `docs/store-clone-implementation-plan.md`.
+Git workflow notes are maintained in `docs/GITHUB_COLLABORATION_WORKFLOW.md`.
+Planning, remediation, prompt, stage, screenshot, and video work files are local-only
+and excluded from Git because they are not required to run or evaluate the submitted
+project.
 
 ## Verification
 

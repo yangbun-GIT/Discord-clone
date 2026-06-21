@@ -49,19 +49,26 @@ Thumbs.db
 .parcel-cache/
 
 # Local visual reference screenshots
-docs/reference-screenshots/real-discord/*
-docs/reference-screenshots/clone-current/*
-!docs/reference-screenshots/real-discord/.gitkeep
-!docs/reference-screenshots/clone-current/.gitkeep
+docs/reference-screenshots/
 
 # Local QA screenshots and generated visual artifacts
-docs/qa-artifacts/*
-!docs/qa-artifacts/.gitkeep
-!docs/qa-artifacts/README.md
+docs/qa-artifacts/
 
 # Local voice/video QA recordings
-docs/reference-videos/voice-call/*
-!docs/reference-videos/voice-call/.gitkeep
+docs/reference-videos/
+
+# Local-only planning, remediation, prompt, and stage work documents
+docs/remediation-tasks/
+docs/prompts/
+docs/stage-*.md
+docs/*-plan.md
+docs/*remediation*.md
+docs/*baseline*.md
+docs/*final-qa.md
+docs/architecture-principles-audit.md
+docs/architecture-refactor-stage-*.md
+docs/frontend-css-i18n-ownership.md
+docs/PROMPT_COMPLIANCE.md
 
 # Local submission/private reference media and binary documents
 *.mp4

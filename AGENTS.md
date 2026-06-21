@@ -9,8 +9,8 @@
 ## Context Recovery Rules
 
 - Before starting implementation, read `DEVELOPMENT_PROMPT.md`, `AGENTS.md`,
-  `PROJECT_CONTEXT.md`, `docs/implementation-plan.md`, `README.md`, and
-  `docs/README.md`, then use `docs/project-file-map.md` and
+  `PROJECT_CONTEXT.md`, `README.md`, and `docs/README.md`, then use
+  `docs/project-file-map.md` and
   `docs/structure-map/reference-map.md` for path and dependency routing.
 - Treat `DEVELOPMENT_PROMPT.md` as the project-specific development prompt:
   operating role, verification policy, documentation policy, security policy, and
@@ -18,8 +18,6 @@
 - Treat `docs/README.md` as the document index for task-specific docs.
 - Treat `docs/GITHUB_COLLABORATION_WORKFLOW.md` as the Git staging, commit, push,
   and final-report workflow.
-- Treat `docs/PROMPT_COMPLIANCE.md` as the audit map for checking whether the
-  repository structure still reflects `DEVELOPMENT_PROMPT.md`.
 - Treat `PROJECT_CONTEXT.md` as the current implementation map: file ownership,
   integration points, commands, known decisions, and next work.
 - Use `docs/project-file-map.md` as the quick path map for locating likely owner

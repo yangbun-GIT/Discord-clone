@@ -470,7 +470,6 @@ Browser UI
     - `backend/app/realtime/redis_bus.py`
     - `backend/app/realtime/subscriber.py`
   - Referenced by:
-    - `docs/remediation-tasks/realtime-communication-plan.md`
     - `scripts/realtime_redis_smoke.py` runtime prerequisites.
   - Owns:
     - Optional Redis and secondary backend topology used to verify cross-worker
@@ -484,7 +483,6 @@ Browser UI
     - `/api/dms/{dm_id}/messages`
     - `/gateway`
   - Referenced by:
-    - `docs/remediation-tasks/realtime-communication-plan.md`
     - root `package.json` script `smoke:realtime:redis`.
   - Owns:
     - C4 repeatable primary-worker REST to secondary-worker WebSocket dispatch
@@ -510,7 +508,6 @@ Browser UI
     - `frontend/src/components/VoicePanel.vue`
   - Referenced by:
     - `docs/realtime-communication-qa.md`
-    - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - C8 repeatable two-browser same-PC communication smoke for server text, DM,
       invite-DM delivery, owner/member invite permission UI/API behavior, voice
@@ -640,7 +637,6 @@ Browser UI
     - `docs/deployment.md`
     - `docs/external-deployment-decision.md`
     - `docs/external-deployment-runbook.md`
-    - `docs/remediation-tasks/realtime-communication-plan.md`
   - Owns:
     - Placeholder-only single-server external QA topology with Caddy HTTPS,
       runtime app containers, PostgreSQL, Redis, and optional coturn.
