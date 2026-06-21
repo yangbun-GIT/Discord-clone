@@ -589,7 +589,9 @@ For ordinary implementation work:
     attachments, reactions, composer panels, and outside-click/Escape dismissal
     for local overlays.
 - `frontend/src/components/MemberList.vue`
-  - Server member list and role/member controls.
+  - Server member list plus explicit role/member controls.
+  - Displays assigned roles as removable chips and provides per-member role
+    selection before granting an unassigned role.
 - `frontend/src/components/VoicePanel.vue`
   - Voice-channel workspace, participant tiles, screen-share state, bottom user
     controls, and quick input/output device popovers.

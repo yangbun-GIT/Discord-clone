@@ -1161,6 +1161,8 @@ Browser UI
 - `frontend/src/components/MemberList.vue`
   - Receives members, roles, and permission flags from `frontend/src/App.vue`.
   - Emits role/member actions to `frontend/src/App.vue`.
+  - Owns the manager-facing role chip removal UI and per-member selected-role
+    grant control while the REST mutations remain in `guildAdmin.ts`/`guilds.ts`.
 - `frontend/src/components/VoicePanel.vue`
   - Receives selected voice channel, current user, voice quality stats, typed
     media-error copy, binary local speaking state, and voice device settings from

@@ -2467,6 +2467,13 @@ Completed Stage 2 bridge work:
   `frontend/src/composables/voiceMedia.ts` reads screen-share quality at
   `getDisplayMedia` time so balanced/sharp/smooth choices affect the next screen
   share without changing an already-active share.
+- A 2026-06-21 member-management follow-up kept server permissions role-based but
+  made the owner/admin workflow explicit. `frontend/src/components/MemberList.vue`
+  now shows assigned roles as removable chips and lets managers choose a specific
+  unassigned role before granting it to a member, instead of adding the first
+  available role implicitly. `frontend/src/styles/base.css` also forces dark
+  select-option colors so role/preset dropdowns remain readable in Chrome and the
+  app shell.
 
 After each stage or meaningful feature:
 

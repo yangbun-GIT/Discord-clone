@@ -112,6 +112,11 @@ select {
   font: inherit;
 }
 
+select option {
+  color: #f8fafc;
+  background: #1f2229;
+}
+
 button {
   cursor: pointer;
 }
@@ -5589,7 +5594,8 @@ select:focus-visible {
 }
 
 .role-create-form input,
-.role-create-form select {
+.role-create-form select,
+.member-role-assign-form select {
   width: 100%;
   min-height: 30px;
   border: 1px solid rgb(255 255 255 / 9%);
@@ -5600,7 +5606,8 @@ select:focus-visible {
   font-size: 0.84rem;
 }
 
-.role-create-form select {
+.role-create-form select,
+.member-role-assign-form select {
   appearance: none;
 }
 
@@ -5672,10 +5679,22 @@ select:focus-visible {
 
 .member-role-controls {
   grid-column: 2 / 4;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.member-role-chip-list,
+.member-role-assign-form {
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  min-width: 0;
+}
+
+.member-role-assign-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 26px;
 }
 
 .role-chip,
