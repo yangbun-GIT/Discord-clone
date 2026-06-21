@@ -2451,6 +2451,10 @@ Completed Stage 2 bridge work:
   the dimmed settings layer. `SettingsView.vue` owns its in-modal close button,
   while `App.vue` renders the settings panel as an app-level overlay and keeps the
   current page state intact.
+- A later 2026-06-21 settings visual pass made the settings overlay and modal
+  surfaces fully opaque, darkened the outside dim layer, and centered the settings
+  content/cards into a narrower Discord-like reading column without changing the
+  settings feature set.
 
 After each stage or meaningful feature:
 
