@@ -106,6 +106,12 @@ For ordinary implementation work:
 - `.env.example`
   - Non-secret environment variable template, including LAN CORS, HTTPS LAN
     certificate, production-domain placeholders, and STUN/TURN guidance.
+- `.gitignore`
+  - Submission hygiene boundary for local-only files.
+  - Ignores real `.env` files, host-only deployment env files, generated
+    certificates, local QA screenshots, reference screenshots/videos, OBS/video
+    recordings, and binary source documents that are not required to run the
+    project.
 - `.dockerignore`, `backend/.dockerignore`, `frontend/.dockerignore`
   - Docker build-context exclusions.
 
@@ -167,6 +173,17 @@ For ordinary implementation work:
     quality decision criteria.
 - `docs/voice-qa.md`
   - Voice, screen sharing, TURN, and WebRTC QA procedure.
+- `docs/qa-artifacts/`
+  - Local-only generated QA screenshot output folder.
+  - Keep the folder placeholder in Git, but do not track generated PNG captures.
+  - Historical docs may mention filenames from this folder as local verification
+    artifacts; they are intentionally excluded from GitHub submission.
+- `docs/reference-screenshots/`
+  - Local-only visual comparison workspace for real Discord and clone screenshots.
+  - Keep README/placeholders in Git; actual captures are ignored.
+- `docs/reference-videos/`
+  - Local-only voice/screen-share QA video workspace.
+  - Keep placeholders in Git; actual recordings are ignored.
 - `docs/remediation-tasks/realtime-communication-plan.md`
   - Staged implementation plan for WebSocket gateway, realtime text/DM, WebRTC
     voice/screen sharing, Redis fan-out, LAN/TURN access, security, observability,

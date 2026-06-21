@@ -141,6 +141,22 @@ docker compose down -v
 - 음성 QA 기록: `docs/voice-qa.md`
 - 실시간 통신 QA 기록: `docs/realtime-communication-qa.md`
 - 프로젝트 구조 지도: `docs/project-file-map.md`
+
+### 10. GitHub 제출 파일 정리 기준
+
+GitHub에는 프로젝트 실행, 빌드, 검증에 필요한 소스와 Markdown 문서만 올립니다.
+로컬 QA 캡처, OBS 영상, 실제 Discord 참고 이미지, 개발 인증서, 개인 환경 파일은
+제출 저장소에 포함하지 않습니다.
+
+- 로컬 인증서: `certs/` 아래의 실제 인증서 파일은 무시됩니다.
+- 로컬 QA 이미지: `docs/qa-artifacts/`의 생성 PNG는 무시됩니다.
+- 실제 Discord/클론 참고 캡처: `docs/reference-screenshots/` 하위 캡처는 무시됩니다.
+- 통화/화면공유 테스트 영상: `docs/reference-videos/` 하위 영상과 `*.mp4` 등 영상 파일은 무시됩니다.
+- 원본 명세서나 개인 문서: `*.docx`, `*.pdf`, `*.pptx`, `*.xlsx`는 기본적으로 무시됩니다.
+
+필요한 실행 예시는 `.env.example`, `deploy/production.env.example`처럼 예시 파일로만
+관리하고, 실제 비밀값은 `.env` 또는 로컬 환경에만 둡니다.
+
 ## Stack
 
 - Backend: Python 3.14, FastAPI, asyncpg, Redis asyncio client, Pydantic v2

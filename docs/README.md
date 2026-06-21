@@ -194,10 +194,14 @@ the project prompt and context files before changing code.
 - `docs/reference-screenshots/`
   - Real Discord and current clone screenshot folders for future visual parity
     review and implementation reference.
+  - Keep only README/placeholders tracked; do not commit real screenshots.
 - `docs/reference-videos/`
   - Local ignored call/video QA reference folders.
   - Keep only `.gitkeep` tracked; do not commit real recordings or generated
     analysis frames.
+- `docs/qa-artifacts/`
+  - Local ignored generated QA screenshot folder.
+  - Keep only placeholders tracked; do not commit generated PNG captures.
 - `docs/deployment.md`
   - Production runtime shape, environment variables, HTTPS/WebSocket notes, Redis,
     WebRTC TURN guidance, health checks, and deployment verification.

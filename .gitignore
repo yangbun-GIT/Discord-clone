@@ -54,6 +54,22 @@ docs/reference-screenshots/clone-current/*
 !docs/reference-screenshots/real-discord/.gitkeep
 !docs/reference-screenshots/clone-current/.gitkeep
 
+# Local QA screenshots and generated visual artifacts
+docs/qa-artifacts/*
+!docs/qa-artifacts/.gitkeep
+!docs/qa-artifacts/README.md
+
 # Local voice/video QA recordings
 docs/reference-videos/voice-call/*
 !docs/reference-videos/voice-call/.gitkeep
+
+# Local submission/private reference media and binary documents
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.docx
+*.pdf
+*.pptx
+*.xlsx

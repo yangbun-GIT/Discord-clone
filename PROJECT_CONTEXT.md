@@ -1297,6 +1297,12 @@ npm run docker:down
 - `node_modules/`, `.venv/`, `dist/`, `*.egg-info/`, and `*.tsbuildinfo` are ignored
   and must not be committed.
 - Real secrets belong in `.env`, not in Git.
+- Submission hygiene: generated QA screenshots, actual Discord/clone reference
+  screenshots, OBS/test videos, generated local certificates, and binary source
+  documents are local-only artifacts. Keep placeholder files and Markdown
+  instructions in Git, but do not track generated files under
+  `docs/qa-artifacts/`, `docs/reference-screenshots/`, `docs/reference-videos/`,
+  `certs/`, or common media/document binaries.
 - UI should remain the actual app surface, not a landing page or feature explainer.
 - Docker is additive, not a replacement for native local development. Use native
   scripts for quick iteration and Docker when environment reproducibility matters.
