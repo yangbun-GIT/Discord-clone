@@ -2444,6 +2444,13 @@ Completed Stage 2 bridge work:
   browser smoke still cannot complete the fake-screen frame assertion
   (`videoWidth: 0`, `videoHeight: 0`), so the real shared tab/window refresh path
   remains a manual QA gate.
+- A 2026-06-21 settings presentation follow-up changed user settings from a full
+  workspace destination into a Discord-like modal overlay. `navigation.ts` now
+  tracks `settingsOpen` separately from the active workspace destination, so
+  Friends, DM, server text, voice, and lower voice controls remain visible behind
+  the dimmed settings layer. `SettingsView.vue` owns its in-modal close button,
+  while `App.vue` renders the settings panel as an app-level overlay and keeps the
+  current page state intact.
 
 After each stage or meaningful feature:
 

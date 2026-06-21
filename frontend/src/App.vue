@@ -1444,7 +1444,7 @@ async function handleSendInviteToFriend(friendId: number) {
     v-else
     class="app-shell"
     :class="{
-      'settings-mode': navigation.destination === 'settings',
+      'settings-overlay-open': navigation.settingsOpen,
       'voice-connected': guilds.voiceConnected,
       'voice-error': Boolean(voiceErrorMessage),
       'friends-mode': navigation.destination === 'friends',
@@ -1456,7 +1456,6 @@ async function handleSendInviteToFriend(friendId: number) {
     @contextmenu.prevent="openGlobalContextMenu"
   >
     <ServerRail
-      v-if="navigation.destination !== 'settings'"
       :guilds="guilds.guilds"
       :active-guild-id="guilds.activeGuildId"
       :home-active="isPrivateDestination"
@@ -1482,7 +1481,7 @@ async function handleSendInviteToFriend(friendId: number) {
     />
 
     <ChannelSidebar
-      v-else-if="navigation.destination !== 'settings' && activeGuild"
+      v-else-if="activeGuild"
       :guild="activeGuild"
       :active-channel-id="guilds.activeChannelId"
       :voice-states="guilds.voiceStates"
@@ -1705,27 +1704,8 @@ async function handleSendInviteToFriend(friendId: number) {
         {{ t('app.workspace.loading') }}
       </div>
 
-      <SettingsView
-        v-if="navigation.destination === 'settings'"
-        :current-user="session.user"
-        :initial-panel="settingsInitialPanel"
-        :user-status="userPresenceStatus"
-        :muted="voiceRtc.isMuted.value"
-        :deafened="isDeafened"
-        :input-level="voiceRtc.inputLevel.value"
-        :turn-configured="voiceTurnConfigured"
-        :voice-connected="guilds.voiceConnected"
-        :constraint-support="voiceRtc.constraintSupport.value"
-        :voice-device-settings="voiceRtc.voiceDeviceSettings.value"
-        :voice-devices="voiceRtc.voiceDevices.value"
-        @close="navigation.closeSettings"
-        @logout="handleLogout"
-        @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
-        @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
-      />
-
       <FriendsHome
-        v-else-if="navigation.destination === 'friends'"
+        v-if="navigation.destination === 'friends'"
         :friends="dms.relationships"
         :disabled="dms.isMutating"
         :action-notice="workspaceNotice"
@@ -2237,7 +2217,6 @@ async function handleSendInviteToFriend(friendId: number) {
     </section>
 
     <VoicePanel
-      v-if="navigation.destination !== 'settings'"
       :channel="voicePanelChannel"
       :current-user="session.user"
       :user-status="userPresenceStatus"
@@ -2266,6 +2245,31 @@ async function handleSendInviteToFriend(friendId: number) {
       @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
       @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
     />
+    <div
+      v-if="navigation.settingsOpen"
+      class="settings-overlay"
+      role="presentation"
+      @mousedown.self="navigation.closeSettings"
+      @contextmenu.stop.prevent
+    >
+      <SettingsView
+        :current-user="session.user"
+        :initial-panel="settingsInitialPanel"
+        :user-status="userPresenceStatus"
+        :muted="voiceRtc.isMuted.value"
+        :deafened="isDeafened"
+        :input-level="voiceRtc.inputLevel.value"
+        :turn-configured="voiceTurnConfigured"
+        :voice-connected="guilds.voiceConnected"
+        :constraint-support="voiceRtc.constraintSupport.value"
+        :voice-device-settings="voiceRtc.voiceDeviceSettings.value"
+        :voice-devices="voiceRtc.voiceDevices.value"
+        @close="navigation.closeSettings"
+        @logout="handleLogout"
+        @update-voice-device-settings="voiceRtc.updateVoiceDeviceSettings"
+        @refresh-voice-devices="voiceRtc.refreshVoiceDevices"
+      />
+    </div>
     <div class="voice-audio-sinks" aria-hidden="true">
       <VoiceAudioSink
         v-for="remote in activeRemoteVoiceStreams"

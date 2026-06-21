@@ -778,6 +778,8 @@ Browser UI
       WebRTC room.
     - Server rail layout save orchestration from `ServerRail.vue` `layout-change`
       events to `guilds.ts`, including app-owned failure notice handling.
+    - User settings modal presentation and backdrop handling while the active
+      workspace destination remains visible behind the overlay.
 
 ### Stores And API
 
@@ -915,6 +917,8 @@ Browser UI
   - Owns:
     - Active app destination state and per-user refresh-safe workspace location
       persistence for Friends, DM, server text, and voice-channel destinations.
+    - Separate settings overlay-open state so settings can be shown without
+      replacing the current workspace destination.
 
 - `frontend/src/stores/preferences.ts`
   - References:
@@ -1185,7 +1189,8 @@ Browser UI
     `frontend/src/composables/voiceMedia.ts`.
   - Owns the only user-facing exact microphone input-level meter; other workspace
     surfaces use binary speaking state only.
-  - Emits locale/status/settings actions to `frontend/src/App.vue`.
+  - Emits locale/status/settings actions and the in-modal close action to
+    `frontend/src/App.vue`.
 
 ## High-Risk Dependency Clusters
 

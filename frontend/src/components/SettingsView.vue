@@ -13,6 +13,7 @@ import {
   Shield,
   Volume2,
   UserRound,
+  X,
 } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
@@ -194,6 +195,15 @@ function handleNoiseSuppressionModeChange(event: Event) {
 
 <template>
   <section class="settings-view" :aria-label="t('settings.userSettings')">
+    <button
+      type="button"
+      class="settings-overlay-close"
+      :title="t('settings.close')"
+      :aria-label="t('settings.close')"
+      @click="emit('close')"
+    >
+      <X :size="20" aria-hidden="true" />
+    </button>
     <aside class="settings-sidebar" :aria-label="t('settings.userSettings')">
       <div class="settings-user-card">
         <span class="settings-avatar" :class="userStatus">

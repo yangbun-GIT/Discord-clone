@@ -500,6 +500,8 @@ For ordinary implementation work:
   - Top-level app shell and remaining global workflow orchestration.
   - Delegates global notices, app context menus, invite modal state, and workspace
     title/subtitle calculation to focused composables.
+  - Renders user settings as an app-level modal overlay while preserving the
+    current Friends/DM/server/voice workspace behind the dimmed layer.
   - Restores the last per-user DM/server/voice workspace location during app
     bootstrap before guild and DM state reconciliation.
   - Triggers automatic voice rejoin when the refreshed gateway reaches connected
@@ -616,6 +618,8 @@ For ordinary implementation work:
     controls.
   - Accepts an initial panel from `App.vue` so voice controls can land directly on
     Voice & Video instead of My Account.
+  - Owns the close control inside the Discord-like settings modal; page-level
+    presentation and backdrop handling are owned by `App.vue`.
 - `frontend/src/components/ServerAddDialog.vue`
   - Localized server create/join dialog.
   - Closes on explicit close/cancel and backdrop click.
@@ -627,7 +631,9 @@ For ordinary implementation work:
 - `frontend/src/stores/session.ts`
   - Auth token, current user, login/register/demo/logout.
 - `frontend/src/stores/navigation.ts`
-  - Active destination: friends, DM, server, voice, and settings.
+  - Active destination: friends, DM, server, and voice; settings is tracked as a
+    separate overlay-open state so opening settings does not replace the current
+    workspace.
   - Persists the last per-user restorable workspace location through
     `browserStorage` so refresh returns to the previous DM/server/voice page.
 - `frontend/src/stores/guilds.ts`

@@ -53,6 +53,7 @@ function parseWorkspaceLocation(rawLocation: string | null): PersistedWorkspaceL
 export const useNavigationStore = defineStore('navigation', () => {
   const destination = ref<AppDestination>('friends')
   const activeDmId = ref<number | null>(null)
+  const settingsOpen = ref(false)
   const settingsReturnDestination = ref<AppDestination>('friends')
   const settingsReturnDmId = ref<number | null>(null)
 
@@ -77,21 +78,25 @@ export const useNavigationStore = defineStore('navigation', () => {
   }
 
   function openSettings() {
-    if (destination.value !== 'settings') {
+    if (!settingsOpen.value) {
       settingsReturnDestination.value = destination.value
       settingsReturnDmId.value = activeDmId.value
     }
-    destination.value = 'settings'
+    settingsOpen.value = true
   }
 
   function closeSettings() {
-    destination.value = settingsReturnDestination.value
-    activeDmId.value = settingsReturnDmId.value
+    settingsOpen.value = false
+    if (destination.value === 'settings') {
+      destination.value = settingsReturnDestination.value
+      activeDmId.value = settingsReturnDmId.value
+    }
   }
 
   function resetNavigation() {
     destination.value = 'friends'
     activeDmId.value = null
+    settingsOpen.value = false
     settingsReturnDestination.value = 'friends'
     settingsReturnDmId.value = null
   }
@@ -139,6 +144,7 @@ export const useNavigationStore = defineStore('navigation', () => {
   return {
     destination,
     activeDmId,
+    settingsOpen,
     openFriends,
     openDm,
     openServerChannel,
