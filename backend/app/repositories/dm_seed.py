@@ -95,10 +95,11 @@ async def reset_postgres_development_workspace(
     username: str,
     find_existing_dm: FindExistingDm,
 ) -> None:
-    if user_id != ADMIN_DEMO_USER_ID:
+    if user_id == GUIDE_USER_ID:
         raise PermissionError(
-            "development workspace reset is only available for the admin test account",
+            "development workspace reset is not available for the guide account",
         )
+    reset_username = "admin" if user_id == ADMIN_DEMO_USER_ID else username
 
     lock_key = DEMO_WORKSPACE_LOCK_OFFSET + user_id
     await database.execute("SELECT pg_advisory_lock($1)", lock_key)
@@ -107,7 +108,7 @@ async def reset_postgres_development_workspace(
         await _reset_postgres_development_workspace_locked(
             database=database,
             user_id=user_id,
-            username=username,
+            username=reset_username,
         )
         await _ensure_postgres_guide_workspace_locked(
             database=database,
@@ -142,6 +143,18 @@ async def _reset_postgres_development_workspace_locked(
     )
     await database.execute(
         "DELETE FROM user_server_rail_layouts WHERE user_id = $1",
+        user_id,
+    )
+    await database.execute(
+        "DELETE FROM invites WHERE creator_id = $1",
+        user_id,
+    )
+    await database.execute(
+        "DELETE FROM member_roles WHERE user_id = $1",
+        user_id,
+    )
+    await database.execute(
+        "DELETE FROM messages WHERE author_id = $1",
         user_id,
     )
     await database.execute(
@@ -184,7 +197,8 @@ async def _reset_postgres_development_workspace_locked(
         user_id,
         username.lower(),
     )
-    await _restore_postgres_default_guilds_locked(database)
+    if user_id == ADMIN_DEMO_USER_ID:
+        await _restore_postgres_default_guilds_locked(database)
 
 
 async def _restore_postgres_default_guilds_locked(database: Any) -> None:

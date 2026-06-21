@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.dependencies import get_current_user
 from app.core.config import get_settings
 from app.core.security import create_access_token
-from app.repositories.dm_seed import ADMIN_DEMO_USER_ID
 from app.schemas.auth import DevSessionRequest, DevSessionResponse, UserPublic
 from app.services.dm_service import reset_development_workspace
 
@@ -30,13 +29,11 @@ async def reset_dev_session(
     settings = get_settings()
     if settings.environment not in {"local", "dev", "test"}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    if current_user.id != ADMIN_DEMO_USER_ID:
+    try:
+        await reset_development_workspace(current_user)
+    except PermissionError as exc:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="development reset is only available for the admin test account",
-        )
-
-    await reset_development_workspace(
-        UserPublic(id=ADMIN_DEMO_USER_ID, username="admin", status=1),
-    )
+            detail=str(exc),
+        ) from exc
     return {"reset": True}

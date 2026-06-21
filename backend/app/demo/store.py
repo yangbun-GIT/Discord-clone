@@ -568,16 +568,17 @@ class DemoStore:
             return DmMessageDeleteRead(id=message_id, dm_id=dm_id)
 
     def reset_development_workspace(self, user: UserPublic) -> None:
-        if user.id != ADMIN_DEMO_USER_ID:
+        if user.id == GUIDE_USER_ID:
             raise PermissionError(
-                "development workspace reset is only available for the admin test account",
+                "development workspace reset is not available for the guide account",
             )
+        reset_username = "admin" if user.id == ADMIN_DEMO_USER_ID else user.username
 
         with self._lock:
             self._dm_profiles[user.id] = DmParticipantRead(
                 id=user.id,
-                username=user.username,
-                handle=user.username.lower(),
+                username=reset_username,
+                handle=reset_username.lower(),
                 status="online",
                 activity=None,
             )
@@ -615,7 +616,22 @@ class DemoStore:
             ]
             for guild in non_default_guilds:
                 guild.members = [member for member in guild.members if member.id != user.id]
-            self._guilds = default_guilds + non_default_guilds
+                guild.messages = [
+                    message for message in guild.messages if message.author_id != user.id
+                ]
+            if user.id == ADMIN_DEMO_USER_ID:
+                self._guilds = default_guilds + non_default_guilds
+            else:
+                self._guilds = [
+                    guild
+                    for guild in self._guilds
+                    if guild.id in DEFAULT_GUILD_IDS or guild.owner_id != user.id
+                ]
+                for guild in self._guilds:
+                    guild.members = [member for member in guild.members if member.id != user.id]
+                    guild.messages = [
+                        message for message in guild.messages if message.author_id != user.id
+                    ]
             guide_profile = self._dm_profiles.setdefault(
                 GUIDE_USER_ID,
                 DmParticipantRead(

@@ -112,17 +112,55 @@ async def test_new_user_workspace_seeds_one_guide_dm() -> None:
     assert message_inserts[0][1:3] == (80_000_000_000_777, 700)
 
 
-async def test_development_workspace_reset_requires_admin_account() -> None:
+async def test_development_workspace_reset_rejects_guide_account() -> None:
     database = FakeResetDatabase(dm_count=0)
 
     with pytest.raises(PermissionError):
         await reset_postgres_development_workspace(
             database=database,
             id_generator=FakeIdGenerator(),
-            user_id=777,
-            username="regular",
+            user_id=GUIDE_USER_ID,
+            username="Guide",
             find_existing_dm=find_existing_dm,
         )
+
+
+async def test_development_workspace_reset_clears_regular_test_account_state() -> None:
+    database = FakeResetDatabase(dm_count=0)
+
+    await reset_postgres_development_workspace(
+        database=database,
+        id_generator=FakeIdGenerator(),
+        user_id=777,
+        username="regular",
+        find_existing_dm=find_existing_dm,
+    )
+
+    executed_queries = [query for query, _ in database.executed]
+    assert "DELETE FROM invites WHERE creator_id = $1" in executed_queries
+    assert "DELETE FROM member_roles WHERE user_id = $1" in executed_queries
+    assert "DELETE FROM messages WHERE author_id = $1" in executed_queries
+    assert not any(
+        "DELETE FROM channels WHERE guild_id = $1" in query
+        for query in executed_queries
+    )
+
+    relationship_inserts = [
+        args
+        for query, args in database.executed
+        if "INSERT INTO relationships" in query
+    ]
+    assert relationship_inserts == [(777, GUIDE_USER_ID)]
+
+    dm_member_inserts = [
+        args
+        for query, args in database.executed
+        if "INSERT INTO direct_message_members" in query
+    ]
+    assert dm_member_inserts == [
+        (80_000_000_000_777, 777, 1),
+        (80_000_000_000_777, GUIDE_USER_ID, 0),
+    ]
 
 
 async def test_development_workspace_reset_clears_admin_dm_state() -> None:
@@ -145,6 +183,9 @@ async def test_development_workspace_reset_clears_admin_dm_state() -> None:
     assert "DELETE FROM user_server_rail_layouts WHERE user_id = $1" in executed_queries
     assert any("DELETE FROM guilds" in query for query in executed_queries)
     assert any("DELETE FROM guild_members" in query for query in executed_queries)
+    assert "DELETE FROM invites WHERE creator_id = $1" in executed_queries
+    assert "DELETE FROM member_roles WHERE user_id = $1" in executed_queries
+    assert "DELETE FROM messages WHERE author_id = $1" in executed_queries
 
     relationship_inserts = [
         args
