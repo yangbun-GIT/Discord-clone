@@ -58,6 +58,12 @@ docs/qa-artifacts/
 docs/reference-videos/
 
 # Local-only planning, remediation, prompt, and stage work documents
+AGENTS.md
+DEVELOPMENT_PROMPT.md
+PROJECT_CONTEXT.md
+docs/GITHUB_COLLABORATION_WORKFLOW.md
+docs/project-file-map.md
+docs/structure-map/
 docs/remediation-tasks/
 docs/prompts/
 docs/stage-*.md
