@@ -214,6 +214,10 @@ For ordinary implementation work:
   - Routes Discord-like voice workspace stage layout changes across
     `frontend/src/App.vue`, `frontend/src/styles/base.css`, and
     `frontend/src/i18n/index.ts`.
+  - Tracks the receiver-refresh screen-share repair path across
+    `frontend/src/components/VoiceVideoSink.vue`,
+    `frontend/src/composables/voicePeerConnections.ts`, and
+    `scripts/realtime_browser_smoke.mjs`.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh
@@ -601,6 +605,8 @@ For ordinary implementation work:
     supported, and local deafen-to-audio-muted binding.
 - `frontend/src/components/VoiceVideoSink.vue`
   - Local and remote video/screen stream rendering.
+  - Forces muted autoplay for screen-share video elements and retries playback on
+    stream track/metadata changes to avoid refreshed receiver black-video states.
 - `frontend/src/components/SettingsView.vue`
   - User settings shell and settings sections, including Voice & Video device,
     volume, sensitivity, live input-level meter, and native audio-processing

@@ -136,21 +136,50 @@ async function countRemoteScreenVideos(page) {
       const stream = video.srcObject
       return stream instanceof MediaStream
         && stream.getVideoTracks().some((track) => track.readyState === 'live')
+        && video.muted
+        && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+        && video.videoWidth > 0
+        && video.videoHeight > 0
     }).length,
   )
 }
 
 async function waitForRemoteScreenTile(receiverPage, senderPage) {
   try {
-    await receiverPage.waitForSelector('.screen-share-tile video', {
-      state: 'attached',
-      timeout: 10_000,
-    })
+    await receiverPage.waitForFunction(
+      () => [...document.querySelectorAll('.screen-share-tile video')].some((video) => {
+        const stream = video.srcObject
+        return stream instanceof MediaStream
+          && stream.getVideoTracks().some((track) => track.readyState === 'live')
+          && video.muted
+          && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+          && video.videoWidth > 0
+          && video.videoHeight > 0
+      }),
+      null,
+      { timeout: 10_000 },
+    )
   } catch (error) {
     const receiverDebug = await receiverPage.evaluate(() => ({
       screenStages: document.querySelectorAll('.screen-share-stage').length,
       screenTiles: document.querySelectorAll('.screen-share-tile').length,
       videoElements: document.querySelectorAll('video').length,
+      screenVideos: [...document.querySelectorAll('.screen-share-tile video')].map((video) => {
+        const stream = video.srcObject
+        return {
+          muted: video.muted,
+          paused: video.paused,
+          readyState: video.readyState,
+          videoWidth: video.videoWidth,
+          videoHeight: video.videoHeight,
+          videoTracks: stream instanceof MediaStream
+            ? stream.getVideoTracks().map((track) => ({
+                muted: track.muted,
+                readyState: track.readyState,
+              }))
+            : [],
+        }
+      }),
       remoteAudioSinks: document.querySelectorAll('.voice-audio-sinks audio').length,
       remoteAudioStreams: [...document.querySelectorAll('.voice-audio-sinks audio')]
         .map((audio) => {

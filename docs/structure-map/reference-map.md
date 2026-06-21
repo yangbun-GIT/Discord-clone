@@ -1031,9 +1031,12 @@ Browser UI
       offer/answer/ICE handling, pending ICE candidate queueing, stale signal
       filtering, bounded failed-peer retry, reserved video transceivers for screen
       sharing, explicit screen-share state signal handling, remote screen-track
-      state refresh, remote RTC session tracking with stale peer replacement,
-      local audio-track replacement for microphone-chain reloads, remote
-      received-audio speaking detection, and participant synchronization.
+      state refresh, bounded screen-track repair for refreshed receivers, remote
+      RTC session tracking with stale peer replacement, answer-side peer
+      recreation for reused incoming offers, proactive screen-sharer
+      renegotiation for later/rejoined participants, local audio-track
+      replacement for microphone-chain reloads, remote received-audio speaking
+      detection, and participant synchronization.
 
 - `frontend/src/composables/useVoiceSessionController.ts`
   - References:
@@ -1170,6 +1173,8 @@ Browser UI
 - `frontend/src/components/VoiceVideoSink.vue`
   - Receives current-channel local or remote screen/video stream from
     `frontend/src/App.vue`/`useVoiceRtc`.
+  - Owns muted autoplay and track/metadata replay attempts for screen-share video
+    elements so refreshed receivers can recover a renderable remote screen.
 - `frontend/src/components/SettingsView.vue`
   - Receives current user, status controls, debug-safe voice constraint support,
     voice device setting state, and the exact live input level from

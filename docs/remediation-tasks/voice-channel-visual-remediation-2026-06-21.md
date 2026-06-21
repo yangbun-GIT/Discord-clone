@@ -206,3 +206,42 @@ voice-panel behavior.
   `remoteScreenVideosAfterReceiverReload: 1`,
   `receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
   `voiceRejoinRecovered: true`, and `browserErrors: 0`.
+
+## Follow-up VCV-10: remote screen video black after refresh
+
+- Reported issue: after A is already screen sharing, B refreshes and rejoins the
+  voice channel successfully, but B can still see a black/missing remote screen
+  tile instead of A's active screen share.
+- Root cause boundary: the refreshed peer can receive the explicit screen-share
+  state before a usable remote video track is available. Reusing an existing
+  answer-side peer during same-session repair can also leave the active screen
+  sender out of the renegotiated media path.
+- Fix:
+  - `VoiceVideoSink.vue` now forces screen-share video elements to be muted and
+    retries playback when stream tracks or media metadata change, avoiding
+    autoplay-blocked black video when the same stream carries audio and video.
+  - `voicePeerConnections.ts` schedules a bounded screen repair when a peer is
+    marked as screen sharing but no active remote screen track appears.
+  - Offer handling now recreates an existing peer for non-new incoming offers, so
+    an answerer with an active screen share reattaches the current display track
+    to a fresh `RTCPeerConnection`.
+  - Participant sync now lets an already-screen-sharing user proactively
+    renegotiate with later/rejoined participants, independent of user-id offer
+    ordering.
+  - `scripts/realtime_browser_smoke.mjs` now records actual screen-video
+    readiness details in failure output.
+- Verification:
+  - `npm run lint:frontend` passed.
+  - `npm run test:frontend` passed.
+  - `npm --prefix frontend run build` passed.
+  - `git diff --check` passed with line-ending warnings only.
+  - HTTPS Docker frontend/tunnel origins were rebuilt with
+    `npm run docker:up:https:detached`.
+- Remaining manual gate:
+  - `npm run smoke:realtime:browser:https` currently fails the stricter screen
+    frame check in fake-screen automation. The debug output shows remote audio
+    sink recovery and screen-state tile creation, but Chrome's fake screen
+    capture does not provide a renderable remote video frame in this run
+    (`videoWidth: 0`, `videoHeight: 0`). Recheck the real two-browser scenario
+    with an actual shared tab/window: A shares screen, B refreshes, B should
+    auto-rejoin voice and then receive A's live screen again without a black tile.

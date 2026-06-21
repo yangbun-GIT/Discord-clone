@@ -2428,6 +2428,17 @@ Completed Stage 2 bridge work:
   `VOICE_STATE_SNAPSHOT` without waiting for existing participants to mute,
   deafen, leave, or rejoin. Backend tests cover both manager-level snapshot
   delivery and the realtime fan-out trigger.
+- A 2026-06-21 screen-share refresh follow-up targets the remaining black remote
+  screen case after a refreshed participant rejoins voice. `VoiceVideoSink.vue`
+  now mutes screen-share video elements and retries playback when tracks or media
+  metadata change. `voicePeerConnections.ts` adds bounded repair when explicit
+  remote screen state is true but no active screen track arrives, recreates
+  already-used answer-side peers for incoming offers, and makes an active screen
+  sharer proactively renegotiate with later/rejoined participants. Frontend lint,
+  tests, production build, and `git diff --check` passed. The stricter HTTPS
+  browser smoke still cannot complete the fake-screen frame assertion
+  (`videoWidth: 0`, `videoHeight: 0`), so the real shared tab/window refresh path
+  remains a manual QA gate.
 
 After each stage or meaningful feature:
 

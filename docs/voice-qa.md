@@ -534,6 +534,24 @@ Latest result: `npm run smoke:realtime:browser:https` passed with
 `remoteScreenCleared: true`, `voiceRejoinRecovered: true`, and
 `browserErrors: 0`.
 
+Follow-up 2026-06-21:
+
+- Additional mitigation was added for the real-browser report where B can
+  refresh/rejoin while A is already sharing screen, recover voice, but still see a
+  black or missing remote screen-share video.
+- The frontend now retries muted screen-video playback on track/metadata changes,
+  performs bounded peer repair when screen state is true but no active remote
+  video track appears, recreates peers for reused incoming offers, and has the
+  current screen sharer proactively renegotiate with later/rejoined participants.
+- Verification commands passed: `npm run lint:frontend`,
+  `npm run test:frontend`, `npm --prefix frontend run build`, and
+  `git diff --check`.
+- `npm run smoke:realtime:browser:https` currently fails only the stricter
+  fake-screen frame assertion. Debug output shows the receiver voice UI and audio
+  sink recover, but the fake capture path does not expose a renderable remote
+  video frame (`videoWidth: 0`, `videoHeight: 0`). This must be verified with a
+  real shared tab/window before marking the black-screen regression fully closed.
+
 This is still not a real internet voice completion. The current local metadata
 reports `turn_configured: false`, so real microphone quality, real screen picker
 UX, different-PC LAN, and TURN/NAT internet voice remain manual release gates.

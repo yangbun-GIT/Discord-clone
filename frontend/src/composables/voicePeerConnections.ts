@@ -9,6 +9,8 @@ import type {
 
 const PEER_RETRY_DELAY_MS = 1_000
 const MAX_PEER_RETRY_COUNT = 1
+const SCREEN_REPAIR_DELAY_MS = 2_500
+const MAX_SCREEN_REPAIR_COUNT = 2
 const SIGNALING_STABLE_WAIT_MS = 2_000
 const REMOTE_SPEAKING_THRESHOLD = 12
 const REMOTE_SPEAKING_RELEASE_MS = 900
@@ -128,6 +130,8 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
   const peers = new Map<PeerKey, PeerEntry>()
   const retryTimers = new Map<PeerKey, number>()
   const retryCounts = new Map<PeerKey, number>()
+  const screenRepairTimers = new Map<PeerKey, number>()
+  const screenRepairCounts = new Map<PeerKey, number>()
   const signalQueues = new Map<PeerKey, Promise<void>>()
   const remoteSpeakingMonitors = new Map<PeerKey, RemoteSpeakingMonitor>()
   const remoteScreenStates = new Map<PeerKey, boolean>()
@@ -159,10 +163,22 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     }
   }
 
-  function closePeer(key: PeerKey) {
+  function clearScreenRepairTimer(key: PeerKey) {
+    const timer = screenRepairTimers.get(key)
+    if (timer !== undefined) {
+      window.clearTimeout(timer)
+      screenRepairTimers.delete(key)
+    }
+  }
+
+  function closePeer(key: PeerKey, options: { preserveScreenRepairCount?: boolean } = {}) {
     const peer = peers.get(key)
     if (!peer) return
     clearRetryTimer(key)
+    clearScreenRepairTimer(key)
+    if (!options.preserveScreenRepairCount) {
+      screenRepairCounts.delete(key)
+    }
     stopRemoteSpeakingMonitor(key)
     remoteScreenStates.delete(key)
     remoteSessionIds.delete(key)
@@ -201,6 +217,11 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     if (!streamHasLiveTrack(peer.stream)) {
       removeRemoteStream(peer)
       return
+    }
+    if (screenTrackIsActive(peer.stream)) {
+      const key = peerKey(peer.channelId, peer.userId)
+      clearScreenRepairTimer(key)
+      screenRepairCounts.delete(key)
     }
     replaceRemoteStream(peer, {
       sharingScreen: peerIsSharingScreen(peer),
@@ -289,6 +310,30 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     }, PEER_RETRY_DELAY_MS)
 
     retryTimers.set(key, timer)
+  }
+
+  function scheduleScreenRepair(peer: PeerEntry) {
+    const key = peerKey(peer.channelId, peer.userId)
+    if (!isActivePeer(peer) || screenRepairTimers.has(key)) return
+
+    const retryCount = screenRepairCounts.get(key) ?? 0
+    if (retryCount >= MAX_SCREEN_REPAIR_COUNT) return
+
+    const timer = window.setTimeout(() => {
+      screenRepairTimers.delete(key)
+      const currentPeer = peers.get(key)
+      if (!currentPeer || !isActivePeer(currentPeer)) return
+      if (!remoteScreenStates.get(key) || screenTrackIsActive(currentPeer.stream)) return
+
+      screenRepairCounts.set(key, retryCount + 1)
+      closePeer(key, { preserveScreenRepairCount: true })
+
+      const activeOptions = options.getActiveOptions()
+      if (!activeOptions || activeOptions.channelId !== peer.channelId) return
+      void createOfferFor(peer.userId, peer.username).catch(() => {})
+    }, SCREEN_REPAIR_DELAY_MS)
+
+    screenRepairTimers.set(key, timer)
   }
 
   function ensurePeer(userId: number, username: string | null, reset = false) {
@@ -501,6 +546,12 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     for (const participant of participantPeers(participants, activeOptions.currentUserId)) {
       if (activeOptions.currentUserId < participant.user_id) {
         await createOfferFor(participant.user_id, participant.username)
+        continue
+      }
+      if (localScreenShareIsActive()) {
+        const peer = ensurePeer(participant.user_id, participant.username)
+        sendScreenStateToPeer(peer, true)
+        await renegotiatePeer(peer)
       }
     }
   }
@@ -553,11 +604,14 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     ) {
       return
     }
+    const existingPeer = peers.get(key)
     const shouldResetPeer = (
       signal.type === 'offer'
-      && Boolean(incomingSessionId)
-      && peers.has(key)
-      && knownSessionId !== incomingSessionId
+      && existingPeer !== undefined
+      && (
+        (Boolean(incomingSessionId) && knownSessionId !== incomingSessionId)
+        || existingPeer.connection.connectionState !== 'new'
+      )
     )
     const peer = ensurePeer(signal.from_user_id, signal.from_username, shouldResetPeer)
     if (incomingSessionId) {
@@ -569,8 +623,17 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
       if (signal.channel_id !== currentOptions.channelId || peer.channelId !== currentOptions.channelId) return
 
       if (signal.type === 'screen') {
-        remoteScreenStates.set(peerKey(peer.channelId, peer.userId), Boolean(signal.screen_sharing))
-        replaceRemoteStream(peer, { sharingScreen: Boolean(signal.screen_sharing) })
+        const sharingScreen = Boolean(signal.screen_sharing)
+        remoteScreenStates.set(peerKey(peer.channelId, peer.userId), sharingScreen)
+        if (!sharingScreen) {
+          const key = peerKey(peer.channelId, peer.userId)
+          clearScreenRepairTimer(key)
+          screenRepairCounts.delete(key)
+        }
+        replaceRemoteStream(peer, { sharingScreen })
+        if (sharingScreen && !screenTrackIsActive(peer.stream)) {
+          scheduleScreenRepair(peer)
+        }
         return
       }
       if (signal.type === 'offer' && signal.description) {
@@ -616,6 +679,9 @@ export function createVoicePeerRegistry(options: VoicePeerRegistryOptions) {
     retryTimers.forEach((timer) => window.clearTimeout(timer))
     retryTimers.clear()
     retryCounts.clear()
+    screenRepairTimers.forEach((timer) => window.clearTimeout(timer))
+    screenRepairTimers.clear()
+    screenRepairCounts.clear()
     remoteScreenStates.clear()
     remoteSessionIds.clear()
     for (const key of remoteSpeakingMonitors.keys()) {

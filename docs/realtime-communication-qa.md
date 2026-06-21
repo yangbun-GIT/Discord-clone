@@ -556,3 +556,24 @@ Latest automated HTTPS result passed with
 `remoteScreenVideosAfterReceiverReload: 1`,
 `receiverAudioSinksAfterReload: 1`, `remoteScreenCleared: true`,
 `voiceRejoinRecovered: true`, and `browserErrors: 0`.
+
+## 2026-06-21 Screen-Share Refresh Repair Follow-Up
+
+User testing still found a narrower real-browser case after the refresh recovery:
+voice reconnects after B refreshes, but A's already-active shared screen can appear
+black or missing on B. The frontend P2P path now adds a second repair layer:
+
+- Screen-share video elements are muted and replayed when stream tracks or media
+  metadata change.
+- If a peer is marked as screen sharing but no active remote video track appears,
+  the receiver schedules a bounded peer repair.
+- Incoming offers recreate an already-used peer so the answerer can reattach the
+  current screen track to a fresh `RTCPeerConnection`.
+- A user who is already screen sharing proactively renegotiates with later or
+  rejoined participants during voice participant sync.
+
+Verification passed for `npm run lint:frontend`, `npm run test:frontend`,
+`npm --prefix frontend run build`, and `git diff --check`. The stricter
+`npm run smoke:realtime:browser:https` frame assertion currently fails in the
+fake-screen automation path with `videoWidth: 0` and `videoHeight: 0`, so the real
+shared tab/window two-browser refresh scenario remains a required manual QA gate.
