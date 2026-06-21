@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Circle, Plus, RefreshCw, Settings, UserMinus, X } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
@@ -32,39 +32,85 @@ const ROLE_PRESETS = [
 const roleName = ref('')
 const rolePermissions = ref(0)
 const showManagement = ref(false)
-const selectedRoleByMember = reactive<Record<number, number | null>>({})
+const selectedMemberId = ref<number | null>(null)
+const selectedRoleId = ref<number | null>(null)
 const roleOptions = computed(() => props.roles)
 const { t } = useI18n()
 
+function normalizedRoleName(name: string) {
+  return name.trim().toLocaleLowerCase()
+}
+
+const uniqueRoleOptions = computed(() => {
+  const seen = new Set<string>()
+  return roleOptions.value.filter((role) => {
+    const key = normalizedRoleName(role.name)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+})
+
+const roleNameExists = computed(() => {
+  const nextRoleName = normalizedRoleName(roleName.value)
+  if (!nextRoleName) return false
+  return roleOptions.value.some((role) => normalizedRoleName(role.name) === nextRoleName)
+})
+
+const selectedMemberModel = computed<number | null>({
+  get() {
+    if (selectedMemberId.value && props.members.some((member) => member.id === selectedMemberId.value)) {
+      return selectedMemberId.value
+    }
+    return props.members[0]?.id ?? null
+  },
+  set(value) {
+    selectedMemberId.value = value
+    selectedRoleId.value = null
+  },
+})
+
+const selectedMember = computed(() => (
+  props.members.find((member) => member.id === selectedMemberModel.value) ?? null
+))
+
+function assignableRoles(member: Member) {
+  return uniqueRoleOptions.value.filter((role) => !member.role_ids.includes(role.id))
+}
+
+const selectedMemberAssignableRoles = computed(() => (
+  selectedMember.value ? assignableRoles(selectedMember.value) : []
+))
+
+const selectedRoleModel = computed<number | null>({
+  get() {
+    if (
+      selectedRoleId.value
+      && selectedMemberAssignableRoles.value.some((role) => role.id === selectedRoleId.value)
+    ) {
+      return selectedRoleId.value
+    }
+    return selectedMemberAssignableRoles.value[0]?.id ?? null
+  },
+  set(value) {
+    selectedRoleId.value = value
+  },
+})
+
 function handleCreateRole() {
   const name = roleName.value.trim()
-  if (!name) return
+  if (!name || roleNameExists.value) return
   emit('createRole', name, rolePermissions.value)
   roleName.value = ''
   rolePermissions.value = 0
 }
 
-function firstAssignableRole(member: Member) {
-  return roleOptions.value.find((role) => !member.role_ids.includes(role.id))?.id ?? null
-}
-
-function assignableRoles(member: Member) {
-  return roleOptions.value.filter((role) => !member.role_ids.includes(role.id))
-}
-
-function selectedAssignableRole(member: Member) {
-  const selectedRoleId = selectedRoleByMember[member.id]
-  if (selectedRoleId && assignableRoles(member).some((role) => role.id === selectedRoleId)) {
-    return selectedRoleId
-  }
-  return firstAssignableRole(member)
-}
-
-function assignSelectedRole(member: Member) {
-  const roleId = selectedAssignableRole(member)
-  if (roleId === null) return
-  emit('assignRole', member.id, roleId)
-  selectedRoleByMember[member.id] = null
+function assignSelectedRole() {
+  const memberId = selectedMemberModel.value
+  const roleId = selectedRoleModel.value
+  if (memberId === null || roleId === null) return
+  emit('assignRole', memberId, roleId)
+  selectedRoleId.value = null
 }
 
 function canRemoveMember(member: Member) {
@@ -124,7 +170,50 @@ function memberStatus(member: Member) {
             {{ preset.label }}
           </option>
         </select>
-        <button type="submit" :aria-label="t('members.createRole')" :disabled="!roleName.trim() || disabled">
+        <button
+          type="submit"
+          :aria-label="t('members.createRole')"
+          :disabled="!roleName.trim() || roleNameExists || disabled"
+        >
+          <Plus :size="15" aria-hidden="true" />
+        </button>
+      </form>
+      <p v-if="roleNameExists" class="member-management-hint">{{ t('members.duplicateRole') }}</p>
+      <form
+        v-if="members.length && uniqueRoleOptions.length"
+        class="role-grant-form"
+        @submit.prevent="assignSelectedRole"
+      >
+        <select
+          v-model.number="selectedMemberModel"
+          :aria-label="t('members.selectMember')"
+          :disabled="disabled"
+        >
+          <option v-for="member in members" :key="member.id" :value="member.id">
+            {{ member.username }}
+          </option>
+        </select>
+        <select
+          v-model.number="selectedRoleModel"
+          :aria-label="t('members.selectRoleForMember')"
+          :disabled="disabled || !selectedMemberAssignableRoles.length"
+        >
+          <option
+            v-for="role in selectedMemberAssignableRoles"
+            :key="role.id"
+            :value="role.id"
+          >
+            {{ role.name }}
+          </option>
+          <option v-if="!selectedMemberAssignableRoles.length" :value="null">
+            {{ t('members.noAssignableRoles') }}
+          </option>
+        </select>
+        <button
+          type="submit"
+          :aria-label="t('members.assignSelectedRole')"
+          :disabled="disabled || selectedMemberModel === null || selectedRoleModel === null"
+        >
           <Plus :size="15" aria-hidden="true" />
         </button>
       </form>
@@ -158,33 +247,6 @@ function memberStatus(member: Member) {
             <X :size="12" aria-hidden="true" />
           </button>
         </div>
-        <form
-          v-if="assignableRoles(member).length"
-          class="member-role-assign-form"
-          @submit.prevent="assignSelectedRole(member)"
-        >
-          <select
-            v-model.number="selectedRoleByMember[member.id]"
-            :aria-label="t('members.selectRole', { user: member.username })"
-            :disabled="disabled"
-          >
-            <option
-              v-for="role in assignableRoles(member)"
-              :key="role.id"
-              :value="role.id"
-            >
-              {{ role.name }}
-            </option>
-          </select>
-          <button
-            type="submit"
-            class="role-add-button"
-            :aria-label="t('members.assignSelectedRole', { user: member.username })"
-            :disabled="disabled"
-          >
-            <Plus :size="13" aria-hidden="true" />
-          </button>
-        </form>
         <button
           v-if="canRemoveMember(member)"
           type="button"

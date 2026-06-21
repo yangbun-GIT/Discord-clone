@@ -5587,7 +5587,8 @@ select:focus-visible {
   font-weight: 800;
 }
 
-.role-create-form {
+.role-create-form,
+.role-grant-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 92px 30px;
   gap: 6px;
@@ -5595,7 +5596,7 @@ select:focus-visible {
 
 .role-create-form input,
 .role-create-form select,
-.member-role-assign-form select {
+.role-grant-form select {
   width: 100%;
   min-height: 30px;
   border: 1px solid rgb(255 255 255 / 9%);
@@ -5607,17 +5608,19 @@ select:focus-visible {
 }
 
 .role-create-form select,
-.member-role-assign-form select {
+.role-grant-form select {
   appearance: none;
 }
 
 .role-create-form button,
+.role-grant-form button,
 .member-role-controls button {
   border: 0;
   border-radius: 8px;
 }
 
-.role-create-form button {
+.role-create-form button,
+.role-grant-form button {
   width: 30px;
   height: 30px;
   display: grid;
@@ -5627,9 +5630,17 @@ select:focus-visible {
 }
 
 .role-create-form button:disabled,
+.role-grant-form button:disabled,
 .member-role-controls button:disabled {
   color: #94a3b8;
   background: rgb(255 255 255 / 9%);
+}
+
+.member-management-hint {
+  margin: -2px 0 0;
+  color: #fca5a5;
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .member-row {
@@ -5685,16 +5696,16 @@ select:focus-visible {
 }
 
 .member-role-chip-list,
-.member-role-assign-form {
+.role-grant-form {
   min-width: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.member-role-assign-form {
+.role-grant-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 26px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 30px;
 }
 
 .role-chip,

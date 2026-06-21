@@ -590,8 +590,9 @@ For ordinary implementation work:
     for local overlays.
 - `frontend/src/components/MemberList.vue`
   - Server member list plus explicit role/member controls.
-  - Displays assigned roles as removable chips and provides per-member role
-    selection before granting an unassigned role.
+  - Displays assigned roles as removable chips and provides one manager-facing
+    member/role selector for granting unassigned roles without per-row dropdown
+    clutter.
 - `frontend/src/components/VoicePanel.vue`
   - Voice-channel workspace, participant tiles, screen-share state, bottom user
     controls, and quick input/output device popovers.
