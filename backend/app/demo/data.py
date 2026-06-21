@@ -24,7 +24,7 @@ def create_initial_guilds() -> list[GuildRead]:
                 ChannelRead(id=2004, guild_id=1001, name="study-room", type=1, position=3),
             ],
             members=[
-                MemberRead(id=42, username="yangbun", status=1, role="Owner"),
+                MemberRead(id=42, username="admin", status=1, role="Owner"),
                 MemberRead(id=43, username="codex", status=1, role="Engineer"),
                 MemberRead(id=44, username="reviewer", status=0, role="Advisor"),
                 MemberRead(id=45, username="designer", status=1, role="Member"),
@@ -42,7 +42,7 @@ def create_initial_guilds() -> list[GuildRead]:
                     id=3002,
                     channel_id=2001,
                     author_id=42,
-                    author_name="yangbun",
+                    author_name="admin",
                     content="좋아. 채팅 화면은 최대한 조용하고 읽기 쉽게 맞춰볼게.",
                 ),
                 MessageRead(

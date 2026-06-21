@@ -12,7 +12,19 @@ class IdGenerator(Protocol):
 
 FindExistingDm = Callable[[list[int]], Awaitable[int | None]]
 
+ADMIN_DEMO_USER_ID = 42
+GUIDE_USER_ID = 700
+GUIDE_DM_ID_OFFSET = 80_000_000_000_000
+GUIDE_USERNAME = "Guide"
+GUIDE_HANDLE = "discord.guide"
+GUIDE_MESSAGE = (
+    "Discord Clone에 오신 것을 환영합니다. 왼쪽 사이드바에서 친구와 서버를 이동하고, "
+    "친구 추가, DM, 서버 초대, 텍스트 채팅, 음성 채널, 화면 공유를 확인해 보세요. "
+    "하단 사용자 패널의 설정에서 언어와 음성 장치를 조정할 수 있습니다."
+)
+
 DEMO_DM_PROFILES = [
+    (GUIDE_USER_ID, GUIDE_USERNAME, GUIDE_HANDLE, "online", "Clone guide"),
     (701, "Mina", "mina.study", "online", "Reading in voice"),
     (702, "Joon", "joon.dev", "online", "Working on layout"),
     (703, "Rina", "rina.notes", "idle", "Reviewing notes"),
@@ -21,7 +33,7 @@ DEMO_DM_PROFILES = [
     (706, "Tae", "tae.voice", "online", "In a voice channel"),
 ]
 
-DEMO_RELATIONSHIPS = [
+ADMIN_DEMO_RELATIONSHIPS = [
     (701, "friend"),
     (702, "friend"),
     (703, "friend"),
@@ -30,7 +42,7 @@ DEMO_RELATIONSHIPS = [
     (706, "friend"),
 ]
 
-DEMO_DM_MESSAGES = [
+ADMIN_DEMO_DM_MESSAGES = [
     (701, "오늘 자료방 정리했어요."),
     (702, "작업 끝나면 음성 채널에서 다시 얘기하자."),
     (706, "마이크 들어오면 테두리로만 표시하면 좋겠어."),
@@ -80,6 +92,7 @@ async def _ensure_postgres_dm_demo_workspace_locked(
     user_id: int,
     find_existing_dm: FindExistingDm,
 ) -> None:
+    await _release_reserved_seed_usernames(database)
     for profile_id, username, handle, status, activity in DEMO_DM_PROFILES:
         await database.execute(
             """
@@ -114,7 +127,12 @@ async def _ensure_postgres_dm_demo_workspace_locked(
         user_id,
     )
     if relationship_count is not None and int(relationship_count["count"]) == 0:
-        for related_user_id, relationship in DEMO_RELATIONSHIPS:
+        relationships = (
+            ADMIN_DEMO_RELATIONSHIPS
+            if user_id == ADMIN_DEMO_USER_ID
+            else [(GUIDE_USER_ID, "friend")]
+        )
+        for related_user_id, relationship in relationships:
             if related_user_id == user_id:
                 continue
             await database.execute(
@@ -135,9 +153,18 @@ async def _ensure_postgres_dm_demo_workspace_locked(
     if dm_count is None or int(dm_count["count"]) > 0:
         return
 
-    for related_user_id, message in DEMO_DM_MESSAGES:
+    dm_messages = (
+        ADMIN_DEMO_DM_MESSAGES
+        if user_id == ADMIN_DEMO_USER_ID
+        else [(GUIDE_USER_ID, GUIDE_MESSAGE)]
+    )
+    for related_user_id, message in dm_messages:
         existing_dm_id = await find_existing_dm(sorted([user_id, related_user_id]))
-        dm_id = existing_dm_id or id_generator.generate()
+        dm_id = existing_dm_id or (
+            GUIDE_DM_ID_OFFSET + user_id
+            if related_user_id == GUIDE_USER_ID
+            else id_generator.generate()
+        )
         if existing_dm_id is not None:
             continue
         await database.execute(
@@ -168,4 +195,21 @@ async def _ensure_postgres_dm_demo_workspace_locked(
             dm_id,
             related_user_id,
             message,
+        )
+
+
+async def _release_reserved_seed_usernames(database: Any) -> None:
+    reserved_users = [
+        (ADMIN_DEMO_USER_ID, "admin"),
+        (GUIDE_USER_ID, GUIDE_USERNAME),
+    ]
+    for reserved_id, username in reserved_users:
+        await database.execute(
+            """
+            UPDATE users
+            SET username = username || '_legacy_' || id::text
+            WHERE username = $1 AND id <> $2
+            """,
+            username,
+            reserved_id,
         )

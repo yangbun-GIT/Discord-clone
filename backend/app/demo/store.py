@@ -797,8 +797,8 @@ class DemoStore:
         return {
             42: DmParticipantRead(
                 id=42,
-                username="yangbun",
-                handle="yangbun",
+                username="admin",
+                handle="admin",
                 status="online",
                 activity=None,
             ),
@@ -904,7 +904,7 @@ class DemoStore:
                         id=8102,
                         dm_id=801,
                         author_id=42,
-                        author_name="yangbun",
+                        author_name="admin",
                         content="좋아. 채널 목록도 더 깔끔하게 맞춰볼게.",
                     ),
                 ],

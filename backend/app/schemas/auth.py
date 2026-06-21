@@ -17,7 +17,7 @@ class AuthRequest(BaseModel):
 
 
 class DevSessionRequest(BaseModel):
-    username: str = Field(default="yangbun", min_length=2, max_length=32)
+    username: str = Field(default="admin", min_length=2, max_length=32)
     user_id: int = 42
 
 

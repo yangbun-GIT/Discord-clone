@@ -51,7 +51,7 @@ export const useSessionStore = defineStore('session', () => {
   async function ensureDevSession() {
     if (token.value) return
     const session = await apiPost<AuthSession, { username: string }>('/api/dev/session', {
-      username: 'yangbun',
+      username: 'admin',
     })
     setSession(session)
   }

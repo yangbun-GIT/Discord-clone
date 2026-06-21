@@ -2,7 +2,8 @@ from app.db.pool import database
 from app.demo.data import create_initial_guilds
 
 DM_PROFILES = [
-    (42, "yangbun", "yangbun", "online", None),
+    (42, "admin", "admin", "online", None),
+    (700, "Guide", "discord.guide", "online", "Clone guide"),
     (701, "Mina", "mina.study", "online", "Reading in voice"),
     (702, "Joon", "joon.dev", "online", "Working on layout"),
     (703, "Rina", "rina.notes", "idle", "Reviewing notes"),
@@ -44,6 +45,7 @@ DM_SEEDS = [
 
 
 async def seed_database() -> None:
+    await release_reserved_seed_usernames()
     guilds = create_initial_guilds()
     for guild in guilds:
         existing_guild = await database.fetchrow(
@@ -58,7 +60,9 @@ async def seed_database() -> None:
                 """
                 INSERT INTO users (id, username, password_hash, status)
                 VALUES ($1, $2, $3, $4)
-                ON CONFLICT (id) DO NOTHING
+                ON CONFLICT (id) DO UPDATE SET
+                    username = EXCLUDED.username,
+                    status = EXCLUDED.status
                 """,
                 member.id,
                 member.username,
@@ -116,6 +120,20 @@ async def seed_database() -> None:
             )
 
     await seed_dm_workspace()
+
+
+async def release_reserved_seed_usernames() -> None:
+    reserved_users = [(42, "admin"), (700, "Guide")]
+    for reserved_id, username in reserved_users:
+        await database.execute(
+            """
+            UPDATE users
+            SET username = username || '_legacy_' || id::text
+            WHERE username = $1 AND id <> $2
+            """,
+            username,
+            reserved_id,
+        )
 
 
 async def seed_dm_workspace() -> None:
