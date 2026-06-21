@@ -16,6 +16,16 @@ type Gateway = ReturnType<typeof useGateway>
 
 const VOICE_REJOIN_STORAGE_KEY = 'discord_clone_voice_rejoin'
 const DM_SOLO_AUTO_LEAVE_MS = 180_000
+const RECOVERABLE_VOICE_ERROR_PATTERNS = [
+  'PeerConnection cannot create an answer',
+  "PeerConnection cannot create an offer",
+  "Failed to set local offer sdp",
+  "m-lines in subsequent offer",
+  'Called in wrong state',
+  'InvalidStateError',
+  'have-remote-offer',
+  'have-local-pranswer',
+]
 
 interface VoiceSessionControllerOptions {
   guilds: GuildStore
@@ -114,6 +124,26 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     const config = await apiGet<VoiceConfig>('/api/meta/voice')
     voiceIceServers.value = config.ice_servers
     voiceTurnConfigured.value = config.turn_configured
+  }
+
+  function voiceErrorMessage(error: unknown, fallback: string) {
+    return error instanceof Error ? error.message : fallback
+  }
+
+  function isRecoverableVoiceError(error: unknown) {
+    const message = voiceErrorMessage(error, '')
+    if (!message) return false
+    return RECOVERABLE_VOICE_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
+  }
+
+  function reportVoiceConnectError(error: unknown) {
+    if (options.voiceRtc.error.value || options.voiceRtc.errorCode.value) return
+    options.setError(voiceErrorMessage(error, options.t('app.error.voiceConnectFailed')))
+  }
+
+  function reportVoiceSyncError(error: unknown, fallback: TranslationKey) {
+    if (isRecoverableVoiceError(error)) return
+    options.setError(voiceErrorMessage(error, options.t(fallback)))
   }
 
   function readStoredVoiceRejoin(): StoredVoiceRejoin | null {
@@ -255,7 +285,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
         sendSignal: options.sendVoiceSignal,
       })
     } catch (error) {
-      options.setError(error instanceof Error ? error.message : options.t('app.error.voiceConnectFailed'))
+      reportVoiceConnectError(error)
       return
     }
 
@@ -293,7 +323,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
         }),
       })
     } catch (error) {
-      options.setError(error instanceof Error ? error.message : options.t('app.error.voiceConnectFailed'))
+      reportVoiceConnectError(error)
       return
     }
 
@@ -436,7 +466,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
     () => {
       if (!options.voiceRtc.isCapturing.value || !options.session.user) return
       void options.voiceRtc.syncParticipants(connectedVoiceStates.value).catch((error) => {
-        options.setError(error instanceof Error ? error.message : options.t('app.error.voicePeerSyncFailed'))
+        reportVoiceSyncError(error, 'app.error.voicePeerSyncFailed')
       })
     },
   )
@@ -458,7 +488,7 @@ export function useVoiceSessionController(options: VoiceSessionControllerOptions
       const signalRoomId = contextType === 'dm' ? signal.dm_id : signal.channel_id
       if (contextType !== connectedVoiceContextType.value || signalRoomId !== connectedVoiceRoomId.value) return
       void options.voiceRtc.handleSignal(signal).catch((error) => {
-        options.setError(error instanceof Error ? error.message : options.t('app.error.voiceSignalFailed'))
+        reportVoiceSyncError(error, 'app.error.voiceSignalFailed')
       })
     },
   )

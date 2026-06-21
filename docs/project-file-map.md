@@ -221,6 +221,11 @@ For ordinary implementation work:
     `backend/app/gateway/events.py`, `backend/app/gateway/router.py`,
     `backend/app/gateway/voice_service.py`, and
     `scripts/realtime_browser_smoke.mjs`.
+- `docs/remediation-tasks/action-error-remediation-2026-06-21.md`
+  - Action error remediation record.
+  - Routes sanitized API fallback copy and recoverable voice/WebRTC error
+    handling through `frontend/src/services/api.ts` and
+    `frontend/src/composables/useVoiceSessionController.ts`.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest manual QA follow-up development plan.
   - Routes sustained speech dropout, screen-share participant composition, refresh
@@ -689,6 +694,8 @@ For ordinary implementation work:
 
 - `frontend/src/services/api.ts`
   - Fetch wrapper helpers for GET/POST/PATCH/DELETE.
+  - Normalizes generic failed-response fallback copy so user-facing UI does not
+    expose internal HTTP method/path details when the backend has no detail body.
 - `frontend/src/services/browserApi.ts`
   - Browser API adapter helpers for storage, clipboard, document listeners,
     viewport/location reads, gateway URL construction, navigator platform, and
@@ -772,6 +779,9 @@ For ordinary implementation work:
     while composing the guild store, gateway composable, and WebRTC facade.
   - Starts private DM calls by opening the target DM and joining a DM-scoped WebRTC
     room through the same P2P transport.
+  - Routes voice action errors so typed media failures stay in the voice-specific
+    UI and known recoverable WebRTC signaling races do not become persistent
+    workspace/global alerts.
 - `frontend/src/i18n/index.ts`
   - Korean/English copy dictionary and translation helper.
   - Keep as the public i18n facade until the split plan in

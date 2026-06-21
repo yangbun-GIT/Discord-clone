@@ -2484,6 +2484,15 @@ Completed Stage 2 bridge work:
   shows a simple permission badge plus member removal instead of per-row role
   dropdowns or role chips.
 
+- A 2026-06-21 action-error remediation pass narrowed user-facing error fan-out
+  without changing voice transport behavior. `frontend/src/services/api.ts` now
+  hides internal HTTP method/path fallback strings when the backend has no detail
+  body, and `frontend/src/composables/useVoiceSessionController.ts` keeps typed
+  voice media failures in the voice-specific surface while suppressing known
+  recoverable WebRTC signaling races from persistent workspace/global alerts.
+  The remediation record is
+  `docs/remediation-tasks/action-error-remediation-2026-06-21.md`.
+
 After each stage or meaningful feature:
 
 - Update this file's implementation map and integration notes.

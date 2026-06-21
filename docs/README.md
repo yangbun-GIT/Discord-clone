@@ -129,6 +129,10 @@ the project prompt and context files before changing code.
   - Voice channel visual remediation record.
   - Owns the Discord-like voice workspace stage, large participant/empty tiles,
     bottom-center voice action controls, and empty voice-room next-action clarity.
+- `docs/remediation-tasks/action-error-remediation-2026-06-21.md`
+  - Action error remediation record.
+  - Owns sanitized API fallback copy, duplicate voice media error prevention, and
+    recoverable WebRTC signaling race suppression.
 - `docs/remediation-tasks/manual-qa-followup-2026-06-19.md`
   - Latest user-run manual QA follow-up plan.
   - Owns sustained speech dropout, screen-share participant composition, refresh

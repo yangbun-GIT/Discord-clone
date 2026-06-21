@@ -795,6 +795,8 @@ Browser UI
   - Owns:
     - REST client helpers, including server rail layout fetch/update wrappers for
       `GET/PUT /api/users/me/server-rail`.
+    - Generic HTTP error fallback normalization so app UI does not expose internal
+      request method/path details when the backend returns no detail body.
 
 - `frontend/src/services/browserApi.ts`
   - Referenced by:
@@ -1073,6 +1075,8 @@ Browser UI
       gateway-ready refresh recovery, screen-share toggle orchestration, voice
       participant sync, incoming context-scoped voice-signal handling, and DM-only
       solo-call auto-leave timing.
+    - User-facing voice action error routing, including duplicate typed-media error
+      prevention and suppression of known recoverable WebRTC signaling state races.
 
 - `frontend/src/i18n/index.ts`
   - References:

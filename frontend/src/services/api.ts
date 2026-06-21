@@ -15,7 +15,7 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
-async function readError(response: Response, method: string, path: string) {
+async function readError(response: Response) {
   try {
     const payload = (await response.json()) as { detail?: string }
     if (payload.detail) {
@@ -24,7 +24,19 @@ async function readError(response: Response, method: string, path: string) {
   } catch {
     // Fall through to the generic status message.
   }
-  return new Error(`${method} ${path} failed with ${response.status}`)
+  if (response.status >= 500) {
+    return new Error('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.')
+  }
+  if (response.status === 401) {
+    return new Error('로그인이 필요합니다.')
+  }
+  if (response.status === 403) {
+    return new Error('이 작업을 수행할 권한이 없습니다.')
+  }
+  if (response.status === 404) {
+    return new Error('요청한 항목을 찾을 수 없습니다.')
+  }
+  return new Error(`요청을 완료하지 못했습니다. (${response.status})`)
 }
 
 export async function apiGet<T>(path: string, token?: string | null): Promise<T> {
@@ -35,7 +47,7 @@ export async function apiGet<T>(path: string, token?: string | null): Promise<T>
 
   const response = await fetch(`${API_BASE_URL}${path}`, { headers })
   if (!response.ok) {
-    throw await readError(response, 'GET', path)
+    throw await readError(response)
   }
   return response.json() as Promise<T>
 }
@@ -56,7 +68,7 @@ export async function apiPost<TResponse, TPayload>(
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    throw await readError(response, 'POST', path)
+    throw await readError(response)
   }
   return response.json() as Promise<TResponse>
 }
@@ -77,7 +89,7 @@ export async function apiPatch<TResponse, TPayload>(
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    throw await readError(response, 'PATCH', path)
+    throw await readError(response)
   }
   return response.json() as Promise<TResponse>
 }
@@ -98,7 +110,7 @@ export async function apiPut<TResponse, TPayload>(
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
-    throw await readError(response, 'PUT', path)
+    throw await readError(response)
   }
   return response.json() as Promise<TResponse>
 }
@@ -114,7 +126,7 @@ export async function apiDelete<TResponse>(path: string, token?: string | null):
     headers,
   })
   if (!response.ok) {
-    throw await readError(response, 'DELETE', path)
+    throw await readError(response)
   }
   return response.json() as Promise<TResponse>
 }
