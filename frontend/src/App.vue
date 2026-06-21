@@ -1315,24 +1315,41 @@ function handleDeleteMessage(messageId: number) {
   })
 }
 
-function handleCreateRole(name: string, permissions: number) {
-  workspaceError.value = null
-  void guilds.createRole(session.token, name, permissions).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : t('app.error.roleCreateFailed')
-  })
+const ADMINISTRATOR_PERMISSION = 1 << 3
+
+function adminRolesForActiveGuild() {
+  return guilds.activeGuild?.roles.filter((role) => (
+    (role.permissions & ADMINISTRATOR_PERMISSION) === ADMINISTRATOR_PERMISSION
+  )) ?? []
 }
 
-function handleAssignRole(memberId: number, roleId: number) {
+async function ensureAdminRole() {
+  const existingRole = adminRolesForActiveGuild()[0]
+  if (existingRole) return existingRole
+  await guilds.createRole(session.token, 'Admin', ADMINISTRATOR_PERMISSION)
+  return adminRolesForActiveGuild()[0] ?? null
+}
+
+function handleSetMemberPermission(memberId: number, level: 'member' | 'admin') {
   workspaceError.value = null
-  void guilds.assignRole(session.token, memberId, roleId).catch((error) => {
+  void (async () => {
+    const member = guilds.activeGuild?.members.find((item) => item.id === memberId)
+    if (!member) return
+    const currentAdminRoles = adminRolesForActiveGuild()
+    if (level === 'member') {
+      for (const role of currentAdminRoles) {
+        if (member.role_ids.includes(role.id)) {
+          await guilds.removeRole(session.token, memberId, role.id)
+        }
+      }
+      return
+    }
+
+    const adminRole = await ensureAdminRole()
+    if (!adminRole || member.role_ids.includes(adminRole.id)) return
+    await guilds.assignRole(session.token, memberId, adminRole.id)
+  })().catch((error) => {
     workspaceError.value = error instanceof Error ? error.message : t('app.error.roleAssignFailed')
-  })
-}
-
-function handleRemoveRole(memberId: number, roleId: number) {
-  workspaceError.value = null
-  void guilds.removeRole(session.token, memberId, roleId).catch((error) => {
-    workspaceError.value = error instanceof Error ? error.message : t('app.error.roleRemoveFailed')
   })
 }
 
@@ -2057,9 +2074,7 @@ async function handleSendInviteToFriend(friendId: number) {
           :owner-id="activeGuild.owner_id"
           :current-user-id="session.user?.id"
           :disabled="guilds.isMutating"
-          @create-role="handleCreateRole"
-          @assign-role="handleAssignRole"
-          @remove-role="handleRemoveRole"
+          @set-permission-level="handleSetMemberPermission"
           @remove-member="handleRemoveMember"
           @refresh="handleRefreshMembers"
         />

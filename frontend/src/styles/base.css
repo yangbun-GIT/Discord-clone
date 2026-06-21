@@ -5587,16 +5587,13 @@ select:focus-visible {
   font-weight: 800;
 }
 
-.role-create-form,
-.role-grant-form {
+.member-permission-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 92px 30px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 92px) 48px;
   gap: 6px;
 }
 
-.role-create-form input,
-.role-create-form select,
-.role-grant-form select {
+.member-permission-form select {
   width: 100%;
   min-height: 30px;
   border: 1px solid rgb(255 255 255 / 9%);
@@ -5607,30 +5604,29 @@ select:focus-visible {
   font-size: 0.84rem;
 }
 
-.role-create-form select,
-.role-grant-form select {
+.member-permission-form select {
   appearance: none;
 }
 
-.role-create-form button,
-.role-grant-form button,
+.member-permission-form button,
 .member-role-controls button {
   border: 0;
   border-radius: 8px;
 }
 
-.role-create-form button,
-.role-grant-form button {
-  width: 30px;
+.member-permission-form button {
+  width: 48px;
   height: 30px;
   display: grid;
   place-items: center;
+  padding: 0;
   color: #111827;
   background: #5eead4;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
-.role-create-form button:disabled,
-.role-grant-form button:disabled,
+.member-permission-form button:disabled,
 .member-role-controls button:disabled {
   color: #94a3b8;
   background: rgb(255 255 255 / 9%);
@@ -5695,21 +5691,7 @@ select:focus-visible {
   min-width: 0;
 }
 
-.member-role-chip-list,
-.role-grant-form {
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.role-grant-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 30px;
-}
-
-.role-chip,
-.role-add-button,
+.member-permission-badge,
 .member-remove-button {
   min-height: 26px;
   display: inline-flex;
@@ -5721,23 +5703,19 @@ select:focus-visible {
   font-size: 0.74rem;
 }
 
-.role-chip {
+.member-permission-badge {
+  justify-self: start;
   max-width: 100%;
   padding: 0 7px;
-}
-
-.role-chip span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.role-add-button {
-  width: 26px;
-  padding: 0;
+  border-radius: 999px;
+  font-weight: 800;
 }
 
 .member-remove-button {
+  justify-self: start;
   width: 26px;
   padding: 0;
   color: #fecaca;

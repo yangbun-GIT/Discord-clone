@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Circle, Plus, RefreshCw, Settings, UserMinus, X } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { Circle, RefreshCw, Settings, UserMinus } from 'lucide-vue-next'
 
 import { useI18n } from '../i18n'
 import type { Member, Role, UserPresenceStatus } from '../types'
@@ -15,47 +15,22 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  createRole: [name: string, permissions: number]
-  assignRole: [memberId: number, roleId: number]
-  removeRole: [memberId: number, roleId: number]
+  setPermissionLevel: [memberId: number, level: 'member' | 'admin']
   removeMember: [memberId: number]
   refresh: []
 }>()
 
-const ROLE_PRESETS = [
-  { label: 'Label', value: 0 },
-  { label: 'Moderator', value: (1 << 4) | (1 << 13) },
-  { label: 'Voice', value: 1 << 24 },
-  { label: 'Admin', value: 1 << 3 },
-]
-
-const roleName = ref('')
-const rolePermissions = ref(0)
+const ADMINISTRATOR_PERMISSION = 1 << 3
 const showManagement = ref(false)
 const selectedMemberId = ref<number | null>(null)
-const selectedRoleId = ref<number | null>(null)
-const roleOptions = computed(() => props.roles)
+const selectedPermissionLevel = ref<'member' | 'admin'>('member')
 const { t } = useI18n()
 
-function normalizedRoleName(name: string) {
-  return name.trim().toLocaleLowerCase()
-}
-
-const uniqueRoleOptions = computed(() => {
-  const seen = new Set<string>()
-  return roleOptions.value.filter((role) => {
-    const key = normalizedRoleName(role.name)
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-})
-
-const roleNameExists = computed(() => {
-  const nextRoleName = normalizedRoleName(roleName.value)
-  if (!nextRoleName) return false
-  return roleOptions.value.some((role) => normalizedRoleName(role.name) === nextRoleName)
-})
+const adminRoleIds = computed(() => (
+  props.roles
+    .filter((role) => (role.permissions & ADMINISTRATOR_PERMISSION) === ADMINISTRATOR_PERMISSION)
+    .map((role) => role.id)
+))
 
 const selectedMemberModel = computed<number | null>({
   get() {
@@ -66,7 +41,6 @@ const selectedMemberModel = computed<number | null>({
   },
   set(value) {
     selectedMemberId.value = value
-    selectedRoleId.value = null
   },
 })
 
@@ -74,43 +48,23 @@ const selectedMember = computed(() => (
   props.members.find((member) => member.id === selectedMemberModel.value) ?? null
 ))
 
-function assignableRoles(member: Member) {
-  return uniqueRoleOptions.value.filter((role) => !member.role_ids.includes(role.id))
+function isAdminMember(member: Member) {
+  if (member.id === props.ownerId) return true
+  return member.role_ids.some((roleId) => adminRoleIds.value.includes(roleId))
 }
 
-const selectedMemberAssignableRoles = computed(() => (
-  selectedMember.value ? assignableRoles(selectedMember.value) : []
-))
-
-const selectedRoleModel = computed<number | null>({
-  get() {
-    if (
-      selectedRoleId.value
-      && selectedMemberAssignableRoles.value.some((role) => role.id === selectedRoleId.value)
-    ) {
-      return selectedRoleId.value
-    }
-    return selectedMemberAssignableRoles.value[0]?.id ?? null
-  },
-  set(value) {
-    selectedRoleId.value = value
-  },
-})
-
-function handleCreateRole() {
-  const name = roleName.value.trim()
-  if (!name || roleNameExists.value) return
-  emit('createRole', name, rolePermissions.value)
-  roleName.value = ''
-  rolePermissions.value = 0
+function permissionLevelForMember(member: Member | null) {
+  return member && isAdminMember(member) ? 'admin' : 'member'
 }
 
-function assignSelectedRole() {
+watch(selectedMember, (member) => {
+  selectedPermissionLevel.value = permissionLevelForMember(member)
+}, { immediate: true })
+
+function applySelectedPermission() {
   const memberId = selectedMemberModel.value
-  const roleId = selectedRoleModel.value
-  if (memberId === null || roleId === null) return
-  emit('assignRole', memberId, roleId)
-  selectedRoleId.value = null
+  if (memberId === null) return
+  emit('setPermissionLevel', memberId, selectedPermissionLevel.value)
 }
 
 function canRemoveMember(member: Member) {
@@ -156,33 +110,10 @@ function memberStatus(member: Member) {
           <RefreshCw :size="14" aria-hidden="true" />
         </button>
       </div>
-      <form class="role-create-form" @submit.prevent="handleCreateRole">
-        <input
-          v-model="roleName"
-          autocomplete="off"
-          maxlength="100"
-          :placeholder="t('members.newRole')"
-          :aria-label="t('members.newRole')"
-          :disabled="disabled"
-        />
-        <select v-model.number="rolePermissions" :aria-label="t('members.permissionPreset')" :disabled="disabled">
-          <option v-for="preset in ROLE_PRESETS" :key="preset.value" :value="preset.value">
-            {{ preset.label }}
-          </option>
-        </select>
-        <button
-          type="submit"
-          :aria-label="t('members.createRole')"
-          :disabled="!roleName.trim() || roleNameExists || disabled"
-        >
-          <Plus :size="15" aria-hidden="true" />
-        </button>
-      </form>
-      <p v-if="roleNameExists" class="member-management-hint">{{ t('members.duplicateRole') }}</p>
       <form
-        v-if="members.length && uniqueRoleOptions.length"
-        class="role-grant-form"
-        @submit.prevent="assignSelectedRole"
+        v-if="members.length"
+        class="member-permission-form"
+        @submit.prevent="applySelectedPermission"
       >
         <select
           v-model.number="selectedMemberModel"
@@ -194,27 +125,19 @@ function memberStatus(member: Member) {
           </option>
         </select>
         <select
-          v-model.number="selectedRoleModel"
-          :aria-label="t('members.selectRoleForMember')"
-          :disabled="disabled || !selectedMemberAssignableRoles.length"
+          v-model="selectedPermissionLevel"
+          :aria-label="t('members.selectPermissionLevel')"
+          :disabled="disabled || !selectedMember || selectedMember.id === ownerId"
         >
-          <option
-            v-for="role in selectedMemberAssignableRoles"
-            :key="role.id"
-            :value="role.id"
-          >
-            {{ role.name }}
-          </option>
-          <option v-if="!selectedMemberAssignableRoles.length" :value="null">
-            {{ t('members.noAssignableRoles') }}
-          </option>
+          <option value="member">{{ t('members.permission.member') }}</option>
+          <option value="admin">{{ t('members.permission.admin') }}</option>
         </select>
         <button
           type="submit"
-          :aria-label="t('members.assignSelectedRole')"
-          :disabled="disabled || selectedMemberModel === null || selectedRoleModel === null"
+          :aria-label="t('members.applyPermission')"
+          :disabled="disabled || selectedMemberModel === null || selectedMember?.id === ownerId"
         >
-          <Plus :size="15" aria-hidden="true" />
+          {{ t('members.apply') }}
         </button>
       </form>
     </section>
@@ -232,34 +155,12 @@ function memberStatus(member: Member) {
         fill="currentColor"
         :aria-label="memberStatus(member)"
       />
-      <div v-if="canManageRoles && showManagement && roles.length" class="member-role-controls">
-        <div v-if="roles.some((item) => member.role_ids.includes(item.id))" class="member-role-chip-list">
-          <button
-            v-for="role in roles.filter((item) => member.role_ids.includes(item.id))"
-            :key="role.id"
-            type="button"
-            class="role-chip"
-            :aria-label="t('members.removeRole', { role: role.name, user: member.username })"
-            :disabled="disabled"
-            @click="emit('removeRole', member.id, role.id)"
-          >
-            <span>{{ role.name }}</span>
-            <X :size="12" aria-hidden="true" />
-          </button>
-        </div>
+      <div v-if="canManageRoles && showManagement" class="member-role-controls">
+        <span class="member-permission-badge">
+          {{ member.id === ownerId ? t('members.permission.owner') : isAdminMember(member) ? t('members.permission.admin') : t('members.permission.member') }}
+        </span>
         <button
           v-if="canRemoveMember(member)"
-          type="button"
-          class="member-remove-button"
-          :aria-label="t('members.removeMember', { user: member.username })"
-          :disabled="disabled"
-          @click="emit('removeMember', member.id)"
-        >
-          <UserMinus :size="13" aria-hidden="true" />
-        </button>
-      </div>
-      <div v-else-if="showManagement && canRemoveMember(member)" class="member-role-controls">
-        <button
           type="button"
           class="member-remove-button"
           :aria-label="t('members.removeMember', { user: member.username })"

@@ -2469,12 +2469,13 @@ Completed Stage 2 bridge work:
   share without changing an already-active share.
 - A 2026-06-21 member-management follow-up kept server permissions role-based but
   made the owner/admin workflow explicit. `frontend/src/components/MemberList.vue`
-  now shows assigned roles as removable chips and uses one member-management
-  grant form where managers select a member and then an unassigned role. Duplicate
-  role names are blocked at creation time and de-duplicated in the grant selector
-  so repeated role rows do not flood the dropdown. `frontend/src/styles/base.css`
-  also forces dark select-option colors so role/preset dropdowns remain readable
-  in Chrome and the app shell.
+  now hides custom role creation from the sidebar and exposes one member-management
+  form where managers select a member and apply either `일반` or `관리자`.
+  `frontend/src/App.vue` maps `관리자` to the existing administrator role bit,
+  creating the internal `Admin` role only when a guild has no administrator role
+  yet; applying `일반` removes administrator roles from that member. The row UI now
+  shows a simple permission badge plus member removal instead of per-row role
+  dropdowns or role chips.
 
 After each stage or meaningful feature:
 
